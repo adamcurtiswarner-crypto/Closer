@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useWeeklyRecap, useSavedMemories, useSaveMemory } from '@/hooks/useMemories';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Paywall } from '@/components/Paywall';
 import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { MemoryCardSkeleton } from '@/components/Skeleton';
@@ -27,6 +29,10 @@ export default function MemoriesScreen() {
   const { data: completions, isLoading: recapLoading, error: recapError, refetch: refetchRecap } = useWeeklyRecap();
   const { data: memories, isLoading: memoriesLoading, error: memoriesError, refetch: refetchMemories } = useSavedMemories();
   const saveMemory = useSaveMemory();
+  const { isPremium } = useSubscription();
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const FREE_MEMORY_LIMIT = 3;
 
   const partnerName = user?.partnerName || 'Partner';
   const [refreshing, setRefreshing] = useState(false);
@@ -153,29 +159,43 @@ export default function MemoriesScreen() {
               </Text>
             </View>
           ) : (
-            memories.map((memory) => (
-              <View key={memory.id} style={styles.card}>
-                <Text style={styles.promptText}>"{memory.promptText}"</Text>
+            <>
+              {(isPremium ? memories : memories.slice(0, FREE_MEMORY_LIMIT)).map((memory) => (
+                <View key={memory.id} style={styles.card}>
+                  <Text style={styles.promptText}>"{memory.promptText}"</Text>
 
-                {memory.responses.map((response, idx) => (
-                  <View key={idx} style={styles.responseBlock}>
-                    <Text style={styles.responseLabel}>
-                      {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
+                  {memory.responses.map((response, idx) => (
+                    <View key={idx} style={styles.responseBlock}>
+                      <Text style={styles.responseLabel}>
+                        {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
+                      </Text>
+                      <Text style={styles.responseText}>{response.responseText}</Text>
+                    </View>
+                  ))}
+
+                  {memory.completedAt && (
+                    <Text style={styles.timestamp}>
+                      {format(memory.completedAt, 'EEEE, MMM d')}
                     </Text>
-                    <Text style={styles.responseText}>{response.responseText}</Text>
-                  </View>
-                ))}
-
-                {memory.completedAt && (
-                  <Text style={styles.timestamp}>
-                    {format(memory.completedAt, 'EEEE, MMM d')}
+                  )}
+                </View>
+              ))}
+              {!isPremium && memories.length > FREE_MEMORY_LIMIT && (
+                <TouchableOpacity
+                  style={styles.unlockButton}
+                  onPress={() => setShowPaywall(true)}
+                >
+                  <Text style={styles.unlockText}>
+                    Unlock {memories.length - FREE_MEMORY_LIMIT} more memories with Premium
                   </Text>
-                )}
-              </View>
-            ))
+                </TouchableOpacity>
+              )}
+            </>
           )
         )}
       </ScrollView>
+
+      <Paywall visible={showPaywall} onClose={() => setShowPaywall(false)} />
     </SafeAreaView>
   );
 }
@@ -301,5 +321,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#a8a29e',
     textAlign: 'center',
+  },
+  unlockButton: {
+    marginTop: 8,
+    marginBottom: 24,
+    paddingVertical: 14,
+    backgroundColor: '#fef3ee',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9b8a3',
+    alignItems: 'center',
+  },
+  unlockText: {
+    fontSize: 14,
+    color: '#c97454',
+    fontWeight: '600',
   },
 });

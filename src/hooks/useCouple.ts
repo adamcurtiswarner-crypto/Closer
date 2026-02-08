@@ -24,6 +24,9 @@ interface Couple {
   linkedAt: Date | null;
   totalCompletions: number;
   currentWeekCompletions: number;
+  promptFrequency: 'daily' | 'weekdays' | 'weekends';
+  currentStreak: number;
+  longestStreak: number;
 }
 
 interface Invite {
@@ -64,6 +67,9 @@ export function useCouple() {
         linkedAt: data.linked_at?.toDate() || null,
         totalCompletions: data.total_completions || 0,
         currentWeekCompletions: data.current_week_completions || 0,
+        promptFrequency: data.prompt_frequency || 'daily',
+        currentStreak: data.current_streak || 0,
+        longestStreak: data.longest_streak || 0,
       };
     },
     enabled: !!user?.coupleId,
@@ -319,6 +325,26 @@ export function useDisconnectPartner() {
       queryClient.invalidateQueries({ queryKey: ['couple'] });
       queryClient.invalidateQueries({ queryKey: ['partner'] });
       queryClient.invalidateQueries({ queryKey: ['pendingInvite'] });
+    },
+  });
+}
+
+export function useUpdatePromptFrequency() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (frequency: 'daily' | 'weekdays' | 'weekends'): Promise<void> => {
+      if (!user?.coupleId) throw new Error('Not in a couple');
+
+      const coupleRef = doc(db, 'couples', user.coupleId);
+      await updateDoc(coupleRef, {
+        prompt_frequency: frequency,
+        updated_at: serverTimestamp(),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['couple'] });
     },
   });
 }

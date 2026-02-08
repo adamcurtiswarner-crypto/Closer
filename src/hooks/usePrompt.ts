@@ -16,10 +16,14 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 import { db, functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import { getCoupleKey, encrypt } from '@/services/encryption';
+
+const OFFLINE_QUEUE_KEY = '@closer_offline_responses';
 
 interface PromptAssignment {
   id: string;
@@ -170,9 +174,82 @@ export function useTodayPrompt() {
   });
 }
 
+// Flush any queued offline responses
+async function flushOfflineQueue(userId: string, coupleId: string) {
+  try {
+    const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
+    if (!raw) return;
+    const queue: { assignmentId: string; responseText: string }[] = JSON.parse(raw);
+    if (queue.length === 0) return;
+
+    for (const item of queue) {
+      const assignmentRef = doc(db, 'prompt_assignments', item.assignmentId);
+      const assignmentSnap = await getDoc(assignmentRef);
+      if (!assignmentSnap.exists()) continue;
+      const assignmentData = assignmentSnap.data();
+
+      let encryptedText = item.responseText;
+      const coupleKey = await getCoupleKey(coupleId);
+      if (coupleKey) {
+        encryptedText = encrypt(item.responseText, coupleKey);
+      }
+
+      const responsesRef = collection(db, 'prompt_responses');
+      await addDoc(responsesRef, {
+        assignment_id: item.assignmentId,
+        couple_id: coupleId,
+        user_id: userId,
+        prompt_id: assignmentData.prompt_id,
+        response_text: item.responseText,
+        response_text_encrypted: encryptedText,
+        status: 'submitted',
+        submitted_at: serverTimestamp(),
+        emotional_response: null,
+        talked_about_it: null,
+        response_length: item.responseText.length,
+        time_to_respond_seconds: null,
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+
+      const newCount = (assignmentData.response_count || 0) + 1;
+      const updates: Record<string, any> = {
+        response_count: newCount,
+        updated_at: serverTimestamp(),
+      };
+      if (newCount === 1) {
+        updates.first_response_at = serverTimestamp();
+        updates.status = 'partial';
+      } else if (newCount === 2) {
+        updates.second_response_at = serverTimestamp();
+        updates.status = 'completed';
+        updates.completed_at = serverTimestamp();
+      }
+      await updateDoc(assignmentRef, updates);
+    }
+
+    await AsyncStorage.removeItem(OFFLINE_QUEUE_KEY);
+  } catch (error) {
+    // Silently fail — will retry next reconnect
+  }
+}
+
 export function useSubmitResponse() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Listen for reconnection to flush offline queue
+  useEffect(() => {
+    if (!user?.id || !user?.coupleId) return;
+
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (state.isConnected) {
+        flushOfflineQueue(user.id, user.coupleId!);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user?.id, user?.coupleId]);
 
   return useMutation({
     mutationFn: async ({
@@ -183,6 +260,16 @@ export function useSubmitResponse() {
       responseText: string;
     }) => {
       if (!user?.coupleId) throw new Error('No couple linked');
+
+      // Check if offline — queue the response
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
+        const queue = raw ? JSON.parse(raw) : [];
+        queue.push({ assignmentId, responseText });
+        await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+        return { responseId: 'offline-queued', isComplete: false, isOffline: true };
+      }
 
       // Get the assignment to get prompt_id
       const assignmentRef = doc(db, 'prompt_assignments', assignmentId);

@@ -15,8 +15,21 @@ import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
+import { useCouple, useUpdatePromptFrequency } from '@/hooks/useCouple';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Paywall } from '@/components/Paywall';
 import { logger } from '@/utils/logger';
 import { PartnershipSection } from '@/components';
+
+const FREQUENCY_OPTIONS = [
+  { label: 'Daily', value: 'daily' as const, description: 'Every day' },
+  { label: 'Weekdays', value: 'weekdays' as const, description: 'Monday - Friday' },
+  { label: 'Weekends', value: 'weekends' as const, description: 'Saturday & Sunday' },
+];
+
+function getFrequencyDisplay(value: string): string {
+  return FREQUENCY_OPTIONS.find((f) => f.value === value)?.label || 'Daily';
+}
 
 const TIME_OPTIONS = [
   { label: 'Morning (8 AM)', value: '08:00', display: '8:00 AM' },
@@ -31,10 +44,17 @@ function getTimeDisplay(value: string): string {
 
 export default function SettingsScreen() {
   const { user, signOut, refreshUser } = useAuth();
+  const { data: couple } = useCouple();
+  const updateFrequency = useUpdatePromptFrequency();
   const [remindMe, setRemindMe] = useState(true);
   const [partnerNotify, setPartnerNotify] = useState(true);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
   const [isSavingTime, setIsSavingTime] = useState(false);
+
+  const { isPremium } = useSubscription();
+  const [showPaywall, setShowPaywall] = useState(false);
+  const currentFrequency = couple?.promptFrequency || 'daily';
 
   const currentTime = user?.notificationTime || '19:00';
 
@@ -143,6 +163,10 @@ export default function SettingsScreen() {
             <Text style={styles.rowLabel}>Daily prompt time</Text>
             <Text style={styles.rowValue}>{getTimeDisplay(currentTime)} {'>'}</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
+            <Text style={styles.rowLabel}>Prompt frequency</Text>
+            <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)} {'>'}</Text>
+          </TouchableOpacity>
           <View style={styles.rowToggle}>
             <Text style={styles.rowLabel}>Remind me to respond</Text>
             <Switch
@@ -177,6 +201,16 @@ export default function SettingsScreen() {
         {/* Account */}
         <Text style={styles.sectionTitle}>ACCOUNT</Text>
         <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => !isPremium && setShowPaywall(true)}
+            disabled={isPremium}
+          >
+            <Text style={styles.rowLabel}>Subscription</Text>
+            <Text style={[styles.rowValue, isPremium && styles.premiumText]}>
+              {isPremium ? 'Premium' : 'Free >'}
+            </Text>
+          </TouchableOpacity>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Email</Text>
             <Text style={styles.rowValue}>{user?.email || 'Not signed in'}</Text>
@@ -262,6 +296,67 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+      <Paywall visible={showPaywall} onClose={() => setShowPaywall(false)} />
+
+      {/* Frequency Picker Modal */}
+      <Modal
+        visible={showFrequencyPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFrequencyPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Prompt frequency</Text>
+            <Text style={styles.modalSubtitle}>
+              How often should you receive prompts?
+            </Text>
+
+            {FREQUENCY_OPTIONS.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.timeOption,
+                  currentFrequency === option.value && styles.timeOptionActive,
+                ]}
+                onPress={async () => {
+                  try {
+                    await updateFrequency.mutateAsync(option.value);
+                  } catch (error) {
+                    logger.error('Error updating frequency:', error);
+                    Alert.alert('Error', 'Failed to update prompt frequency');
+                  }
+                  setShowFrequencyPicker(false);
+                }}
+                disabled={updateFrequency.isPending}
+              >
+                <View style={[
+                  styles.radio,
+                  currentFrequency === option.value && styles.radioActive,
+                ]}>
+                  {currentFrequency === option.value && <View style={styles.radioInner} />}
+                </View>
+                <View>
+                  <Text style={[
+                    styles.timeOptionText,
+                    currentFrequency === option.value && styles.timeOptionTextActive,
+                  ]}>
+                    {option.label}
+                  </Text>
+                  <Text style={styles.frequencyDescription}>{option.description}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => setShowFrequencyPicker(false)}
+            >
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -327,6 +422,10 @@ const styles = StyleSheet.create({
   rowValue: {
     fontSize: 16,
     color: '#78716c',
+  },
+  premiumText: {
+    color: '#c97454',
+    fontWeight: '600',
   },
   dangerText: {
     fontSize: 16,
@@ -412,6 +511,11 @@ const styles = StyleSheet.create({
   timeOptionTextActive: {
     color: '#c97454',
     fontWeight: '500',
+  },
+  frequencyDescription: {
+    fontSize: 13,
+    color: '#a8a29e',
+    marginTop: 2,
   },
   modalClose: {
     marginTop: 8,

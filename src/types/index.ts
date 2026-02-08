@@ -29,6 +29,9 @@ export interface Couple {
   status: CoupleStatus;
   totalCompletions: number;
   currentWeekCompletions: number;
+  currentStreak: number;
+  longestStreak: number;
+  promptFrequency: 'daily' | 'weekdays' | 'weekends';
 }
 
 export type ToneCalibration = 'solid' | 'distant' | 'struggling';

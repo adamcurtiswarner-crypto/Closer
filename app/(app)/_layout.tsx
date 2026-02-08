@@ -1,7 +1,8 @@
 import React from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { Text } from 'react-native';
+import { View, Text } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
+import { OfflineBanner } from '@/components/OfflineBanner';
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -17,6 +18,8 @@ export default function AppLayout() {
   }
 
   return (
+    <View style={{ flex: 1 }}>
+    <OfflineBanner />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -62,5 +65,6 @@ export default function AppLayout() {
         }}
       />
     </Tabs>
+    </View>
   );
 }

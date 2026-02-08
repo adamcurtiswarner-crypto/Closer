@@ -20,6 +20,7 @@ import { PromptCard, CompletionMoment, PartnerStatus } from '@components';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
+import { useStreak } from '@/hooks/useStreak';
 import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
@@ -40,6 +41,7 @@ export default function TodayScreen() {
   const submitResponse = useSubmitResponse();
   const submitFeedback = useSubmitFeedback();
   const triggerPrompt = useTriggerPrompt();
+  const { currentStreak, isStreakActive } = useStreak();
 
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
@@ -359,6 +361,12 @@ export default function TodayScreen() {
             <Text style={styles.feedbackThanks}>Thanks for sharing.</Text>
           )}
 
+          {currentStreak > 0 && (
+            <Text style={styles.streakUpdate}>
+              {currentStreak === 1 ? 'Streak started!' : `${currentStreak} day streak!`}
+            </Text>
+          )}
+
           <Text style={styles.doneText}>All done. See you tomorrow.</Text>
         </ScrollView>
       </SafeAreaView>
@@ -373,6 +381,13 @@ export default function TodayScreen() {
           <View>
             <Text style={styles.title}>Today</Text>
             <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+            {currentStreak > 0 && (
+              <View style={[styles.streakBadge, isStreakActive ? styles.streakActive : styles.streakInactive]}>
+                <Text style={[styles.streakText, isStreakActive ? styles.streakTextActive : styles.streakTextInactive]}>
+                  {currentStreak} day streak
+                </Text>
+              </View>
+            )}
           </View>
           <PartnerStatus
             isOnline={isPartnerOnline}
@@ -603,5 +618,35 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '600',
     fontSize: 15,
+  },
+  streakBadge: {
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  streakActive: {
+    backgroundColor: '#fef3ee',
+  },
+  streakInactive: {
+    backgroundColor: '#f5f5f4',
+  },
+  streakText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  streakTextActive: {
+    color: '#c97454',
+  },
+  streakTextInactive: {
+    color: '#a8a29e',
+  },
+  streakUpdate: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#c97454',
+    textAlign: 'center',
   },
 });
