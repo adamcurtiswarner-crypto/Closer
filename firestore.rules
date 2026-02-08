@@ -1,0 +1,173 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isCoupleMember(coupleId) {
+      return isAuthenticated() &&
+        request.auth.uid in get(/databases/$(database)/documents/couples/$(coupleId)).data.member_ids;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.is_admin == true;
+    }
+
+    // ============================================
+    // USERS
+    // ============================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false; // Soft delete only
+    }
+
+    // ============================================
+    // COUPLES
+    // ============================================
+
+    match /couples/{coupleId} {
+      allow read: if isCoupleMember(coupleId);
+      // Create/update handled by Cloud Functions
+      allow create: if isAuthenticated();
+      allow update: if isCoupleMember(coupleId);
+      allow delete: if false;
+    }
+
+    // ============================================
+    // COUPLE INVITES
+    // ============================================
+
+    match /couple_invites/{inviteId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if false;
+    }
+
+    // ============================================
+    // PROMPTS (Admin only for write)
+    // ============================================
+
+    match /prompts/{promptId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // PROMPT ASSIGNMENTS
+    // ============================================
+
+    match /prompt_assignments/{assignmentId} {
+      allow read: if isAuthenticated() &&
+        isCoupleMember(resource.data.couple_id);
+      // Created by Cloud Functions only
+      allow create: if false;
+      allow update: if isCoupleMember(resource.data.couple_id);
+      allow delete: if false;
+    }
+
+    // ============================================
+    // PROMPT RESPONSES
+    // ============================================
+
+    match /prompt_responses/{responseId} {
+      // Can read if in same couple
+      allow read: if isAuthenticated() &&
+        isCoupleMember(resource.data.couple_id);
+
+      // Can create own response
+      allow create: if isAuthenticated() &&
+        isOwner(request.resource.data.user_id) &&
+        isCoupleMember(request.resource.data.couple_id);
+
+      // Can update own draft response
+      allow update: if isAuthenticated() &&
+        isOwner(resource.data.user_id) &&
+        resource.data.status == 'draft';
+
+      allow delete: if false;
+    }
+
+    // ============================================
+    // PROMPT COMPLETIONS
+    // ============================================
+
+    match /prompt_completions/{completionId} {
+      allow read: if isAuthenticated() &&
+        isCoupleMember(resource.data.couple_id);
+      // Created by Cloud Functions only
+      allow create: if false;
+      allow update: if isCoupleMember(resource.data.couple_id);
+      allow delete: if false;
+    }
+
+    // ============================================
+    // MEMORY ARTIFACTS
+    // ============================================
+
+    match /memory_artifacts/{memoryId} {
+      allow read: if isAuthenticated() &&
+        isCoupleMember(resource.data.couple_id);
+
+      allow create: if isAuthenticated() &&
+        isCoupleMember(request.resource.data.couple_id);
+
+      allow update: if isAuthenticated() &&
+        isCoupleMember(resource.data.couple_id);
+
+      allow delete: if false; // Soft delete only
+    }
+
+    // ============================================
+    // EVENTS (Analytics)
+    // ============================================
+
+    match /events/{eventId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // ============================================
+    // EXPERIMENTS
+    // ============================================
+
+    match /experiments/{experimentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ============================================
+    // SUBSCRIPTIONS
+    // ============================================
+
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() &&
+        (isOwner(resource.data.user_id) || isCoupleMember(resource.data.couple_id));
+      allow write: if false; // Managed by Cloud Functions
+    }
+
+    // ============================================
+    // ADMINS
+    // ============================================
+
+    match /admins/{adminId} {
+      allow read: if isOwner(adminId);
+      allow write: if false; // Manual setup only
+    }
+  }
+}
