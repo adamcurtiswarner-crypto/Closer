@@ -1,96 +1,66 @@
-import * as admin from 'firebase-admin';
 import * as functionsTest from 'firebase-functions-test';
 
 const test = functionsTest.default();
 
-// Mock firebase-admin
-jest.mock('firebase-admin', () => {
-  const firestoreMock = {
-    collection: jest.fn().mockReturnThis(),
-    doc: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    limit: jest.fn().mockReturnThis(),
-    get: jest.fn(),
-    set: jest.fn(),
-    update: jest.fn(),
-    add: jest.fn(),
-    batch: jest.fn(() => ({
-      update: jest.fn(),
-      commit: jest.fn(),
-    })),
-  };
+// Helper: simulates the frequency skip logic from deliverDailyPrompts
+function shouldSkipForFrequency(frequency: string, dayOfWeek: number): boolean {
+  if (frequency === 'weekdays' && (dayOfWeek === 0 || dayOfWeek === 6)) return true;
+  if (frequency === 'weekends' && dayOfWeek >= 1 && dayOfWeek <= 5) return true;
+  return false;
+}
 
-  return {
-    initializeApp: jest.fn(),
-    firestore: jest.fn(() => firestoreMock),
-    messaging: jest.fn(() => ({
-      sendEach: jest.fn().mockResolvedValue({}),
-    })),
-  };
-});
+// Helper: simulates streak update logic from onResponseSubmitted
+function computeStreak(
+  lastStreakDate: string | null,
+  today: string,
+  yesterday: string,
+  currentStreak: number
+): { currentStreak: number } {
+  if (lastStreakDate === today) {
+    // Already counted today
+  } else if (lastStreakDate === yesterday) {
+    currentStreak += 1;
+  } else {
+    currentStreak = 1;
+  }
+  return { currentStreak };
+}
 
-// After mocking, require the module
-const db = admin.firestore();
+// Helper: effective tone selection
+function getEffectiveTone(tones: string[]): string {
+  if (tones.includes('struggling')) return 'struggling';
+  if (tones.includes('distant')) return 'distant';
+  return 'solid';
+}
 
 describe('Prompt Selection Logic', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('day_preference filter', () => {
     it('should filter prompts by day_preference', () => {
-      // day_preference: [1, 2, 3, 4, 5] means weekdays only
-      const weekdayPrompt = {
-        id: 'prompt-1',
-        data: () => ({
-          type: 'love_map_update',
-          status: 'active',
-          day_preference: [1, 2, 3, 4, 5], // Mon-Fri
-          week_restriction: null,
-          max_per_week: null,
-        }),
-      };
+      const dayPreference = [1, 2, 3, 4, 5]; // Mon-Fri
 
-      // On Saturday (6), this prompt should be filtered out
-      const currentDayOfWeek = 6; // Saturday
-      const dayPreference = weekdayPrompt.data().day_preference;
-      expect(dayPreference.includes(currentDayOfWeek)).toBe(false);
-
-      // On Monday (1), should be included
+      // Saturday (6) should be filtered out
+      expect(dayPreference.includes(6)).toBe(false);
+      // Monday (1) should be included
       expect(dayPreference.includes(1)).toBe(true);
     });
   });
 
   describe('max_per_week filter', () => {
     it('should exclude prompts that have hit their weekly max', () => {
-      const weeklyTypeCounts: Record<string, number> = {
-        love_map_update: 3,
-      };
+      const weeklyTypeCounts: Record<string, number> = { love_map_update: 3 };
+      const type = 'love_map_update';
+      const maxPerWeek = 3;
 
-      const prompt = {
-        type: 'love_map_update',
-        max_per_week: 3,
-      };
-
-      // Should be excluded because weekly count matches max
-      const isExcluded = prompt.max_per_week != null &&
-        (weeklyTypeCounts[prompt.type] || 0) >= prompt.max_per_week;
+      const isExcluded = (weeklyTypeCounts[type] || 0) >= maxPerWeek;
       expect(isExcluded).toBe(true);
     });
 
     it('should include prompts under their weekly max', () => {
-      const weeklyTypeCounts: Record<string, number> = {
-        love_map_update: 1,
-      };
+      const weeklyTypeCounts: Record<string, number> = { love_map_update: 1 };
+      const type = 'love_map_update';
+      const maxPerWeek = 3;
 
-      const prompt = {
-        type: 'love_map_update',
-        max_per_week: 3,
-      };
-
-      const isExcluded = prompt.max_per_week != null &&
-        (weeklyTypeCounts[prompt.type] || 0) >= prompt.max_per_week;
+      const isExcluded = (weeklyTypeCounts[type] || 0) >= maxPerWeek;
       expect(isExcluded).toBe(false);
     });
   });
@@ -98,19 +68,14 @@ describe('Prompt Selection Logic', () => {
   describe('week_restriction filter', () => {
     it('should exclude prompts for couples in early weeks', () => {
       const weekNumber = 1;
-      const prompt = { week_restriction: 4 };
-
-      // Week 1 couple shouldn't get a prompt with week_restriction 4
-      const isExcluded = prompt.week_restriction != null && weekNumber < prompt.week_restriction;
-      expect(isExcluded).toBe(true);
+      const weekRestriction = 4;
+      expect(weekNumber < weekRestriction).toBe(true);
     });
 
     it('should include prompts for couples past the restriction', () => {
       const weekNumber = 5;
-      const prompt = { week_restriction: 4 };
-
-      const isExcluded = prompt.week_restriction != null && weekNumber < prompt.week_restriction;
-      expect(isExcluded).toBe(false);
+      const weekRestriction = 4;
+      expect(weekNumber < weekRestriction).toBe(false);
     });
   });
 
@@ -144,12 +109,6 @@ describe('Prompt Selection Logic', () => {
     });
 
     it('should use the more cautious tone', () => {
-      function getEffectiveTone(tones: string[]): string {
-        if (tones.includes('struggling')) return 'struggling';
-        if (tones.includes('distant')) return 'distant';
-        return 'solid';
-      }
-
       expect(getEffectiveTone(['solid', 'distant'])).toBe('distant');
       expect(getEffectiveTone(['solid', 'struggling'])).toBe('struggling');
       expect(getEffectiveTone(['distant', 'struggling'])).toBe('struggling');
@@ -159,107 +118,72 @@ describe('Prompt Selection Logic', () => {
 
   describe('prompt_frequency skip logic', () => {
     it('should skip weekends for weekday frequency', () => {
-      const frequency = 'weekdays';
-      const saturday = 6;
-      const sunday = 0;
-      const monday = 1;
-
-      const shouldSkipSat = frequency === 'weekdays' && (saturday === 0 || saturday === 6);
-      const shouldSkipSun = frequency === 'weekdays' && (sunday === 0 || sunday === 6);
-      const shouldSkipMon = frequency === 'weekdays' && (monday === 0 || monday === 6);
-
-      expect(shouldSkipSat).toBe(true);
-      expect(shouldSkipSun).toBe(true);
-      expect(shouldSkipMon).toBe(false);
+      expect(shouldSkipForFrequency('weekdays', 6)).toBe(true);  // Saturday
+      expect(shouldSkipForFrequency('weekdays', 0)).toBe(true);  // Sunday
+      expect(shouldSkipForFrequency('weekdays', 1)).toBe(false); // Monday
+      expect(shouldSkipForFrequency('weekdays', 3)).toBe(false); // Wednesday
     });
 
     it('should skip weekdays for weekend frequency', () => {
-      const frequency = 'weekends';
-      const monday = 1;
-      const saturday = 6;
+      expect(shouldSkipForFrequency('weekends', 1)).toBe(true);  // Monday
+      expect(shouldSkipForFrequency('weekends', 5)).toBe(true);  // Friday
+      expect(shouldSkipForFrequency('weekends', 6)).toBe(false); // Saturday
+      expect(shouldSkipForFrequency('weekends', 0)).toBe(false); // Sunday
+    });
 
-      const shouldSkipMon = frequency === 'weekends' && monday >= 1 && monday <= 5;
-      const shouldSkipSat = frequency === 'weekends' && saturday >= 1 && saturday <= 5;
-
-      expect(shouldSkipMon).toBe(true);
-      expect(shouldSkipSat).toBe(false);
+    it('should never skip for daily frequency', () => {
+      for (let day = 0; day <= 6; day++) {
+        expect(shouldSkipForFrequency('daily', day)).toBe(false);
+      }
     });
   });
 });
 
 describe('Streak Logic', () => {
   it('should increment streak when last_streak_date is yesterday', () => {
-    const lastStreakDate = '2026-02-07';
-    const today = '2026-02-08';
-    const yesterday = '2026-02-07';
-    let currentStreak = 5;
-
-    if (lastStreakDate === today) {
-      // no change
-    } else if (lastStreakDate === yesterday) {
-      currentStreak += 1;
-    } else {
-      currentStreak = 1;
-    }
-
-    expect(currentStreak).toBe(6);
+    const result = computeStreak('2026-02-07', '2026-02-08', '2026-02-07', 5);
+    expect(result.currentStreak).toBe(6);
   });
 
   it('should not change streak if already counted today', () => {
-    const lastStreakDate = '2026-02-08';
-    const today = '2026-02-08';
-    const yesterday = '2026-02-07';
-    let currentStreak = 5;
-
-    if (lastStreakDate === today) {
-      // no change
-    } else if (lastStreakDate === yesterday) {
-      currentStreak += 1;
-    } else {
-      currentStreak = 1;
-    }
-
-    expect(currentStreak).toBe(5);
+    const result = computeStreak('2026-02-08', '2026-02-08', '2026-02-07', 5);
+    expect(result.currentStreak).toBe(5);
   });
 
   it('should reset streak if last_streak_date is older than yesterday', () => {
-    const lastStreakDate = '2026-02-05';
-    const today = '2026-02-08';
-    const yesterday = '2026-02-07';
-    let currentStreak = 5;
+    const result = computeStreak('2026-02-05', '2026-02-08', '2026-02-07', 5);
+    expect(result.currentStreak).toBe(1);
+  });
 
-    if (lastStreakDate === today) {
-      // no change
-    } else if (lastStreakDate === yesterday) {
-      currentStreak += 1;
-    } else {
-      currentStreak = 1;
-    }
-
-    expect(currentStreak).toBe(1);
+  it('should start streak at 1 when no previous streak', () => {
+    const result = computeStreak(null, '2026-02-08', '2026-02-07', 0);
+    expect(result.currentStreak).toBe(1);
   });
 
   it('should update longest_streak when current exceeds it', () => {
-    let currentStreak = 10;
-    let longestStreak = 8;
+    const currentStreak = 10;
+    const longestStreak = 8;
+    expect(Math.max(currentStreak, longestStreak)).toBe(10);
+  });
 
-    longestStreak = Math.max(currentStreak, longestStreak);
-    expect(longestStreak).toBe(10);
+  it('should keep longest_streak when current is lower', () => {
+    const currentStreak = 3;
+    const longestStreak = 8;
+    expect(Math.max(currentStreak, longestStreak)).toBe(8);
   });
 });
 
 describe('Expire Stale Prompts', () => {
-  it('should mark delivered/partial assignments from before today as expired', () => {
-    // The function queries for assignments with status 'delivered' or 'partial'
-    // where assigned_date < today, and sets status to 'expired'
-    const staleAssignment = {
-      status: 'delivered',
-      assigned_date: '2026-02-07',
-    };
+  it('should mark delivered assignments from before today as expired', () => {
+    const assignedDate = '2026-02-07';
     const today = '2026-02-08';
+    expect(assignedDate < today).toBe(true);
+  });
 
-    expect(staleAssignment.assigned_date < today).toBe(true);
-    expect(staleAssignment.status === 'delivered' || staleAssignment.status === 'partial').toBe(true);
+  it('should not expire assignments from today', () => {
+    const assignedDate = '2026-02-08';
+    const today = '2026-02-08';
+    expect(assignedDate < today).toBe(false);
   });
 });
 
@@ -267,51 +191,51 @@ describe('Response Reminders', () => {
   it('should send reminders within 3-4 hour window', () => {
     const deliveredAt = new Date('2026-02-08T10:00:00');
     const now = new Date('2026-02-08T13:30:00');
+    const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
 
-    const hoursSinceDelivery = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
-
-    expect(hoursSinceDelivery).toBeGreaterThanOrEqual(3);
-    expect(hoursSinceDelivery).toBeLessThan(4);
+    expect(hours).toBeGreaterThanOrEqual(3);
+    expect(hours).toBeLessThan(4);
   });
 
-  it('should not send reminders outside the window', () => {
+  it('should not send reminders before 3 hours', () => {
     const deliveredAt = new Date('2026-02-08T10:00:00');
-    const tooEarly = new Date('2026-02-08T12:00:00');
-    const tooLate = new Date('2026-02-08T14:30:00');
+    const now = new Date('2026-02-08T12:00:00');
+    const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
 
-    const hoursEarly = (tooEarly.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
-    const hoursLate = (tooLate.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+    expect(hours < 3).toBe(true);
+  });
 
-    expect(hoursEarly < 3).toBe(true);
-    expect(hoursLate >= 4).toBe(true);
+  it('should not send reminders after 4 hours', () => {
+    const deliveredAt = new Date('2026-02-08T10:00:00');
+    const now = new Date('2026-02-08T14:30:00');
+    const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+
+    expect(hours >= 4).toBe(true);
   });
 
   it('should respect remind_to_respond=false preference', () => {
-    const userData = { remind_to_respond: false };
+    const userData = { remind_to_respond: false as boolean };
     expect(userData.remind_to_respond === false).toBe(true);
   });
 });
 
 describe('onResponseSubmitted', () => {
   it('should create completion when response_count is 1 (second response)', () => {
-    const assignment = { response_count: 1 };
-    // If response_count is already 1, this is the second response
-    expect(assignment.response_count === 1).toBe(true);
+    const responseCount: number = 1;
+    expect(responseCount === 1).toBe(true);
   });
 
   it('should notify partner on first response (response_count is 0)', () => {
-    const assignment = { response_count: 0 };
-    expect(assignment.response_count === 0).toBe(true);
+    const responseCount: number = 0;
+    expect(responseCount === 0).toBe(true);
   });
 
   it('should respect partner notification preference', () => {
-    const partnerData = { notify_partner_response: false };
-    const shouldNotify = partnerData.notify_partner_response !== false;
-    expect(shouldNotify).toBe(false);
+    const notifyPartner: boolean = false;
+    expect(notifyPartner !== false).toBe(false);
   });
 });
 
-// Clean up
 afterAll(() => {
   test.cleanup();
 });
