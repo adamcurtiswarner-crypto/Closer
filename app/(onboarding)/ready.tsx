@@ -11,8 +11,16 @@ import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { logEvent } from '@/services/analytics';
 
+const TIME_LABELS: Record<string, string> = {
+  '08:00': '8:00 AM',
+  '14:00': '2:00 PM',
+  '19:00': '7:00 PM',
+  '21:00': '9:00 PM',
+};
+
 export default function ReadyScreen() {
   const { user, refreshUser } = useAuth();
+  const promptTime = TIME_LABELS[user?.notificationTime || '19:00'] || '7:00 PM';
 
   const handleStartNow = async () => {
     await completeOnboarding();
@@ -47,7 +55,7 @@ export default function ReadyScreen() {
             You're all set
           </Text>
           <Text className="text-warm-600 text-center mt-2">
-            Your first prompt arrives at 7:00 PM.
+            Your first prompt arrives at {promptTime}.
           </Text>
         </View>
 

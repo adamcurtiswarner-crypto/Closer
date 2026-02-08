@@ -1,6 +1,7 @@
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Platform } from 'react-native';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 
 type AnalyticsEvent =
   | 'onboarding_completed'
@@ -42,6 +43,6 @@ export async function logEvent(
     });
   } catch (error) {
     // Don't let analytics errors disrupt the app
-    console.warn('Analytics event failed:', name, error);
+    logger.warn('Analytics event failed:', name, error);
   }
 }

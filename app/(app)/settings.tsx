@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/utils/logger';
 import { PartnershipSection } from '@/components';
 
 const TIME_OPTIONS = [
@@ -48,7 +49,7 @@ export default function SettingsScreen() {
       });
       await refreshUser();
     } catch (error) {
-      console.error('Error updating notification time:', error);
+      logger.error('Error updating notification time:', error);
       Alert.alert('Error', 'Failed to update notification time');
     } finally {
       setIsSavingTime(false);
@@ -108,7 +109,7 @@ export default function SettingsScreen() {
         updated_at: serverTimestamp(),
       });
     } catch (error) {
-      console.error('Error updating reminder setting:', error);
+      logger.error('Error updating reminder setting:', error);
       setRemindMe(!value); // Revert on error
     }
   };
@@ -123,7 +124,7 @@ export default function SettingsScreen() {
         updated_at: serverTimestamp(),
       });
     } catch (error) {
-      console.error('Error updating partner notify setting:', error);
+      logger.error('Error updating partner notify setting:', error);
       setPartnerNotify(!value); // Revert on error
     }
   };
@@ -196,7 +197,7 @@ export default function SettingsScreen() {
             <Text style={styles.rowLabel}>Version</Text>
             <Text style={styles.rowValue}>1.0.0</Text>
           </View>
-          <TouchableOpacity style={[styles.row, styles.lastRow]}>
+          <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={() => router.push('/(app)/privacy-policy')}>
             <Text style={styles.rowLabel}>Privacy Policy</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
           </TouchableOpacity>

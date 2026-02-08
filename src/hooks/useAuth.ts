@@ -5,10 +5,12 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { User, ToneCalibration } from '@/types';
 
 interface AuthState {
@@ -53,7 +55,7 @@ export function useAuth(): AuthState & AuthActions {
       }
       return null;
     } catch (error) {
-      console.error('Error fetching user doc:', error);
+      logger.error('Error fetching user doc:', error);
       return null;
     }
   }, []);
@@ -91,6 +93,11 @@ export function useAuth(): AuthState & AuthActions {
     setIsLoading(true);
     try {
       const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Send verification email (non-blocking)
+      sendEmailVerification(newUser).catch((err) =>
+        logger.warn('Could not send verification email:', err)
+      );
 
       // Create user document in Firestore
       const userRef = doc(db, 'users', newUser.uid);

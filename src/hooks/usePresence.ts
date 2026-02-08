@@ -8,6 +8,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 import { useCouple } from './useCouple';
 
@@ -203,7 +204,7 @@ export function usePresence(): UsePresenceReturn {
         }
       },
       (error) => {
-        console.error('Error listening to partner presence:', error);
+        logger.error('Error listening to partner presence:', error);
       }
     );
 

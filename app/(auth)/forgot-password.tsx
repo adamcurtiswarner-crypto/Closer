@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Input } from '@components';
 import { useAuth } from '@hooks/useAuth';
+import { getAuthErrorMessage } from '@/utils/authErrors';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -37,7 +38,7 @@ export default function ForgotPasswordScreen() {
       await resetPassword(data.email);
       setSent(true);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Please try again.');
+      Alert.alert('Error', getAuthErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

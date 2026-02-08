@@ -2,9 +2,6 @@
  * Closer App — Core Types
  */
 
-// Re-export all types from the shared specs
-export * from '../../../specs/types';
-
 // App-specific types
 
 export interface AppState {

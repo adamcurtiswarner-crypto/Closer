@@ -5,6 +5,7 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
   updateDoc,
   query,
   where,
@@ -14,6 +15,7 @@ import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
+import { generateCoupleKey } from '@/services/encryption';
 
 interface Couple {
   id: string;
@@ -140,9 +142,10 @@ export function useCreateInvite() {
         relationship_length: null,
       });
 
-      // Create invite
+      // Create invite using code as the document ID
       const inviteRef = doc(db, 'couple_invites', code);
-      await addDoc(collection(db, 'couple_invites'), {
+      await setDoc(inviteRef, {
+        invite_code: code,
         inviter_id: user.id,
         inviter_email: user.email,
         couple_id: coupleDoc.id,
@@ -159,6 +162,9 @@ export function useCreateInvite() {
         couple_id: coupleDoc.id,
         updated_at: serverTimestamp(),
       });
+
+      // Generate encryption key for this couple
+      await generateCoupleKey(coupleDoc.id);
 
       await refreshUser();
 
@@ -183,38 +189,34 @@ export function useAcceptInvite() {
       if (!user?.id) throw new Error('Not authenticated');
       if (user.coupleId) throw new Error('Already in a couple');
 
-      // Find the invite
-      const invitesRef = collection(db, 'couple_invites');
-      const inviteQuery = query(
-        invitesRef,
-        where('status', '==', 'pending')
-      );
-      const inviteSnap = await getDocs(inviteQuery);
+      // Look up invite by code (code is the document ID)
+      const inviteRef = doc(db, 'couple_invites', inviteCode.toUpperCase());
+      const inviteSnap = await getDoc(inviteRef);
 
-      // Find matching invite by checking document data
-      let inviteDoc = null;
-      let inviteData = null;
-
-      for (const doc of inviteSnap.docs) {
-        // The invite code is stored differently - need to match
-        // For now, assume we're searching by the document structure
-        const data = doc.data();
-        // Check expiry
-        if (data.expires_at.toDate() > new Date()) {
-          inviteDoc = doc;
-          inviteData = data;
-          break;
-        }
+      if (!inviteSnap.exists()) {
+        throw new Error('Invalid invite code');
       }
 
-      if (!inviteDoc || !inviteData) {
-        throw new Error('Invalid or expired invite code');
+      const inviteData = inviteSnap.data();
+
+      if (inviteData.status !== 'pending') {
+        throw new Error('This invite has already been used');
       }
+
+      if (inviteData.expires_at.toDate() < new Date()) {
+        throw new Error('This invite has expired');
+      }
+
+      if (inviteData.inviter_id === user.id) {
+        throw new Error("You can't accept your own invite");
+      }
+
+      const inviteDoc = inviteSnap;
 
       const coupleId = inviteData.couple_id;
 
       // Update invite
-      await updateDoc(doc(db, 'couple_invites', inviteDoc.id), {
+      await updateDoc(inviteRef, {
         status: 'accepted',
         accepted_at: serverTimestamp(),
         accepted_by: user.id,
@@ -222,8 +224,8 @@ export function useAcceptInvite() {
 
       // Update couple
       const coupleRef = doc(db, 'couples', coupleId);
-      const coupleSnap = await getDoc(coupleRef);
-      const coupleData = coupleSnap.data();
+      const coupleDocSnap = await getDoc(coupleRef);
+      const coupleData = coupleDocSnap.data();
 
       await updateDoc(coupleRef, {
         member_ids: [...coupleData!.member_ids, user.id],
@@ -240,6 +242,9 @@ export function useAcceptInvite() {
         couple_id: coupleId,
         updated_at: serverTimestamp(),
       });
+
+      // Generate encryption key for this couple
+      await generateCoupleKey(coupleId);
 
       await refreshUser();
 

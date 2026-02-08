@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { Button, Input } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getPendingInviteCode, clearPendingInviteCode } from '@/hooks/useDeepLink';
+import { getAuthErrorMessage } from '@/utils/authErrors';
 
 const signUpSchema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -51,10 +52,10 @@ export default function SignUpScreen() {
           params: { code: pendingCode },
         });
       } else {
-        router.replace('/(onboarding)/invite-partner');
+        router.replace('/(onboarding)/verify-email');
       }
     } catch (error: any) {
-      Alert.alert('Sign up failed', error.message || 'Please try again.');
+      Alert.alert('Sign up failed', getAuthErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +118,10 @@ export default function SignUpScreen() {
           </View>
 
           <Text style={styles.terms}>
-            By creating an account, you agree to our Terms of Service and Privacy Policy.
+            By creating an account, you agree to our{' '}
+            <Text style={styles.termsLink} onPress={() => router.push('/(app)/privacy-policy')}>
+              Privacy Policy
+            </Text>.
           </Text>
 
           <View style={styles.footer}>
@@ -166,6 +170,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 16,
     paddingHorizontal: 16,
+  },
+  termsLink: {
+    color: '#c97454',
+    textDecorationLine: 'underline',
   },
   footer: {
     flexDirection: 'row',

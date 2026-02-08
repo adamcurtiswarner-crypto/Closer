@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import { logger } from '@/utils/logger';
 import { router } from 'expo-router';
 import { Button } from '@/components';
 import { useCreateInvite, usePendingInvite } from '@/hooks/useCouple';
@@ -45,7 +46,7 @@ export default function InvitePartnerScreen() {
         message: `I'm trying Closer — an app for us to stay connected. Join me: ${shareUrl}`,
       });
     } catch (error) {
-      console.error('Share failed:', error);
+      logger.error('Share failed:', error);
     }
   };
 

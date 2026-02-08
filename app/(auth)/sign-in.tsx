@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { Button, Input } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getPendingInviteCode, clearPendingInviteCode } from '@/hooks/useDeepLink';
+import { getAuthErrorMessage } from '@/utils/authErrors';
 
 const signInSchema = z.object({
   email: z.string().email('Enter a valid email'),
@@ -54,7 +55,7 @@ export default function SignInScreen() {
         router.replace('/');
       }
     } catch (error: any) {
-      Alert.alert('Sign in failed', error.message || 'Please check your credentials.');
+      Alert.alert('Sign in failed', getAuthErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

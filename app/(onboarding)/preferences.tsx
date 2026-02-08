@@ -8,6 +8,7 @@ import {
 import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Input } from '@/components';
 
@@ -37,7 +38,7 @@ export default function PreferencesScreen() {
       await refreshUser();
       router.push('/(onboarding)/tone-calibration');
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      logger.error('Error saving preferences:', error);
     } finally {
       setIsSaving(false);
     }

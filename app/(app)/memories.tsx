@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { useWeeklyRecap, useSavedMemories, useSaveMemory } from '@/hooks/useMemories';
 import { logEvent } from '@/services/analytics';
+import { QueryError } from '@/components/QueryError';
+import { MemoryCardSkeleton } from '@/components/Skeleton';
 import { useEffect } from 'react';
 
 type Tab = 'recap' | 'saved';
@@ -20,11 +24,22 @@ export default function MemoriesScreen() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('recap');
 
-  const { data: completions, isLoading: recapLoading } = useWeeklyRecap();
-  const { data: memories, isLoading: memoriesLoading } = useSavedMemories();
+  const { data: completions, isLoading: recapLoading, error: recapError, refetch: refetchRecap } = useWeeklyRecap();
+  const { data: memories, isLoading: memoriesLoading, error: memoriesError, refetch: refetchMemories } = useSavedMemories();
   const saveMemory = useSaveMemory();
 
   const partnerName = user?.partnerName || 'Partner';
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    if (activeTab === 'recap') {
+      await refetchRecap();
+    } else {
+      await refetchMemories();
+    }
+    setRefreshing(false);
+  }, [activeTab, refetchRecap, refetchMemories]);
 
   // Log recap_viewed when tab is shown
   useEffect(() => {
@@ -64,12 +79,18 @@ export default function MemoriesScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
         {activeTab === 'recap' ? (
           recapLoading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator color="#c97454" />
+            <View>
+              <MemoryCardSkeleton />
+              <MemoryCardSkeleton />
             </View>
+          ) : recapError ? (
+            <QueryError
+              message="Couldn't load this week's recap."
+              onRetry={() => refetchRecap()}
+            />
           ) : !completions || completions.length === 0 ? (
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>No completions this week yet.</Text>
@@ -100,7 +121,7 @@ export default function MemoriesScreen() {
                 {!completion.isMemorySaved ? (
                   <TouchableOpacity
                     style={styles.saveButton}
-                    onPress={() => saveMemory.mutate(completion)}
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); saveMemory.mutate(completion); }}
                     disabled={saveMemory.isPending}
                   >
                     <Text style={styles.saveButtonText}>
@@ -115,9 +136,15 @@ export default function MemoriesScreen() {
           )
         ) : (
           memoriesLoading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator color="#c97454" />
+            <View>
+              <MemoryCardSkeleton />
+              <MemoryCardSkeleton />
             </View>
+          ) : memoriesError ? (
+            <QueryError
+              message="Couldn't load saved memories."
+              onRetry={() => refetchMemories()}
+            />
           ) : !memories || memories.length === 0 ? (
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>Your saved memories will appear here.</Text>

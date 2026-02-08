@@ -13,3 +13,7 @@ export { PartnershipSection } from './PartnershipSection';
 // Presence components
 export { PresenceIndicator } from './PresenceIndicator';
 export { PartnerStatus } from './PartnerStatus';
+
+// Error handling
+export { ErrorBoundary } from './ErrorBoundary';
+export { QueryError } from './QueryError';

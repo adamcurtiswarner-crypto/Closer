@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { logEvent } from '@/services/analytics';
+import { logger } from '@/utils/logger';
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -31,7 +32,7 @@ export async function registerForPushNotifications(userId: string): Promise<stri
     }
 
     if (finalStatus !== 'granted') {
-      console.log('Push notification permission not granted');
+      logger.info('Push notification permission not granted');
       return null;
     }
 
@@ -57,7 +58,7 @@ export async function registerForPushNotifications(userId: string): Promise<stri
 
     return token;
   } catch (error) {
-    console.warn('Failed to register for push notifications:', error);
+    logger.warn('Failed to register for push notifications:', error);
     return null;
   }
 }
@@ -70,7 +71,7 @@ export function setupNotificationHandlers(): () => void {
   // Handle notification received while app is in foreground
   const foregroundSub = Notifications.addNotificationReceivedListener((notification) => {
     const data = notification.request.content.data;
-    console.log('Notification received in foreground:', data);
+    logger.info('Notification received in foreground:', data);
   });
 
   // Handle notification tap (user interacted with notification)

@@ -7,6 +7,7 @@ import { useDeepLink } from '@/hooks/useDeepLink';
 import { useAuth } from '@/hooks/useAuth';
 import { setAnalyticsContext, logEvent } from '@/services/analytics';
 import { registerForPushNotifications, setupNotificationHandlers } from '@/services/notifications';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -27,7 +28,14 @@ function DeepLinkHandler() {
 }
 
 function AppBootstrap() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Hide splash screen after auth state resolves
+  useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [isLoading]);
 
   // Set analytics context when user changes
   useEffect(() => {
@@ -60,25 +68,24 @@ function AppBootstrap() {
 }
 
 export default function RootLayout() {
-  useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <DeepLinkHandler />
-      <AppBootstrap />
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: '#fafaf9' },
-        }}
-      >
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(onboarding)" />
-        <Stack.Screen name="(app)" />
-      </Stack>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <DeepLinkHandler />
+        <AppBootstrap />
+        <StatusBar style="dark" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: '#fafaf9' },
+          }}
+        >
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(onboarding)" />
+          <Stack.Screen name="(app)" />
+        </Stack>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

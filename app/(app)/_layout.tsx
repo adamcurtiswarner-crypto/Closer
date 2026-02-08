@@ -1,8 +1,21 @@
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
 import { Text } from 'react-native';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AppLayout() {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  // Redirect unauthenticated users
+  if (!isLoading && !isAuthenticated) {
+    return <Redirect href="/(auth)/welcome" />;
+  }
+
+  // Redirect non-onboarded users
+  if (!isLoading && isAuthenticated && user && !user.isOnboarded) {
+    return <Redirect href="/(onboarding)/preferences" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

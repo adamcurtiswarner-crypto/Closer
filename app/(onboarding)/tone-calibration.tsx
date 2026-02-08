@@ -8,6 +8,7 @@ import {
 import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components';
 
@@ -46,7 +47,7 @@ export default function ToneCalibrationScreen() {
       await refreshUser();
       router.push('/(onboarding)/first-prompt');
     } catch (error) {
-      console.error('Error saving tone calibration:', error);
+      logger.error('Error saving tone calibration:', error);
     } finally {
       setIsSaving(false);
     }

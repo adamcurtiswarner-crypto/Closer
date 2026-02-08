@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 admin.initializeApp();
 
@@ -12,37 +13,50 @@ const db = admin.firestore();
 
 export const deliverDailyPrompts = functions.pubsub
   .schedule('every 15 minutes')
-  .onRun(async (context) => {
+  .onRun(async () => {
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
 
-    // Find users whose notification time is within this 15-minute window
+    // Find onboarded, active users with a couple
     const usersSnapshot = await db
       .collection('users')
       .where('is_onboarded', '==', true)
       .where('is_deleted', '==', false)
       .get();
 
+    // Track delivered couples to avoid duplicate delivery
+    const deliveredCouples = new Set<string>();
+
     for (const userDoc of usersSnapshot.docs) {
       const userData = userDoc.data();
       if (!userData.couple_id) continue;
+      if (deliveredCouples.has(userData.couple_id)) continue;
 
       // Parse notification time
       const [notifHour, notifMinute] = (userData.notification_time || '19:00')
         .split(':')
         .map(Number);
 
-      // Check if within window (simple check, doesn't handle timezone perfectly)
+      // Convert current time to user's timezone
+      const userTimezone = userData.timezone || 'America/Los_Angeles';
+      const userLocalTime = formatInTimeZone(now, userTimezone, 'HH:mm');
+      const [localHour, localMinute] = userLocalTime.split(':').map(Number);
+
+      // Check if within 15-minute window
       if (
-        currentHour === notifHour &&
-        currentMinute >= notifMinute &&
-        currentMinute < notifMinute + 15
+        localHour === notifHour &&
+        localMinute >= notifMinute &&
+        localMinute < notifMinute + 15
       ) {
-        await deliverPromptToCouple(userData.couple_id);
+        try {
+          await deliverPromptToCouple(userData.couple_id);
+          deliveredCouples.add(userData.couple_id);
+        } catch (err) {
+          console.error(`Failed to deliver prompt to couple ${userData.couple_id}:`, err);
+        }
       }
     }
 
+    console.log(`Delivered prompts to ${deliveredCouples.size} couples`);
     return null;
   });
 
@@ -77,7 +91,7 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
     requires_conversation: prompt.requires_conversation,
     assigned_date: today,
     delivered_at: admin.firestore.FieldValue.serverTimestamp(),
-    delivery_timezone: 'America/Los_Angeles', // TODO: Get from user
+    delivery_timezone: await getCoupleTimezone(coupleId),
     status: 'delivered',
     completed_at: null,
     response_count: 0,
@@ -95,6 +109,15 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
       body: "Today's prompt is ready.",
     });
   }
+}
+
+async function getCoupleTimezone(coupleId: string): Promise<string> {
+  const coupleDoc = await db.collection('couples').doc(coupleId).get();
+  if (!coupleDoc.exists) return 'America/Los_Angeles';
+  const memberIds = coupleDoc.data()!.member_ids || [];
+  if (memberIds.length === 0) return 'America/Los_Angeles';
+  const userDoc = await db.collection('users').doc(memberIds[0]).get();
+  return userDoc.data()?.timezone || 'America/Los_Angeles';
 }
 
 async function selectPromptForCouple(coupleId: string): Promise<any> {
@@ -325,12 +348,23 @@ export const onResponseSubmitted = functions.firestore
         submitted_at: doc.data().submitted_at,
       }));
 
+      // Calculate time between first response and completion
+      const timestamps = responses
+        .map((r) => r.submitted_at?.toDate?.() || r.submitted_at)
+        .filter((t): t is Date => t instanceof Date)
+        .sort((a, b) => a.getTime() - b.getTime());
+
+      const timeToCompleteSeconds =
+        timestamps.length >= 2
+          ? Math.round((timestamps[timestamps.length - 1].getTime() - timestamps[0].getTime()) / 1000)
+          : 0;
+
       await db.collection('prompt_completions').doc(response.assignment_id).set({
         assignment_id: response.assignment_id,
         couple_id: response.couple_id,
         prompt_id: response.prompt_id,
         responses,
-        time_to_complete_seconds: 0, // TODO: Calculate
+        time_to_complete_seconds: timeToCompleteSeconds,
         total_response_length: responses.reduce(
           (sum, r) => sum + (r.response_text?.length || 0),
           0

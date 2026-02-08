@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -12,11 +13,13 @@ import {
   limit,
   serverTimestamp,
   Timestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
+import { getCoupleKey, encrypt } from '@/services/encryption';
 
 interface PromptAssignment {
   id: string;
@@ -46,44 +49,47 @@ interface TodayPrompt {
   nextPromptAt: string | null;
 }
 
+const EMPTY_TODAY: TodayPrompt = {
+  assignment: null,
+  myResponse: null,
+  partnerResponse: null,
+  partnerHasResponded: false,
+  isComplete: false,
+  nextPromptAt: null,
+};
+
 export function useTodayPrompt() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const coupleId = user?.coupleId;
+  const userId = user?.id;
+  const notificationTime = user?.notificationTime;
 
-  return useQuery({
-    queryKey: ['todayPrompt', user?.coupleId],
-    queryFn: async (): Promise<TodayPrompt> => {
-      if (!user?.coupleId) {
-        return {
-          assignment: null,
-          myResponse: null,
-          partnerResponse: null,
-          partnerHasResponded: false,
-          isComplete: false,
-          nextPromptAt: null,
-        };
-      }
+  // Set up real-time listeners
+  useEffect(() => {
+    if (!coupleId || !userId) {
+      queryClient.setQueryData(['todayPrompt', coupleId], EMPTY_TODAY);
+      return;
+    }
 
-      const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
 
-      // Get today's assignment
-      const assignmentsRef = collection(db, 'prompt_assignments');
-      const assignmentQuery = query(
-        assignmentsRef,
-        where('couple_id', '==', user.coupleId),
-        where('assigned_date', '==', today),
-        limit(1)
-      );
-      const assignmentSnap = await getDocs(assignmentQuery);
+    // Listen for today's assignment
+    const assignmentsRef = collection(db, 'prompt_assignments');
+    const assignmentQuery = query(
+      assignmentsRef,
+      where('couple_id', '==', coupleId),
+      where('assigned_date', '==', today),
+      limit(1)
+    );
 
+    const unsubAssignment = onSnapshot(assignmentQuery, (assignmentSnap) => {
       if (assignmentSnap.empty) {
-        return {
-          assignment: null,
-          myResponse: null,
-          partnerResponse: null,
-          partnerHasResponded: false,
-          isComplete: false,
-          nextPromptAt: `${today}T${user.notificationTime}:00`,
-        };
+        queryClient.setQueryData(['todayPrompt', coupleId], {
+          ...EMPTY_TODAY,
+          nextPromptAt: `${today}T${notificationTime || '19:00'}:00`,
+        });
+        return;
       }
 
       const assignmentDoc = assignmentSnap.docs[0];
@@ -101,44 +107,66 @@ export function useTodayPrompt() {
         status: assignmentData.status,
       };
 
-      // Get responses
+      // Listen for responses on this assignment
       const responsesRef = collection(db, 'prompt_responses');
       const responsesQuery = query(
         responsesRef,
         where('assignment_id', '==', assignment.id)
       );
-      const responsesSnap = await getDocs(responsesQuery);
 
-      let myResponse: PromptResponse | null = null;
-      let partnerResponse: PromptResponse | null = null;
+      // Nested listener for responses — cleaned up when assignment changes
+      const unsubResponses = onSnapshot(responsesQuery, (responsesSnap) => {
+        let myResponse: PromptResponse | null = null;
+        let partnerResponse: PromptResponse | null = null;
 
-      for (const responseDoc of responsesSnap.docs) {
-        const data = responseDoc.data();
-        const response: PromptResponse = {
-          id: responseDoc.id,
-          responseText: data.response_text,
-          submittedAt: data.submitted_at?.toDate() || null,
-          status: data.status,
-        };
+        for (const responseDoc of responsesSnap.docs) {
+          const data = responseDoc.data();
+          const response: PromptResponse = {
+            id: responseDoc.id,
+            responseText: data.response_text,
+            submittedAt: data.submitted_at?.toDate() || null,
+            status: data.status,
+          };
 
-        if (data.user_id === user.id) {
-          myResponse = response;
-        } else {
-          partnerResponse = response;
+          if (data.user_id === userId) {
+            myResponse = response;
+          } else {
+            partnerResponse = response;
+          }
         }
-      }
 
-      return {
-        assignment,
-        myResponse,
-        partnerResponse,
-        partnerHasResponded: !!partnerResponse?.submittedAt,
-        isComplete: assignment.status === 'completed',
-        nextPromptAt: null,
-      };
+        // Re-read assignment status from the latest snapshot
+        const latestStatus = assignmentSnap.docs[0]?.data()?.status || assignment.status;
+
+        queryClient.setQueryData(['todayPrompt', coupleId], {
+          assignment: { ...assignment, status: latestStatus },
+          myResponse,
+          partnerResponse,
+          partnerHasResponded: !!partnerResponse?.submittedAt,
+          isComplete: latestStatus === 'completed',
+          nextPromptAt: null,
+        } as TodayPrompt);
+      });
+
+      // Store the responses unsubscribe so we can clean it up
+      return () => unsubResponses();
+    });
+
+    return () => {
+      unsubAssignment();
+    };
+  }, [coupleId, userId, notificationTime, queryClient]);
+
+  // useQuery reads from the cache populated by onSnapshot above
+  return useQuery({
+    queryKey: ['todayPrompt', coupleId],
+    queryFn: (): TodayPrompt => {
+      // Return whatever is already in cache, or empty
+      return queryClient.getQueryData(['todayPrompt', coupleId]) || EMPTY_TODAY;
     },
-    enabled: !!user?.coupleId,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    enabled: !!coupleId,
+    // No refetchInterval — real-time updates handle this
+    staleTime: Infinity,
   });
 }
 
@@ -166,6 +194,13 @@ export function useSubmitResponse() {
 
       const assignmentData = assignmentSnap.data();
 
+      // Encrypt response text if key is available
+      let encryptedText = responseText;
+      const coupleKey = await getCoupleKey(user.coupleId);
+      if (coupleKey) {
+        encryptedText = encrypt(responseText, coupleKey);
+      }
+
       // Create response
       const responsesRef = collection(db, 'prompt_responses');
       const responseDoc = await addDoc(responsesRef, {
@@ -174,7 +209,7 @@ export function useSubmitResponse() {
         user_id: user.id,
         prompt_id: assignmentData.prompt_id,
         response_text: responseText,
-        response_text_encrypted: responseText, // TODO: Add encryption
+        response_text_encrypted: encryptedText,
         status: 'submitted',
         submitted_at: serverTimestamp(),
         emotional_response: null,

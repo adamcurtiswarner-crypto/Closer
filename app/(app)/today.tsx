@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
+  Keyboard,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { PromptCard, CompletionMoment, PartnerStatus } from '@components';
@@ -17,6 +21,9 @@ import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
 import { logEvent } from '@/services/analytics';
+import { QueryError } from '@/components/QueryError';
+import { PromptCardSkeleton } from '@/components/Skeleton';
+import { logger } from '@/utils/logger';
 
 export default function TodayScreen() {
   const { user } = useAuth();
@@ -29,7 +36,7 @@ export default function TodayScreen() {
     markResponseViewed,
   } = usePresence();
 
-  const { data: todayData, isLoading, error } = useTodayPrompt();
+  const { data: todayData, isLoading, error, refetch } = useTodayPrompt();
   const submitResponse = useSubmitResponse();
   const submitFeedback = useSubmitFeedback();
   const triggerPrompt = useTriggerPrompt();
@@ -37,6 +44,13 @@ export default function TodayScreen() {
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
   const [feedbackGiven, setFeedbackGiven] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   // Derive mode from real data
   const assignment = todayData?.assignment ?? null;
@@ -50,6 +64,8 @@ export default function TodayScreen() {
   let mode: Mode;
   if (isLoading) {
     mode = 'loading';
+  } else if (error) {
+    mode = 'loading'; // Will be caught by error check below
   } else if (!assignment) {
     mode = 'no-prompt';
   } else if (isResponding) {
@@ -99,6 +115,7 @@ export default function TodayScreen() {
   }, [mode, markResponseViewed]);
 
   const handleRespond = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsResponding(true);
     if (assignment) {
       logEvent('prompt_started', { assignment_id: assignment.id });
@@ -107,6 +124,8 @@ export default function TodayScreen() {
 
   const handleSubmit = async () => {
     if (responseText.length < 10 || !assignment) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Keyboard.dismiss();
     setTyping(false);
     setIsResponding(false);
     try {
@@ -115,7 +134,7 @@ export default function TodayScreen() {
         responseText,
       });
     } catch (err) {
-      console.error('Error submitting response:', err);
+      logger.error('Error submitting response:', err);
     }
   };
 
@@ -125,9 +144,26 @@ export default function TodayScreen() {
   if (mode === 'loading') {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#c97454" />
-        </View>
+        {error ? (
+          <View style={styles.centered}>
+            <QueryError
+              message="Couldn't load today's prompt."
+              onRetry={() => refetch()}
+            />
+          </View>
+        ) : (
+          <View style={styles.scrollView}>
+            <View style={styles.header}>
+              <View>
+                <Text style={styles.title}>Today</Text>
+                <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+              </View>
+            </View>
+            <View style={styles.promptContainer}>
+              <PromptCardSkeleton />
+            </View>
+          </View>
+        )}
       </SafeAreaView>
     );
   }
@@ -136,7 +172,7 @@ export default function TodayScreen() {
   if (mode === 'no-prompt') {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>Today</Text>
@@ -227,7 +263,7 @@ export default function TodayScreen() {
   if (mode === 'waiting') {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>Today</Text>
@@ -265,7 +301,7 @@ export default function TodayScreen() {
   if (mode === 'complete') {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>Today</Text>
@@ -303,6 +339,7 @@ export default function TodayScreen() {
                     key={option.value}
                     style={styles.feedbackOption}
                     onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       submitFeedback.mutate({
                         responseId: myResponse.id,
                         emotionalResponse: option.value,
@@ -346,14 +383,14 @@ export default function TodayScreen() {
           />
         </View>
 
-        <View style={styles.promptContainer}>
+        <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.promptContainer}>
           <PromptCard
             promptText={assignment!.promptText}
             promptHint={assignment!.promptHint}
             promptType={assignment!.promptType}
             onRespond={handleRespond}
           />
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );

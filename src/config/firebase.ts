@@ -1,7 +1,8 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, Firestore, connectFirestoreEmulator, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
+import { logger } from '@/utils/logger';
 
 // Firebase configuration
 // Replace with your actual Firebase config from Firebase Console
@@ -30,6 +31,17 @@ if (getApps().length === 0) {
 auth = getAuth(app);
 db = getFirestore(app);
 functions = getFunctions(app);
+
+// Enable offline persistence
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code === 'failed-precondition') {
+    // Multiple tabs open — persistence can only be enabled in one tab at a time
+    logger.warn('Firestore persistence failed: multiple tabs open');
+  } else if (err.code === 'unimplemented') {
+    // Current browser/environment doesn't support persistence
+    logger.warn('Firestore persistence not available in this environment');
+  }
+});
 
 // Use emulators in development
 if (__DEV__) {
