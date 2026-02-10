@@ -51,6 +51,8 @@ export function useAuth(): AuthState & AuthActions {
           timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
           toneCalibration: data.tone_calibration || 'solid',
           isOnboarded: data.is_onboarded || false,
+          photoUrl: data.photo_url || null,
+          partnerPhotoUrl: data.partner_photo_url || null,
         };
       }
       return null;
@@ -116,6 +118,8 @@ export function useAuth(): AuthState & AuthActions {
         onboarding_completed_at: null,
         is_onboarded: false,
         is_deleted: false,
+        photo_url: null,
+        partner_photo_url: null,
       });
     } finally {
       setIsLoading(false);

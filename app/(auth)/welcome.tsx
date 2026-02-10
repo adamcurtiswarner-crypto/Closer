@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@components';
+
+const logo = require('@/assets/logo.png');
 
 export default function WelcomeScreen() {
   return (
@@ -10,12 +12,12 @@ export default function WelcomeScreen() {
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.header}>
-          <Text style={styles.title}>Closer</Text>
+          <Image source={logo} style={styles.logo} resizeMode="contain" />
           <Text style={styles.tagline}>Small moments. Real closeness.</Text>
         </View>
 
         <Text style={styles.description}>
-          Closer helps couples stay connected through simple daily prompts.
+          Stoke helps couples stay connected through simple daily prompts.
         </Text>
 
         {/* CTAs */}
@@ -53,15 +55,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 48,
   },
-  title: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#1c1917',
+  logo: {
+    width: 140,
+    height: 140,
+    marginBottom: 16,
   },
   tagline: {
     fontSize: 18,
     color: '#57534e',
-    marginTop: 8,
+    marginTop: 4,
   },
   description: {
     fontSize: 16,

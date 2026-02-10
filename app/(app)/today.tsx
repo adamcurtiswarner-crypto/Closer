@@ -2,21 +2,25 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   TextInput,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   Keyboard,
 } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+
+const logo = require('@/assets/logo.png');
+import Animated, { FadeIn, FadeInUp, FadeInDown } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { PromptCard, CompletionMoment, PartnerStatus } from '@components';
+import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal } from '@components';
+import { ConnectionHeader } from '@/components/ConnectionHeader';
+import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
@@ -25,6 +29,14 @@ import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
 import { logger } from '@/utils/logger';
+
+// Greeting based on time of day
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export default function TodayScreen() {
   const { user } = useAuth();
@@ -41,12 +53,14 @@ export default function TodayScreen() {
   const submitResponse = useSubmitResponse();
   const submitFeedback = useSubmitFeedback();
   const triggerPrompt = useTriggerPrompt();
-  const { currentStreak, isStreakActive } = useStreak();
+  const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
 
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
   const [feedbackGiven, setFeedbackGiven] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showStreakDetail, setShowStreakDetail] = useState(false);
+  const [showAddGoalModal, setShowAddGoalModal] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -67,7 +81,7 @@ export default function TodayScreen() {
   if (isLoading) {
     mode = 'loading';
   } else if (error) {
-    mode = 'loading'; // Will be caught by error check below
+    mode = 'loading';
   } else if (!assignment) {
     mode = 'no-prompt';
   } else if (isResponding) {
@@ -141,8 +155,9 @@ export default function TodayScreen() {
   };
 
   const partnerName = user?.partnerName || 'Partner';
+  const userName = user?.displayName || null;
 
-  // Loading state
+  // ─── Loading ───
   if (mode === 'loading') {
     return (
       <SafeAreaView style={styles.container}>
@@ -155,13 +170,11 @@ export default function TodayScreen() {
           </View>
         ) : (
           <View style={styles.scrollView}>
-            <View style={styles.header}>
-              <View>
-                <Text style={styles.title}>Today</Text>
-                <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-              </View>
+            <View style={styles.greetingRow}>
+              <Text style={styles.greeting}>{getGreeting()}</Text>
+              <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
             </View>
-            <View style={styles.promptContainer}>
+            <View style={styles.promptSection}>
               <PromptCardSkeleton />
             </View>
           </View>
@@ -170,51 +183,84 @@ export default function TodayScreen() {
     );
   }
 
-  // No prompt assigned yet
+  // ─── No prompt yet ───
   if (mode === 'no-prompt') {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.title}>Today</Text>
-              <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+        >
+          <View style={styles.greetingRow}>
+            <View style={styles.greetingTop}>
+              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
+              <Text style={styles.greeting}>{getGreeting()}</Text>
             </View>
-            <PartnerStatus
-              isOnline={isPartnerOnline}
-              isTyping={isPartnerTyping}
-              typingContext={partnerTypingContext}
-              lastSeen={partnerLastSeen}
-              partnerName={partnerName}
-            />
+            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>
 
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>~</Text>
-            <Text style={styles.emptyTitle}>No prompt yet</Text>
+          <ConnectionHeader
+            userName={userName}
+            partnerName={partnerName}
+            isPartnerOnline={isPartnerOnline}
+            isPartnerTyping={isPartnerTyping}
+            typingContext={partnerTypingContext}
+            lastSeen={partnerLastSeen}
+            currentStreak={currentStreak}
+            isStreakActive={isStreakActive}
+            userPhotoUrl={user?.photoUrl}
+            partnerPhotoUrl={user?.partnerPhotoUrl}
+          />
+
+          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
+            <Text style={styles.emptyIcon}>{'\u2604\uFE0F'}</Text>
+            <Text style={styles.emptyTitle}>Your prompt is on its way</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
-                ? `Your next prompt arrives at ${format(new Date(nextPromptAt), 'h:mm a')}`
-                : "Your prompt will arrive soon"}
+                ? `Arriving around ${format(new Date(nextPromptAt), 'h:mm a')}`
+                : 'Check back soon'}
             </Text>
             {user?.coupleId && (
               <TouchableOpacity
                 style={[styles.triggerButton, triggerPrompt.isPending && styles.disabled]}
                 onPress={() => triggerPrompt.mutate()}
                 disabled={triggerPrompt.isPending}
+                activeOpacity={0.8}
               >
                 <Text style={styles.triggerButtonText}>
                   {triggerPrompt.isPending ? 'Loading...' : "Get today's prompt"}
                 </Text>
               </TouchableOpacity>
             )}
-          </View>
+          </Animated.View>
+
+          {/* Streak section */}
+          {(currentStreak > 0 || weeklyCompletions > 0) && (
+            <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
+              <StreakRing
+                currentStreak={currentStreak}
+                weeklyCompletions={weeklyCompletions}
+                isStreakActive={isStreakActive}
+              />
+            </Animated.View>
+          )}
+
+          {/* Goal Tracker */}
+          <Animated.View entering={FadeInUp.duration(500).delay(600)} style={styles.goalSection}>
+            <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
+          </Animated.View>
+
+          <AddGoalModal
+            visible={showAddGoalModal}
+            onClose={() => setShowAddGoalModal(false)}
+          />
         </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // Response input mode
+  // ─── Responding ───
   if (mode === 'responding') {
     return (
       <SafeAreaView style={styles.container}>
@@ -222,120 +268,183 @@ export default function TodayScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.flex}
         >
-          <View style={styles.respondingContainer}>
-            <Text style={styles.promptTextSmall}>"{assignment!.promptText}"</Text>
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.respondingScroll} keyboardShouldPersistTaps="handled">
+            <Animated.View entering={FadeIn.duration(300)} style={styles.respondingHeader}>
+              <Text style={styles.respondingPrompt}>
+                {'\u201C'}{assignment!.promptText}{'\u201D'}
+              </Text>
+            </Animated.View>
 
-            <TextInput
-              style={styles.textInput}
-              placeholder="Your response..."
-              placeholderTextColor="#a8a29e"
-              multiline
-              textAlignVertical="top"
-              value={responseText}
-              onChangeText={handleTextChange}
-              autoFocus
-            />
+            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Share what comes to mind..."
+                placeholderTextColor="#a8a29e"
+                multiline
+                textAlignVertical="top"
+                value={responseText}
+                onChangeText={handleTextChange}
+                autoFocus
+              />
+            </Animated.View>
 
-            <Text style={styles.hint}>A sentence or two is enough</Text>
+            <View style={styles.respondingFooter}>
+              <Text style={styles.charHint}>
+                {responseText.length < 10
+                  ? `${10 - responseText.length} more characters`
+                  : 'Ready to share'}
+              </Text>
 
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => { setIsResponding(false); setResponseText(''); }}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.submitButton, (responseText.length < 10 || submitResponse.isPending) && styles.disabled]}
-                onPress={handleSubmit}
-                disabled={responseText.length < 10 || submitResponse.isPending}
-              >
-                <Text style={styles.submitText}>
-                  {submitResponse.isPending ? 'Sending...' : 'Submit'}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => { setIsResponding(false); setResponseText(''); }}
+                >
+                  <Text style={styles.cancelText}>Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.submitButton, (responseText.length < 10 || submitResponse.isPending) && styles.disabled]}
+                  onPress={handleSubmit}
+                  disabled={responseText.length < 10 || submitResponse.isPending}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.submitText}>
+                    {submitResponse.isPending ? 'Sending...' : 'Share'}
+                  </Text>
+                  {!submitResponse.isPending && <Text style={styles.submitArrow}>{'\u2192'}</Text>}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
 
-  // Waiting for partner
+  // ─── Waiting for partner ───
   if (mode === 'waiting') {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.title}>Today</Text>
-              <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+        >
+          <View style={styles.greetingRow}>
+            <View style={styles.greetingTop}>
+              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
+              <Text style={styles.greeting}>Nice one</Text>
             </View>
-            <PartnerStatus
-              isOnline={isPartnerOnline}
-              isTyping={isPartnerTyping}
-              typingContext={partnerTypingContext}
-              lastSeen={partnerLastSeen}
-              partnerName={partnerName}
-            />
+            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.promptTextSmall}>"{assignment!.promptText}"</Text>
+          <ConnectionHeader
+            userName={userName}
+            partnerName={partnerName}
+            isPartnerOnline={isPartnerOnline}
+            isPartnerTyping={isPartnerTyping}
+            typingContext={partnerTypingContext}
+            lastSeen={partnerLastSeen}
+            currentStreak={currentStreak}
+            isStreakActive={isStreakActive}
+            userPhotoUrl={user?.photoUrl}
+            partnerPhotoUrl={user?.partnerPhotoUrl}
+          />
 
-            <View style={styles.yourResponse}>
-              <Text style={styles.responseLabel}>Your response</Text>
-              <Text style={styles.responseText}>{myResponse!.responseText}</Text>
+          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
+            <Text style={styles.waitingPrompt}>
+              {'\u201C'}{assignment!.promptText}{'\u201D'}
+            </Text>
+
+            <View style={styles.yourResponseSection}>
+              <View style={styles.responseLabel}>
+                <View style={[styles.labelDot, { backgroundColor: '#a8a29e' }]} />
+                <Text style={styles.labelText}>Your response</Text>
+              </View>
+              <Text style={styles.responseBody}>{myResponse!.responseText}</Text>
             </View>
+
+            <View style={styles.waitingDivider} />
 
             {isPartnerTyping && partnerTypingContext === 'prompt' ? (
-              <Text style={styles.partnerTyping}>{partnerName} is responding...</Text>
+              <Animated.View entering={FadeIn.duration(300)} style={styles.typingRow}>
+                <View style={styles.typingDots}>
+                  <View style={[styles.typingDot, { opacity: 0.4 }]} />
+                  <View style={[styles.typingDot, { opacity: 0.7 }]} />
+                  <View style={[styles.typingDot, { opacity: 1 }]} />
+                </View>
+                <Text style={styles.typingText}>{partnerName} is responding...</Text>
+              </Animated.View>
             ) : (
-              <Text style={styles.waiting}>Waiting for {partnerName.toLowerCase()}...</Text>
+              <View style={styles.waitingMessageRow}>
+                <Text style={styles.waitingIcon}>{'\u23F3'}</Text>
+                <Text style={styles.waitingMessage}>Waiting for {partnerName.toLowerCase()}...</Text>
+              </View>
             )}
-          </View>
+          </Animated.View>
+
+          {/* Goal Tracker */}
+          <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.goalSection}>
+            <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
+          </Animated.View>
+
+          <AddGoalModal
+            visible={showAddGoalModal}
+            onClose={() => setShowAddGoalModal(false)}
+          />
         </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // Completed
+  // ─── Complete ───
   if (mode === 'complete') {
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.title}>Today</Text>
-              <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+        >
+          <View style={styles.greetingRow}>
+            <View style={styles.greetingTop}>
+              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
+              <Text style={styles.greeting}>Beautiful</Text>
             </View>
-            <PartnerStatus
-              isOnline={isPartnerOnline}
-              isTyping={isPartnerTyping}
-              typingContext={partnerTypingContext}
-              lastSeen={partnerLastSeen}
-              partnerName={partnerName}
-            />
+            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>
 
-          <View style={styles.completionCard}>
+          <ConnectionHeader
+            userName={userName}
+            partnerName={partnerName}
+            isPartnerOnline={isPartnerOnline}
+            isPartnerTyping={isPartnerTyping}
+            typingContext={partnerTypingContext}
+            lastSeen={partnerLastSeen}
+            currentStreak={currentStreak}
+            isStreakActive={isStreakActive}
+            userPhotoUrl={user?.photoUrl}
+            partnerPhotoUrl={user?.partnerPhotoUrl}
+          />
+
+          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
             <CompletionMoment
               promptText={assignment!.promptText}
               yourResponse={myResponse!.responseText}
               partnerResponse={partnerResponse?.responseText || ''}
               partnerName={partnerName}
             />
-          </View>
+          </Animated.View>
 
           {/* Emotional Feedback */}
           {myResponse && !feedbackGiven && (
-            <View style={styles.feedbackCard}>
+            <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.feedbackCard}>
               <Text style={styles.feedbackTitle}>How did this feel?</Text>
               <View style={styles.feedbackRow}>
                 {([
-                  { value: 'positive', label: 'Good' },
-                  { value: 'neutral', label: 'Okay' },
-                  { value: 'negative', label: 'Not great' },
+                  { value: 'positive', label: 'Warm', icon: '\u2600\uFE0F' },
+                  { value: 'neutral', label: 'Okay', icon: '\u2601\uFE0F' },
+                  { value: 'negative', label: 'Hard', icon: '\uD83C\uDF27\uFE0F' },
                 ] as const).map((option) => (
                   <TouchableOpacity
                     key={option.value}
@@ -349,56 +458,100 @@ export default function TodayScreen() {
                       setFeedbackGiven(true);
                     }}
                     disabled={submitFeedback.isPending}
+                    activeOpacity={0.7}
                   >
+                    <Text style={styles.feedbackIcon}>{option.icon}</Text>
                     <Text style={styles.feedbackOptionText}>{option.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-            </View>
+            </Animated.View>
           )}
 
           {feedbackGiven && (
-            <Text style={styles.feedbackThanks}>Thanks for sharing.</Text>
+            <Animated.View entering={FadeIn.duration(400)}>
+              <Text style={styles.feedbackThanks}>Thanks for sharing</Text>
+            </Animated.View>
           )}
 
+          {/* Streak celebration */}
           {currentStreak > 0 && (
-            <Text style={styles.streakUpdate}>
-              {currentStreak === 1 ? 'Streak started!' : `${currentStreak} day streak!`}
-            </Text>
+            <Animated.View entering={FadeInUp.duration(500).delay(700)}>
+              <TouchableOpacity
+                style={styles.streakCelebration}
+                onPress={() => setShowStreakDetail(!showStreakDetail)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.streakCelebrationIcon}>{'\uD83D\uDD25'}</Text>
+                <Text style={styles.streakCelebrationText}>
+                  {currentStreak === 1 ? 'Streak started!' : `${currentStreak} day streak!`}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           )}
 
-          <Text style={styles.doneText}>All done. See you tomorrow.</Text>
+          {showStreakDetail && (
+            <Animated.View entering={FadeInDown.duration(400)} style={styles.streakDetailSection}>
+              <StreakRing
+                currentStreak={currentStreak}
+                weeklyCompletions={weeklyCompletions}
+                isStreakActive={isStreakActive}
+              />
+            </Animated.View>
+          )}
+
+          {/* Goal Tracker */}
+          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={styles.goalSection}>
+            <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
+          </Animated.View>
+
+          <Animated.View entering={FadeIn.duration(400).delay(900)}>
+            <View style={styles.doneRow}>
+              <View style={styles.doneDot} />
+              <Text style={styles.doneText}>See you tomorrow</Text>
+              <View style={styles.doneDot} />
+            </View>
+          </Animated.View>
+
+          <AddGoalModal
+            visible={showAddGoalModal}
+            onClose={() => setShowAddGoalModal(false)}
+          />
         </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // Default: Show prompt (mode === 'prompt')
+  // ─── Default: Show prompt ───
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>Today</Text>
-            <Text style={styles.date}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-            {currentStreak > 0 && (
-              <View style={[styles.streakBadge, isStreakActive ? styles.streakActive : styles.streakInactive]}>
-                <Text style={[styles.streakText, isStreakActive ? styles.streakTextActive : styles.streakTextInactive]}>
-                  {currentStreak} day streak
-                </Text>
-              </View>
-            )}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <Animated.View entering={FadeIn.duration(400)}>
+          <View style={styles.greetingRow}>
+            <View style={styles.greetingTop}>
+              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
+              <Text style={styles.greeting}>{getGreeting()}</Text>
+            </View>
+            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>
-          <PartnerStatus
-            isOnline={isPartnerOnline}
-            isTyping={isPartnerTyping}
+        </Animated.View>
+
+        <Animated.View entering={FadeIn.duration(500).delay(100)}>
+          <ConnectionHeader
+            userName={userName}
+            partnerName={partnerName}
+            isPartnerOnline={isPartnerOnline}
+            isPartnerTyping={isPartnerTyping}
             typingContext={partnerTypingContext}
             lastSeen={partnerLastSeen}
-            partnerName={partnerName}
+            currentStreak={currentStreak}
+            isStreakActive={isStreakActive}
+            userPhotoUrl={user?.photoUrl}
+            partnerPhotoUrl={user?.partnerPhotoUrl}
           />
-        </View>
+        </Animated.View>
 
-        <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.promptContainer}>
+        <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
           <PromptCard
             promptText={assignment!.promptText}
             promptHint={assignment!.promptHint}
@@ -427,160 +580,267 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 32,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  scrollContent: {
+    paddingTop: 20,
+    paddingBottom: 40,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1c1917',
-  },
-  date: {
-    fontSize: 16,
-    color: '#78716c',
-    marginTop: 4,
-  },
-  promptContainer: {
-    marginTop: 32,
-  },
-  respondingContainer: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-  },
-  promptTextSmall: {
-    fontSize: 16,
-    color: '#57534e',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: '#1c1917',
-    borderWidth: 1,
-    borderColor: '#e7e5e4',
-    maxHeight: 200,
-  },
-  hint: {
-    color: '#78716c',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 8,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    marginTop: 16,
-    marginBottom: 32,
-    gap: 12,
-  },
-  cancelButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    backgroundColor: '#f5f5f4',
-    borderRadius: 12,
-  },
-  cancelText: {
-    color: '#57534e',
-    fontWeight: '600',
-  },
-  submitButton: {
-    flex: 1,
-    paddingVertical: 14,
-    backgroundColor: '#c97454',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  submitText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  card: {
-    marginTop: 32,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: '#f5f5f4',
-  },
-  yourResponse: {
-    backgroundColor: '#fafaf9',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  responseLabel: {
-    fontSize: 12,
-    color: '#78716c',
-    fontWeight: '500',
+  // ─── Header / Greeting ───
+  greetingRow: {
     marginBottom: 8,
   },
-  responseText: {
-    fontSize: 16,
-    color: '#292524',
-  },
-  waiting: {
-    color: '#78716c',
-    textAlign: 'center',
-  },
-  partnerTyping: {
-    color: '#c97454',
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  completionCard: {
-    marginTop: 32,
-  },
-  doneText: {
-    color: '#78716c',
-    textAlign: 'center',
-    marginTop: 32,
-    marginBottom: 48,
-  },
-  emptyState: {
-    marginTop: 80,
+  greetingTop: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+  },
+  logoMark: {
+    width: 32,
+    height: 32,
+  },
+  greeting: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1c1917',
+    letterSpacing: -0.5,
+  },
+  dateText: {
+    fontSize: 15,
+    color: '#78716c',
+    marginTop: 2,
+  },
+  // ─── Prompt ───
+  promptSection: {
+    marginTop: 24,
+  },
+  // ─── Empty / No prompt ───
+  emptyCard: {
+    marginTop: 24,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#1c1917',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
   },
   emptyIcon: {
-    fontSize: 32,
-    color: '#a8a29e',
+    fontSize: 36,
     marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#57534e',
+    color: '#292524',
     marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: '#78716c',
     textAlign: 'center',
   },
-  feedbackCard: {
+  emptySubtitle: {
+    fontSize: 15,
+    color: '#78716c',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  triggerButton: {
     marginTop: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    backgroundColor: '#c97454',
+    borderRadius: 14,
+  },
+  triggerButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+  streakSection: {
+    marginTop: 24,
+  },
+  goalSection: {
+    marginTop: 24,
+  },
+  // ─── Responding ───
+  respondingScroll: {
+    paddingTop: 32,
+    paddingBottom: 32,
+    flexGrow: 1,
+  },
+  respondingHeader: {
+    marginBottom: 24,
+  },
+  respondingPrompt: {
+    fontSize: 18,
+    color: '#57534e',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  textInput: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 20,
-    borderWidth: 1,
-    borderColor: '#f5f5f4',
+    fontSize: 17,
+    color: '#1c1917',
+    borderWidth: 1.5,
+    borderColor: '#e7e5e4',
+    minHeight: 140,
+    maxHeight: 240,
+    lineHeight: 24,
+  },
+  respondingFooter: {
+    marginTop: 12,
+  },
+  charHint: {
+    color: '#a8a29e',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    backgroundColor: '#f5f5f4',
+    borderRadius: 14,
+  },
+  cancelText: {
+    color: '#57534e',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  submitButton: {
+    flex: 1,
+    paddingVertical: 16,
+    backgroundColor: '#c97454',
+    borderRadius: 14,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  submitText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  submitArrow: {
+    color: '#ffffff',
+    fontSize: 17,
+  },
+  // ─── Waiting ───
+  waitingCard: {
+    marginTop: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#1c1917',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  waitingPrompt: {
+    fontSize: 16,
+    color: '#57534e',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  yourResponseSection: {
+    backgroundColor: '#fafaf9',
+    borderRadius: 14,
+    padding: 16,
+  },
+  responseLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  labelDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  labelText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#78716c',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  responseBody: {
+    fontSize: 16,
+    color: '#292524',
+    lineHeight: 24,
+  },
+  waitingDivider: {
+    height: 1,
+    backgroundColor: '#f5f5f4',
+    marginVertical: 20,
+  },
+  typingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  typingDots: {
+    flexDirection: 'row',
+    gap: 3,
+  },
+  typingDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#c97454',
+  },
+  typingText: {
+    color: '#c97454',
+    fontStyle: 'italic',
+    fontSize: 14,
+  },
+  waitingMessageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  waitingIcon: {
+    fontSize: 16,
+  },
+  waitingMessage: {
+    color: '#78716c',
+    fontSize: 14,
+  },
+  // ─── Complete ───
+  completionSection: {
+    marginTop: 20,
+  },
+  feedbackCard: {
+    marginTop: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#1c1917',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
   },
   feedbackTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#57534e',
     marginBottom: 16,
   },
@@ -589,15 +849,20 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   feedbackOption: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     backgroundColor: '#fafaf9',
-    borderRadius: 10,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#f5f5f4',
+    alignItems: 'center',
+    gap: 4,
+  },
+  feedbackIcon: {
+    fontSize: 20,
   },
   feedbackOptionText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#57534e',
     fontWeight: '500',
   },
@@ -607,46 +872,46 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     textAlign: 'center',
   },
-  triggerButton: {
-    marginTop: 24,
-    paddingVertical: 12,
+  streakCelebration: {
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fef7f4',
+    paddingVertical: 14,
     paddingHorizontal: 24,
-    backgroundColor: '#c97454',
-    borderRadius: 12,
+    borderRadius: 16,
+    gap: 8,
+    alignSelf: 'center',
   },
-  triggerButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 15,
+  streakCelebrationIcon: {
+    fontSize: 20,
   },
-  streakBadge: {
-    marginTop: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  streakActive: {
-    backgroundColor: '#fef3ee',
-  },
-  streakInactive: {
-    backgroundColor: '#f5f5f4',
-  },
-  streakText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  streakTextActive: {
+  streakCelebrationText: {
+    fontSize: 17,
+    fontWeight: '700',
     color: '#c97454',
   },
-  streakTextInactive: {
-    color: '#a8a29e',
-  },
-  streakUpdate: {
+  streakDetailSection: {
     marginTop: 16,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#c97454',
-    textAlign: 'center',
+  },
+  doneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 32,
+    marginBottom: 16,
+  },
+  doneDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: '#d6d3d1',
+  },
+  doneText: {
+    color: '#a8a29e',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

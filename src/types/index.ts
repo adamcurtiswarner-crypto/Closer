@@ -21,6 +21,8 @@ export interface User {
   timezone: string;
   toneCalibration: ToneCalibration;
   isOnboarded: boolean;
+  photoUrl: string | null;
+  partnerPhotoUrl: string | null;
 }
 
 export interface Couple {

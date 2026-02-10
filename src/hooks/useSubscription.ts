@@ -20,7 +20,8 @@ interface SubscriptionState {
 
 export function useSubscription(): SubscriptionState {
   const { user } = useAuth();
-  const [isPremium, setIsPremium] = useState(false);
+  // TODO: Remove DEV override before production
+  const [isPremium, setIsPremium] = useState(__DEV__ ? true : false);
   const [isLoading, setIsLoading] = useState(true);
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
 

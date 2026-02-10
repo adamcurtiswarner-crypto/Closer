@@ -14,9 +14,12 @@ export function ResponseCard({
 }: ResponseCardProps) {
   return (
     <View style={[styles.card, isYours ? styles.yoursCard : styles.partnersCard]}>
-      <Text style={[styles.label, isYours ? styles.yoursLabel : styles.partnersLabel]}>
-        {label}
-      </Text>
+      <View style={styles.labelRow}>
+        <View style={[styles.labelDot, isYours ? styles.yoursDot : styles.partnersDot]} />
+        <Text style={[styles.label, isYours ? styles.yoursLabel : styles.partnersLabel]}>
+          {label}
+        </Text>
+      </View>
       <Text style={styles.responseText}>{responseText}</Text>
     </View>
   );
@@ -24,7 +27,7 @@ export function ResponseCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
   },
   yoursCard: {
@@ -33,10 +36,28 @@ const styles = StyleSheet.create({
   partnersCard: {
     backgroundColor: '#fdf8f6',
   },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  labelDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  yoursDot: {
+    backgroundColor: '#a8a29e',
+  },
+  partnersDot: {
+    backgroundColor: '#c97454',
+  },
   label: {
     fontSize: 12,
-    fontWeight: '500',
-    marginBottom: 8,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
   },
   yoursLabel: {
     color: '#78716c',

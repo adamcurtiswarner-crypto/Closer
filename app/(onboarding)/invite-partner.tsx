@@ -102,6 +102,15 @@ export default function InvitePartnerScreen() {
               I have an invite code
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{ marginTop: 24 }}
+            onPress={() => router.replace('/(app)/today')}
+          >
+            <Text style={{ color: '#78716c', textAlign: 'center', fontSize: 14 }}>
+              Skip for now
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -133,6 +142,15 @@ export default function InvitePartnerScreen() {
           variant="secondary"
           onPress={() => router.push('/(onboarding)/accept-invite')}
         />
+
+        <TouchableOpacity
+          style={{ marginTop: 24 }}
+          onPress={() => router.replace('/(app)/today')}
+        >
+          <Text style={{ color: '#78716c', textAlign: 'center', fontSize: 14 }}>
+            Skip for now
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

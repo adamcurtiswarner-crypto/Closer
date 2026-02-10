@@ -14,7 +14,14 @@ type AnalyticsEvent =
   | 'recap_viewed'
   | 'memory_saved'
   | 'session_started'
-  | 'notification_opened';
+  | 'notification_opened'
+  | 'goal_created'
+  | 'goal_completed'
+  | 'goal_archived'
+  | 'weekly_challenge_activated'
+  | 'weekly_challenge_completed'
+  | 'profile_photo_uploaded'
+  | 'profile_updated';
 
 interface EventContext {
   user_id?: string;

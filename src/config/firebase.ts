@@ -1,7 +1,8 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, Firestore, connectFirestoreEmulator, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
+import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
 import { logger } from '@/utils/logger';
 
 // Firebase configuration
@@ -21,6 +22,7 @@ let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
 let functions: Functions;
+let storage: FirebaseStorage;
 
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
@@ -31,23 +33,19 @@ if (getApps().length === 0) {
 auth = getAuth(app);
 db = getFirestore(app);
 functions = getFunctions(app);
+storage = getStorage(app);
 
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-    // Multiple tabs open — persistence can only be enabled in one tab at a time
-    logger.warn('Firestore persistence failed: multiple tabs open');
-  } else if (err.code === 'unimplemented') {
-    // Current browser/environment doesn't support persistence
-    logger.warn('Firestore persistence not available in this environment');
-  }
-});
-
-// Use emulators in development
+// Use emulators in development (must be called before any other Firestore operations)
 if (__DEV__) {
-  connectAuthEmulator(auth, 'http://localhost:9099');
-  connectFirestoreEmulator(db, 'localhost', 8080);
-  connectFunctionsEmulator(functions, 'localhost', 5001);
+  try {
+    connectAuthEmulator(auth, 'http://localhost:9099');
+    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectFunctionsEmulator(functions, 'localhost', 5001);
+    connectStorageEmulator(storage, 'localhost', 9199);
+  } catch (e) {
+    // Already connected (hot reload)
+  }
 }
 
-export { app, auth, db, functions };
+
+export { app, auth, db, functions, storage };

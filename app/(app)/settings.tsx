@@ -19,7 +19,7 @@ import { useCouple, useUpdatePromptFrequency } from '@/hooks/useCouple';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Paywall } from '@/components/Paywall';
 import { logger } from '@/utils/logger';
-import { PartnershipSection } from '@/components';
+import { PartnershipSection, ProfileCard } from '@/components';
 
 const FREQUENCY_OPTIONS = [
   { label: 'Daily', value: 'daily' as const, description: 'Every day' },
@@ -156,6 +156,10 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView style={styles.scrollView}>
+        {/* Profile */}
+        <Text style={styles.sectionTitle}>PROFILE</Text>
+        <ProfileCard />
+
         {/* Notifications */}
         <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
         <View style={styles.section}>
@@ -211,10 +215,6 @@ export default function SettingsScreen() {
               {isPremium ? 'Premium' : 'Free >'}
             </Text>
           </TouchableOpacity>
-          <View style={styles.row}>
-            <Text style={styles.rowLabel}>Email</Text>
-            <Text style={styles.rowValue}>{user?.email || 'Not signed in'}</Text>
-          </View>
           <TouchableOpacity style={styles.row} onPress={handleSignOut}>
             <Text style={styles.rowLabel}>Sign out</Text>
             <Text style={styles.rowValue}>{'>'}</Text>

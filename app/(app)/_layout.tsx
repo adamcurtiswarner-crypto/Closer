@@ -1,8 +1,10 @@
 import React from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { View, Text } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { OfflineBanner } from '@/components/OfflineBanner';
+
+const logo = require('@/assets/logo.png');
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -42,7 +44,11 @@ export default function AppLayout() {
         options={{
           title: 'Today',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24, color: focused ? '#c97454' : '#a8a29e' }}>◉</Text>
+            <Image
+              source={logo}
+              style={[tabStyles.tabLogo, !focused && tabStyles.tabLogoInactive]}
+              resizeMode="contain"
+            />
           ),
         }}
       />
@@ -68,3 +74,13 @@ export default function AppLayout() {
     </View>
   );
 }
+
+const tabStyles = StyleSheet.create({
+  tabLogo: {
+    width: 26,
+    height: 26,
+  },
+  tabLogoInactive: {
+    opacity: 0.4,
+  },
+});

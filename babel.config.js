@@ -21,10 +21,13 @@ module.exports = function(api) {
     ],
   ];
 
-  // NativeWind babel plugin uses async PostCSS, incompatible with Jest sync transform
-  if (!isTest) {
-    plugins.push('nativewind/babel');
-  }
+  // NativeWind v2 babel plugin disabled — incompatible with PostCSS async processing
+  // in current tailwindcss/postcss versions. Onboarding screens use className but
+  // main app screens use StyleSheet and are unaffected.
+  // TODO: Migrate to NativeWind v4 or convert onboarding to StyleSheet
+  // if (!isTest) {
+  //   plugins.push('nativewind/babel');
+  // }
 
   // Reanimated must be last
   plugins.push('react-native-reanimated/plugin');
