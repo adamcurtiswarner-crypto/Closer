@@ -53,6 +53,7 @@ export function useAuth(): AuthState & AuthActions {
           isOnboarded: data.is_onboarded || false,
           photoUrl: data.photo_url || null,
           partnerPhotoUrl: data.partner_photo_url || null,
+          loveLanguage: data.love_language || null,
         };
       }
       return null;
@@ -120,6 +121,7 @@ export function useAuth(): AuthState & AuthActions {
         is_deleted: false,
         photo_url: null,
         partner_photo_url: null,
+        love_language: null,
       });
     } finally {
       setIsLoading(false);

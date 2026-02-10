@@ -21,7 +21,14 @@ type AnalyticsEvent =
   | 'weekly_challenge_activated'
   | 'weekly_challenge_completed'
   | 'profile_photo_uploaded'
-  | 'profile_updated';
+  | 'profile_updated'
+  | 'insights_viewed'
+  | 'anniversary_date_set'
+  | 'love_language_set'
+  | 'wishlist_viewed'
+  | 'wishlist_item_added'
+  | 'wishlist_item_completed'
+  | 'wishlist_item_deleted';
 
 interface EventContext {
   user_id?: string;

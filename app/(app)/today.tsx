@@ -18,7 +18,7 @@ import Animated, { FadeIn, FadeInUp, FadeInDown } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal } from '@components';
+import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal } from '@components';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
 import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
@@ -61,6 +61,7 @@ export default function TodayScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showStreakDetail, setShowStreakDetail] = useState(false);
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
+  const [showAddWishlistModal, setShowAddWishlistModal] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -251,9 +252,18 @@ export default function TodayScreen() {
             <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
           </Animated.View>
 
+          {/* Wishlist */}
+          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={styles.goalSection}>
+            <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
+          </Animated.View>
+
           <AddGoalModal
             visible={showAddGoalModal}
             onClose={() => setShowAddGoalModal(false)}
+          />
+          <AddWishlistModal
+            visible={showAddWishlistModal}
+            onClose={() => setShowAddWishlistModal(false)}
           />
         </ScrollView>
       </SafeAreaView>
@@ -388,9 +398,18 @@ export default function TodayScreen() {
             <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
           </Animated.View>
 
+          {/* Wishlist */}
+          <Animated.View entering={FadeInUp.duration(500).delay(600)} style={styles.goalSection}>
+            <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
+          </Animated.View>
+
           <AddGoalModal
             visible={showAddGoalModal}
             onClose={() => setShowAddGoalModal(false)}
+          />
+          <AddWishlistModal
+            visible={showAddWishlistModal}
+            onClose={() => setShowAddWishlistModal(false)}
           />
         </ScrollView>
       </SafeAreaView>
@@ -505,7 +524,12 @@ export default function TodayScreen() {
             <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
           </Animated.View>
 
-          <Animated.View entering={FadeIn.duration(400).delay(900)}>
+          {/* Wishlist */}
+          <Animated.View entering={FadeInUp.duration(500).delay(1000)} style={styles.goalSection}>
+            <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
+          </Animated.View>
+
+          <Animated.View entering={FadeIn.duration(400).delay(1100)}>
             <View style={styles.doneRow}>
               <View style={styles.doneDot} />
               <Text style={styles.doneText}>See you tomorrow</Text>
@@ -516,6 +540,10 @@ export default function TodayScreen() {
           <AddGoalModal
             visible={showAddGoalModal}
             onClose={() => setShowAddGoalModal(false)}
+          />
+          <AddWishlistModal
+            visible={showAddWishlistModal}
+            onClose={() => setShowAddWishlistModal(false)}
           />
         </ScrollView>
       </SafeAreaView>

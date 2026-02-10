@@ -215,6 +215,14 @@ export default function SettingsScreen() {
               {isPremium ? 'Premium' : 'Free >'}
             </Text>
           </TouchableOpacity>
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>Version</Text>
+            <Text style={styles.rowValue}>1.0.0</Text>
+          </View>
+          <TouchableOpacity style={styles.row} onPress={() => router.push('/(app)/privacy-policy')}>
+            <Text style={styles.rowLabel}>Privacy Policy</Text>
+            <Text style={styles.rowValue}>{'>'}</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.row} onPress={handleSignOut}>
             <Text style={styles.rowLabel}>Sign out</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
@@ -224,23 +232,10 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* About */}
-        <Text style={styles.sectionTitle}>ABOUT</Text>
-        <View style={styles.section}>
-          <View style={styles.row}>
-            <Text style={styles.rowLabel}>Version</Text>
-            <Text style={styles.rowValue}>1.0.0</Text>
-          </View>
-          <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={() => router.push('/(app)/privacy-policy')}>
-            <Text style={styles.rowLabel}>Privacy Policy</Text>
-            <Text style={styles.rowValue}>{'>'}</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Safety */}
         <View style={styles.safety}>
           <Text style={styles.safetyText}>
-            Closer is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.
+            Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.
           </Text>
           <TouchableOpacity onPress={() => Linking.openURL('tel:1-800-799-7233')}>
             <Text style={styles.safetyLink}>National Domestic Violence Hotline</Text>

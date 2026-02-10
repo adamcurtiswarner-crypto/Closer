@@ -22,8 +22,15 @@ export { StreakRing } from './StreakRing';
 export { GoalTracker } from './GoalTracker';
 export { AddGoalModal } from './AddGoalModal';
 
+// Wishlist
+export { WishlistCard } from './WishlistCard';
+export { AddWishlistModal } from './AddWishlistModal';
+
 // Profile
 export { ProfileCard } from './ProfileCard';
+
+// Insights
+export { InsightCard } from './InsightCard';
 
 // Error handling
 export { ErrorBoundary } from './ErrorBoundary';

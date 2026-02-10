@@ -23,6 +23,7 @@ export interface User {
   isOnboarded: boolean;
   photoUrl: string | null;
   partnerPhotoUrl: string | null;
+  loveLanguage: string | null;
 }
 
 export interface Couple {

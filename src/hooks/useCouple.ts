@@ -27,6 +27,7 @@ interface Couple {
   promptFrequency: 'daily' | 'weekdays' | 'weekends';
   currentStreak: number;
   longestStreak: number;
+  anniversaryDate: Date | null;
 }
 
 interface Invite {
@@ -70,6 +71,7 @@ export function useCouple() {
         promptFrequency: data.prompt_frequency || 'daily',
         currentStreak: data.current_streak || 0,
         longestStreak: data.longest_streak || 0,
+        anniversaryDate: data.anniversary_date?.toDate() || null,
       };
     },
     enabled: !!user?.coupleId,
@@ -340,6 +342,26 @@ export function useUpdatePromptFrequency() {
       const coupleRef = doc(db, 'couples', user.coupleId);
       await updateDoc(coupleRef, {
         prompt_frequency: frequency,
+        updated_at: serverTimestamp(),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['couple'] });
+    },
+  });
+}
+
+export function useUpdateAnniversaryDate() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (date: Date): Promise<void> => {
+      if (!user?.coupleId) throw new Error('Not in a couple');
+
+      const coupleRef = doc(db, 'couples', user.coupleId);
+      await updateDoc(coupleRef, {
+        anniversary_date: date,
         updated_at: serverTimestamp(),
       });
     },

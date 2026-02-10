@@ -62,6 +62,21 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="insights"
+        options={{
+          title: 'Insights',
+          tabBarIcon: ({ focused }) => (
+            <Text style={{ fontSize: 24, color: focused ? '#c97454' : '#a8a29e' }}>{'\u2726'}</Text>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="wishlist"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
