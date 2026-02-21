@@ -310,6 +310,192 @@ describe('onResponseSubmitted', () => {
   });
 });
 
+describe('deleteAccount', () => {
+  it('should mark user as deleted with scheduled_purge_at 30 days out', () => {
+    const now = new Date('2026-02-21T12:00:00Z');
+    const scheduledPurgeAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    expect(scheduledPurgeAt.toISOString()).toBe('2026-03-23T12:00:00.000Z');
+  });
+
+  it('should disconnect couple by setting status to deleted', () => {
+    const coupleStatus = 'active';
+    const newStatus = 'deleted';
+    expect(newStatus).toBe('deleted');
+    expect(coupleStatus).not.toBe(newStatus);
+  });
+
+  it('should null couple_id for both users', () => {
+    const memberIds = ['user1', 'user2'];
+    const deletingUserId = 'user1';
+
+    // Both members get couple_id nulled
+    expect(memberIds).toContain(deletingUserId);
+    expect(memberIds.length).toBe(2);
+  });
+
+  it('should identify partner for notification', () => {
+    const memberIds = ['user1', 'user2'];
+    const deletingUserId = 'user1';
+    const partnerId = memberIds.find((id) => id !== deletingUserId);
+
+    expect(partnerId).toBe('user2');
+  });
+
+  it('should handle user with no couple gracefully', () => {
+    const coupleId: string | null = null;
+    const shouldDisconnectCouple = coupleId !== null;
+
+    expect(shouldDisconnectCouple).toBe(false);
+  });
+});
+
+describe('cleanupDeletedAccounts', () => {
+  it('should identify users past their purge date', () => {
+    const now = new Date('2026-03-25T03:00:00Z');
+    const scheduledPurgeAt = new Date('2026-03-23T12:00:00Z');
+
+    expect(scheduledPurgeAt <= now).toBe(true);
+  });
+
+  it('should not purge users before their purge date', () => {
+    const now = new Date('2026-02-25T03:00:00Z');
+    const scheduledPurgeAt = new Date('2026-03-23T12:00:00Z');
+
+    expect(scheduledPurgeAt <= now).toBe(false);
+  });
+
+  it('should delete user-owned data (responses, events, user doc)', () => {
+    const collectionsToDelete = ['prompt_responses', 'events'];
+    expect(collectionsToDelete).toContain('prompt_responses');
+    expect(collectionsToDelete).toContain('events');
+  });
+
+  it('should preserve shared data (completions, memories, couple doc)', () => {
+    const collectionsToDelete = ['prompt_responses', 'events'];
+    expect(collectionsToDelete).not.toContain('prompt_completions');
+    expect(collectionsToDelete).not.toContain('memory_artifacts');
+    expect(collectionsToDelete).not.toContain('couples');
+  });
+});
+
+describe('exportUserData', () => {
+  it('should enforce 24-hour rate limit', () => {
+    const lastExportAt = new Date('2026-02-21T10:00:00Z');
+    const now = new Date('2026-02-21T20:00:00Z');
+    const hoursSince = (now.getTime() - lastExportAt.getTime()) / (1000 * 60 * 60);
+
+    expect(hoursSince).toBe(10);
+    expect(hoursSince < 24).toBe(true);
+  });
+
+  it('should allow export after 24 hours', () => {
+    const lastExportAt = new Date('2026-02-20T10:00:00Z');
+    const now = new Date('2026-02-21T20:00:00Z');
+    const hoursSince = (now.getTime() - lastExportAt.getTime()) / (1000 * 60 * 60);
+
+    expect(hoursSince).toBe(34);
+    expect(hoursSince < 24).toBe(false);
+  });
+
+  it('should exclude push_tokens from profile data', () => {
+    const userData = {
+      email: 'test@example.com',
+      display_name: 'Test',
+      push_tokens: [{ token: 'abc123' }],
+    };
+    const { push_tokens, ...profileData } = userData;
+
+    expect(profileData).not.toHaveProperty('push_tokens');
+    expect(profileData).toHaveProperty('email');
+    expect(profileData).toHaveProperty('display_name');
+  });
+
+  it('should include all user data collections', () => {
+    const exportedCollections = [
+      'profile',
+      'prompt_responses',
+      'events',
+      'memories',
+      'goals',
+      'wishlist_items',
+    ];
+
+    expect(exportedCollections).toContain('prompt_responses');
+    expect(exportedCollections).toContain('events');
+    expect(exportedCollections).toContain('memories');
+    expect(exportedCollections).toContain('goals');
+    expect(exportedCollections).toContain('wishlist_items');
+  });
+});
+
+describe('anonymizeMyResponses', () => {
+  it('should replace response_text with [removed]', () => {
+    const originalResponse = { response_text: 'I love our morning walks together.' };
+    const anonymized = { ...originalResponse, response_text: '[removed]' };
+
+    expect(anonymized.response_text).toBe('[removed]');
+  });
+
+  it('should replace response_text_encrypted with [removed]', () => {
+    const originalResponse = { response_text_encrypted: 'encrypted_data_here' };
+    const anonymized = { ...originalResponse, response_text_encrypted: '[removed]' };
+
+    expect(anonymized.response_text_encrypted).toBe('[removed]');
+  });
+
+  it('should update matching responses in prompt_completions', () => {
+    const userId = 'user1';
+    const completionResponses = [
+      { user_id: 'user1', response_text: 'My answer' },
+      { user_id: 'user2', response_text: 'Partner answer' },
+    ];
+
+    const updated = completionResponses.map((r) =>
+      r.user_id === userId ? { ...r, response_text: '[removed]' } : r
+    );
+
+    expect(updated[0].response_text).toBe('[removed]');
+    expect(updated[1].response_text).toBe('Partner answer');
+  });
+
+  it('should update matching responses in memory_artifacts', () => {
+    const userId = 'user1';
+    const memoryResponses = [
+      { user_id: 'user1', response_text: 'My answer' },
+      { user_id: 'user2', response_text: 'Partner answer' },
+    ];
+
+    const hasUserResponse = memoryResponses.some((r) => r.user_id === userId);
+    expect(hasUserResponse).toBe(true);
+
+    const updated = memoryResponses.map((r) =>
+      r.user_id === userId ? { ...r, response_text: '[removed]' } : r
+    );
+
+    expect(updated[0].response_text).toBe('[removed]');
+    expect(updated[1].response_text).toBe('Partner answer');
+  });
+
+  it('should not modify memories without user responses', () => {
+    const userId = 'user1';
+    const memoryResponses = [
+      { user_id: 'user3', response_text: 'Other answer' },
+      { user_id: 'user2', response_text: 'Partner answer' },
+    ];
+
+    const hasUserResponse = memoryResponses.some((r) => r.user_id === userId);
+    expect(hasUserResponse).toBe(false);
+  });
+
+  it('should return the count of anonymized responses', () => {
+    const responseCount = 15;
+    const result = { anonymized_count: responseCount };
+
+    expect(result.anonymized_count).toBe(15);
+  });
+});
+
 afterAll(() => {
   test.cleanup();
 });

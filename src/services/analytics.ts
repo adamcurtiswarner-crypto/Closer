@@ -28,7 +28,10 @@ type AnalyticsEvent =
   | 'wishlist_viewed'
   | 'wishlist_item_added'
   | 'wishlist_item_completed'
-  | 'wishlist_item_deleted';
+  | 'wishlist_item_deleted'
+  | 'account_deleted'
+  | 'data_exported'
+  | 'responses_anonymized';
 
 interface EventContext {
   user_id?: string;

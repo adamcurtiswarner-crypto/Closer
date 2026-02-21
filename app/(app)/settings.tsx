@@ -8,6 +8,9 @@ import {
   Alert,
   Linking,
   Modal,
+  TextInput,
+  ActivityIndicator,
+  Share,
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +20,7 @@ import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple, useUpdatePromptFrequency } from '@/hooks/useCouple';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useDeleteAccount, useExportData, useAnonymizeResponses } from '@/hooks/usePrivacy';
 import { Paywall } from '@/components/Paywall';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, ProfileCard } from '@/components';
@@ -58,6 +62,14 @@ export default function SettingsScreen() {
 
   const currentTime = user?.notificationTime || '19:00';
 
+  // Privacy & Data
+  const deleteAccount = useDeleteAccount();
+  const exportData = useExportData();
+  const anonymizeResponses = useAnonymizeResponses();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [showAnonymizeModal, setShowAnonymizeModal] = useState(false);
+
   const handleTimeChange = async (newTime: string) => {
     if (!user?.id) return;
     setIsSavingTime(true);
@@ -91,32 +103,46 @@ export default function SettingsScreen() {
     ]);
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'This will permanently delete your account and all your data. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete Account',
-          style: 'destructive',
-          onPress: async () => {
-            if (!user?.id) return;
-            try {
-              const userRef = doc(db, 'users', user.id);
-              await updateDoc(userRef, {
-                is_deleted: true,
-                updated_at: serverTimestamp(),
-              });
-              await signOut();
-              router.replace('/(auth)/welcome');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete account. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount.mutateAsync();
+      router.replace('/(auth)/welcome');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete account. Please try again.');
+    } finally {
+      setShowDeleteModal(false);
+      setDeleteConfirmText('');
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      const data = await exportData.mutateAsync();
+      const jsonString = JSON.stringify(data, null, 2);
+      await Share.share({
+        message: jsonString,
+        title: 'Stoke - My Data Export',
+      });
+    } catch (error: any) {
+      if (error?.code === 'functions/resource-exhausted') {
+        Alert.alert('Export unavailable', 'Data export is available once every 24 hours.');
+      } else {
+        Alert.alert('Error', 'Failed to export data. Please try again.');
+      }
+    }
+  };
+
+  const handleAnonymizeResponses = async () => {
+    try {
+      const result = await anonymizeResponses.mutateAsync();
+      setShowAnonymizeModal(false);
+      Alert.alert(
+        'Responses anonymized',
+        `${result.anonymized_count} responses have been replaced with [removed].`
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to anonymize responses. Please try again.');
+    }
   };
 
   const handleToggleRemind = async (value: boolean) => {
@@ -202,6 +228,36 @@ export default function SettingsScreen() {
           dangerTextStyle={styles.dangerText}
         />
 
+        {/* Privacy & Data */}
+        <Text style={styles.sectionTitle}>PRIVACY & DATA</Text>
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={handleExportData}
+            disabled={exportData.isPending}
+          >
+            <Text style={styles.rowLabel}>Export my data</Text>
+            {exportData.isPending ? (
+              <ActivityIndicator size="small" color="#c97454" />
+            ) : (
+              <Text style={styles.rowValue}>{'>'}</Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.row}
+            onPress={() => setShowAnonymizeModal(true)}
+          >
+            <Text style={styles.rowLabel}>Anonymize my responses</Text>
+            <Text style={styles.rowValue}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.row, styles.lastRow]}
+            onPress={() => setShowDeleteModal(true)}
+          >
+            <Text style={styles.dangerText}>Delete account</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Account */}
         <Text style={styles.sectionTitle}>ACCOUNT</Text>
         <View style={styles.section}>
@@ -223,12 +279,9 @@ export default function SettingsScreen() {
             <Text style={styles.rowLabel}>Privacy Policy</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.row} onPress={handleSignOut}>
+          <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
             <Text style={styles.rowLabel}>Sign out</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleDeleteAccount}>
-            <Text style={styles.dangerText}>Delete account</Text>
           </TouchableOpacity>
         </View>
 
@@ -346,6 +399,95 @@ export default function SettingsScreen() {
             <TouchableOpacity
               style={styles.modalClose}
               onPress={() => setShowFrequencyPicker(false)}
+            >
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Delete Account Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Delete your account</Text>
+            <Text style={styles.deleteModalBody}>
+              Your account will be deactivated immediately and your data permanently removed after 30 days. Your partner will be notified.{'\n\n'}This cannot be undone.
+            </Text>
+
+            <Text style={styles.deleteModalLabel}>Type DELETE to confirm</Text>
+            <TextInput
+              style={styles.deleteInput}
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
+              placeholder="DELETE"
+              placeholderTextColor="#d6d3d1"
+              autoCapitalize="characters"
+              autoCorrect={false}
+            />
+
+            <TouchableOpacity
+              style={[
+                styles.deleteButton,
+                deleteConfirmText !== 'DELETE' && styles.deleteButtonDisabled,
+              ]}
+              onPress={handleDeleteAccount}
+              disabled={deleteConfirmText !== 'DELETE' || deleteAccount.isPending}
+            >
+              {deleteAccount.isPending ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text style={styles.deleteButtonText}>Delete my account</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => {
+                setShowDeleteModal(false);
+                setDeleteConfirmText('');
+              }}
+            >
+              <Text style={styles.modalCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Anonymize Responses Modal */}
+      <Modal
+        visible={showAnonymizeModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAnonymizeModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Anonymize your responses</Text>
+            <Text style={styles.deleteModalBody}>
+              This will replace all your written responses with [removed]. Your partner's responses will not be affected.{'\n\n'}This cannot be undone.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.anonymizeButton}
+              onPress={handleAnonymizeResponses}
+              disabled={anonymizeResponses.isPending}
+            >
+              {anonymizeResponses.isPending ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text style={styles.deleteButtonText}>Anonymize my responses</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalClose}
+              onPress={() => setShowAnonymizeModal(false)}
             >
               <Text style={styles.modalCloseText}>Cancel</Text>
             </TouchableOpacity>
@@ -520,5 +662,48 @@ const styles = StyleSheet.create({
   modalCloseText: {
     fontSize: 16,
     color: '#78716c',
+  },
+  deleteModalBody: {
+    fontSize: 15,
+    color: '#57534e',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  deleteModalLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#78716c',
+    marginBottom: 8,
+  },
+  deleteInput: {
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#1c1917',
+    marginBottom: 16,
+    letterSpacing: 2,
+  },
+  deleteButton: {
+    backgroundColor: '#ef4444',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  deleteButtonDisabled: {
+    backgroundColor: '#fca5a5',
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  anonymizeButton: {
+    backgroundColor: '#c97454',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
 });
