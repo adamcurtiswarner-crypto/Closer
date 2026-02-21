@@ -174,43 +174,117 @@ describe('Streak Logic', () => {
 });
 
 describe('Expire Stale Prompts', () => {
-  it('should mark delivered assignments from before today as expired', () => {
+  it('should expire assignments from before yesterday', () => {
+    const assignedDate = '2026-02-06';
+    const yesterday = '2026-02-07';
+    expect(assignedDate < yesterday).toBe(true);
+  });
+
+  it('should not expire assignments from yesterday (morning reminders may still fire)', () => {
     const assignedDate = '2026-02-07';
-    const today = '2026-02-08';
-    expect(assignedDate < today).toBe(true);
+    const yesterday = '2026-02-07';
+    expect(assignedDate < yesterday).toBe(false);
   });
 
   it('should not expire assignments from today', () => {
     const assignedDate = '2026-02-08';
-    const today = '2026-02-08';
-    expect(assignedDate < today).toBe(false);
+    const yesterday = '2026-02-07';
+    expect(assignedDate < yesterday).toBe(false);
   });
 });
 
 describe('Response Reminders', () => {
-  it('should send reminders within 3-4 hour window', () => {
-    const deliveredAt = new Date('2026-02-08T10:00:00');
-    const now = new Date('2026-02-08T13:30:00');
-    const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+  describe('Reminder 1: 4-6 hour window', () => {
+    it('should send reminder 1 within 4-6 hour window', () => {
+      const deliveredAt = new Date('2026-02-08T10:00:00');
+      const now = new Date('2026-02-08T14:30:00');
+      const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
 
-    expect(hours).toBeGreaterThanOrEqual(3);
-    expect(hours).toBeLessThan(4);
+      expect(hours).toBeGreaterThanOrEqual(4);
+      expect(hours).toBeLessThan(6);
+    });
+
+    it('should not send reminder 1 before 4 hours', () => {
+      const deliveredAt = new Date('2026-02-08T10:00:00');
+      const now = new Date('2026-02-08T13:30:00');
+      const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+
+      expect(hours < 4).toBe(true);
+    });
+
+    it('should not send reminder 1 after 6 hours', () => {
+      const deliveredAt = new Date('2026-02-08T10:00:00');
+      const now = new Date('2026-02-08T16:30:00');
+      const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+
+      expect(hours >= 6).toBe(true);
+    });
   });
 
-  it('should not send reminders before 3 hours', () => {
-    const deliveredAt = new Date('2026-02-08T10:00:00');
-    const now = new Date('2026-02-08T12:00:00');
-    const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+  describe('Reminder 2: next morning 8-10 AM local', () => {
+    it('should send reminder 2 when local hour is 8-9', () => {
+      const localHour = 9;
+      expect(localHour >= 8 && localHour < 10).toBe(true);
+    });
 
-    expect(hours < 3).toBe(true);
+    it('should not send reminder 2 before 8 AM local', () => {
+      const localHour = 7;
+      expect(localHour >= 8 && localHour < 10).toBe(false);
+    });
+
+    it('should not send reminder 2 at 10 AM local or later', () => {
+      const localHour = 10;
+      expect(localHour >= 8 && localHour < 10).toBe(false);
+    });
+
+    it('should require at least 8 hours since delivery for reminder 2', () => {
+      const deliveredAt = new Date('2026-02-08T19:00:00');
+      const now = new Date('2026-02-09T02:00:00'); // 7 hours later
+      const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+
+      expect(hours >= 8).toBe(false);
+    });
+
+    it('should allow reminder 2 after 8+ hours since delivery', () => {
+      const deliveredAt = new Date('2026-02-08T19:00:00');
+      const now = new Date('2026-02-09T09:00:00'); // 14 hours later
+      const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+
+      expect(hours >= 8).toBe(true);
+    });
   });
 
-  it('should not send reminders after 4 hours', () => {
-    const deliveredAt = new Date('2026-02-08T10:00:00');
-    const now = new Date('2026-02-08T14:30:00');
-    const hours = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+  describe('Deduplication via reminders_sent', () => {
+    it('should treat missing reminders_sent as empty map', () => {
+      const remindersSent: Record<string, number> | undefined = undefined;
+      const map: Record<string, number> = remindersSent || {};
+      const count = map['user123'] || 0;
+      expect(count).toBe(0);
+    });
 
-    expect(hours >= 4).toBe(true);
+    it('should not send reminder 1 if already sent (count >= 1)', () => {
+      const remindersSent: Record<string, number> = { user123: 1 };
+      const count = remindersSent['user123'] || 0;
+      expect(count < 1).toBe(false);
+    });
+
+    it('should allow reminder 2 when count is 1', () => {
+      const remindersSent: Record<string, number> = { user123: 1 };
+      const count = remindersSent['user123'] || 0;
+      expect(count === 1).toBe(true);
+    });
+
+    it('should cap at 2 reminders per user per assignment', () => {
+      const remindersSent: Record<string, number> = { user123: 2 };
+      const count = remindersSent['user123'] || 0;
+      expect(count >= 2).toBe(true);
+    });
+
+    it('should track reminders independently per user in same assignment', () => {
+      const remindersSent: Record<string, number> = { userA: 2, userB: 0 };
+      expect((remindersSent['userA'] || 0) >= 2).toBe(true);
+      expect((remindersSent['userB'] || 0) < 1).toBe(true);
+    });
   });
 
   it('should respect remind_to_respond=false preference', () => {

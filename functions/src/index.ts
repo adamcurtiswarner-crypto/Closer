@@ -6,6 +6,7 @@ import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 admin.initializeApp();
 
 const db = admin.firestore();
+const APP_NAME = 'Stoke';
 
 // ============================================
 // SCHEDULED: Daily Prompt Delivery
@@ -124,7 +125,7 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
   const coupleData = coupleDoc.data()!;
   for (const userId of coupleData.member_ids) {
     await sendPushNotification(userId, {
-      title: 'Closer',
+      title: APP_NAME,
       body: "Today's prompt is ready.",
     });
   }
@@ -427,8 +428,8 @@ export const sendWeeklyRecaps = functions.pubsub
         const coupleData = coupleDoc.data();
         for (const userId of coupleData.member_ids) {
           await sendPushNotification(userId, {
-            title: 'Closer',
-            body: 'Your weekly recap is ready.',
+            title: APP_NAME,
+            body: 'Your week together is ready.',
           });
         }
       }
@@ -540,7 +541,7 @@ export const onResponseSubmitted = functions.firestore
         const partnerData = partnerDoc.data();
         if (partnerData?.notify_partner_response !== false) {
           await sendPushNotification(partnerId, {
-            title: 'Closer',
+            title: APP_NAME,
             body: 'Your partner answered.',
           });
 
@@ -569,19 +570,21 @@ export const expireStalePrompts = functions.pubsub
   .schedule('every day 04:00')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
+    // Use yesterday (not today) so morning reminders have time to fire
+    // for users in all timezones before assignments are expired
+    const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
 
-    // Find assignments that are still 'delivered' or 'partial' from before today
+    // Find assignments that are still 'delivered' or 'partial' from before yesterday
     const staleDelivered = await db
       .collection('prompt_assignments')
       .where('status', '==', 'delivered')
-      .where('assigned_date', '<', today)
+      .where('assigned_date', '<', yesterday)
       .get();
 
     const stalePartial = await db
       .collection('prompt_assignments')
       .where('status', '==', 'partial')
-      .where('assigned_date', '<', today)
+      .where('assigned_date', '<', yesterday)
       .get();
 
     const staleDocs = [...staleDelivered.docs, ...stalePartial.docs];
@@ -642,7 +645,7 @@ export const checkStreakBreaks = functions.pubsub
         // Notify both users
         for (const userId of coupleData.member_ids) {
           await sendPushNotification(userId, {
-            title: 'Closer',
+            title: APP_NAME,
             body: `Your ${endedAt}-day streak ended. Start a new one today!`,
           });
         }
@@ -663,21 +666,36 @@ export const sendResponseReminders = functions.pubsub
   .onRun(async () => {
     const now = new Date();
     const today = format(now, 'yyyy-MM-dd');
+    const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
 
-    // Find today's assignments still awaiting responses
-    const deliveredSnapshot = await db
-      .collection('prompt_assignments')
-      .where('status', '==', 'delivered')
-      .where('assigned_date', '==', today)
-      .get();
+    // Query pending assignments from today AND yesterday (for morning reminders)
+    const [todayDelivered, todayPartial, yesterdayDelivered, yesterdayPartial] =
+      await Promise.all([
+        db.collection('prompt_assignments')
+          .where('status', '==', 'delivered')
+          .where('assigned_date', '==', today)
+          .get(),
+        db.collection('prompt_assignments')
+          .where('status', '==', 'partial')
+          .where('assigned_date', '==', today)
+          .get(),
+        db.collection('prompt_assignments')
+          .where('status', '==', 'delivered')
+          .where('assigned_date', '==', yesterday)
+          .get(),
+        db.collection('prompt_assignments')
+          .where('status', '==', 'partial')
+          .where('assigned_date', '==', yesterday)
+          .get(),
+      ]);
 
-    const partialSnapshot = await db
-      .collection('prompt_assignments')
-      .where('status', '==', 'partial')
-      .where('assigned_date', '==', today)
-      .get();
+    const pendingAssignments = [
+      ...todayDelivered.docs,
+      ...todayPartial.docs,
+      ...yesterdayDelivered.docs,
+      ...yesterdayPartial.docs,
+    ];
 
-    const pendingAssignments = [...deliveredSnapshot.docs, ...partialSnapshot.docs];
     let remindersSent = 0;
 
     for (const assignmentDoc of pendingAssignments) {
@@ -685,9 +703,8 @@ export const sendResponseReminders = functions.pubsub
       const deliveredAt = assignment.delivered_at?.toDate?.();
       if (!deliveredAt) continue;
 
-      // Check if delivered_at was 3-4 hours ago (natural dedup window)
-      const hoursSinceDelivery = (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
-      if (hoursSinceDelivery < 3 || hoursSinceDelivery >= 4) continue;
+      const remindersSentMap: Record<string, number> =
+        assignment.reminders_sent || {};
 
       // Get couple members
       const coupleDoc = await db.collection('couples').doc(assignment.couple_id).get();
@@ -699,25 +716,71 @@ export const sendResponseReminders = functions.pubsub
         .collection('prompt_responses')
         .where('assignment_id', '==', assignmentDoc.id)
         .get();
+      const respondedUserIds = new Set(
+        responsesSnapshot.docs.map((d) => d.data().user_id)
+      );
 
-      const respondedUserIds = new Set(responsesSnapshot.docs.map((d) => d.data().user_id));
+      const hoursSinceDelivery =
+        (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
 
-      // Send reminders to non-responding users who have the preference enabled
       for (const userId of memberIds) {
         if (respondedUserIds.has(userId)) continue;
+
+        const userReminderCount = remindersSentMap[userId] || 0;
+
+        // Max 2 reminders per user per assignment
+        if (userReminderCount >= 2) continue;
 
         const userDoc = await db.collection('users').doc(userId).get();
         if (!userDoc.exists) continue;
         const userData = userDoc.data()!;
 
-        // Only send if remind_to_respond is not explicitly false (default true)
+        // Respect remind_to_respond preference (default true)
         if (userData.remind_to_respond === false) continue;
 
-        await sendPushNotification(userId, {
-          title: 'Closer',
-          body: "Don't forget to respond to today's prompt.",
-        });
-        remindersSent++;
+        let shouldSend = false;
+        let body = '';
+
+        // Reminder 1: 4-6 hours after delivery
+        if (
+          userReminderCount < 1 &&
+          hoursSinceDelivery >= 4 &&
+          hoursSinceDelivery < 6
+        ) {
+          shouldSend = true;
+          body = 'Still time to respond today.';
+        }
+
+        // Reminder 2: Next morning, 8-10 AM in user's local timezone
+        if (
+          userReminderCount === 1 &&
+          hoursSinceDelivery >= 8
+        ) {
+          const userTimezone = userData.timezone || 'America/Los_Angeles';
+          const localHour = parseInt(
+            formatInTimeZone(now, userTimezone, 'HH'),
+            10
+          );
+          if (localHour >= 8 && localHour < 10) {
+            shouldSend = true;
+            body = "Yesterday's prompt is still open.";
+          }
+        }
+
+        if (shouldSend) {
+          await sendPushNotification(userId, {
+            title: APP_NAME,
+            body,
+          });
+
+          // Atomically track the reminder sent for this user
+          await assignmentDoc.ref.update({
+            [`reminders_sent.${userId}`]: userReminderCount + 1,
+            updated_at: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          remindersSent++;
+        }
       }
     }
 

@@ -56,6 +56,14 @@
       ]
     },
     {
+      "collectionGroup": "prompt_assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "assigned_date", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "prompt_responses",
       "queryScope": "COLLECTION",
       "fields": [
