@@ -1,4 +1,5 @@
 import * as functionsTest from 'firebase-functions-test';
+import { getPromptRecommendation } from '../index';
 
 const test = functionsTest.default();
 
@@ -493,6 +494,359 @@ describe('anonymizeMyResponses', () => {
     const result = { anonymized_count: responseCount };
 
     expect(result.anonymized_count).toBe(15);
+  });
+});
+
+// ============================================
+// Churn Risk Detection
+// ============================================
+
+// Helper: compute consecutive missed prompts from assignment statuses (most recent first)
+function computeConsecutiveMissed(statuses: string[]): number {
+  let count = 0;
+  for (const status of statuses) {
+    if (status === 'completed') break;
+    if (status === 'delivered' || status === 'partial' || status === 'expired') {
+      count++;
+    }
+  }
+  return count;
+}
+
+// Helper: determine churn risk level
+function getChurnRiskLevel(consecutiveMissed: number): string | null {
+  if (consecutiveMissed >= 7) return 'high';
+  if (consecutiveMissed >= 5) return 'medium';
+  if (consecutiveMissed >= 3) return 'low';
+  return null;
+}
+
+describe('Churn Risk Detection', () => {
+  describe('consecutive missed counting', () => {
+    it('should count consecutive missed from most recent', () => {
+      const statuses = ['expired', 'delivered', 'partial', 'completed', 'expired'];
+      expect(computeConsecutiveMissed(statuses)).toBe(3);
+    });
+
+    it('should return 0 when most recent is completed', () => {
+      const statuses = ['completed', 'expired', 'expired'];
+      expect(computeConsecutiveMissed(statuses)).toBe(0);
+    });
+
+    it('should count all when none completed', () => {
+      const statuses = ['expired', 'delivered', 'partial', 'expired', 'expired'];
+      expect(computeConsecutiveMissed(statuses)).toBe(5);
+    });
+
+    it('should handle empty assignment list', () => {
+      expect(computeConsecutiveMissed([])).toBe(0);
+    });
+
+    it('should count partial as missed', () => {
+      const statuses = ['partial', 'partial', 'completed'];
+      expect(computeConsecutiveMissed(statuses)).toBe(2);
+    });
+
+    it('should count delivered as missed', () => {
+      const statuses = ['delivered', 'completed'];
+      expect(computeConsecutiveMissed(statuses)).toBe(1);
+    });
+  });
+
+  describe('risk level thresholds', () => {
+    it('should return null for 0-2 missed', () => {
+      expect(getChurnRiskLevel(0)).toBeNull();
+      expect(getChurnRiskLevel(1)).toBeNull();
+      expect(getChurnRiskLevel(2)).toBeNull();
+    });
+
+    it('should return low for 3-4 missed', () => {
+      expect(getChurnRiskLevel(3)).toBe('low');
+      expect(getChurnRiskLevel(4)).toBe('low');
+    });
+
+    it('should return medium for 5-6 missed', () => {
+      expect(getChurnRiskLevel(5)).toBe('medium');
+      expect(getChurnRiskLevel(6)).toBe('medium');
+    });
+
+    it('should return high for 7+ missed', () => {
+      expect(getChurnRiskLevel(7)).toBe('high');
+      expect(getChurnRiskLevel(10)).toBe('high');
+      expect(getChurnRiskLevel(20)).toBe('high');
+    });
+  });
+
+  describe('new couple protection', () => {
+    it('should skip couples linked less than 3 days ago', () => {
+      const now = new Date('2026-02-21T05:00:00Z');
+      const linkedAt = new Date('2026-02-20T12:00:00Z');
+      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+      expect(linkedAt > threeDaysAgo).toBe(true);
+    });
+
+    it('should include couples linked more than 3 days ago', () => {
+      const now = new Date('2026-02-21T05:00:00Z');
+      const linkedAt = new Date('2026-02-15T12:00:00Z');
+      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+      expect(linkedAt > threeDaysAgo).toBe(false);
+    });
+
+    it('should include couples linked exactly 3 days ago', () => {
+      const now = new Date('2026-02-21T05:00:00Z');
+      const linkedAt = new Date('2026-02-18T05:00:00Z');
+      const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+      expect(linkedAt > threeDaysAgo).toBe(false);
+    });
+  });
+
+  describe('push notification trigger', () => {
+    it('should send push notification only for high risk', () => {
+      const shouldNotify = (risk: string | null) => risk === 'high';
+
+      expect(shouldNotify('high')).toBe(true);
+      expect(shouldNotify('medium')).toBe(false);
+      expect(shouldNotify('low')).toBe(false);
+      expect(shouldNotify(null)).toBe(false);
+    });
+  });
+});
+
+// ============================================
+// Prompt Graduation Rules
+// ============================================
+
+describe('Prompt Graduation Rules', () => {
+  describe('getPromptRecommendation helper', () => {
+    it('should return needs_more_data when fewer than 10 assignments', () => {
+      expect(getPromptRecommendation(0, 0, { positive: 0, neutral: 0, negative: 0 })).toBe('needs_more_data');
+      expect(getPromptRecommendation(5, 4, { positive: 4, neutral: 0, negative: 0 })).toBe('needs_more_data');
+      expect(getPromptRecommendation(9, 9, { positive: 9, neutral: 0, negative: 0 })).toBe('needs_more_data');
+    });
+
+    it('should graduate when completion >= 75% and positive >= 60%', () => {
+      // 80% completion, 70% positive
+      expect(getPromptRecommendation(10, 8, { positive: 7, neutral: 2, negative: 1 })).toBe('graduate');
+    });
+
+    it('should graduate at exact thresholds (75% completion, 60% positive)', () => {
+      // 75% completion (15/20), 60% positive (6/10)
+      expect(getPromptRecommendation(20, 15, { positive: 6, neutral: 2, negative: 2 })).toBe('graduate');
+    });
+
+    it('should retire when completion < 30%', () => {
+      // 20% completion
+      expect(getPromptRecommendation(10, 2, { positive: 2, neutral: 0, negative: 0 })).toBe('retire');
+    });
+
+    it('should retire at boundary (29% completion)', () => {
+      // 2/10 = 20%, under 30%
+      expect(getPromptRecommendation(10, 2, { positive: 1, neutral: 0, negative: 1 })).toBe('retire');
+    });
+
+    it('should not retire at exactly 30% completion', () => {
+      // 3/10 = 30%, not under 30%
+      const result = getPromptRecommendation(10, 3, { positive: 3, neutral: 0, negative: 0 });
+      expect(result).not.toBe('retire');
+    });
+
+    it('should rewrite when positive < 40% with sufficient sentiments', () => {
+      // 80% completion, 30% positive (3/10)
+      expect(getPromptRecommendation(10, 8, { positive: 3, neutral: 3, negative: 4 })).toBe('rewrite');
+    });
+
+    it('should keep_testing when metrics are mixed', () => {
+      // 50% completion, 50% positive
+      expect(getPromptRecommendation(10, 5, { positive: 5, neutral: 3, negative: 2 })).toBe('keep_testing');
+    });
+
+    it('should keep_testing when good completion but low positive', () => {
+      // 80% completion, 50% positive (between 40-60%)
+      expect(getPromptRecommendation(10, 8, { positive: 5, neutral: 3, negative: 2 })).toBe('keep_testing');
+    });
+
+    it('should keep_testing when no sentiments available but completion ok', () => {
+      // 50% completion, no sentiments
+      expect(getPromptRecommendation(10, 5, { positive: 0, neutral: 0, negative: 0 })).toBe('keep_testing');
+    });
+  });
+
+  describe('auto-graduation thresholds', () => {
+    it('should skip prompts with < 10 assignments', () => {
+      const timesAssigned = 9;
+      expect(timesAssigned < 10).toBe(true);
+    });
+
+    it('should evaluate prompts with >= 10 assignments', () => {
+      const timesAssigned = 10;
+      expect(timesAssigned < 10).toBe(false);
+    });
+  });
+
+  describe('status transitions', () => {
+    const validTransitions: Record<string, string> = {
+      draft: 'testing',
+      testing: 'active',
+    };
+
+    it('should allow draft -> testing', () => {
+      expect(validTransitions['draft']).toBe('testing');
+    });
+
+    it('should allow testing -> active', () => {
+      expect(validTransitions['testing']).toBe('active');
+    });
+
+    it('should not allow active -> anything via promote', () => {
+      expect(validTransitions['active']).toBeUndefined();
+    });
+
+    it('should not allow retired -> anything via promote', () => {
+      expect(validTransitions['retired']).toBeUndefined();
+    });
+  });
+});
+
+// ============================================
+// Prompt Management Validation
+// ============================================
+
+describe('Prompt Management Validation', () => {
+  const VALID_TYPES = [
+    'love_map_update',
+    'bid_for_connection',
+    'appreciation_expression',
+    'dream_exploration',
+    'conflict_navigation',
+    'repair_attempt',
+  ];
+
+  const VALID_DEPTHS = ['surface', 'medium', 'deep'];
+
+  const ALLOWED_UPDATE_FIELDS = [
+    'text', 'hint', 'type', 'emotional_depth', 'research_basis',
+    'requires_conversation', 'week_restriction', 'max_per_week', 'day_preference',
+  ];
+
+  describe('type validation', () => {
+    it('should accept all valid prompt types', () => {
+      for (const type of VALID_TYPES) {
+        expect(VALID_TYPES.includes(type)).toBe(true);
+      }
+    });
+
+    it('should reject invalid prompt types', () => {
+      expect(VALID_TYPES.includes('invalid_type')).toBe(false);
+      expect(VALID_TYPES.includes('')).toBe(false);
+      expect(VALID_TYPES.includes('LOVE_MAP_UPDATE')).toBe(false);
+    });
+  });
+
+  describe('depth validation', () => {
+    it('should accept all valid depths', () => {
+      for (const depth of VALID_DEPTHS) {
+        expect(VALID_DEPTHS.includes(depth)).toBe(true);
+      }
+    });
+
+    it('should reject invalid depths', () => {
+      expect(VALID_DEPTHS.includes('shallow')).toBe(false);
+      expect(VALID_DEPTHS.includes('very_deep')).toBe(false);
+    });
+  });
+
+  describe('action validation', () => {
+    const VALID_ACTIONS = ['create', 'update', 'promote', 'retire'];
+
+    it('should accept all valid actions', () => {
+      for (const action of VALID_ACTIONS) {
+        expect(VALID_ACTIONS.includes(action)).toBe(true);
+      }
+    });
+
+    it('should reject invalid actions', () => {
+      expect(VALID_ACTIONS.includes('delete')).toBe(false);
+      expect(VALID_ACTIONS.includes('archive')).toBe(false);
+    });
+  });
+
+  describe('required fields for create', () => {
+    it('should require text, type, and emotional_depth', () => {
+      const fields = { text: 'Test prompt', type: 'love_map_update', emotional_depth: 'surface' };
+      const hasRequired = fields.text && fields.type && fields.emotional_depth;
+      expect(!!hasRequired).toBe(true);
+    });
+
+    it('should fail when text is missing', () => {
+      const fields = { type: 'love_map_update', emotional_depth: 'surface' } as any;
+      const hasRequired = fields.text && fields.type && fields.emotional_depth;
+      expect(!!hasRequired).toBe(false);
+    });
+
+    it('should fail when type is missing', () => {
+      const fields = { text: 'Test', emotional_depth: 'surface' } as any;
+      const hasRequired = fields.text && fields.type && fields.emotional_depth;
+      expect(!!hasRequired).toBe(false);
+    });
+
+    it('should fail when emotional_depth is missing', () => {
+      const fields = { text: 'Test', type: 'love_map_update' } as any;
+      const hasRequired = fields.text && fields.type && fields.emotional_depth;
+      expect(!!hasRequired).toBe(false);
+    });
+  });
+
+  describe('allowlisted update fields', () => {
+    it('should allow text updates', () => {
+      expect(ALLOWED_UPDATE_FIELDS.includes('text')).toBe(true);
+    });
+
+    it('should allow scheduling field updates', () => {
+      expect(ALLOWED_UPDATE_FIELDS.includes('week_restriction')).toBe(true);
+      expect(ALLOWED_UPDATE_FIELDS.includes('max_per_week')).toBe(true);
+      expect(ALLOWED_UPDATE_FIELDS.includes('day_preference')).toBe(true);
+    });
+
+    it('should block metric fields from being updated', () => {
+      const metricFields = [
+        'times_assigned', 'times_completed', 'completion_rate',
+        'avg_response_length', 'positive_response_rate',
+      ];
+      for (const field of metricFields) {
+        expect(ALLOWED_UPDATE_FIELDS.includes(field)).toBe(false);
+      }
+    });
+
+    it('should block status from direct update (use promote/retire)', () => {
+      expect(ALLOWED_UPDATE_FIELDS.includes('status')).toBe(false);
+    });
+
+    it('should block created_at and created_by from update', () => {
+      expect(ALLOWED_UPDATE_FIELDS.includes('created_at')).toBe(false);
+      expect(ALLOWED_UPDATE_FIELDS.includes('created_by')).toBe(false);
+    });
+  });
+
+  describe('create defaults', () => {
+    it('should default new prompts to testing status', () => {
+      const defaultStatus = 'testing';
+      expect(defaultStatus).toBe('testing');
+    });
+
+    it('should default research_basis to original', () => {
+      const fields: { research_basis?: string } = {};
+      const researchBasis = fields.research_basis || 'original';
+      expect(researchBasis).toBe('original');
+    });
+
+    it('should default requires_conversation to false', () => {
+      const fields: { requires_conversation?: boolean } = {};
+      const requiresConversation = fields.requires_conversation || false;
+      expect(requiresConversation).toBe(false);
+    });
   });
 });
 

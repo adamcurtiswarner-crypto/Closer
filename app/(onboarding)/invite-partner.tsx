@@ -43,7 +43,7 @@ export default function InvitePartnerScreen() {
 
     try {
       await Share.share({
-        message: `I'm trying Closer — an app for us to stay connected. Join me: ${shareUrl}`,
+        message: `I'm trying Stoke — an app for us to stay connected. Join me: ${shareUrl}`,
       });
     } catch (error) {
       logger.error('Share failed:', error);
@@ -62,7 +62,7 @@ export default function InvitePartnerScreen() {
               Invite your partner
             </Text>
             <Text className="text-warm-600 text-center mt-2">
-              Closer works best together. Send this to your partner.
+              Stoke works best together. Send this to your partner.
             </Text>
           </View>
 
@@ -125,7 +125,7 @@ export default function InvitePartnerScreen() {
             Invite your partner
           </Text>
           <Text className="text-warm-600 text-center mt-2">
-            Closer works best together. Create an invite to send to your partner.
+            Stoke works best together. Create an invite to send to your partner.
           </Text>
         </View>
 

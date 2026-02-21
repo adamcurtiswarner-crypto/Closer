@@ -5,18 +5,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useAuth } from './useAuth';
 
-const PENDING_INVITE_KEY = '@closer/pending_invite_code';
+const PENDING_INVITE_KEY = '@stoke/pending_invite_code';
 
 // Extract invite code from URL
 function extractInviteCode(url: string): string | null {
-  // Handle closer://join/CODE
-  const customSchemeMatch = url.match(/closer:\/\/join\/([A-Z0-9]{6})/i);
+  // Handle stoke://join/CODE (also accepts closer:// for backward compat)
+  const customSchemeMatch = url.match(/(?:stoke|closer):\/\/join\/([A-Z0-9]{6})/i);
   if (customSchemeMatch) {
     return customSchemeMatch[1].toUpperCase();
   }
 
-  // Handle https://closer.app/join/CODE
-  const universalLinkMatch = url.match(/closer\.app\/join\/([A-Z0-9]{6})/i);
+  // Handle https://stoke.app/join/CODE (also accepts closer.app for backward compat)
+  const universalLinkMatch = url.match(/(?:stoke|closer)\.app\/join\/([A-Z0-9]{6})/i);
   if (universalLinkMatch) {
     return universalLinkMatch[1].toUpperCase();
   }

@@ -25,7 +25,7 @@
         ]
       },
       "associatedDomains": [
-        "applinks:closer.app"
+        "applinks:stoke.app"
       ]
     },
     "android": {
@@ -43,7 +43,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "closer.app",
+              "host": "stoke.app",
               "pathPrefix": "/join"
             }
           ],
@@ -64,7 +64,7 @@
     "experiments": {
       "typedRoutes": true
     },
-    "scheme": "closer",
+    "scheme": "stoke",
     "extra": {
       "router": {
         "origin": false

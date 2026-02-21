@@ -178,7 +178,7 @@ export function useCreateInvite() {
 
       return {
         code,
-        shareUrl: `https://closer.app/join/${code}`,
+        shareUrl: `https://stoke.app/join/${code}`,
       };
     },
     onSuccess: () => {
