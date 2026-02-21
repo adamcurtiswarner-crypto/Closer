@@ -12,6 +12,7 @@ import { logger } from '@/utils/logger';
 import { router } from 'expo-router';
 import { Button } from '@/components';
 import { useCreateInvite, usePendingInvite } from '@/hooks/useCouple';
+import { useTranslation } from 'react-i18next';
 
 export default function InvitePartnerScreen() {
   const { data: pendingInvite } = usePendingInvite();
@@ -20,6 +21,7 @@ export default function InvitePartnerScreen() {
     pendingInvite?.code || null
   );
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const handleCreateInvite = async () => {
     try {
@@ -34,7 +36,7 @@ export default function InvitePartnerScreen() {
   const handleCopyCode = async () => {
     if (inviteCode) {
       await Clipboard.setStringAsync(inviteCode);
-      Alert.alert('Copied', 'Invite code copied to clipboard.');
+      Alert.alert(t('common.copied'), t('onboarding.invitePartner.inviteCopied'));
     }
   };
 
@@ -59,10 +61,10 @@ export default function InvitePartnerScreen() {
         <View className="flex-1 px-6 justify-center">
           <View className="items-center mb-8">
             <Text className="text-2xl font-bold text-warm-900 text-center">
-              Invite your partner
+              {t('onboarding.invitePartner.title')}
             </Text>
             <Text className="text-warm-600 text-center mt-2">
-              Stoke works best together. Send this to your partner.
+              {t('onboarding.invitePartner.subtitle')}
             </Text>
           </View>
 
@@ -75,20 +77,20 @@ export default function InvitePartnerScreen() {
               {code}
             </Text>
             <Text className="text-warm-500 text-sm mt-2">
-              Tap to copy
+              {t('onboarding.invitePartner.tapToCopy')}
             </Text>
           </TouchableOpacity>
 
           <Text className="text-warm-500 text-xs text-center mb-6">
-            Valid for 7 days
+            {t('onboarding.invitePartner.validDays')}
           </Text>
 
-          <Button title="Share" onPress={handleShare} />
+          <Button title={t('onboarding.invitePartner.share')} onPress={handleShare} />
 
           <View className="h-4" />
 
           <Button
-            title="I'll wait for them to join"
+            title={t('onboarding.invitePartner.waitForThem')}
             variant="secondary"
             onPress={() => router.push('/(onboarding)/waiting-partner')}
           />
@@ -99,7 +101,7 @@ export default function InvitePartnerScreen() {
             onPress={() => router.push('/(onboarding)/accept-invite')}
           >
             <Text className="text-primary-500 text-center">
-              I have an invite code
+              {t('onboarding.invitePartner.haveInviteCode')}
             </Text>
           </TouchableOpacity>
 
@@ -108,7 +110,7 @@ export default function InvitePartnerScreen() {
             onPress={() => router.replace('/(app)/today')}
           >
             <Text style={{ color: '#78716c', textAlign: 'center', fontSize: 14 }}>
-              Skip for now
+              {t('common.skipForNow')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -122,15 +124,15 @@ export default function InvitePartnerScreen() {
       <View className="flex-1 px-6 justify-center">
         <View className="items-center mb-8">
           <Text className="text-2xl font-bold text-warm-900 text-center">
-            Invite your partner
+            {t('onboarding.invitePartner.title')}
           </Text>
           <Text className="text-warm-600 text-center mt-2">
-            Stoke works best together. Create an invite to send to your partner.
+            {t('onboarding.invitePartner.subtitleCreate')}
           </Text>
         </View>
 
         <Button
-          title="Create Invite"
+          title={t('onboarding.invitePartner.createInvite')}
           onPress={handleCreateInvite}
           loading={createInvite.isPending}
         />
@@ -138,7 +140,7 @@ export default function InvitePartnerScreen() {
         <View className="h-4" />
 
         <Button
-          title="I have an invite code"
+          title={t('onboarding.invitePartner.haveInviteCode')}
           variant="secondary"
           onPress={() => router.push('/(onboarding)/accept-invite')}
         />
@@ -148,7 +150,7 @@ export default function InvitePartnerScreen() {
           onPress={() => router.replace('/(app)/today')}
         >
           <Text style={{ color: '#78716c', textAlign: 'center', fontSize: 14 }}>
-            Skip for now
+            {t('common.skipForNow')}
           </Text>
         </TouchableOpacity>
       </View>

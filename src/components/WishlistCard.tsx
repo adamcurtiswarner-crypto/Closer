@@ -9,6 +9,7 @@ import {
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import {
   useWishlistItems,
   useToggleWishlistItem,
@@ -21,6 +22,7 @@ interface WishlistCardProps {
 }
 
 export function WishlistCard({ onAddItem }: WishlistCardProps) {
+  const { t } = useTranslation();
   const { data: items, isLoading } = useWishlistItems();
   const toggleItem = useToggleWishlistItem();
 
@@ -61,7 +63,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.headerIcon}>{'\u2728'}</Text>
-          <Text style={styles.headerTitle}>Wishlist</Text>
+          <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
         </View>
         {totalCount > 0 && (
           <View style={styles.countBadge}>
@@ -76,8 +78,8 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {totalCount === 0 && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
           <Text style={styles.emptyIcon}>{'\uD83C\uDF1F'}</Text>
-          <Text style={styles.emptyTitle}>Dream together</Text>
-          <Text style={styles.emptySubtitle}>Add things you'd love to do as a couple</Text>
+          <Text style={styles.emptyTitle}>{t('wishlist.dreamTogether')}</Text>
+          <Text style={styles.emptySubtitle}>{t('wishlist.emptySubtitle')}</Text>
         </Animated.View>
       )}
 
@@ -95,7 +97,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {activeItems.length > 3 && (
         <Animated.View entering={FadeIn.duration(300).delay(340)}>
           <Text style={styles.moreHint}>
-            +{activeItems.length - 3} more {activeItems.length - 3 === 1 ? 'wish' : 'wishes'}
+            {t('wishlist.moreWishes', { count: activeItems.length - 3 })}
           </Text>
         </Animated.View>
       )}
@@ -104,7 +106,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {totalCount > 0 && (
         <Animated.View entering={FadeIn.duration(300).delay(400)}>
           <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll} activeOpacity={0.7}>
-            <Text style={styles.seeAllText}>See all</Text>
+            <Text style={styles.seeAllText}>{t('wishlist.seeAll')}</Text>
             <Text style={styles.seeAllArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         </Animated.View>
@@ -116,7 +118,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
           <View style={styles.addIconWrap}>
             <Text style={styles.addIcon}>+</Text>
           </View>
-          <Text style={styles.addText}>Add something</Text>
+          <Text style={styles.addText}>{t('wishlist.addSomethingCta')}</Text>
         </TouchableOpacity>
       </Animated.View>
 

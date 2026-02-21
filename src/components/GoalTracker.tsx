@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 import {
   useGoals,
   useToggleGoalCompletion,
@@ -22,6 +23,7 @@ interface GoalTrackerProps {
 }
 
 export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
+  const { t } = useTranslation();
   const { data: goals, isLoading } = useGoals();
   const toggleCompletion = useToggleGoalCompletion();
   const activateChallenge = useActivateWeeklyChallenge();
@@ -84,13 +86,13 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
                 <Text style={styles.challengeIcon}>{challenge.icon}</Text>
               </View>
               <View style={styles.challengeCtaText}>
-                <Text style={styles.challengeCtaLabel}>This week's challenge</Text>
+                <Text style={styles.challengeCtaLabel}>{t('goals.thisWeeksChallenge')}</Text>
                 <Text style={styles.challengeCtaTitle}>{challenge.title}</Text>
               </View>
             </View>
             <View style={[styles.startButton, activateChallenge.isPending && styles.buttonDisabled]}>
               <Text style={styles.startButtonText}>
-                {activateChallenge.isPending ? '...' : 'Start'}
+                {activateChallenge.isPending ? '...' : t('goals.start')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -126,7 +128,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
           <View style={styles.addIconWrap}>
             <Text style={styles.addIcon}>+</Text>
           </View>
-          <Text style={styles.addText}>Add a goal</Text>
+          <Text style={styles.addText}>{t('goals.addGoal')}</Text>
         </TouchableOpacity>
       </Animated.View>
 

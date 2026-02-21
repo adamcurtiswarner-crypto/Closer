@@ -10,6 +10,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { logEvent } from '@/services/analytics';
+import { useTranslation } from 'react-i18next';
 
 const TIME_LABELS: Record<string, string> = {
   '08:00': '8:00 AM',
@@ -21,6 +22,7 @@ const TIME_LABELS: Record<string, string> = {
 export default function ReadyScreen() {
   const { user, refreshUser } = useAuth();
   const promptTime = TIME_LABELS[user?.notificationTime || '19:00'] || '7:00 PM';
+  const { t } = useTranslation();
 
   const handleStartNow = async () => {
     await completeOnboarding();
@@ -52,19 +54,19 @@ export default function ReadyScreen() {
         <View className="items-center mb-12">
           <Text className="text-4xl mb-4">✓</Text>
           <Text className="text-2xl font-bold text-warm-900 text-center">
-            You're all set
+            {t('onboarding.ready.title')}
           </Text>
           <Text className="text-warm-600 text-center mt-2">
-            Your first prompt arrives at {promptTime}.
+            {t('onboarding.ready.subtitle', { time: promptTime })}
           </Text>
         </View>
 
-        <Button title="Start Now" onPress={handleStartNow} />
+        <Button title={t('onboarding.ready.startNow')} onPress={handleStartNow} />
 
         <View className="h-3" />
 
         <Button
-          title="I'll wait for the prompt"
+          title={t('onboarding.ready.waitForPrompt')}
           variant="secondary"
           onPress={handleWait}
         />

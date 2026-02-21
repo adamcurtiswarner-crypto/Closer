@@ -32,13 +32,14 @@ import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
 import { logger } from '@/utils/logger';
+import { useTranslation } from 'react-i18next';
 
 // Greeting based on time of day
-function getGreeting(): string {
+function getGreeting(t: (key: string) => string): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return t('today.goodMorning');
+  if (hour < 17) return t('today.goodAfternoon');
+  return t('today.goodEvening');
 }
 
 export default function TodayScreen() {
@@ -58,6 +59,7 @@ export default function TodayScreen() {
   const triggerPrompt = useTriggerPrompt();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
   const unreadMessageCount = useUnreadCount();
+  const { t } = useTranslation();
 
   const handleChatPress = () => {
     router.push('/(app)/chat');
@@ -182,14 +184,14 @@ export default function TodayScreen() {
         {error ? (
           <View style={styles.centered}>
             <QueryError
-              message="Couldn't load today's prompt."
+              message={t('today.errorLoading')}
               onRetry={() => refetch()}
             />
           </View>
         ) : (
           <View style={styles.scrollView}>
             <View style={styles.greetingRow}>
-              <Text style={styles.greeting}>{getGreeting()}</Text>
+              <Text style={styles.greeting}>{getGreeting(t)}</Text>
               <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
             </View>
             <View style={styles.promptSection}>
@@ -213,7 +215,7 @@ export default function TodayScreen() {
           <View style={styles.greetingRow}>
             <View style={styles.greetingTop}>
               <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>{getGreeting()}</Text>
+              <Text style={styles.greeting}>{getGreeting(t)}</Text>
             </View>
             <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>
@@ -235,11 +237,11 @@ export default function TodayScreen() {
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
             <Text style={styles.emptyIcon}>{'\u2604\uFE0F'}</Text>
-            <Text style={styles.emptyTitle}>Your prompt is on its way</Text>
+            <Text style={styles.emptyTitle}>{t('today.promptOnWay')}</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
-                ? `Arriving around ${format(new Date(nextPromptAt), 'h:mm a')}`
-                : 'Check back soon'}
+                ? t('today.arrivingAround', { time: format(new Date(nextPromptAt), 'h:mm a') })
+                : t('today.checkBackSoon')}
             </Text>
             {user?.coupleId && (
               <TouchableOpacity
@@ -249,7 +251,7 @@ export default function TodayScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.triggerButtonText}>
-                  {triggerPrompt.isPending ? 'Loading...' : "Get today's prompt"}
+                  {triggerPrompt.isPending ? t('common.loading') : t('today.getTodaysPrompt')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -307,7 +309,7 @@ export default function TodayScreen() {
             <Animated.View entering={FadeInUp.duration(400).delay(100)}>
               <TextInput
                 style={styles.textInput}
-                placeholder="Share what comes to mind..."
+                placeholder={t('today.sharePlaceholder')}
                 placeholderTextColor="#a8a29e"
                 multiline
                 textAlignVertical="top"
@@ -327,15 +329,15 @@ export default function TodayScreen() {
             ) : (
               <TouchableOpacity style={styles.attachPhotoButton} onPress={handleAddPhoto}>
                 <Text style={styles.attachPhotoIcon}>{'\uD83D\uDCF7'}</Text>
-                <Text style={styles.attachPhotoText}>Add photo</Text>
+                <Text style={styles.attachPhotoText}>{t('today.addPhoto')}</Text>
               </TouchableOpacity>
             )}
 
             <View style={styles.respondingFooter}>
               <Text style={styles.charHint}>
                 {responseText.length < 10
-                  ? `${10 - responseText.length} more characters`
-                  : 'Ready to share'}
+                  ? t('today.moreCharacters', { count: 10 - responseText.length })
+                  : t('today.readyToShare')}
               </Text>
 
               <View style={styles.buttonRow}>
@@ -352,7 +354,7 @@ export default function TodayScreen() {
                   activeOpacity={0.8}
                 >
                   <Text style={styles.submitText}>
-                    {submitResponse.isPending ? 'Sending...' : 'Share'}
+                    {submitResponse.isPending ? t('today.sending') : t('today.share')}
                   </Text>
                   {!submitResponse.isPending && <Text style={styles.submitArrow}>{'\u2192'}</Text>}
                 </TouchableOpacity>
@@ -376,7 +378,7 @@ export default function TodayScreen() {
           <View style={styles.greetingRow}>
             <View style={styles.greetingTop}>
               <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>Nice one</Text>
+              <Text style={styles.greeting}>{t('today.niceOne')}</Text>
             </View>
             <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>
@@ -404,7 +406,7 @@ export default function TodayScreen() {
             <View style={styles.yourResponseSection}>
               <View style={styles.responseLabel}>
                 <View style={[styles.labelDot, { backgroundColor: '#a8a29e' }]} />
-                <Text style={styles.labelText}>Your response</Text>
+                <Text style={styles.labelText}>{t('today.yourResponse')}</Text>
               </View>
               <Text style={styles.responseBody}>{myResponse!.responseText}</Text>
               {myResponse!.imageUrl ? (
@@ -421,12 +423,12 @@ export default function TodayScreen() {
                   <View style={[styles.typingDot, { opacity: 0.7 }]} />
                   <View style={[styles.typingDot, { opacity: 1 }]} />
                 </View>
-                <Text style={styles.typingText}>{partnerName} is responding...</Text>
+                <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
               </Animated.View>
             ) : (
               <View style={styles.waitingMessageRow}>
                 <Text style={styles.waitingIcon}>{'\u23F3'}</Text>
-                <Text style={styles.waitingMessage}>Waiting for {partnerName.toLowerCase()}...</Text>
+                <Text style={styles.waitingMessage}>{t('today.waitingFor', { name: partnerName.toLowerCase() })}</Text>
               </View>
             )}
           </Animated.View>
@@ -466,7 +468,7 @@ export default function TodayScreen() {
           <View style={styles.greetingRow}>
             <View style={styles.greetingTop}>
               <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>Beautiful</Text>
+              <Text style={styles.greeting}>{t('today.beautiful')}</Text>
             </View>
             <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>
@@ -500,12 +502,12 @@ export default function TodayScreen() {
           {/* Emotional Feedback */}
           {myResponse && !feedbackGiven && (
             <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.feedbackCard}>
-              <Text style={styles.feedbackTitle}>How did this feel?</Text>
+              <Text style={styles.feedbackTitle}>{t('today.howDidThisFeel')}</Text>
               <View style={styles.feedbackRow}>
                 {([
-                  { value: 'positive', label: 'Warm', icon: '\u2600\uFE0F' },
-                  { value: 'neutral', label: 'Okay', icon: '\u2601\uFE0F' },
-                  { value: 'negative', label: 'Hard', icon: '\uD83C\uDF27\uFE0F' },
+                  { value: 'positive', label: t('today.warm'), icon: '\u2600\uFE0F' },
+                  { value: 'neutral', label: t('today.okay'), icon: '\u2601\uFE0F' },
+                  { value: 'negative', label: t('today.hard'), icon: '\uD83C\uDF27\uFE0F' },
                 ] as const).map((option) => (
                   <TouchableOpacity
                     key={option.value}
@@ -531,7 +533,7 @@ export default function TodayScreen() {
 
           {feedbackGiven && (
             <Animated.View entering={FadeIn.duration(400)}>
-              <Text style={styles.feedbackThanks}>Thanks for sharing</Text>
+              <Text style={styles.feedbackThanks}>{t('today.thanksForSharing')}</Text>
             </Animated.View>
           )}
 
@@ -545,7 +547,7 @@ export default function TodayScreen() {
               >
                 <Text style={styles.streakCelebrationIcon}>{'\uD83D\uDD25'}</Text>
                 <Text style={styles.streakCelebrationText}>
-                  {currentStreak === 1 ? 'Streak started!' : `${currentStreak} day streak!`}
+                  {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -574,7 +576,7 @@ export default function TodayScreen() {
           <Animated.View entering={FadeIn.duration(400).delay(1100)}>
             <View style={styles.doneRow}>
               <View style={styles.doneDot} />
-              <Text style={styles.doneText}>See you tomorrow</Text>
+              <Text style={styles.doneText}>{t('today.seeYouTomorrow')}</Text>
               <View style={styles.doneDot} />
             </View>
           </Animated.View>
@@ -600,7 +602,7 @@ export default function TodayScreen() {
           <View style={styles.greetingRow}>
             <View style={styles.greetingTop}>
               <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>{getGreeting()}</Text>
+              <Text style={styles.greeting}>{getGreeting(t)}</Text>
             </View>
             <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
           </View>

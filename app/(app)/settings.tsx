@@ -25,6 +25,7 @@ import { useCalendarSync } from '@/hooks/useCalendar';
 import { Paywall } from '@/components/Paywall';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, ProfileCard } from '@/components';
+import { useTranslation } from 'react-i18next';
 
 const FREQUENCY_OPTIONS = [
   { label: 'Daily', value: 'daily' as const, description: 'Every day' },
@@ -49,6 +50,7 @@ function getTimeDisplay(value: string): string {
 
 export default function SettingsScreen() {
   const { user, signOut, refreshUser } = useAuth();
+  const { t } = useTranslation();
   const { data: couple } = useCouple();
   const updateFrequency = useUpdatePromptFrequency();
   const [remindMe, setRemindMe] = useState(true);
@@ -86,7 +88,7 @@ export default function SettingsScreen() {
       await refreshUser();
     } catch (error) {
       logger.error('Error updating notification time:', error);
-      Alert.alert('Error', 'Failed to update notification time');
+      Alert.alert(t('common.error'), t('settings.errorUpdateTime'));
     } finally {
       setIsSavingTime(false);
       setShowTimePicker(false);
@@ -94,10 +96,10 @@ export default function SettingsScreen() {
   };
 
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('settings.signOut'), t('settings.signOutConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Sign Out',
+        text: t('settings.signOut'),
         style: 'destructive',
         onPress: async () => {
           await signOut();
@@ -112,7 +114,7 @@ export default function SettingsScreen() {
       await deleteAccount.mutateAsync();
       router.replace('/(auth)/welcome');
     } catch (error) {
-      Alert.alert('Error', 'Failed to delete account. Please try again.');
+      Alert.alert(t('common.error'), t('settings.deleteFailed'));
     } finally {
       setShowDeleteModal(false);
       setDeleteConfirmText('');
@@ -129,9 +131,9 @@ export default function SettingsScreen() {
       });
     } catch (error: any) {
       if (error?.code === 'functions/resource-exhausted') {
-        Alert.alert('Export unavailable', 'Data export is available once every 24 hours.');
+        Alert.alert(t('common.error'), t('settings.exportUnavailable'));
       } else {
-        Alert.alert('Error', 'Failed to export data. Please try again.');
+        Alert.alert(t('common.error'), t('settings.exportFailed'));
       }
     }
   };
@@ -141,11 +143,11 @@ export default function SettingsScreen() {
       const result = await anonymizeResponses.mutateAsync();
       setShowAnonymizeModal(false);
       Alert.alert(
-        'Responses anonymized',
-        `${result.anonymized_count} responses have been replaced with [removed].`
+        t('settings.anonymized'),
+        t('settings.anonymizedBody', { count: result.anonymized_count })
       );
     } catch (error) {
-      Alert.alert('Error', 'Failed to anonymize responses. Please try again.');
+      Alert.alert(t('common.error'), t('settings.anonymizeFailed'));
     }
   };
 
@@ -182,27 +184,27 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={styles.title}>{t('settings.title')}</Text>
       </View>
 
       <ScrollView style={styles.scrollView}>
         {/* Profile */}
-        <Text style={styles.sectionTitle}>PROFILE</Text>
+        <Text style={styles.sectionTitle}>{t('settings.profile')}</Text>
         <ProfileCard />
 
         {/* Notifications */}
-        <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
+        <Text style={styles.sectionTitle}>{t('settings.notifications')}</Text>
         <View style={styles.section}>
           <TouchableOpacity style={styles.row} onPress={() => setShowTimePicker(true)}>
-            <Text style={styles.rowLabel}>Daily prompt time</Text>
+            <Text style={styles.rowLabel}>{t('settings.dailyPromptTime')}</Text>
             <Text style={styles.rowValue}>{getTimeDisplay(currentTime)} {'>'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
-            <Text style={styles.rowLabel}>Prompt frequency</Text>
+            <Text style={styles.rowLabel}>{t('settings.promptFrequency')}</Text>
             <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)} {'>'}</Text>
           </TouchableOpacity>
           <View style={styles.rowToggle}>
-            <Text style={styles.rowLabel}>Remind me to respond</Text>
+            <Text style={styles.rowLabel}>{t('settings.remindMe')}</Text>
             <Switch
               value={remindMe}
               onValueChange={handleToggleRemind}
@@ -211,7 +213,7 @@ export default function SettingsScreen() {
             />
           </View>
           <View style={styles.rowToggle}>
-            <Text style={styles.rowLabel}>Notify when partner responds</Text>
+            <Text style={styles.rowLabel}>{t('settings.notifyPartner')}</Text>
             <Switch
               value={partnerNotify}
               onValueChange={handleTogglePartnerNotify}
@@ -220,7 +222,7 @@ export default function SettingsScreen() {
             />
           </View>
           <View style={[styles.rowToggle, styles.lastRow]}>
-            <Text style={styles.rowLabel}>Sync to calendar</Text>
+            <Text style={styles.rowLabel}>{t('settings.syncToCalendar')}</Text>
             <Switch
               value={calendarSynced}
               onValueChange={(value) => {
@@ -249,26 +251,26 @@ export default function SettingsScreen() {
         />
 
         {/* Resources */}
-        <Text style={styles.sectionTitle}>RESOURCES</Text>
+        <Text style={styles.sectionTitle}>{t('settings.resources')}</Text>
         <View style={styles.section}>
           <TouchableOpacity
             style={[styles.row, styles.lastRow]}
             onPress={() => router.push('/(app)/resources')}
           >
-            <Text style={styles.rowLabel}>Find support</Text>
+            <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Privacy & Data */}
-        <Text style={styles.sectionTitle}>PRIVACY & DATA</Text>
+        <Text style={styles.sectionTitle}>{t('settings.privacyData')}</Text>
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.row}
             onPress={handleExportData}
             disabled={exportData.isPending}
           >
-            <Text style={styles.rowLabel}>Export my data</Text>
+            <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
             {exportData.isPending ? (
               <ActivityIndicator size="small" color="#c97454" />
             ) : (
@@ -279,36 +281,36 @@ export default function SettingsScreen() {
             style={styles.row}
             onPress={() => setShowAnonymizeModal(true)}
           >
-            <Text style={styles.rowLabel}>Anonymize my responses</Text>
+            <Text style={styles.rowLabel}>{t('settings.anonymize')}</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.row, styles.lastRow]}
             onPress={() => setShowDeleteModal(true)}
           >
-            <Text style={styles.dangerText}>Delete account</Text>
+            <Text style={styles.dangerText}>{t('settings.deleteAccount')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Account */}
-        <Text style={styles.sectionTitle}>ACCOUNT</Text>
+        <Text style={styles.sectionTitle}>{t('settings.account')}</Text>
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.row}
             onPress={() => !isPremium && setShowPaywall(true)}
             disabled={isPremium}
           >
-            <Text style={styles.rowLabel}>Subscription</Text>
+            <Text style={styles.rowLabel}>{t('settings.subscription')}</Text>
             <Text style={[styles.rowValue, isPremium && styles.premiumText]}>
-              {isPremium ? 'Premium' : 'Free >'}
+              {isPremium ? t('settings.premium') : t('settings.free') + ' >'}
             </Text>
           </TouchableOpacity>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>Version</Text>
+            <Text style={styles.rowLabel}>{t('settings.version')}</Text>
             <Text style={styles.rowValue}>1.0.0</Text>
           </View>
           <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
-            <Text style={styles.rowLabel}>Sign out</Text>
+            <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
           </TouchableOpacity>
         </View>
@@ -316,10 +318,10 @@ export default function SettingsScreen() {
         {/* Safety */}
         <View style={styles.safety}>
           <Text style={styles.safetyText}>
-            Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.
+            {t('settings.safetyText')}
           </Text>
           <TouchableOpacity onPress={() => Linking.openURL('tel:1-800-799-7233')}>
-            <Text style={styles.safetyLink}>National Domestic Violence Hotline</Text>
+            <Text style={styles.safetyLink}>{t('settings.safetyLink')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -333,9 +335,9 @@ export default function SettingsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Daily prompt time</Text>
+            <Text style={styles.modalTitle}>{t('settings.promptTimeTitle')}</Text>
             <Text style={styles.modalSubtitle}>
-              When should your daily prompt arrive?
+              {t('settings.promptTimeSubtitle')}
             </Text>
 
             {TIME_OPTIONS.map((option) => (
@@ -383,9 +385,9 @@ export default function SettingsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Prompt frequency</Text>
+            <Text style={styles.modalTitle}>{t('settings.frequencyTitle')}</Text>
             <Text style={styles.modalSubtitle}>
-              How often should you receive prompts?
+              {t('settings.frequencySubtitle')}
             </Text>
 
             {FREQUENCY_OPTIONS.map((option) => (
@@ -400,7 +402,7 @@ export default function SettingsScreen() {
                     await updateFrequency.mutateAsync(option.value);
                   } catch (error) {
                     logger.error('Error updating frequency:', error);
-                    Alert.alert('Error', 'Failed to update prompt frequency');
+                    Alert.alert(t('common.error'), t('settings.errorUpdateFrequency'));
                   }
                   setShowFrequencyPicker(false);
                 }}
@@ -443,12 +445,12 @@ export default function SettingsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Delete your account</Text>
+            <Text style={styles.modalTitle}>{t('settings.deleteTitle')}</Text>
             <Text style={styles.deleteModalBody}>
-              Your account will be deactivated immediately and your data permanently removed after 30 days. Your partner will be notified.{'\n\n'}This cannot be undone.
+              {t('settings.deleteBody')}
             </Text>
 
-            <Text style={styles.deleteModalLabel}>Type DELETE to confirm</Text>
+            <Text style={styles.deleteModalLabel}>{t('settings.deleteConfirmLabel')}</Text>
             <TextInput
               style={styles.deleteInput}
               value={deleteConfirmText}
@@ -470,7 +472,7 @@ export default function SettingsScreen() {
               {deleteAccount.isPending ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.deleteButtonText}>Delete my account</Text>
+                <Text style={styles.deleteButtonText}>{t('settings.deleteButton')}</Text>
               )}
             </TouchableOpacity>
 
@@ -496,9 +498,9 @@ export default function SettingsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Anonymize your responses</Text>
+            <Text style={styles.modalTitle}>{t('settings.anonymizeTitle')}</Text>
             <Text style={styles.deleteModalBody}>
-              This will replace all your written responses with [removed]. Your partner's responses will not be affected.{'\n\n'}This cannot be undone.
+              {t('settings.anonymizeBody')}
             </Text>
 
             <TouchableOpacity
@@ -509,7 +511,7 @@ export default function SettingsScreen() {
               {anonymizeResponses.isPending ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.deleteButtonText}>Anonymize my responses</Text>
+                <Text style={styles.deleteButtonText}>{t('settings.anonymizeButton')}</Text>
               )}
             </TouchableOpacity>
 

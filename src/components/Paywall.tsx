@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useTranslation } from 'react-i18next';
 
 interface PaywallProps {
   visible: boolean;
@@ -23,6 +24,7 @@ const FEATURES = [
 
 export function Paywall({ visible, onClose }: PaywallProps) {
   const { offering, purchase, restore, isLoading } = useSubscription();
+  const { t } = useTranslation();
 
   const mainPackage = offering?.availablePackages?.[0] ?? null;
   const priceString = mainPackage?.product?.priceString || '$4.99/mo';
@@ -36,9 +38,9 @@ export function Paywall({ visible, onClose }: PaywallProps) {
     >
       <View style={styles.overlay}>
         <View style={styles.sheet}>
-          <Text style={styles.title}>Closer Premium</Text>
+          <Text style={styles.title}>{t('paywall.title')}</Text>
           <Text style={styles.subtitle}>
-            Deepen your connection with premium features.
+            {t('paywall.subtitle')}
           </Text>
 
           <View style={styles.featureList}>
@@ -58,16 +60,16 @@ export function Paywall({ visible, onClose }: PaywallProps) {
             {isLoading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.ctaText}>Start Premium — {priceString}</Text>
+              <Text style={styles.ctaText}>{t('paywall.startPremium', { price: priceString })}</Text>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.restoreButton} onPress={restore}>
-            <Text style={styles.restoreText}>Restore purchases</Text>
+            <Text style={styles.restoreText}>{t('paywall.restore')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeText}>Not now</Text>
+            <Text style={styles.closeText}>{t('paywall.notNow')}</Text>
           </TouchableOpacity>
         </View>
       </View>

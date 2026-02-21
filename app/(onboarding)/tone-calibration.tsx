@@ -11,6 +11,7 @@ import { db } from '@/config/firebase';
 import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components';
+import { useTranslation } from 'react-i18next';
 
 const TONE_OPTIONS = [
   {
@@ -34,6 +35,7 @@ export default function ToneCalibrationScreen() {
   const { user, refreshUser } = useAuth();
   const [selectedTone, setSelectedTone] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useTranslation();
 
   const handleContinue = async () => {
     if (!user?.id || !selectedTone) return;
@@ -57,10 +59,10 @@ export default function ToneCalibrationScreen() {
     <SafeAreaView className="flex-1 bg-warm-50">
       <View className="flex-1 px-6 pt-12">
         <Text className="text-2xl font-bold text-warm-900">
-          How are you two doing?
+          {t('onboarding.toneCalibration.title')}
         </Text>
         <Text className="text-warm-600 mt-2">
-          This helps us start in the right place.
+          {t('onboarding.toneCalibration.subtitle')}
         </Text>
 
         <View className="mt-8">
@@ -97,7 +99,7 @@ export default function ToneCalibrationScreen() {
 
         <View className="mb-8">
           <Button
-            title={isSaving ? "Saving..." : "Continue"}
+            title={isSaving ? t('common.saving') : t('common.continue')}
             onPress={handleContinue}
             disabled={!selectedTone || isSaving}
           />

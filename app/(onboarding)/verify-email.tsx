@@ -4,18 +4,20 @@ import { router } from 'expo-router';
 import { sendEmailVerification } from 'firebase/auth';
 import { auth } from '@/config/firebase';
 import { Button } from '@/components';
+import { useTranslation } from 'react-i18next';
 
 export default function VerifyEmailScreen() {
   const [isSending, setIsSending] = useState(false);
+  const { t } = useTranslation();
 
   const handleResend = async () => {
     if (!auth.currentUser) return;
     setIsSending(true);
     try {
       await sendEmailVerification(auth.currentUser);
-      Alert.alert('Sent', 'Verification email resent. Check your inbox.');
+      Alert.alert(t('common.sent'), t('onboarding.verifyEmail.sentAlert'));
     } catch {
-      Alert.alert('Error', 'Could not resend. Please try again later.');
+      Alert.alert(t('common.error'), t('onboarding.verifyEmail.errorAlert'));
     } finally {
       setIsSending(false);
     }
@@ -24,22 +26,21 @@ export default function VerifyEmailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Check your email</Text>
+        <Text style={styles.title}>{t('onboarding.verifyEmail.title')}</Text>
         <Text style={styles.subtitle}>
-          We sent a verification link to {auth.currentUser?.email || 'your email'}.
-          Tap the link to verify your account.
+          {t('onboarding.verifyEmail.subtitle', { email: auth.currentUser?.email || 'your email' })}
         </Text>
 
         <View style={styles.actions}>
           <Button
-            title="Continue"
+            title={t('common.continue')}
             onPress={() => router.push('/(onboarding)/invite-partner')}
           />
 
           <View style={styles.spacer} />
 
           <Button
-            title={isSending ? 'Sending...' : 'Resend email'}
+            title={isSending ? t('onboarding.verifyEmail.resending') : t('onboarding.verifyEmail.resend')}
             variant="secondary"
             onPress={handleResend}
             disabled={isSending}
@@ -47,7 +48,7 @@ export default function VerifyEmailScreen() {
         </View>
 
         <Text style={styles.note}>
-          You can verify later, but some features require a verified email.
+          {t('onboarding.verifyEmail.note')}
         </Text>
       </View>
     </SafeAreaView>

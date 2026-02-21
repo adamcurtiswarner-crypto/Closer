@@ -21,9 +21,11 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { getCategoryDisplay } from '@/config/wishlistCategories';
 import { logEvent } from '@/services/analytics';
+import { useTranslation } from 'react-i18next';
 import { AddWishlistModal } from '@/components/AddWishlistModal';
 
 export default function WishlistScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: items, isLoading, refetch } = useWishlistItems();
   const toggleItem = useToggleWishlistItem();
@@ -83,10 +85,10 @@ export default function WishlistScreen() {
           <Text style={styles.backArrow}>{'\u2190'}</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Wishlist</Text>
+          <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
           {!isEmpty && (
             <Text style={styles.headerCount}>
-              {doneItems.length}/{items?.length ?? 0} done
+              {doneItems.length}/{items?.length ?? 0} {t('common.done').toLowerCase()}
             </Text>
           )}
         </View>
@@ -104,16 +106,16 @@ export default function WishlistScreen() {
         {isEmpty && (
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyCard}>
             <Text style={styles.emptyIcon}>{'\u2728'}</Text>
-            <Text style={styles.emptyTitle}>Start your wishlist together</Text>
+            <Text style={styles.emptyTitle}>{t('wishlist.startTogether')}</Text>
             <Text style={styles.emptySubtitle}>
-              Add experiences, trips, and dreams you want to share with each other
+              {t('wishlist.addDescription')}
             </Text>
             <TouchableOpacity
               style={styles.emptyButton}
               onPress={() => setShowAddModal(true)}
               activeOpacity={0.8}
             >
-              <Text style={styles.emptyButtonText}>Add your first wish</Text>
+              <Text style={styles.emptyButtonText}>{t('wishlist.addFirstWish')}</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -122,7 +124,7 @@ export default function WishlistScreen() {
         {activeItems.length > 0 && (
           <Animated.View entering={FadeIn.duration(400)}>
             <Text style={styles.sectionLabel}>
-              {activeItems.length} {activeItems.length === 1 ? 'wish' : 'wishes'}
+              {t('wishlist.wishes', { count: activeItems.length })}
             </Text>
           </Animated.View>
         )}
@@ -150,7 +152,7 @@ export default function WishlistScreen() {
               activeOpacity={0.7}
             >
               <Text style={styles.doneHeaderText}>
-                Done ({doneItems.length})
+                {t('wishlist.done', { count: doneItems.length })}
               </Text>
               <Text style={styles.doneChevron}>
                 {showDone ? '\u25B2' : '\u25BC'}
@@ -184,7 +186,7 @@ export default function WishlistScreen() {
               <View style={styles.addIconWrap}>
                 <Text style={styles.addIcon}>+</Text>
               </View>
-              <Text style={styles.addText}>Add something new</Text>
+              <Text style={styles.addText}>{t('wishlist.addSomethingNew')}</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -209,6 +211,7 @@ function WishlistRow({
   onToggle: (item: WishlistItem) => void;
   onDelete: (itemId: string) => void;
 }) {
+  const { t } = useTranslation();
   const cat = getCategoryDisplay(item.category);
 
   return (
@@ -245,7 +248,7 @@ function WishlistRow({
           </Text>
         ) : null}
         <Text style={styles.rowMeta}>
-          Added by {isCurrentUser ? 'you' : item.addedByName}
+          {isCurrentUser ? t('common.addedByYou') : t('common.addedBy', { name: item.addedByName })}
         </Text>
       </View>
 

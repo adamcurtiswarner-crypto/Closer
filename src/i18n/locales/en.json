@@ -9,7 +9,18 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
-    "done": "Done"
+    "done": "Done",
+    "continue": "Continue",
+    "saving": "Saving...",
+    "skipForNow": "Skip for now",
+    "copied": "Copied",
+    "sent": "Sent",
+    "you": "You",
+    "notSet": "Not set",
+    "notSetYet": "Not set yet",
+    "setYours": "Set yours",
+    "addedByYou": "Added by you",
+    "addedBy": "Added by {{name}}"
   },
   "auth": {
     "welcome": {
@@ -58,6 +69,82 @@
       }
     }
   },
+  "onboarding": {
+    "acceptInvite": {
+      "title": "Join your partner",
+      "subtitle": "Enter the code they sent you.",
+      "placeholder": "ABC123",
+      "join": "Join",
+      "invalidCode": "Invalid Code",
+      "invalidCodeBody": "This code isn't valid or has expired. Ask your partner for a new one.",
+      "enterSixChar": "Please enter a 6-character code."
+    },
+    "firstPrompt": {
+      "title": "Here's how it works",
+      "samplePrompt": "What's one thing your partner did this week that made your day better?",
+      "explanation": "Each day, you both answer privately. Then you see each other's response.",
+      "showMe": "Show Me",
+      "theirResponse": "Their response",
+      "sampleResponse": "When you made coffee before I asked. I noticed, even if I didn't say anything.",
+      "tagline": "That's it. Small moments, shared.",
+      "iGetIt": "I get it",
+      "showExample": "Show me an example"
+    },
+    "invitePartner": {
+      "title": "Invite your partner",
+      "subtitle": "Stoke works best together. Send this to your partner.",
+      "subtitleCreate": "Stoke works best together. Create an invite to send to your partner.",
+      "tapToCopy": "Tap to copy",
+      "validDays": "Valid for 7 days",
+      "share": "Share",
+      "waitForThem": "I'll wait for them to join",
+      "haveInviteCode": "I have an invite code",
+      "createInvite": "Create Invite",
+      "inviteCopied": "Invite code copied to clipboard."
+    },
+    "preferences": {
+      "title": "A few quick things",
+      "partnerLabel": "What should we call your partner?",
+      "partnerPlaceholder": "Their name or nickname",
+      "promptTimeLabel": "When should your daily prompt arrive?",
+      "timeOptions": {
+        "morning": "Morning (8 AM)",
+        "afternoon": "Afternoon (2 PM)",
+        "evening": "Evening (7 PM)",
+        "night": "Night (9 PM)"
+      }
+    },
+    "toneCalibration": {
+      "title": "How are you two doing?",
+      "subtitle": "This helps us start in the right place.",
+      "solid": "We're solid",
+      "solidDescription": "Just want to stay that way",
+      "okay": "We're okay",
+      "okayDescription": "But feel a bit distant lately",
+      "struggling": "We're struggling to connect",
+      "strugglingDescription": "Want to be more intentional"
+    },
+    "ready": {
+      "title": "You're all set",
+      "subtitle": "Your first prompt arrives at {{time}}.",
+      "startNow": "Start Now",
+      "waitForPrompt": "I'll wait for the prompt"
+    },
+    "verifyEmail": {
+      "title": "Check your email",
+      "subtitle": "We sent a verification link to {{email}}. Tap the link to verify your account.",
+      "resend": "Resend email",
+      "resending": "Sending...",
+      "sentAlert": "Verification email resent. Check your inbox.",
+      "errorAlert": "Could not resend. Please try again later.",
+      "note": "You can verify later, but some features require a verified email."
+    },
+    "waitingPartner": {
+      "title": "Waiting for your partner",
+      "subtitle": "We'll let you know when they join.",
+      "resendInvite": "Resend Invite"
+    }
+  },
   "today": {
     "goodMorning": "Good morning",
     "goodAfternoon": "Good afternoon",
@@ -84,17 +171,54 @@
     "thanksForSharing": "Thanks for sharing",
     "streakStarted": "Streak started!",
     "dayStreak": "{{count}} day streak!",
-    "seeYouTomorrow": "See you tomorrow"
+    "seeYouTomorrow": "See you tomorrow",
+    "errorLoading": "Couldn't load today's prompt."
   },
   "memories": {
     "title": "Memories",
     "thisWeek": "This Week",
     "saved": "Saved",
     "noMemories": "No memories yet",
-    "saveMemory": "Save this memory"
+    "saveMemory": "Save this memory",
+    "errorLoading": "Couldn't load this week's recap.",
+    "errorLoadingSaved": "Couldn't load saved memories.",
+    "noCompletions": "No completions this week yet.",
+    "noCompletionsSubtitle": "Complete a prompt together to see it here.",
+    "saving": "Saving...",
+    "saveToMemories": "Save to Memories",
+    "savedLabel": "Saved",
+    "emptySavedTitle": "Your saved memories will appear here.",
+    "emptySavedSubtitle": "Each week, pick your favorite moment to save.",
+    "unlockMore": "Unlock {{count}} more memories with Premium"
   },
   "insights": {
-    "title": "Insights"
+    "title": "Insights",
+    "emptyTitle": "Your insights are brewing",
+    "emptySubtitle": "Complete a few prompts together and your relationship insights will appear here.",
+    "prompts": "Prompts",
+    "days": "Days",
+    "memoriesLabel": "Memories",
+    "milestones": "Milestones",
+    "loveLanguages": "Love Languages",
+    "emotionalJourney": "Emotional Journey",
+    "communication": "Communication",
+    "promptCategories": "Prompt Categories",
+    "streakConsistency": "Streak & Consistency",
+    "current": "Current",
+    "longest": "Longest",
+    "thisWeek": "This week",
+    "weeksGrowing": "{{count}} week of growing together",
+    "weeksGrowing_other": "{{count}} weeks of growing together",
+    "avgResponseLength": "Avg. response length",
+    "avgWords": "~{{count}} words",
+    "talkedAboutIt": "Talked about it after",
+    "warmReflections": "{{rate}}% of your reflections felt warm",
+    "completeMore": "Complete more prompts to see your emotional journey.",
+    "earnMilestones": "Complete prompts together to earn milestones.",
+    "next": "Next",
+    "happyAnniversary": "Happy Anniversary!",
+    "daysUntilAnniversary": "{{count}} day until your anniversary",
+    "daysUntilAnniversary_other": "{{count}} days until your anniversary"
   },
   "settings": {
     "title": "Settings",
@@ -107,6 +231,7 @@
     "syncToCalendar": "Sync to calendar",
     "resources": "RESOURCES",
     "findSupport": "Find support",
+    "partnership": "PARTNERSHIP",
     "privacyData": "PRIVACY & DATA",
     "exportData": "Export my data",
     "anonymize": "Anonymize my responses",
@@ -122,6 +247,14 @@
     "promptTimeSubtitle": "When should your daily prompt arrive?",
     "frequencyTitle": "Prompt frequency",
     "frequencySubtitle": "How often should you receive prompts?",
+    "frequencyOptions": {
+      "daily": "Daily",
+      "dailyDesc": "Every day",
+      "weekdays": "Weekdays",
+      "weekdaysDesc": "Monday - Friday",
+      "weekends": "Weekends",
+      "weekendsDesc": "Saturday & Sunday"
+    },
     "deleteTitle": "Delete your account",
     "deleteBody": "Your account will be deactivated immediately and your data permanently removed after 30 days. Your partner will be notified.\n\nThis cannot be undone.",
     "deleteConfirmLabel": "Type DELETE to confirm",
@@ -129,14 +262,63 @@
     "anonymizeTitle": "Anonymize your responses",
     "anonymizeBody": "This will replace all your written responses with [removed]. Your partner's responses will not be affected.\n\nThis cannot be undone.",
     "anonymizeButton": "Anonymize my responses",
+    "anonymized": "Responses anonymized",
+    "anonymizedBody": "{{count}} responses have been replaced with [removed].",
+    "exportUnavailable": "Data export is available once every 24 hours.",
+    "exportFailed": "Failed to export data. Please try again.",
+    "deleteFailed": "Failed to delete account. Please try again.",
+    "anonymizeFailed": "Failed to anonymize responses. Please try again.",
     "safetyText": "Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.",
-    "safetyLink": "National Domestic Violence Hotline"
+    "safetyLink": "National Domestic Violence Hotline",
+    "errorUpdateTime": "Failed to update notification time",
+    "errorUpdateFrequency": "Failed to update prompt frequency"
   },
   "profile": {
     "editName": "Edit name",
     "partnerName": "Partner name",
     "anniversary": "Anniversary",
-    "loveLanguage": "Love language"
+    "loveLanguage": "Love language",
+    "yourName": "YOUR NAME",
+    "yourNamePlaceholder": "Your name",
+    "partner": "PARTNER",
+    "partnerPlaceholder": "Partner's name",
+    "linkWithPartner": "Link with a partner to edit",
+    "setYourDate": "Set your date",
+    "yourLoveLanguage": "YOUR LOVE LANGUAGE",
+    "loveLanguageTitle": "Your Love Language",
+    "loveLanguageSubtitle": "How do you most feel loved?",
+    "anniversaryTitle": "Anniversary Date",
+    "anniversarySubtitle": "When did your relationship begin?",
+    "uploadFailed": "Upload failed",
+    "couldNotUpload": "Could not upload photo. Please try again.",
+    "couldNotSaveAnniversary": "Could not save anniversary date.",
+    "couldNotSaveLoveLanguage": "Could not save love language."
+  },
+  "goals": {
+    "title": "Goals",
+    "thisWeeksChallenge": "This week's challenge",
+    "start": "Start",
+    "addGoal": "Add goal",
+    "newGoal": "New goal",
+    "setGoalSubtitle": "Set a goal for your relationship",
+    "titleLabel": "What's the goal?",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Add a short description...",
+    "howOften": "How often?",
+    "frequencies": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "oneTime": "One-time"
+    },
+    "frequencyHints": {
+      "daily": "Every day",
+      "weekly": "Once a week",
+      "monthly": "Once a month",
+      "oneTime": "Just this once"
+    },
+    "createGoal": "Create goal",
+    "failedToCreate": "Failed to create goal. Please try again."
   },
   "wishlist": {
     "title": "Wishlist",
@@ -146,7 +328,36 @@
     "addSomethingNew": "Add something new",
     "wishes_one": "1 wish",
     "wishes_other": "{{count}} wishes",
-    "done": "Done ({{count}})"
+    "done": "Done ({{count}})",
+    "addToWishlist": "Add to wishlist",
+    "somethingYoudLove": "Something you'd love to do together",
+    "whatIsIt": "What is it?",
+    "details": "Details",
+    "optional": "optional",
+    "addNotes": "Add notes or details...",
+    "category": "Category",
+    "adding": "Adding...",
+    "failedToAdd": "Failed to add item. Please try again.",
+    "dreamTogether": "Dream together",
+    "addSomethingCta": "Add something",
+    "morePlural": "+{{count}} more",
+    "moreWishes_one": "+1 more wish",
+    "moreWishes_other": "+{{count}} more wishes",
+    "emptySubtitle": "Add things you'd love to do as a couple",
+    "seeAll": "See all"
+  },
+  "paywall": {
+    "title": "Stoke Premium",
+    "subtitle": "Deepen your connection with premium features.",
+    "features": {
+      "memories": "Unlimited saved memories",
+      "streaks": "Streak badges & insights",
+      "tone": "Tone calibration insights",
+      "support": "Priority support"
+    },
+    "startPremium": "Start Premium — {{price}}",
+    "restore": "Restore purchases",
+    "notNow": "Not now"
   },
   "resources": {
     "title": "Resources",
@@ -161,6 +372,11 @@
     "deleteMessage": "Delete message",
     "deleteConfirm": "This message will be removed for both of you.",
     "sentPhoto": "Sent a photo",
-    "sentMessage": "Sent you a message"
+    "sentMessage": "Sent you a message",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "offline": {
+    "banner": "You're offline. Changes will sync when you reconnect."
   }
 }

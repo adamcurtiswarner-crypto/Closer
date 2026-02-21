@@ -61,6 +61,30 @@ service cloud.firestore {
     }
 
     // ============================================
+    // CHAT MESSAGES
+    // ============================================
+
+    match /couples/{coupleId}/messages/{messageId} {
+      allow read: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId) &&
+        request.resource.data.sender_id == request.auth.uid;
+      // Only sender can soft-delete (update is_deleted + clear text)
+      allow update: if isCoupleMember(coupleId) &&
+        resource.data.sender_id == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CHAT READ CURSORS
+    // ============================================
+
+    match /couples/{coupleId}/chat_read_cursors/{userId} {
+      allow read: if isCoupleMember(coupleId);
+      allow create, update: if isOwner(userId) && isCoupleMember(coupleId);
+      allow delete: if false;
+    }
+
+    // ============================================
     // COUPLE INVITES
     // ============================================
 

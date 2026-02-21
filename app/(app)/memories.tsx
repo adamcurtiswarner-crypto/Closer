@@ -20,11 +20,13 @@ import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { MemoryCardSkeleton } from '@/components/Skeleton';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type Tab = 'recap' | 'saved';
 
 export default function MemoriesScreen() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('recap');
 
   const { data: completions, isLoading: recapLoading, error: recapError, refetch: refetchRecap } = useWeeklyRecap();
@@ -63,7 +65,7 @@ export default function MemoriesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Memories</Text>
+        <Text style={styles.title}>{t('memories.title')}</Text>
       </View>
 
       {/* Tabs */}
@@ -73,7 +75,7 @@ export default function MemoriesScreen() {
           onPress={() => setActiveTab('recap')}
         >
           <Text style={[styles.tabText, activeTab === 'recap' && styles.activeTabText]}>
-            This Week
+            {t('memories.thisWeek')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -81,7 +83,7 @@ export default function MemoriesScreen() {
           onPress={() => setActiveTab('saved')}
         >
           <Text style={[styles.tabText, activeTab === 'saved' && styles.activeTabText]}>
-            Saved
+            {t('memories.saved')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -95,14 +97,14 @@ export default function MemoriesScreen() {
             </View>
           ) : recapError ? (
             <QueryError
-              message="Couldn't load this week's recap."
+              message={t('memories.errorLoading')}
               onRetry={() => refetchRecap()}
             />
           ) : !completions || completions.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>No completions this week yet.</Text>
+              <Text style={styles.emptyTitle}>{t('memories.noCompletions')}</Text>
               <Text style={styles.emptySubtitle}>
-                Complete a prompt together to see it here.
+                {t('memories.noCompletionsSubtitle')}
               </Text>
             </View>
           ) : (
@@ -135,11 +137,11 @@ export default function MemoriesScreen() {
                     disabled={saveMemory.isPending}
                   >
                     <Text style={styles.saveButtonText}>
-                      {saveMemory.isPending ? 'Saving...' : 'Save to Memories'}
+                      {saveMemory.isPending ? t('memories.saving') : t('memories.saveToMemories')}
                     </Text>
                   </TouchableOpacity>
                 ) : (
-                  <Text style={styles.savedLabel}>Saved</Text>
+                  <Text style={styles.savedLabel}>{t('memories.savedLabel')}</Text>
                 )}
               </View>
             ))
@@ -152,14 +154,14 @@ export default function MemoriesScreen() {
             </View>
           ) : memoriesError ? (
             <QueryError
-              message="Couldn't load saved memories."
+              message={t('memories.errorLoadingSaved')}
               onRetry={() => refetchMemories()}
             />
           ) : !memories || memories.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Your saved memories will appear here.</Text>
+              <Text style={styles.emptyTitle}>{t('memories.emptySavedTitle')}</Text>
               <Text style={styles.emptySubtitle}>
-                Each week, pick your favorite moment to save.
+                {t('memories.emptySavedSubtitle')}
               </Text>
             </View>
           ) : (
@@ -193,7 +195,7 @@ export default function MemoriesScreen() {
                   onPress={() => setShowPaywall(true)}
                 >
                   <Text style={styles.unlockText}>
-                    Unlock {memories.length - FREE_MEMORY_LIMIT} more memories with Premium
+                    {t('memories.unlockMore', { count: memories.length - FREE_MEMORY_LIMIT })}
                   </Text>
                 </TouchableOpacity>
               )}

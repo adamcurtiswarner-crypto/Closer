@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { useTranslation } from 'react-i18next';
 
 export function OfflineBanner() {
   const { isConnected } = useNetworkStatus();
+  const { t } = useTranslation();
   const translateY = useRef(new Animated.Value(-60)).current;
 
   useEffect(() => {
@@ -17,7 +19,7 @@ export function OfflineBanner() {
   return (
     <Animated.View style={[styles.banner, { transform: [{ translateY }] }]}>
       <Text style={styles.text}>
-        You're offline. Changes will sync when you reconnect.
+        {t('offline.banner')}
       </Text>
     </Animated.View>
   );

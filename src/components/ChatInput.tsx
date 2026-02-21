@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Image, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { pickImage } from '@/services/imageUpload';
 
 interface ChatInputProps {
@@ -9,6 +10,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
+  const { t } = useTranslation();
   const [text, setText] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
 
@@ -57,7 +59,7 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
 
         <TextInput
           style={styles.input}
-          placeholder="Message..."
+          placeholder={t('chat.messagePlaceholder')}
           placeholderTextColor="#a8a29e"
           value={text}
           onChangeText={handleTextChange}

@@ -10,12 +10,14 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Button } from '@/components';
 import { useAcceptInvite } from '@/hooks/useCouple';
 import { clearPendingInviteCode } from '@/hooks/useDeepLink';
+import { useTranslation } from 'react-i18next';
 
 export default function AcceptInviteScreen() {
   const { code: codeParam } = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState('');
   const acceptInvite = useAcceptInvite();
   const hasAutoSubmitted = useRef(false);
+  const { t } = useTranslation();
 
   // Handle code from deep link params
   useEffect(() => {
@@ -39,7 +41,7 @@ export default function AcceptInviteScreen() {
 
   const handleAccept = async () => {
     if (code.length !== 6) {
-      Alert.alert('Error', 'Please enter a 6-character code.');
+      Alert.alert(t('common.error'), t('onboarding.acceptInvite.enterSixChar'));
       return;
     }
 
@@ -50,8 +52,8 @@ export default function AcceptInviteScreen() {
     } catch (error: any) {
       hasAutoSubmitted.current = false; // Allow retry
       Alert.alert(
-        'Invalid Code',
-        "This code isn't valid or has expired. Ask your partner for a new one."
+        t('onboarding.acceptInvite.invalidCode'),
+        t('onboarding.acceptInvite.invalidCodeBody')
       );
     }
   };
@@ -61,10 +63,10 @@ export default function AcceptInviteScreen() {
       <View className="flex-1 px-6 justify-center">
         <View className="items-center mb-8">
           <Text className="text-2xl font-bold text-warm-900 text-center">
-            Join your partner
+            {t('onboarding.acceptInvite.title')}
           </Text>
           <Text className="text-warm-600 text-center mt-2">
-            Enter the code they sent you.
+            {t('onboarding.acceptInvite.subtitle')}
           </Text>
         </View>
 
@@ -81,7 +83,7 @@ export default function AcceptInviteScreen() {
 
         <View className="mt-8">
           <Button
-            title="Join"
+            title={t('onboarding.acceptInvite.join')}
             onPress={handleAccept}
             loading={acceptInvite.isPending}
             disabled={code.length !== 6}
@@ -89,7 +91,7 @@ export default function AcceptInviteScreen() {
         </View>
 
         <Button
-          title="Back"
+          title={t('common.back')}
           variant="ghost"
           onPress={() => router.back()}
         />

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 import { useCreateGoal, type TargetFrequency } from '@/hooks/useGoals';
 
 interface AddGoalModalProps {
@@ -27,6 +28,7 @@ const FREQUENCIES: { value: TargetFrequency; label: string; hint: string }[] = [
 ];
 
 export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [frequency, setFrequency] = useState<TargetFrequency>('weekly');
@@ -81,13 +83,13 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
 
           {/* Header */}
           <Animated.View entering={FadeIn.duration(400)}>
-            <Text style={styles.modalTitle}>New Goal</Text>
-            <Text style={styles.modalSubtitle}>Set a goal to strengthen your connection</Text>
+            <Text style={styles.modalTitle}>{t('goals.newGoal')}</Text>
+            <Text style={styles.modalSubtitle}>{t('goals.setGoalSubtitle')}</Text>
           </Animated.View>
 
           {/* Title */}
           <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-            <Text style={styles.label}>Title</Text>
+            <Text style={styles.label}>{t('goals.titleLabel')}</Text>
             <TextInput
               style={styles.input}
               placeholder="e.g., Weekly date night"
@@ -102,10 +104,10 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
 
           {/* Description */}
           <Animated.View entering={FadeInUp.duration(400).delay(200)}>
-            <Text style={styles.label}>Description <Text style={styles.labelHint}>(optional)</Text></Text>
+            <Text style={styles.label}>{t('goals.descriptionLabel')} <Text style={styles.labelHint}>({t('wishlist.optional')})</Text></Text>
             <TextInput
               style={[styles.input, styles.descriptionInput]}
-              placeholder="Add some details..."
+              placeholder={t('goals.descriptionPlaceholder')}
               placeholderTextColor="#a8a29e"
               value={description}
               onChangeText={setDescription}
@@ -117,7 +119,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
 
           {/* Frequency picker */}
           <Animated.View entering={FadeInUp.duration(400).delay(300)}>
-            <Text style={styles.label}>How often?</Text>
+            <Text style={styles.label}>{t('goals.howOften')}</Text>
             <View style={styles.frequencyRow}>
               {FREQUENCIES.map((f) => {
                 const isActive = frequency === f.value;
@@ -147,7 +149,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
           {createGoal.isError && (
             <Animated.View entering={FadeIn.duration(300)} style={styles.errorContainer}>
               <Text style={styles.errorText}>
-                {(createGoal.error as Error)?.message || 'Failed to create goal'}
+                {(createGoal.error as Error)?.message || t('goals.failedToCreate')}
               </Text>
             </Animated.View>
           )}
@@ -157,7 +159,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
         <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.buttonContainer}>
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelButton} onPress={handleClose} activeOpacity={0.8}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.createButton, !canSubmit && styles.disabled]}
@@ -166,7 +168,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
               activeOpacity={0.8}
             >
               <Text style={styles.createText}>
-                {createGoal.isPending ? 'Creating...' : 'Create Goal'}
+                {createGoal.isPending ? t('common.saving') : t('goals.createGoal')}
               </Text>
               {!createGoal.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
             </TouchableOpacity>

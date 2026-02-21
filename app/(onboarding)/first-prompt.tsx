@@ -11,11 +11,13 @@ import { Button } from '@/components';
 import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { useTriggerPrompt } from '@/hooks/usePrompt';
+import { useTranslation } from 'react-i18next';
 
 export default function FirstPromptScreen() {
   const { user } = useAuth();
   const triggerPrompt = useTriggerPrompt();
   const [showResponse, setShowResponse] = useState(false);
+  const { t } = useTranslation();
 
   const handleContinue = async () => {
     // Trigger the first real prompt for this couple
@@ -33,18 +35,18 @@ export default function FirstPromptScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Here's how it works</Text>
+        <Text style={styles.title}>{t('onboarding.firstPrompt.title')}</Text>
 
         <View style={styles.cardArea}>
           {/* Sample prompt card */}
           <View style={styles.card}>
             <Text style={styles.promptText}>
-              What's one thing your partner did this week that made your day better?
+              {t('onboarding.firstPrompt.samplePrompt')}
             </Text>
           </View>
 
           <Text style={styles.explanation}>
-            Each day, you both answer privately. Then you see each other's response.
+            {t('onboarding.firstPrompt.explanation')}
           </Text>
 
           {!showResponse ? (
@@ -52,13 +54,13 @@ export default function FirstPromptScreen() {
               style={styles.showButton}
               onPress={() => setShowResponse(true)}
             >
-              <Text style={styles.showButtonText}>Show Me</Text>
+              <Text style={styles.showButtonText}>{t('onboarding.firstPrompt.showMe')}</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.responseCard}>
-              <Text style={styles.responseLabel}>Their response</Text>
+              <Text style={styles.responseLabel}>{t('onboarding.firstPrompt.theirResponse')}</Text>
               <Text style={styles.responseText}>
-                "When you made coffee before I asked. I noticed, even if I didn't say anything."
+                {t('onboarding.firstPrompt.sampleResponse')}
               </Text>
             </View>
           )}
@@ -66,7 +68,7 @@ export default function FirstPromptScreen() {
 
         {showResponse && (
           <View style={styles.tagline}>
-            <Text style={styles.taglineText}>That's it. Small moments, shared.</Text>
+            <Text style={styles.taglineText}>{t('onboarding.firstPrompt.tagline')}</Text>
           </View>
         )}
 
@@ -74,7 +76,7 @@ export default function FirstPromptScreen() {
 
         <View style={styles.buttonContainer}>
           <Button
-            title={showResponse ? "I get it" : "Show me an example"}
+            title={showResponse ? t('onboarding.firstPrompt.iGetIt') : t('onboarding.firstPrompt.showExample')}
             onPress={showResponse ? handleContinue : () => setShowResponse(true)}
           />
         </View>

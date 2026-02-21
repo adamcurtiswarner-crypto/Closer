@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from 'react-i18next';
 import { useAddWishlistItem } from '@/hooks/useWishlist';
 import { WISHLIST_CATEGORIES } from '@/config/wishlistCategories';
 
@@ -21,6 +22,7 @@ interface AddWishlistModalProps {
 }
 
 export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('experiences');
@@ -75,13 +77,13 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
 
           {/* Header */}
           <Animated.View entering={FadeIn.duration(400)}>
-            <Text style={styles.modalTitle}>Add to Wishlist</Text>
-            <Text style={styles.modalSubtitle}>Something you'd love to do together</Text>
+            <Text style={styles.modalTitle}>{t('wishlist.addToWishlist')}</Text>
+            <Text style={styles.modalSubtitle}>{t('wishlist.somethingYoudLove')}</Text>
           </Animated.View>
 
           {/* Title */}
           <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-            <Text style={styles.label}>What is it?</Text>
+            <Text style={styles.label}>{t('wishlist.whatIsIt')}</Text>
             <TextInput
               style={styles.input}
               placeholder="e.g., Visit Paris together"
@@ -96,10 +98,10 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
 
           {/* Description */}
           <Animated.View entering={FadeInUp.duration(400).delay(200)}>
-            <Text style={styles.label}>Details <Text style={styles.labelHint}>(optional)</Text></Text>
+            <Text style={styles.label}>{t('wishlist.details')} <Text style={styles.labelHint}>({t('wishlist.optional')})</Text></Text>
             <TextInput
               style={[styles.input, styles.descriptionInput]}
-              placeholder="Add some notes..."
+              placeholder={t('wishlist.addNotes')}
               placeholderTextColor="#a8a29e"
               value={description}
               onChangeText={setDescription}
@@ -111,7 +113,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
 
           {/* Category picker */}
           <Animated.View entering={FadeInUp.duration(400).delay(300)}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>{t('wishlist.category')}</Text>
             <View style={styles.categoryGrid}>
               {WISHLIST_CATEGORIES.map((c) => {
                 const isActive = category === c.value;
@@ -139,7 +141,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
           {addItem.isError && (
             <Animated.View entering={FadeIn.duration(300)} style={styles.errorContainer}>
               <Text style={styles.errorText}>
-                {(addItem.error as Error)?.message || 'Failed to add item'}
+                {(addItem.error as Error)?.message || t('wishlist.failedToAdd')}
               </Text>
             </Animated.View>
           )}
@@ -149,7 +151,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
         <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.buttonContainer}>
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.cancelButton} onPress={handleClose} activeOpacity={0.8}>
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.createButton, !canSubmit && styles.disabled]}
@@ -158,7 +160,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
               activeOpacity={0.8}
             >
               <Text style={styles.createText}>
-                {addItem.isPending ? 'Adding...' : 'Add to Wishlist'}
+                {addItem.isPending ? t('wishlist.adding') : t('wishlist.addToWishlist')}
               </Text>
               {!addItem.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
             </TouchableOpacity>

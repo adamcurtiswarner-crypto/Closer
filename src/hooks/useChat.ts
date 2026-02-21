@@ -299,6 +299,41 @@ export function useUnreadCount() {
   return count;
 }
 
+export function usePartnerReadCursor() {
+  const { user } = useAuth();
+  const { data: couple } = useCouple();
+  const [partnerReadAt, setPartnerReadAt] = useState<Date | null>(null);
+
+  const coupleId = couple?.id;
+  const userId = user?.id;
+  const partnerId = couple?.memberIds?.find((id: string) => id !== userId) || null;
+
+  useEffect(() => {
+    if (!coupleId || !partnerId) return;
+
+    const cursorRef = doc(db, 'couples', coupleId, 'chat_read_cursors', partnerId);
+    const unsubscribe = onSnapshot(
+      cursorRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          const lastReadAt = data.last_read_at;
+          if (lastReadAt?.toDate) {
+            setPartnerReadAt(lastReadAt.toDate());
+          }
+        }
+      },
+      (error) => {
+        logger.error('Error listening to partner read cursor:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [coupleId, partnerId]);
+
+  return partnerReadAt;
+}
+
 export function useDeleteMessage() {
   const { data: couple } = useCouple();
   const coupleId = couple?.id;

@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 function StatPill({ value, label }: { value: number; label: string }) {
   return (
@@ -49,12 +50,13 @@ function InsightsSkeleton() {
 }
 
 function EmptyState() {
+  const { t } = useTranslation();
   return (
     <View style={styles.empty}>
       <Text style={styles.emptyIcon}>{'\uD83D\uDD2D'}</Text>
-      <Text style={styles.emptyTitle}>Your insights are brewing</Text>
+      <Text style={styles.emptyTitle}>{t('insights.emptyTitle')}</Text>
       <Text style={styles.emptySubtitle}>
-        Complete a few prompts together and your relationship insights will appear here.
+        {t('insights.emptySubtitle')}
       </Text>
     </View>
   );
@@ -62,6 +64,7 @@ function EmptyState() {
 
 export default function InsightsScreen() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { data: insights, isLoading, refetch, isRefetching } = useInsights();
   const { data: couple } = useCouple();
 
@@ -109,7 +112,7 @@ export default function InsightsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Insights</Text>
+        <Text style={styles.title}>{t('insights.title')}</Text>
       </View>
 
       <ScrollView
@@ -132,9 +135,9 @@ export default function InsightsScreen() {
           <>
             {/* Hero Stats */}
             <Animated.View entering={FadeIn.duration(400)} style={styles.heroRow}>
-              <StatPill value={insights.totalCompletions} label="Prompts" />
-              <StatPill value={insights.daysAsCouple} label="Days" />
-              <StatPill value={insights.memoriesSaved} label="Memories" />
+              <StatPill value={insights.totalCompletions} label={t('insights.prompts')} />
+              <StatPill value={insights.daysAsCouple} label={t('insights.days')} />
+              <StatPill value={insights.memoriesSaved} label={t('insights.memoriesLabel')} />
             </Animated.View>
 
             {/* Milestones */}

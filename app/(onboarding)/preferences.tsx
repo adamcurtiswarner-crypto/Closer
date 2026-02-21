@@ -11,6 +11,7 @@ import { db } from '@/config/firebase';
 import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { Button, Input } from '@/components';
+import { useTranslation } from 'react-i18next';
 
 const TIME_OPTIONS = [
   { label: 'Morning (8 AM)', value: '08:00' },
@@ -24,6 +25,7 @@ export default function PreferencesScreen() {
   const [partnerName, setPartnerName] = useState('');
   const [selectedTime, setSelectedTime] = useState('19:00');
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useTranslation();
 
   const handleContinue = async () => {
     if (!user?.id) return;
@@ -48,13 +50,13 @@ export default function PreferencesScreen() {
     <SafeAreaView className="flex-1 bg-warm-50">
       <View className="flex-1 px-6 pt-12">
         <Text className="text-2xl font-bold text-warm-900">
-          A few quick things
+          {t('onboarding.preferences.title')}
         </Text>
 
         <View className="mt-8">
           <Input
-            label="What should we call your partner?"
-            placeholder="Their name or nickname"
+            label={t('onboarding.preferences.partnerLabel')}
+            placeholder={t('onboarding.preferences.partnerPlaceholder')}
             value={partnerName}
             onChangeText={setPartnerName}
           />
@@ -62,7 +64,7 @@ export default function PreferencesScreen() {
 
         <View className="mt-8">
           <Text className="text-warm-700 text-sm font-medium mb-3">
-            When should your daily prompt arrive?
+            {t('onboarding.preferences.promptTimeLabel')}
           </Text>
 
           {TIME_OPTIONS.map((option) => (
@@ -99,7 +101,7 @@ export default function PreferencesScreen() {
         <View className="flex-1" />
 
         <View className="mb-8">
-          <Button title={isSaving ? "Saving..." : "Continue"} onPress={handleContinue} disabled={isSaving} />
+          <Button title={isSaving ? t('common.saving') : t('common.continue')} onPress={handleContinue} disabled={isSaving} />
         </View>
       </View>
     </SafeAreaView>

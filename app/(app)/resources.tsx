@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { RESOURCE_CATEGORIES, getResourcesByCategory } from '@/config/therapistResources';
 import { ResourceCard } from '@/components/ResourceCard';
+import { useTranslation } from 'react-i18next';
 import { logEvent } from '@/services/analytics';
 
 export default function ResourcesScreen() {
+  const { t } = useTranslation();
   useEffect(() => {
     logEvent('resource_viewed');
   }, []);
@@ -23,7 +25,7 @@ export default function ResourcesScreen() {
         >
           <Text style={styles.backArrow}>{'\u2190'}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Resources</Text>
+        <Text style={styles.headerTitle}>{t('resources.title')}</Text>
         <View style={styles.backButton} />
       </Animated.View>
 
@@ -34,7 +36,7 @@ export default function ResourcesScreen() {
         {/* Intro */}
         <Animated.View entering={FadeInUp.duration(400).delay(100)}>
           <Text style={styles.intro}>
-            Stoke is not therapy. These resources can help if you want to go deeper.
+            {t('resources.intro')}
           </Text>
         </Animated.View>
 
@@ -71,7 +73,7 @@ export default function ResourcesScreen() {
         <Animated.View entering={FadeIn.duration(400).delay(800)}>
           <View style={styles.safety}>
             <Text style={styles.safetyText}>
-              If you feel unsafe in your relationship, please reach out for help. You are not alone.
+              {t('resources.safetyFooter')}
             </Text>
           </View>
         </Animated.View>

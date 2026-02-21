@@ -24,6 +24,7 @@ import { useCouple, useUpdateAnniversaryDate } from '@/hooks/useCouple';
 import { pickImage, uploadProfilePhoto, uploadPartnerPhoto } from '@/services/imageUpload';
 import { LOVE_LANGUAGES, getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { logEvent } from '@/services/analytics';
+import { useTranslation } from 'react-i18next';
 import { logger } from '@/utils/logger';
 
 function getInitials(name: string | null): string {
@@ -32,6 +33,7 @@ function getInitials(name: string | null): string {
 }
 
 export function ProfileCard() {
+  const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
   const { data: couple } = useCouple();
   const updateAnniversary = useUpdateAnniversaryDate();
@@ -68,7 +70,7 @@ export function ProfileCard() {
       logEvent('anniversary_date_set');
     } catch (error) {
       logger.error('Error saving anniversary date:', error);
-      Alert.alert('Error', 'Could not save anniversary date.');
+      Alert.alert(t('common.error'), t('profile.couldNotSaveAnniversary'));
     }
     setShowDatePicker(false);
   };
@@ -86,7 +88,7 @@ export function ProfileCard() {
       logEvent('love_language_set', { value });
     } catch (error) {
       logger.error('Error saving love language:', error);
-      Alert.alert('Error', 'Could not save love language.');
+      Alert.alert(t('common.error'), t('profile.couldNotSaveLoveLanguage'));
     } finally {
       setSavingLoveLanguage(false);
       setShowLoveLanguageModal(false);
@@ -110,7 +112,7 @@ export function ProfileCard() {
       logEvent('profile_photo_uploaded', { type: 'user' });
     } catch (error) {
       logger.error('Error uploading profile photo:', error);
-      Alert.alert('Upload failed', 'Could not upload your photo. Please try again.');
+      Alert.alert(t('profile.uploadFailed'), t('profile.couldNotUpload'));
     } finally {
       setUploadingUser(false);
     }
@@ -135,7 +137,7 @@ export function ProfileCard() {
       logEvent('profile_photo_uploaded', { type: 'partner' });
     } catch (error) {
       logger.error('Error uploading partner photo:', error);
-      Alert.alert('Upload failed', 'Could not upload the photo. Please try again.');
+      Alert.alert(t('profile.uploadFailed'), t('profile.couldNotUpload'));
     } finally {
       setUploadingPartner(false);
     }
@@ -210,13 +212,13 @@ export function ProfileCard() {
         </TouchableOpacity>
 
         <View style={styles.profileInfo}>
-          <Text style={styles.profileLabel}>YOUR NAME</Text>
+          <Text style={styles.profileLabel}>{t('profile.yourName')}</Text>
           <TextInput
             style={styles.nameInput}
             value={displayName}
             onChangeText={setDisplayName}
             onBlur={handleSaveDisplayName}
-            placeholder="Your name"
+            placeholder={t('profile.yourNamePlaceholder')}
             placeholderTextColor="#a8a29e"
             maxLength={30}
             returnKeyType="done"
@@ -255,20 +257,20 @@ export function ProfileCard() {
         </TouchableOpacity>
 
         <View style={styles.profileInfo}>
-          <Text style={styles.profileLabel}>PARTNER</Text>
+          <Text style={styles.profileLabel}>{t('profile.partner')}</Text>
           <TextInput
             style={styles.nameInput}
             value={partnerName}
             onChangeText={setPartnerName}
             onBlur={handleSavePartnerName}
-            placeholder="Partner's name"
+            placeholder={t('profile.partnerPlaceholder')}
             placeholderTextColor="#a8a29e"
             maxLength={30}
             returnKeyType="done"
             editable={!!user.coupleId}
           />
           {!user.coupleId && (
-            <Text style={styles.hintText}>Link with a partner to edit</Text>
+            <Text style={styles.hintText}>{t('profile.linkWithPartner')}</Text>
           )}
         </View>
       </Animated.View>
@@ -288,11 +290,11 @@ export function ProfileCard() {
             >
               <Text style={styles.anniversaryIcon}>{'\uD83D\uDCC5'}</Text>
               <View style={styles.anniversaryInfo}>
-                <Text style={styles.anniversaryLabel}>Anniversary</Text>
+                <Text style={styles.anniversaryLabel}>{t('profile.anniversary')}</Text>
                 <Text style={styles.anniversaryValue}>
                   {couple?.anniversaryDate
                     ? format(couple.anniversaryDate, 'MMM d, yyyy')
-                    : 'Set your date'}
+                    : t('profile.setYourDate')}
                 </Text>
               </View>
               <Text style={styles.anniversaryChevron}>{'>'}</Text>
@@ -311,11 +313,11 @@ export function ProfileCard() {
         >
           <Text style={styles.anniversaryIcon}>{'\u2764\uFE0F'}</Text>
           <View style={styles.anniversaryInfo}>
-            <Text style={styles.anniversaryLabel}>YOUR LOVE LANGUAGE</Text>
+            <Text style={styles.anniversaryLabel}>{t('profile.yourLoveLanguage')}</Text>
             <Text style={styles.anniversaryValue}>
               {user.loveLanguage
-                ? getLoveLanguageDisplay(user.loveLanguage)?.label || 'Set yours'
-                : 'Set yours'}
+                ? getLoveLanguageDisplay(user.loveLanguage)?.label || t('common.setYours')
+                : t('common.setYours')}
             </Text>
           </View>
           <Text style={styles.anniversaryChevron}>{'>'}</Text>
@@ -330,7 +332,7 @@ export function ProfileCard() {
             <Text style={styles.partnerLangValue}>
               {partnerLoveLanguage
                 ? (getLoveLanguageDisplay(partnerLoveLanguage)?.icon || '') + ' ' + (getLoveLanguageDisplay(partnerLoveLanguage)?.label || '')
-                : 'Not set yet'}
+                : t('common.notSetYet')}
             </Text>
           </View>
         )}
@@ -345,8 +347,8 @@ export function ProfileCard() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Your Love Language</Text>
-            <Text style={styles.modalSubtitle}>How do you most feel loved?</Text>
+            <Text style={styles.modalTitle}>{t('profile.loveLanguageTitle')}</Text>
+            <Text style={styles.modalSubtitle}>{t('profile.loveLanguageSubtitle')}</Text>
             <ScrollView style={styles.langList} showsVerticalScrollIndicator={false}>
               {LOVE_LANGUAGES.map((lang) => {
                 const isActive = user.loveLanguage === lang.value;
@@ -376,7 +378,7 @@ export function ProfileCard() {
               style={styles.modalCancelFull}
               onPress={() => setShowLoveLanguageModal(false)}
             >
-              <Text style={styles.modalCancelText}>Cancel</Text>
+              <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -392,8 +394,8 @@ export function ProfileCard() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Anniversary Date</Text>
-              <Text style={styles.modalSubtitle}>When did your relationship begin?</Text>
+              <Text style={styles.modalTitle}>{t('profile.anniversaryTitle')}</Text>
+              <Text style={styles.modalSubtitle}>{t('profile.anniversarySubtitle')}</Text>
               <DateTimePicker
                 value={selectedDate}
                 mode="date"
@@ -407,7 +409,7 @@ export function ProfileCard() {
                   style={styles.modalCancel}
                   onPress={() => setShowDatePicker(false)}
                 >
-                  <Text style={styles.modalCancelText}>Cancel</Text>
+                  <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.modalSave}
@@ -417,7 +419,7 @@ export function ProfileCard() {
                   {updateAnniversary.isPending ? (
                     <ActivityIndicator color="#ffffff" size="small" />
                   ) : (
-                    <Text style={styles.modalSaveText}>Save</Text>
+                    <Text style={styles.modalSaveText}>{t('common.save')}</Text>
                   )}
                 </TouchableOpacity>
               </View>

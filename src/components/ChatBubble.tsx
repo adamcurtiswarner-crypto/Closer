@@ -4,14 +4,28 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { format } from 'date-fns';
 import type { ChatMessage } from '@/hooks/useChat';
 
+type DeliveryStatus = 'sending' | 'sent' | 'read';
+
 interface ChatBubbleProps {
   message: ChatMessage;
   isOwn: boolean;
   showTimestamp: boolean;
   onLongPress?: () => void;
+  status?: DeliveryStatus;
 }
 
-export function ChatBubble({ message, isOwn, showTimestamp, onLongPress }: ChatBubbleProps) {
+function StatusIndicator({ status }: { status: DeliveryStatus }) {
+  if (status === 'sending') {
+    return <Text style={styles.statusText}>{'\u23F3'}</Text>;
+  }
+  if (status === 'read') {
+    return <Text style={[styles.statusText, styles.statusRead]}>{'\u2713\u2713'}</Text>;
+  }
+  // sent
+  return <Text style={styles.statusText}>{'\u2713'}</Text>;
+}
+
+export function ChatBubble({ message, isOwn, showTimestamp, onLongPress, status }: ChatBubbleProps) {
   return (
     <Animated.View entering={FadeInUp.duration(200)}>
       {showTimestamp && (
@@ -21,41 +35,49 @@ export function ChatBubble({ message, isOwn, showTimestamp, onLongPress }: ChatB
       )}
 
       <View style={[styles.row, isOwn && styles.rowOwn]}>
-        <TouchableOpacity
-          style={[
-            styles.bubble,
-            isOwn ? styles.bubbleOwn : styles.bubblePartner,
-          ]}
-          onLongPress={onLongPress}
-          activeOpacity={0.8}
-          disabled={!onLongPress}
-        >
-          {message.isDeleted ? (
-            <Text style={[styles.text, styles.deletedText]}>
-              [message removed]
-            </Text>
-          ) : (
-            <>
-              {message.imageUrl && (
-                <Image
-                  source={{ uri: message.imageUrl }}
-                  style={styles.image}
-                  resizeMode="cover"
-                />
-              )}
-              {message.text && message.text !== '[message removed]' && (
-                <Text
-                  style={[
-                    styles.text,
-                    isOwn ? styles.textOwn : styles.textPartner,
-                  ]}
-                >
-                  {message.text}
-                </Text>
-              )}
-            </>
+        <View style={styles.bubbleWrapper}>
+          <TouchableOpacity
+            style={[
+              styles.bubble,
+              isOwn ? styles.bubbleOwn : styles.bubblePartner,
+            ]}
+            onLongPress={onLongPress}
+            activeOpacity={0.8}
+            disabled={!onLongPress}
+          >
+            {message.isDeleted ? (
+              <Text style={[styles.text, styles.deletedText]}>
+                [message removed]
+              </Text>
+            ) : (
+              <>
+                {message.imageUrl && (
+                  <Image
+                    source={{ uri: message.imageUrl }}
+                    style={styles.image}
+                    resizeMode="cover"
+                  />
+                )}
+                {message.text && message.text !== '[message removed]' && (
+                  <Text
+                    style={[
+                      styles.text,
+                      isOwn ? styles.textOwn : styles.textPartner,
+                    ]}
+                  >
+                    {message.text}
+                  </Text>
+                )}
+              </>
+            )}
+          </TouchableOpacity>
+
+          {isOwn && status && (
+            <View style={styles.statusRow}>
+              <StatusIndicator status={status} />
+            </View>
           )}
-        </TouchableOpacity>
+        </View>
       </View>
     </Animated.View>
   );
@@ -70,8 +92,10 @@ const styles = StyleSheet.create({
   rowOwn: {
     justifyContent: 'flex-end',
   },
-  bubble: {
+  bubbleWrapper: {
     maxWidth: '75%',
+  },
+  bubble: {
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -111,5 +135,18 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     textAlign: 'center',
     marginVertical: 8,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 2,
+    paddingRight: 4,
+  },
+  statusText: {
+    fontSize: 10,
+    color: '#a8a29e',
+  },
+  statusRead: {
+    color: '#c97454',
   },
 });
