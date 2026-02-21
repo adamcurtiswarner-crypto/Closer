@@ -275,10 +275,6 @@ export default function SettingsScreen() {
             <Text style={styles.rowLabel}>Version</Text>
             <Text style={styles.rowValue}>1.0.0</Text>
           </View>
-          <TouchableOpacity style={styles.row} onPress={() => router.push('/(app)/privacy-policy')}>
-            <Text style={styles.rowLabel}>Privacy Policy</Text>
-            <Text style={styles.rowValue}>{'>'}</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
             <Text style={styles.rowLabel}>Sign out</Text>
             <Text style={styles.rowValue}>{'>'}</Text>
