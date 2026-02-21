@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -21,7 +21,8 @@ import NetInfo from '@react-native-community/netinfo';
 import { db, functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
-import { getCoupleKey, encrypt } from '@/services/encryption';
+import { getCoupleKey, encrypt, decrypt } from '@/services/encryption';
+import { uploadResponsePhoto } from '@/services/imageUpload';
 
 const OFFLINE_QUEUE_KEY = '@closer_offline_responses';
 
@@ -40,6 +41,7 @@ interface PromptAssignment {
 interface PromptResponse {
   id: string;
   responseText: string;
+  imageUrl: string | null;
   submittedAt: Date | null;
   status: 'draft' | 'submitted';
 }
@@ -68,6 +70,15 @@ export function useTodayPrompt() {
   const coupleId = user?.coupleId;
   const userId = user?.id;
   const notificationTime = user?.notificationTime;
+  const coupleKeyRef = useRef<string | null>(null);
+
+  // Pre-fetch couple encryption key
+  useEffect(() => {
+    if (!coupleId) return;
+    getCoupleKey(coupleId).then((key) => {
+      coupleKeyRef.current = key;
+    });
+  }, [coupleId]);
 
   // Set up real-time listeners
   useEffect(() => {
@@ -125,9 +136,15 @@ export function useTodayPrompt() {
 
         for (const responseDoc of responsesSnap.docs) {
           const data = responseDoc.data();
+          // Decrypt: prefer encrypted field, fall back to plaintext for legacy
+          let displayText = data.response_text;
+          if (data.response_text_encrypted && coupleKeyRef.current) {
+            displayText = decrypt(data.response_text_encrypted, coupleKeyRef.current);
+          }
           const response: PromptResponse = {
             id: responseDoc.id,
-            responseText: data.response_text,
+            responseText: displayText,
+            imageUrl: data.image_url || null,
             submittedAt: data.submitted_at?.toDate() || null,
             status: data.status,
           };
@@ -179,7 +196,7 @@ async function flushOfflineQueue(userId: string, coupleId: string) {
   try {
     const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
     if (!raw) return;
-    const queue: { assignmentId: string; responseText: string }[] = JSON.parse(raw);
+    const queue: { assignmentId: string; responseText: string; imageUri?: string }[] = JSON.parse(raw);
     if (queue.length === 0) return;
 
     for (const item of queue) {
@@ -194,14 +211,25 @@ async function flushOfflineQueue(userId: string, coupleId: string) {
         encryptedText = encrypt(item.responseText, coupleKey);
       }
 
+      // Upload queued photo if present
+      let imageUrl: string | null = null;
+      if (item.imageUri) {
+        try {
+          imageUrl = await uploadResponsePhoto(coupleId, item.assignmentId, userId, item.imageUri);
+        } catch {
+          // Photo upload failed — continue without it
+        }
+      }
+
       const responsesRef = collection(db, 'prompt_responses');
       await addDoc(responsesRef, {
         assignment_id: item.assignmentId,
         couple_id: coupleId,
         user_id: userId,
         prompt_id: assignmentData.prompt_id,
-        response_text: item.responseText,
+        response_text: '[encrypted]',
         response_text_encrypted: encryptedText,
+        image_url: imageUrl,
         status: 'submitted',
         submitted_at: serverTimestamp(),
         emotional_response: null,
@@ -255,9 +283,11 @@ export function useSubmitResponse() {
     mutationFn: async ({
       assignmentId,
       responseText,
+      imageUri,
     }: {
       assignmentId: string;
       responseText: string;
+      imageUri?: string;
     }) => {
       if (!user?.coupleId) throw new Error('No couple linked');
 
@@ -266,9 +296,15 @@ export function useSubmitResponse() {
       if (!netState.isConnected) {
         const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
         const queue = raw ? JSON.parse(raw) : [];
-        queue.push({ assignmentId, responseText });
+        queue.push({ assignmentId, responseText, imageUri });
         await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
         return { responseId: 'offline-queued', isComplete: false, isOffline: true };
+      }
+
+      // Upload photo if provided
+      let imageUrl: string | null = null;
+      if (imageUri) {
+        imageUrl = await uploadResponsePhoto(user.coupleId, assignmentId, user.id, imageUri);
       }
 
       // Get the assignment to get prompt_id
@@ -288,15 +324,16 @@ export function useSubmitResponse() {
         encryptedText = encrypt(responseText, coupleKey);
       }
 
-      // Create response
+      // Create response — store sentinel in response_text, real content in encrypted field only
       const responsesRef = collection(db, 'prompt_responses');
       const responseDoc = await addDoc(responsesRef, {
         assignment_id: assignmentId,
         couple_id: user.coupleId,
         user_id: user.id,
         prompt_id: assignmentData.prompt_id,
-        response_text: responseText,
+        response_text: '[encrypted]',
         response_text_encrypted: encryptedText,
+        image_url: imageUrl,
         status: 'submitted',
         submitted_at: serverTimestamp(),
         emotional_response: null,
@@ -325,11 +362,14 @@ export function useSubmitResponse() {
 
       await updateDoc(assignmentRef, updates);
 
-      return { responseId: responseDoc.id, isComplete: newResponseCount === 2 };
+      return { responseId: responseDoc.id, isComplete: newResponseCount === 2, hasPhoto: !!imageUrl };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });
       logEvent('prompt_response_submitted', { response_id: data.responseId });
+      if (data.hasPhoto) {
+        logEvent('response_photo_attached', { response_id: data.responseId });
+      }
       if (data.isComplete) {
         logEvent('prompt_completed', { response_id: data.responseId });
       }

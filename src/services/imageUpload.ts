@@ -44,6 +44,24 @@ export async function uploadProfilePhoto(
 }
 
 /**
+ * Upload a photo attached to a prompt response.
+ * Returns the download URL.
+ */
+export async function uploadResponsePhoto(
+  coupleId: string,
+  assignmentId: string,
+  userId: string,
+  uri: string
+): Promise<string> {
+  const storageRef = ref(storage, `responses/${coupleId}/${assignmentId}/${userId}.jpg`);
+  const response = await fetch(uri);
+  const blob = await response.blob();
+
+  await uploadBytes(storageRef, blob);
+  return getDownloadURL(storageRef);
+}
+
+/**
  * Upload a partner photo.
  * Stored under the couple's namespace to avoid conflicts.
  * Returns the download URL.

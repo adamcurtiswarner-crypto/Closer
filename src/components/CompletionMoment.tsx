@@ -8,6 +8,8 @@ interface CompletionMomentProps {
   yourResponse: string;
   partnerResponse: string;
   partnerName?: string;
+  yourImageUrl?: string | null;
+  partnerImageUrl?: string | null;
 }
 
 export function CompletionMoment({
@@ -15,6 +17,8 @@ export function CompletionMoment({
   yourResponse,
   partnerResponse,
   partnerName = 'Partner',
+  yourImageUrl,
+  partnerImageUrl,
 }: CompletionMomentProps) {
   return (
     <View style={styles.card}>
@@ -37,6 +41,7 @@ export function CompletionMoment({
           <ResponseCard
             label="You"
             responseText={yourResponse}
+            imageUrl={yourImageUrl}
             isYours={true}
           />
         </Animated.View>
@@ -45,6 +50,7 @@ export function CompletionMoment({
           <ResponseCard
             label={partnerName}
             responseText={partnerResponse}
+            imageUrl={partnerImageUrl}
             isYours={false}
           />
         </Animated.View>

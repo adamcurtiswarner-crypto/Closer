@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
+  Image,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -115,6 +116,9 @@ export default function MemoriesScreen() {
                       {getDisplayName(response.user_id)}
                     </Text>
                     <Text style={styles.responseText}>{response.response_text}</Text>
+                    {response.image_url ? (
+                      <Image source={{ uri: response.image_url }} style={styles.responseImage} resizeMode="cover" />
+                    ) : null}
                   </View>
                 ))}
 
@@ -170,6 +174,9 @@ export default function MemoriesScreen() {
                         {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
                       </Text>
                       <Text style={styles.responseText}>{response.responseText}</Text>
+                      {response.imageUrl ? (
+                        <Image source={{ uri: response.imageUrl }} style={styles.responseImage} resizeMode="cover" />
+                      ) : null}
                     </View>
                   ))}
 
@@ -295,6 +302,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#292524',
     lineHeight: 22,
+  },
+  responseImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginTop: 8,
   },
   timestamp: {
     fontSize: 12,

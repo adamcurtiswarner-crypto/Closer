@@ -29,6 +29,7 @@ type AnalyticsEvent =
   | 'wishlist_item_added'
   | 'wishlist_item_completed'
   | 'wishlist_item_deleted'
+  | 'response_photo_attached'
   | 'account_deleted'
   | 'data_exported'
   | 'responses_anonymized';

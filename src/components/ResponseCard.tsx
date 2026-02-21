@@ -1,15 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 
 interface ResponseCardProps {
   label: string;
   responseText: string;
+  imageUrl?: string | null;
   isYours?: boolean;
 }
 
 export function ResponseCard({
   label,
   responseText,
+  imageUrl,
   isYours = false,
 }: ResponseCardProps) {
   return (
@@ -21,6 +23,9 @@ export function ResponseCard({
         </Text>
       </View>
       <Text style={styles.responseText}>{responseText}</Text>
+      {imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.responseImage} resizeMode="cover" />
+      ) : null}
     </View>
   );
 }
@@ -69,5 +74,11 @@ const styles = StyleSheet.create({
     color: '#292524',
     fontSize: 16,
     lineHeight: 24,
+  },
+  responseImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginTop: 12,
   },
 });

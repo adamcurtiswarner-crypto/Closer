@@ -1,5 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { BigQuery } from '@google-cloud/bigquery';
 import { format, subDays, startOfWeek, getDay } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 
@@ -463,6 +464,8 @@ export const onResponseSubmitted = functions.firestore
       const responses = responsesSnapshot.docs.map((doc) => ({
         user_id: doc.data().user_id,
         response_text: doc.data().response_text,
+        response_text_encrypted: doc.data().response_text_encrypted || null,
+        image_url: doc.data().image_url || null,
         submitted_at: doc.data().submitted_at,
       }));
 
@@ -483,8 +486,8 @@ export const onResponseSubmitted = functions.firestore
         prompt_id: response.prompt_id,
         responses,
         time_to_complete_seconds: timeToCompleteSeconds,
-        total_response_length: responses.reduce(
-          (sum, r) => sum + (r.response_text?.length || 0),
+        total_response_length: responsesSnapshot.docs.reduce(
+          (sum, d) => sum + (d.data().response_length || 0),
           0
         ),
         emotional_responses: [],
@@ -556,7 +559,7 @@ export const onResponseSubmitted = functions.firestore
     await logEvent('prompt_response_submitted', response.user_id, response.couple_id, {
       assignment_id: response.assignment_id,
       prompt_id: response.prompt_id,
-      response_length: response.response_text?.length || 0,
+      response_length: response.response_length || 0,
     });
 
     return null;
@@ -1276,13 +1279,22 @@ export const cleanupDeletedAccounts = functions.pubsub
       const userId = userDoc.id;
 
       try {
-        // Delete prompt_responses
+        // Delete prompt_responses and their attached images
         const responsesSnap = await db
           .collection('prompt_responses')
           .where('user_id', '==', userId)
           .get();
-        for (const doc of responsesSnap.docs) {
-          await doc.ref.delete();
+        for (const responseDoc of responsesSnap.docs) {
+          const rData = responseDoc.data();
+          if (rData.image_url && rData.couple_id && rData.assignment_id) {
+            try {
+              const bucket = admin.storage().bucket();
+              await bucket.file(`responses/${rData.couple_id}/${rData.assignment_id}/${userId}.jpg`).delete();
+            } catch (e) {
+              // Image may not exist
+            }
+          }
+          await responseDoc.ref.delete();
         }
 
         // Delete events
@@ -1439,15 +1451,27 @@ export const anonymizeMyResponses = functions.https.onCall(async (data, context)
     .get();
 
   for (const responseDoc of responsesSnap.docs) {
+    const responseData = responseDoc.data();
+
+    // Delete attached image from Storage
+    if (responseData.image_url && responseData.couple_id && responseData.assignment_id) {
+      try {
+        const bucket = admin.storage().bucket();
+        await bucket.file(`responses/${responseData.couple_id}/${responseData.assignment_id}/${userId}.jpg`).delete();
+      } catch (e) {
+        // Image may not exist
+      }
+    }
+
     await responseDoc.ref.update({
       response_text: '[removed]',
       response_text_encrypted: '[removed]',
+      image_url: null,
       updated_at: admin.firestore.FieldValue.serverTimestamp(),
     });
     anonymizedCount++;
 
     // Update corresponding prompt_completions
-    const responseData = responseDoc.data();
     if (responseData.assignment_id) {
       const completionRef = db
         .collection('prompt_completions')
@@ -1458,7 +1482,7 @@ export const anonymizeMyResponses = functions.https.onCall(async (data, context)
         const completionData = completionDoc.data()!;
         const updatedResponses = (completionData.responses || []).map(
           (r: any) => r.user_id === userId
-            ? { ...r, response_text: '[removed]' }
+            ? { ...r, response_text: '[removed]', response_text_encrypted: '[removed]', image_url: null }
             : r
         );
         await completionRef.update({
@@ -1486,7 +1510,7 @@ export const anonymizeMyResponses = functions.https.onCall(async (data, context)
       if (hasUserResponse) {
         const updatedResponses = memoryResponses.map((r: any) =>
           r.user_id === userId
-            ? { ...r, response_text: '[removed]' }
+            ? { ...r, response_text: '[removed]', response_text_encrypted: '[removed]', image_url: null }
             : r
         );
         await memoryDoc.ref.update({
@@ -1947,5 +1971,398 @@ export const detectChurnRisk = functions.pubsub
     }
 
     console.log(`Churn risk: flagged ${flaggedCount} couples`);
+    return null;
+  });
+
+// ============================================
+// CALLABLE: Migrate Encrypted Responses (Admin)
+// ============================================
+
+export const migrateEncryptedResponses = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+  }
+
+  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  if (!adminDoc.exists) {
+    throw new functions.https.HttpsError('permission-denied', 'Admin access required');
+  }
+
+  // Find responses that have response_text_encrypted but response_text is not '[encrypted]'
+  const batchSize = 500;
+  let migratedCount = 0;
+
+  const responsesSnap = await db
+    .collection('prompt_responses')
+    .where('status', '==', 'submitted')
+    .limit(batchSize)
+    .get();
+
+  const batch = db.batch();
+
+  for (const responseDoc of responsesSnap.docs) {
+    const responseData = responseDoc.data();
+    // Only migrate if encrypted text exists and plaintext is not already sentinel
+    if (
+      responseData.response_text_encrypted &&
+      responseData.response_text !== '[encrypted]' &&
+      responseData.response_text !== '[removed]'
+    ) {
+      batch.update(responseDoc.ref, {
+        response_text: '[encrypted]',
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      migratedCount++;
+    }
+  }
+
+  if (migratedCount > 0) {
+    await batch.commit();
+  }
+
+  return {
+    migrated_count: migratedCount,
+    total_scanned: responsesSnap.size,
+  };
+});
+
+// ============================================
+// BigQuery Analytics Export — Shared Helper
+// ============================================
+
+const BQ_DATASET = 'stoke_analytics';
+const BQ_TABLE = 'events';
+const EXPORT_BATCH_SIZE = 500;
+const EXPORT_MAX_EVENTS = 10000;
+
+async function exportEventsBatch(cutoffDate: Date): Promise<{ exported: number; deleted: number }> {
+  const bigquery = new BigQuery();
+  const cutoffTimestamp = admin.firestore.Timestamp.fromDate(cutoffDate);
+
+  let exported = 0;
+  let deleted = 0;
+  let lastDoc: admin.firestore.QueryDocumentSnapshot | null = null;
+
+  while (exported < EXPORT_MAX_EVENTS) {
+    let eventsQuery = db
+      .collection('events')
+      .where('timestamp', '<', cutoffTimestamp)
+      .orderBy('timestamp', 'asc')
+      .limit(EXPORT_BATCH_SIZE);
+
+    if (lastDoc) {
+      eventsQuery = eventsQuery.startAfter(lastDoc);
+    }
+
+    const eventsSnap = await eventsQuery.get();
+    if (eventsSnap.empty) break;
+
+    // Transform events for BigQuery
+    const rows = eventsSnap.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        event_name: data.event_name || null,
+        user_id: data.user_id || null,
+        couple_id: data.couple_id || null,
+        properties: data.properties ? JSON.stringify(data.properties) : null,
+        platform: data.platform || null,
+        app_version: data.app_version || null,
+        session_id: data.session_id || null,
+        timestamp: data.timestamp?.toDate?.() || null,
+        date: data.date || null,
+        week: data.week || null,
+        created_at: data.created_at?.toDate?.() || null,
+      };
+    });
+
+    // Insert to BigQuery
+    await bigquery.dataset(BQ_DATASET).table(BQ_TABLE).insert(rows);
+    exported += rows.length;
+
+    // Delete from Firestore in batches
+    const deleteBatch = db.batch();
+    for (const doc of eventsSnap.docs) {
+      deleteBatch.delete(doc.ref);
+    }
+    await deleteBatch.commit();
+    deleted += eventsSnap.size;
+
+    lastDoc = eventsSnap.docs[eventsSnap.docs.length - 1];
+
+    // If we got fewer than batch size, we're done
+    if (eventsSnap.size < EXPORT_BATCH_SIZE) break;
+  }
+
+  return { exported, deleted };
+}
+
+// ============================================
+// SCHEDULED: Export Events to BigQuery (Daily 4 AM PT)
+// ============================================
+
+export const exportEventsToBigQuery = functions.pubsub
+  .schedule('every day 04:00')
+  .timeZone('America/Los_Angeles')
+  .onRun(async () => {
+    const cutoffDate = subDays(new Date(), 90);
+
+    try {
+      const result = await exportEventsBatch(cutoffDate);
+      console.log(`BigQuery export: ${result.exported} exported, ${result.deleted} deleted`);
+    } catch (error) {
+      console.error('BigQuery export failed:', error);
+    }
+
+    return null;
+  });
+
+// ============================================
+// CALLABLE: Trigger BigQuery Export (Admin)
+// ============================================
+
+export const triggerBigQueryExport = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+  }
+
+  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  if (!adminDoc.exists) {
+    throw new functions.https.HttpsError('permission-denied', 'Admin access required');
+  }
+
+  const cutoffDate = subDays(new Date(), 90);
+  const result = await exportEventsBatch(cutoffDate);
+
+  return {
+    success: true,
+    exported: result.exported,
+    deleted: result.deleted,
+  };
+});
+
+// ============================================
+// AI Prompt Generation — Shared Helper
+// ============================================
+
+const AI_MODEL = 'claude-sonnet-4-5-20250929';
+const AI_MAX_PER_CALL = 10;
+const AI_RATE_LIMIT_HOURS = 1;
+
+async function generatePromptsBatch(
+  count: number,
+  targetType?: string,
+  targetDepth?: string
+): Promise<{ generated: number; promptIds: string[] }> {
+  const apiKey = functions.config().anthropic?.api_key;
+  if (!apiKey) {
+    throw new functions.https.HttpsError('failed-precondition', 'Anthropic API key not configured');
+  }
+
+  // Gather context: existing prompt texts to avoid duplication
+  const existingPromptsSnap = await db
+    .collection('prompts')
+    .where('status', 'in', ['active', 'testing'])
+    .get();
+
+  const existingTexts = existingPromptsSnap.docs.map((d) => d.data().text);
+
+  // Count prompts by type to find underrepresented categories
+  const typeCounts: Record<string, number> = {};
+  for (const doc of existingPromptsSnap.docs) {
+    const type = doc.data().type;
+    typeCounts[type] = (typeCounts[type] || 0) + 1;
+  }
+
+  // Find top-performing patterns
+  const topPrompts = existingPromptsSnap.docs
+    .filter((d) => (d.data().times_assigned || 0) >= 5)
+    .sort((a, b) => (b.data().positive_response_rate || 0) - (a.data().positive_response_rate || 0))
+    .slice(0, 5)
+    .map((d) => d.data().text);
+
+  // Build system prompt
+  const systemPrompt = `You are a prompt designer for Stoke, a relationship app for long-term couples. Generate conversation prompts that help couples connect meaningfully.
+
+Brand voice: Warm, quiet, direct. Never cute, clinical, or urgent. No exclamation points.
+
+Prompt types (choose from): ${VALID_PROMPT_TYPES.join(', ')}
+Emotional depths: ${VALID_PROMPT_DEPTHS.join(', ')}
+
+Rules:
+- Each prompt should be a single open-ended question or gentle invitation
+- Prompts should feel natural, like something a thoughtful friend would ask
+- Avoid therapy jargon, relationship clichés, or overly personal topics
+- Keep prompts between 10-80 words
+- Include an optional "hint" (1 sentence, helps if someone feels stuck)
+- Do NOT duplicate these existing prompts: ${existingTexts.slice(0, 30).join(' | ')}
+
+${topPrompts.length > 0 ? `Top-performing prompts for reference: ${topPrompts.join(' | ')}` : ''}
+
+Current type distribution: ${JSON.stringify(typeCounts)}
+${targetType ? `Focus on type: ${targetType}` : 'Balance across underrepresented types.'}
+${targetDepth ? `Target depth: ${targetDepth}` : 'Mix of depths.'}
+
+Respond with a JSON array of objects, each with: text, hint, type, emotional_depth, requires_conversation (boolean).`;
+
+  // Call Claude API via fetch
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: `Generate exactly ${count} new prompts. Return only the JSON array, no other text.`,
+        },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new functions.https.HttpsError('internal', `Claude API error: ${response.status} ${errorText}`);
+  }
+
+  const result = await response.json();
+  const content = result.content?.[0]?.text || '';
+
+  // Parse JSON from response — handle markdown code fences
+  let prompts: any[];
+  try {
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) throw new Error('No JSON array found');
+    prompts = JSON.parse(jsonMatch[0]);
+  } catch (err) {
+    throw new functions.https.HttpsError('internal', 'Failed to parse AI response as JSON');
+  }
+
+  // Validate and store prompts
+  const promptIds: string[] = [];
+  for (const prompt of prompts) {
+    // Validate type and depth
+    if (!VALID_PROMPT_TYPES.includes(prompt.type)) continue;
+    if (!VALID_PROMPT_DEPTHS.includes(prompt.emotional_depth)) continue;
+    if (!prompt.text || typeof prompt.text !== 'string') continue;
+
+    const promptRef = await db.collection('prompts').add({
+      text: prompt.text,
+      hint: prompt.hint || null,
+      type: prompt.type,
+      research_basis: 'original',
+      emotional_depth: prompt.emotional_depth,
+      requires_conversation: prompt.requires_conversation || false,
+      status: 'testing',
+      status_changed_at: admin.firestore.FieldValue.serverTimestamp(),
+      testing_started_at: admin.firestore.FieldValue.serverTimestamp(),
+      week_restriction: null,
+      max_per_week: null,
+      day_preference: null,
+      times_assigned: 0,
+      times_completed: 0,
+      completion_rate: 0,
+      avg_response_length: 0,
+      positive_response_rate: 0,
+      ai_generated: true,
+      ai_model: AI_MODEL,
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+      updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      created_by: 'ai',
+    });
+
+    promptIds.push(promptRef.id);
+  }
+
+  return { generated: promptIds.length, promptIds };
+}
+
+// ============================================
+// CALLABLE: Generate AI Prompts (Admin)
+// ============================================
+
+export const generateAIPrompts = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+  }
+
+  const adminDoc = await db.collection('admins').doc(context.auth.uid).get();
+  if (!adminDoc.exists) {
+    throw new functions.https.HttpsError('permission-denied', 'Admin access required');
+  }
+
+  const count = Math.min(data?.count || 5, AI_MAX_PER_CALL);
+  const targetType = data?.targetType;
+  const targetDepth = data?.targetDepth;
+
+  // Rate limit: 1 call per hour
+  const stateRef = db.collection('admin_state').doc('ai_generation');
+  const stateDoc = await stateRef.get();
+  if (stateDoc.exists) {
+    const lastRun = stateDoc.data()?.last_run_at?.toDate();
+    if (lastRun) {
+      const hoursSince = (Date.now() - lastRun.getTime()) / (1000 * 60 * 60);
+      if (hoursSince < AI_RATE_LIMIT_HOURS) {
+        throw new functions.https.HttpsError(
+          'resource-exhausted',
+          `AI generation is rate-limited. Try again in ${Math.ceil((AI_RATE_LIMIT_HOURS - hoursSince) * 60)} minutes.`
+        );
+      }
+    }
+  }
+
+  // Update rate limit timestamp
+  await stateRef.set({
+    last_run_at: admin.firestore.FieldValue.serverTimestamp(),
+    triggered_by: context.auth.uid,
+  }, { merge: true });
+
+  const result = await generatePromptsBatch(count, targetType, targetDepth);
+
+  return {
+    success: true,
+    generated: result.generated,
+    prompt_ids: result.promptIds,
+  };
+});
+
+// ============================================
+// SCHEDULED: Auto-Generate Prompts (Monday 2 AM PT)
+// ============================================
+
+export const autoGeneratePrompts = functions.pubsub
+  .schedule('every monday 02:00')
+  .timeZone('America/Los_Angeles')
+  .onRun(async () => {
+    try {
+      // Check if active prompt pool is below threshold
+      const activePromptsSnap = await db
+        .collection('prompts')
+        .where('status', 'in', ['active', 'testing'])
+        .get();
+
+      const activeCount = activePromptsSnap.size;
+      const TARGET_POOL_SIZE = 40;
+
+      if (activeCount >= TARGET_POOL_SIZE) {
+        console.log(`Prompt pool at ${activeCount}, no generation needed`);
+        return null;
+      }
+
+      const deficit = Math.min(TARGET_POOL_SIZE - activeCount, AI_MAX_PER_CALL);
+      console.log(`Prompt pool at ${activeCount}, generating ${deficit} prompts`);
+
+      const result = await generatePromptsBatch(deficit);
+      console.log(`Auto-generated ${result.generated} prompts: ${result.promptIds.join(', ')}`);
+    } catch (error) {
+      console.error('Auto-generate prompts failed:', error);
+    }
+
     return null;
   });

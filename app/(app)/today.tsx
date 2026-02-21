@@ -12,6 +12,7 @@ import {
   RefreshControl,
   Keyboard,
 } from 'react-native';
+import { pickImage } from '@/services/imageUpload';
 
 const logo = require('@/assets/logo.png');
 import Animated, { FadeIn, FadeInUp, FadeInDown } from 'react-native-reanimated';
@@ -62,6 +63,7 @@ export default function TodayScreen() {
   const [showStreakDetail, setShowStreakDetail] = useState(false);
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [showAddWishlistModal, setShowAddWishlistModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -145,14 +147,22 @@ export default function TodayScreen() {
     Keyboard.dismiss();
     setTyping(false);
     setIsResponding(false);
+    const imageUri = selectedImage || undefined;
+    setSelectedImage(null);
     try {
       await submitResponse.mutateAsync({
         assignmentId: assignment.id,
         responseText,
+        imageUri,
       });
     } catch (err) {
       logger.error('Error submitting response:', err);
     }
+  };
+
+  const handleAddPhoto = async () => {
+    const uri = await pickImage();
+    if (uri) setSelectedImage(uri);
   };
 
   const partnerName = user?.partnerName || 'Partner';
@@ -298,6 +308,20 @@ export default function TodayScreen() {
               />
             </Animated.View>
 
+            {selectedImage ? (
+              <View style={styles.imagePreview}>
+                <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
+                <TouchableOpacity style={styles.removeImage} onPress={() => setSelectedImage(null)}>
+                  <Text style={styles.removeImageText}>{'\u2715'}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.attachPhotoButton} onPress={handleAddPhoto}>
+                <Text style={styles.attachPhotoIcon}>{'\uD83D\uDCF7'}</Text>
+                <Text style={styles.attachPhotoText}>Add photo</Text>
+              </TouchableOpacity>
+            )}
+
             <View style={styles.respondingFooter}>
               <Text style={styles.charHint}>
                 {responseText.length < 10
@@ -372,6 +396,9 @@ export default function TodayScreen() {
                 <Text style={styles.labelText}>Your response</Text>
               </View>
               <Text style={styles.responseBody}>{myResponse!.responseText}</Text>
+              {myResponse!.imageUrl ? (
+                <Image source={{ uri: myResponse!.imageUrl }} style={styles.responseImage} resizeMode="cover" />
+              ) : null}
             </View>
 
             <View style={styles.waitingDivider} />
@@ -452,6 +479,8 @@ export default function TodayScreen() {
               yourResponse={myResponse!.responseText}
               partnerResponse={partnerResponse?.responseText || ''}
               partnerName={partnerName}
+              yourImageUrl={myResponse!.imageUrl}
+              partnerImageUrl={partnerResponse?.imageUrl}
             />
           </Animated.View>
 
@@ -719,6 +748,57 @@ const styles = StyleSheet.create({
     minHeight: 140,
     maxHeight: 240,
     lineHeight: 24,
+  },
+  attachPhotoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignSelf: 'flex-start',
+    backgroundColor: '#f5f5f4',
+    borderRadius: 10,
+  },
+  attachPhotoIcon: {
+    fontSize: 14,
+  },
+  attachPhotoText: {
+    fontSize: 14,
+    color: '#78716c',
+    fontWeight: '500',
+  },
+  imagePreview: {
+    marginTop: 12,
+    position: 'relative',
+    alignSelf: 'flex-start',
+  },
+  previewImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+  },
+  removeImage: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#57534e',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removeImageText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  responseImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginTop: 12,
   },
   respondingFooter: {
     marginTop: 12,
