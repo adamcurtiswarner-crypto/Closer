@@ -62,6 +62,24 @@ export async function uploadResponsePhoto(
 }
 
 /**
+ * Upload a chat image.
+ * Returns the download URL.
+ */
+export async function uploadChatImage(
+  coupleId: string,
+  userId: string,
+  uri: string
+): Promise<string> {
+  const messageId = Date.now().toString(36);
+  const storageRef = ref(storage, `chat/${coupleId}/${messageId}_${userId}.jpg`);
+  const response = await fetch(uri);
+  const blob = await response.blob();
+
+  await uploadBytes(storageRef, blob);
+  return getDownloadURL(storageRef);
+}
+
+/**
  * Upload a partner photo.
  * Stored under the couple's namespace to avoid conflicts.
  * Returns the download URL.

@@ -1,0 +1,158 @@
+import React, { useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import { RESOURCE_CATEGORIES, getResourcesByCategory } from '@/config/therapistResources';
+import { ResourceCard } from '@/components/ResourceCard';
+import { logEvent } from '@/services/analytics';
+
+export default function ResourcesScreen() {
+  useEffect(() => {
+    logEvent('resource_viewed');
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* Header */}
+      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.backArrow}>{'\u2190'}</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Resources</Text>
+        <View style={styles.backButton} />
+      </Animated.View>
+
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Intro */}
+        <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+          <Text style={styles.intro}>
+            Stoke is not therapy. These resources can help if you want to go deeper.
+          </Text>
+        </Animated.View>
+
+        {/* Resource sections */}
+        {RESOURCE_CATEGORIES.map((category, catIndex) => {
+          const resources = getResourcesByCategory(category.value);
+          if (resources.length === 0) return null;
+
+          return (
+            <Animated.View
+              key={category.value}
+              entering={FadeInUp.duration(400).delay(200 + catIndex * 100)}
+            >
+              <View style={styles.categoryHeader}>
+                <Text style={styles.categoryIcon}>{category.icon}</Text>
+                <View>
+                  <Text style={styles.categoryLabel}>{category.label}</Text>
+                  <Text style={styles.categoryDescription}>{category.description}</Text>
+                </View>
+              </View>
+
+              {resources.map((resource, idx) => (
+                <ResourceCard
+                  key={resource.id}
+                  resource={resource}
+                  delay={300 + catIndex * 100 + idx * 60}
+                />
+              ))}
+            </Animated.View>
+          );
+        })}
+
+        {/* Safety footer */}
+        <Animated.View entering={FadeIn.duration(400).delay(800)}>
+          <View style={styles.safety}>
+            <Text style={styles.safetyText}>
+              If you feel unsafe in your relationship, please reach out for help. You are not alone.
+            </Text>
+          </View>
+        </Animated.View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backArrow: {
+    fontSize: 20,
+    color: '#57534e',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1c1917',
+    letterSpacing: -0.3,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 40,
+  },
+  intro: {
+    fontSize: 15,
+    color: '#78716c',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  categoryIcon: {
+    fontSize: 20,
+  },
+  categoryLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#292524',
+  },
+  categoryDescription: {
+    fontSize: 13,
+    color: '#a8a29e',
+    marginTop: 1,
+  },
+  safety: {
+    backgroundColor: '#f5f5f4',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 32,
+  },
+  safetyText: {
+    fontSize: 14,
+    color: '#57534e',
+    lineHeight: 20,
+  },
+});

@@ -13,21 +13,23 @@ import { Link, router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button, Input } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getPendingInviteCode, clearPendingInviteCode } from '@/hooks/useDeepLink';
 import { getAuthErrorMessage } from '@/utils/authErrors';
 
-const signInSchema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type SignInFormData = z.infer<typeof signInSchema>;
+type SignInFormData = { email: string; password: string };
 
 export default function SignInScreen() {
+  const { t } = useTranslation();
   const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  const signInSchema = z.object({
+    email: z.string().email(t('auth.signIn.validation.emailRequired')),
+    password: z.string().min(1, t('auth.signIn.validation.passwordRequired')),
+  });
 
   const {
     control,
@@ -55,7 +57,7 @@ export default function SignInScreen() {
         router.replace('/');
       }
     } catch (error: any) {
-      Alert.alert('Sign in failed', getAuthErrorMessage(error));
+      Alert.alert(t('auth.signIn.failed'), getAuthErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +70,7 @@ export default function SignInScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome back</Text>
+          <Text style={styles.title}>{t('auth.signIn.title')}</Text>
 
           <View style={styles.form}>
             <Controller
@@ -76,8 +78,8 @@ export default function SignInScreen() {
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
-                  label="Email"
-                  placeholder="you@example.com"
+                  label={t('common.email')}
+                  placeholder={t('common.emailPlaceholder')}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
@@ -96,8 +98,8 @@ export default function SignInScreen() {
               name="password"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
-                  label="Password"
-                  placeholder="Your password"
+                  label={t('common.password')}
+                  placeholder={t('auth.signIn.passwordPlaceholder')}
                   secureTextEntry
                   autoComplete="password"
                   onBlur={onBlur}
@@ -111,23 +113,23 @@ export default function SignInScreen() {
 
           <Link href="/(auth)/forgot-password" asChild>
             <TouchableOpacity style={styles.forgot}>
-              <Text style={styles.forgotText}>Forgot password?</Text>
+              <Text style={styles.forgotText}>{t('auth.signIn.forgotPassword')}</Text>
             </TouchableOpacity>
           </Link>
 
           <View style={styles.submit}>
             <Button
-              title="Sign In"
+              title={t('auth.signIn.submit')}
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
             />
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={styles.footerText}>{t('auth.signIn.noAccount')}</Text>
             <Link href="/(auth)/sign-up" asChild>
               <TouchableOpacity>
-                <Text style={styles.footerLink}>Sign up</Text>
+                <Text style={styles.footerLink}>{t('auth.signIn.signUpLink')}</Text>
               </TouchableOpacity>
             </Link>
           </View>

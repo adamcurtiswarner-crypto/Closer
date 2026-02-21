@@ -263,7 +263,8 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
 
 async function sendPushNotification(
   userId: string,
-  notification: { title: string; body: string }
+  notification: { title: string; body: string },
+  data?: Record<string, string>
 ): Promise<void> {
   const userDoc = await db.collection('users').doc(userId).get();
   if (!userDoc.exists) return;
@@ -276,6 +277,7 @@ async function sendPushNotification(
   const messages = tokens.map((t: any) => ({
     token: t.token,
     notification,
+    ...(data ? { data } : {}),
   }));
 
   try {
@@ -1306,6 +1308,31 @@ export const cleanupDeletedAccounts = functions.pubsub
           await doc.ref.delete();
         }
 
+        // Delete chat messages and images
+        const userData = userDoc.data();
+        if (userData?.couple_id) {
+          const chatSnap = await db
+            .collection('couples')
+            .doc(userData.couple_id)
+            .collection('messages')
+            .where('sender_id', '==', userId)
+            .get();
+          for (const chatDoc of chatSnap.docs) {
+            const chatData = chatDoc.data();
+            if (chatData.image_url) {
+              try {
+                const bucket = admin.storage().bucket();
+                const urlPath = new URL(chatData.image_url).pathname;
+                const filePath = decodeURIComponent(urlPath.split('/o/')[1]?.split('?')[0] || '');
+                if (filePath) await bucket.file(filePath).delete();
+              } catch (e) {
+                // Image may not exist
+              }
+            }
+            await chatDoc.ref.delete();
+          }
+        }
+
         // Delete profile photo from Storage
         try {
           const bucket = admin.storage().bucket();
@@ -1407,6 +1434,18 @@ export const exportUserData = functions.https.onCall(async (data, context) => {
     wishlistItems = wishlistSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   }
 
+  // Chat messages
+  let chatMessages: any[] = [];
+  if (userData.couple_id) {
+    const chatSnap = await db
+      .collection('couples')
+      .doc(userData.couple_id)
+      .collection('messages')
+      .where('sender_id', '==', userId)
+      .get();
+    chatMessages = chatSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  }
+
   // Mark export time
   await userRef.update({
     last_export_at: admin.firestore.FieldValue.serverTimestamp(),
@@ -1422,6 +1461,7 @@ export const exportUserData = functions.https.onCall(async (data, context) => {
     memories,
     goals,
     wishlist_items: wishlistItems,
+    chat_messages: chatMessages,
   };
 });
 
@@ -1518,6 +1558,43 @@ export const anonymizeMyResponses = functions.https.onCall(async (data, context)
           updated_at: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
+    }
+  }
+
+  // Anonymize chat messages
+  if (userData.couple_id) {
+    const chatSnap = await db
+      .collection('couples')
+      .doc(userData.couple_id)
+      .collection('messages')
+      .where('sender_id', '==', userId)
+      .where('is_deleted', '==', false)
+      .get();
+
+    for (const chatDoc of chatSnap.docs) {
+      const chatData = chatDoc.data();
+
+      // Delete chat image from Storage
+      if (chatData.image_url) {
+        try {
+          const bucket = admin.storage().bucket();
+          // Extract path from URL
+          const urlPath = new URL(chatData.image_url).pathname;
+          const filePath = decodeURIComponent(urlPath.split('/o/')[1]?.split('?')[0] || '');
+          if (filePath) await bucket.file(filePath).delete();
+        } catch (e) {
+          // Image may not exist
+        }
+      }
+
+      await chatDoc.ref.update({
+        text: '[removed]',
+        text_encrypted: '',
+        image_url: null,
+        is_deleted: true,
+        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      anonymizedCount++;
     }
   }
 
@@ -2365,4 +2442,52 @@ export const autoGeneratePrompts = functions.pubsub
     }
 
     return null;
+  });
+
+// ============================================
+// FIRESTORE TRIGGER: Chat Message Created
+// ============================================
+
+export const onChatMessageCreated = functions.firestore
+  .document('couples/{coupleId}/messages/{messageId}')
+  .onCreate(async (snap, context) => {
+    const { coupleId } = context.params;
+    const messageData = snap.data();
+    const senderId = messageData.sender_id;
+
+    // Get couple to find partner
+    const coupleDoc = await db.collection('couples').doc(coupleId).get();
+    if (!coupleDoc.exists) return;
+
+    const coupleData = coupleDoc.data()!;
+    const memberIds: string[] = coupleData.member_ids || [];
+    const partnerId = memberIds.find((id: string) => id !== senderId);
+
+    if (!partnerId) return;
+
+    // Check partner's presence — only send push if offline
+    const partnerPresenceRef = db.collection('presence').doc(coupleId)
+      .collection('members').doc(partnerId);
+    const partnerPresence = await partnerPresenceRef.get();
+    const partnerStatus = partnerPresence.exists
+      ? partnerPresence.data()?.status
+      : 'offline';
+
+    if (partnerStatus !== 'online') {
+      // Get sender's name
+      const senderDoc = await db.collection('users').doc(senderId).get();
+      const senderName = senderDoc.exists
+        ? senderDoc.data()?.display_name || 'Your partner'
+        : 'Your partner';
+
+      const body = messageData.type === 'image'
+        ? 'Sent a photo'
+        : 'Sent you a message';
+
+      await sendPushNotification(
+        partnerId,
+        { title: senderName, body },
+        { type: 'chat_message' }
+      );
+    }
   });

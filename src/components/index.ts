@@ -32,6 +32,13 @@ export { ProfileCard } from './ProfileCard';
 // Insights
 export { InsightCard } from './InsightCard';
 
+// Resources
+export { ResourceCard } from './ResourceCard';
+
+// Chat
+export { ChatBubble } from './ChatBubble';
+export { ChatInput } from './ChatInput';
+
 // Error handling
 export { ErrorBoundary } from './ErrorBoundary';
 export { QueryError } from './QueryError';

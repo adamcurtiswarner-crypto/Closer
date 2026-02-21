@@ -32,7 +32,14 @@ type AnalyticsEvent =
   | 'response_photo_attached'
   | 'account_deleted'
   | 'data_exported'
-  | 'responses_anonymized';
+  | 'responses_anonymized'
+  | 'resource_viewed'
+  | 'resource_link_opened'
+  | 'calendar_synced'
+  | 'calendar_removed'
+  | 'chat_message_sent'
+  | 'chat_opened'
+  | 'chat_image_sent';
 
 interface EventContext {
   user_id?: string;

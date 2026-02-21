@@ -16,7 +16,7 @@ export interface PresenceState {
   status: 'online' | 'offline' | 'away';
   lastSeen: Date | null;
   isTyping: boolean;
-  typingContext: 'prompt' | null;
+  typingContext: 'chat' | 'prompt' | null;
   hasViewedTodayResponse: boolean;
 }
 
@@ -32,10 +32,10 @@ interface PresenceDoc {
 export interface UsePresenceReturn {
   isPartnerOnline: boolean;
   isPartnerTyping: boolean;
-  partnerTypingContext: 'prompt' | null;
+  partnerTypingContext: 'chat' | 'prompt' | null;
   partnerLastSeen: Date | null;
   partnerHasViewedResponse: boolean;
-  setTyping: (isTyping: boolean, context?: 'prompt' | null) => void;
+  setTyping: (isTyping: boolean, context?: 'chat' | 'prompt' | null) => void;
   markResponseViewed: () => void;
 }
 
@@ -75,7 +75,7 @@ export function usePresence(): UsePresenceReturn {
 
   // Set typing status with debounce
   const setTyping = useCallback(
-    (isTyping: boolean, context: 'prompt' | null = null) => {
+    (isTyping: boolean, context: 'chat' | 'prompt' | null = null) => {
       if (!coupleId || !userId) return;
 
       // Clear existing timeout
@@ -239,7 +239,7 @@ export function useTypingIndicator() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleTextChange = useCallback(
-    (text: string, context: 'prompt' | null = 'prompt') => {
+    (text: string, context: 'chat' | 'prompt' | null = 'prompt') => {
       // Clear existing debounce
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);

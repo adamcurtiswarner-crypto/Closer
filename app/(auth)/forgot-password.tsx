@@ -12,20 +12,22 @@ import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button, Input } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getAuthErrorMessage } from '@/utils/authErrors';
 
-const schema = z.object({
-  email: z.string().email('Enter a valid email'),
-});
-
-type FormData = z.infer<typeof schema>;
+type FormData = { email: string };
 
 export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
   const { resetPassword } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const schema = z.object({
+    email: z.string().email(t('auth.forgotPassword.validation.emailRequired')),
+  });
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -38,7 +40,7 @@ export default function ForgotPasswordScreen() {
       await resetPassword(data.email);
       setSent(true);
     } catch (error: any) {
-      Alert.alert('Error', getAuthErrorMessage(error));
+      Alert.alert(t('common.error'), getAuthErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -49,13 +51,13 @@ export default function ForgotPasswordScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Check your email</Text>
+            <Text style={styles.title}>{t('auth.forgotPassword.sentTitle')}</Text>
             <Text style={styles.subtitle}>
-              We sent you a link to reset your password.
+              {t('auth.forgotPassword.sentSubtitle')}
             </Text>
           </View>
           <Button
-            title="Back to Sign In"
+            title={t('auth.forgotPassword.backToSignIn')}
             onPress={() => router.replace('/(auth)/sign-in')}
           />
         </View>
@@ -71,9 +73,9 @@ export default function ForgotPasswordScreen() {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Reset password</Text>
+            <Text style={styles.title}>{t('auth.forgotPassword.title')}</Text>
             <Text style={styles.subtitle}>
-              Enter your email and we'll send you a reset link.
+              {t('auth.forgotPassword.subtitle')}
             </Text>
           </View>
 
@@ -82,8 +84,8 @@ export default function ForgotPasswordScreen() {
             name="email"
             render={({ field: { onChange, onBlur, value } }) => (
               <Input
-                label="Email"
-                placeholder="you@example.com"
+                label={t('common.email')}
+                placeholder={t('common.emailPlaceholder')}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
@@ -97,14 +99,14 @@ export default function ForgotPasswordScreen() {
 
           <View style={styles.submit}>
             <Button
-              title="Send Reset Link"
+              title={t('auth.forgotPassword.submit')}
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
             />
           </View>
 
           <Button
-            title="Back"
+            title={t('common.back')}
             variant="ghost"
             onPress={() => router.back()}
           />

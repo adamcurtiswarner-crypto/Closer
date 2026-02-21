@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCouple, useUpdatePromptFrequency } from '@/hooks/useCouple';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useDeleteAccount, useExportData, useAnonymizeResponses } from '@/hooks/usePrivacy';
+import { useCalendarSync } from '@/hooks/useCalendar';
 import { Paywall } from '@/components/Paywall';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, ProfileCard } from '@/components';
@@ -69,6 +70,9 @@ export default function SettingsScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [showAnonymizeModal, setShowAnonymizeModal] = useState(false);
+
+  // Calendar sync
+  const { synced: calendarSynced, sync: calendarSync, remove: calendarRemove } = useCalendarSync();
 
   const handleTimeChange = async (newTime: string) => {
     if (!user?.id) return;
@@ -206,13 +210,29 @@ export default function SettingsScreen() {
               thumbColor={remindMe ? '#c97454' : '#fafaf9'}
             />
           </View>
-          <View style={[styles.rowToggle, styles.lastRow]}>
+          <View style={styles.rowToggle}>
             <Text style={styles.rowLabel}>Notify when partner responds</Text>
             <Switch
               value={partnerNotify}
               onValueChange={handleTogglePartnerNotify}
               trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
               thumbColor={partnerNotify ? '#c97454' : '#fafaf9'}
+            />
+          </View>
+          <View style={[styles.rowToggle, styles.lastRow]}>
+            <Text style={styles.rowLabel}>Sync to calendar</Text>
+            <Switch
+              value={calendarSynced}
+              onValueChange={(value) => {
+                if (value) {
+                  calendarSync.mutate();
+                } else {
+                  calendarRemove.mutate();
+                }
+              }}
+              trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
+              thumbColor={calendarSynced ? '#c97454' : '#fafaf9'}
+              disabled={calendarSync.isPending || calendarRemove.isPending}
             />
           </View>
         </View>
@@ -227,6 +247,18 @@ export default function SettingsScreen() {
           rowValueStyle={styles.rowValue}
           dangerTextStyle={styles.dangerText}
         />
+
+        {/* Resources */}
+        <Text style={styles.sectionTitle}>RESOURCES</Text>
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={[styles.row, styles.lastRow]}
+            onPress={() => router.push('/(app)/resources')}
+          >
+            <Text style={styles.rowLabel}>Find support</Text>
+            <Text style={styles.rowValue}>{'>'}</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Privacy & Data */}
         <Text style={styles.sectionTitle}>PRIVACY & DATA</Text>

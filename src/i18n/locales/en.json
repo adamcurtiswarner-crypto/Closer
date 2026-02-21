@@ -1,0 +1,166 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "back": "Back",
+    "error": "Error",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "done": "Done"
+  },
+  "auth": {
+    "welcome": {
+      "tagline": "Small moments. Real closeness.",
+      "description": "Stoke helps couples stay connected through simple daily prompts.",
+      "getStarted": "Get Started",
+      "haveAccount": "I have an account",
+      "haveInvite": "I have an invite"
+    },
+    "signIn": {
+      "title": "Welcome back",
+      "passwordPlaceholder": "Your password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign In",
+      "noAccount": "Don't have an account? ",
+      "signUpLink": "Sign up",
+      "failed": "Sign in failed",
+      "validation": {
+        "emailRequired": "Enter a valid email",
+        "passwordRequired": "Password is required"
+      }
+    },
+    "signUp": {
+      "title": "Create your account",
+      "passwordPlaceholder": "At least 8 characters",
+      "submit": "Create Account",
+      "terms": "By creating an account, you agree to our ",
+      "privacyPolicy": "Privacy Policy",
+      "hasAccount": "Already have an account? ",
+      "signInLink": "Sign in",
+      "failed": "Sign up failed",
+      "validation": {
+        "emailRequired": "Enter a valid email",
+        "passwordMin": "Password must be at least 8 characters"
+      }
+    },
+    "forgotPassword": {
+      "title": "Reset password",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "submit": "Send Reset Link",
+      "sentTitle": "Check your email",
+      "sentSubtitle": "We sent you a link to reset your password.",
+      "backToSignIn": "Back to Sign In",
+      "validation": {
+        "emailRequired": "Enter a valid email"
+      }
+    }
+  },
+  "today": {
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "promptOnWay": "Your prompt is on its way",
+    "arrivingAround": "Arriving around {{time}}",
+    "checkBackSoon": "Check back soon",
+    "getTodaysPrompt": "Get today's prompt",
+    "sharePlaceholder": "Share what comes to mind...",
+    "addPhoto": "Add photo",
+    "moreCharacters": "{{count}} more characters",
+    "readyToShare": "Ready to share",
+    "share": "Share",
+    "sending": "Sending...",
+    "niceOne": "Nice one",
+    "beautiful": "Beautiful",
+    "yourResponse": "Your response",
+    "waitingFor": "Waiting for {{name}}...",
+    "isResponding": "{{name}} is responding...",
+    "howDidThisFeel": "How did this feel?",
+    "warm": "Warm",
+    "okay": "Okay",
+    "hard": "Hard",
+    "thanksForSharing": "Thanks for sharing",
+    "streakStarted": "Streak started!",
+    "dayStreak": "{{count}} day streak!",
+    "seeYouTomorrow": "See you tomorrow"
+  },
+  "memories": {
+    "title": "Memories",
+    "thisWeek": "This Week",
+    "saved": "Saved",
+    "noMemories": "No memories yet",
+    "saveMemory": "Save this memory"
+  },
+  "insights": {
+    "title": "Insights"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "PROFILE",
+    "notifications": "NOTIFICATIONS",
+    "dailyPromptTime": "Daily prompt time",
+    "promptFrequency": "Prompt frequency",
+    "remindMe": "Remind me to respond",
+    "notifyPartner": "Notify when partner responds",
+    "syncToCalendar": "Sync to calendar",
+    "resources": "RESOURCES",
+    "findSupport": "Find support",
+    "privacyData": "PRIVACY & DATA",
+    "exportData": "Export my data",
+    "anonymize": "Anonymize my responses",
+    "deleteAccount": "Delete account",
+    "account": "ACCOUNT",
+    "subscription": "Subscription",
+    "premium": "Premium",
+    "free": "Free",
+    "version": "Version",
+    "signOut": "Sign out",
+    "signOutConfirm": "Are you sure?",
+    "promptTimeTitle": "Daily prompt time",
+    "promptTimeSubtitle": "When should your daily prompt arrive?",
+    "frequencyTitle": "Prompt frequency",
+    "frequencySubtitle": "How often should you receive prompts?",
+    "deleteTitle": "Delete your account",
+    "deleteBody": "Your account will be deactivated immediately and your data permanently removed after 30 days. Your partner will be notified.\n\nThis cannot be undone.",
+    "deleteConfirmLabel": "Type DELETE to confirm",
+    "deleteButton": "Delete my account",
+    "anonymizeTitle": "Anonymize your responses",
+    "anonymizeBody": "This will replace all your written responses with [removed]. Your partner's responses will not be affected.\n\nThis cannot be undone.",
+    "anonymizeButton": "Anonymize my responses",
+    "safetyText": "Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.",
+    "safetyLink": "National Domestic Violence Hotline"
+  },
+  "profile": {
+    "editName": "Edit name",
+    "partnerName": "Partner name",
+    "anniversary": "Anniversary",
+    "loveLanguage": "Love language"
+  },
+  "wishlist": {
+    "title": "Wishlist",
+    "startTogether": "Start your wishlist together",
+    "addDescription": "Add experiences, trips, and dreams you want to share with each other",
+    "addFirstWish": "Add your first wish",
+    "addSomethingNew": "Add something new",
+    "wishes_one": "1 wish",
+    "wishes_other": "{{count}} wishes",
+    "done": "Done ({{count}})"
+  },
+  "resources": {
+    "title": "Resources",
+    "intro": "Stoke is not therapy. These resources can help if you want to go deeper.",
+    "safetyFooter": "If you feel unsafe in your relationship, please reach out for help. You are not alone."
+  },
+  "chat": {
+    "startConversation": "Start a conversation",
+    "messagePlaceholder": "Message...",
+    "writing": "writing...",
+    "messageRemoved": "[message removed]",
+    "deleteMessage": "Delete message",
+    "deleteConfirm": "This message will be removed for both of you.",
+    "sentPhoto": "Sent a photo",
+    "sentMessage": "Sent you a message"
+  }
+}

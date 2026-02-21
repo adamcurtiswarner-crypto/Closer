@@ -13,21 +13,23 @@ import { Link, router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button, Input } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getPendingInviteCode, clearPendingInviteCode } from '@/hooks/useDeepLink';
 import { getAuthErrorMessage } from '@/utils/authErrors';
 
-const signUpSchema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-type SignUpFormData = z.infer<typeof signUpSchema>;
+type SignUpFormData = { email: string; password: string };
 
 export default function SignUpScreen() {
+  const { t } = useTranslation();
   const { signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+
+  const signUpSchema = z.object({
+    email: z.string().email(t('auth.signUp.validation.emailRequired')),
+    password: z.string().min(8, t('auth.signUp.validation.passwordMin')),
+  });
 
   const {
     control,
@@ -55,7 +57,7 @@ export default function SignUpScreen() {
         router.replace('/(onboarding)/verify-email');
       }
     } catch (error: any) {
-      Alert.alert('Sign up failed', getAuthErrorMessage(error));
+      Alert.alert(t('auth.signUp.failed'), getAuthErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +70,7 @@ export default function SignUpScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Create your account</Text>
+          <Text style={styles.title}>{t('auth.signUp.title')}</Text>
 
           <View style={styles.form}>
             <Controller
@@ -76,8 +78,8 @@ export default function SignUpScreen() {
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
-                  label="Email"
-                  placeholder="you@example.com"
+                  label={t('common.email')}
+                  placeholder={t('common.emailPlaceholder')}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
@@ -96,8 +98,8 @@ export default function SignUpScreen() {
               name="password"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input
-                  label="Password"
-                  placeholder="At least 8 characters"
+                  label={t('common.password')}
+                  placeholder={t('auth.signUp.passwordPlaceholder')}
                   secureTextEntry
                   autoComplete="password-new"
                   onBlur={onBlur}
@@ -111,24 +113,24 @@ export default function SignUpScreen() {
 
           <View style={styles.submit}>
             <Button
-              title="Create Account"
+              title={t('auth.signUp.submit')}
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
             />
           </View>
 
           <Text style={styles.terms}>
-            By creating an account, you agree to our{' '}
+            {t('auth.signUp.terms')}
             <Text style={styles.termsLink} onPress={() => router.push('/(app)/privacy-policy')}>
-              Privacy Policy
+              {t('auth.signUp.privacyPolicy')}
             </Text>.
           </Text>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account? </Text>
+            <Text style={styles.footerText}>{t('auth.signUp.hasAccount')}</Text>
             <Link href="/(auth)/sign-in" asChild>
               <TouchableOpacity>
-                <Text style={styles.footerLink}>Sign in</Text>
+                <Text style={styles.footerLink}>{t('auth.signUp.signInLink')}</Text>
               </TouchableOpacity>
             </Link>
           </View>

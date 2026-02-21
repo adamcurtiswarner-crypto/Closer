@@ -77,6 +77,18 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="resources"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
