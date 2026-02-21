@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ViewStyle,
   TextStyle,
+  View,
 } from 'react-native';
 
 interface ButtonProps extends TouchableOpacityProps {
@@ -17,16 +18,19 @@ interface ButtonProps extends TouchableOpacityProps {
   fullWidth?: boolean;
 }
 
-export function Button({
-  title,
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  fullWidth = true,
-  disabled,
-  style,
-  ...props
-}: ButtonProps) {
+export const Button = React.forwardRef<View, ButtonProps>(function Button(
+  {
+    title,
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    fullWidth = true,
+    disabled,
+    style,
+    ...props
+  },
+  ref
+) {
   const buttonStyles: ViewStyle[] = [
     styles.base,
     styles[`${variant}Button`],
@@ -43,6 +47,7 @@ export function Button({
 
   return (
     <TouchableOpacity
+      ref={ref as any}
       style={[buttonStyles, style]}
       disabled={disabled || loading}
       activeOpacity={0.8}
@@ -58,7 +63,7 @@ export function Button({
       )}
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   base: {
