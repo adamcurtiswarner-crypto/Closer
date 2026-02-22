@@ -1,14 +1,19 @@
 'use client'
 
+import { useState } from 'react'
 import { useDashboard } from '@/hooks/useDashboard'
 import { MetricCard } from '@/components/dashboard/metric-card'
 import { WmeerSummary } from '@/components/dashboard/wmeer-summary'
 import { WmeerChart } from '@/components/dashboard/wmeer-chart'
 import { AlertsPanel } from '@/components/dashboard/alerts-panel'
 import { QuickActions } from '@/components/dashboard/quick-actions'
+import { ReviewStepper } from '@/components/weekly-review/review-stepper'
+import { Button } from '@/components/ui/button'
+import { ClipboardCheck } from 'lucide-react'
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard()
+  const [reviewOpen, setReviewOpen] = useState(false)
 
   if (isLoading) {
     return <div className="text-gray-500">Loading dashboard...</div>
@@ -20,8 +25,16 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <QuickActions />
+        <div className="flex items-center gap-3">
+          <Button onClick={() => setReviewOpen(true)} className="gap-2">
+            <ClipboardCheck className="h-4 w-4" />
+            Start Weekly Review
+          </Button>
+          <QuickActions />
+        </div>
       </div>
+
+      <ReviewStepper open={reviewOpen} onOpenChange={setReviewOpen} />
 
       <WmeerSummary
         currentWmeer={metrics.currentWmeer}
