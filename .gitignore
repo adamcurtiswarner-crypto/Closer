@@ -21,6 +21,9 @@ ui-debug.log
 # OS
 .DS_Store
 
+# Tasks (local Claude workflow)
+tasks/
+
 # Native builds
 ios/
 android/

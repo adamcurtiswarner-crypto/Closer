@@ -16,15 +16,18 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.closer.app",
+      "bundleIdentifier": "com.stoke.app",
       "buildNumber": "1",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
+          "remote-notification",
           "remote-notification"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       },
       "associatedDomains": [
+        "applinks:stoke.app",
         "applinks:stoke.app"
       ]
     },
@@ -33,7 +36,7 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.closer.app",
+      "package": "com.stoke.app",
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
@@ -47,7 +50,10 @@
               "pathPrefix": "/join"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -59,7 +65,8 @@
           "icon": "./src/assets/notification-icon.png",
           "color": "#ffffff"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
@@ -70,8 +77,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "ed4dbe48-8597-4a51-8580-3402ea568d2f"
       }
-    }
+    },
+    "owner": "adamcurtiswarner"
   }
 }
