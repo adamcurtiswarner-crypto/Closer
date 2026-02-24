@@ -92,28 +92,21 @@ export default function PreferencesScreen() {
                 ]}
                 onPress={() => setSelectedTime(option.value)}
               >
-                <View
-                  style={[
-                    styles.radio,
-                    selectedTime === option.value
-                      ? styles.radioSelected
-                      : styles.radioDefault,
-                  ]}
-                >
+                <View style={styles.optionContent}>
+                  <Text
+                    style={[
+                      styles.optionText,
+                      selectedTime === option.value
+                        ? styles.optionTextSelected
+                        : styles.optionTextDefault,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
                   {selectedTime === option.value && (
-                    <View style={styles.radioDot} />
+                    <Text style={styles.selectedCheck}>{'\u2713'}</Text>
                   )}
                 </View>
-                <Text
-                  style={[
-                    styles.optionText,
-                    selectedTime === option.value
-                      ? styles.optionTextSelected
-                      : styles.optionTextDefault,
-                  ]}
-                >
-                  {option.label}
-                </Text>
               </TouchableOpacity>
             </Animated.View>
           ))}
@@ -173,32 +166,23 @@ const styles = StyleSheet.create({
   },
   optionRowSelected: {
     backgroundColor: '#fef7f4',
-    borderColor: '#e8c4b0',
+    borderColor: '#c97454',
+    borderWidth: 2,
   },
   optionRowDefault: {
     backgroundColor: '#fff',
     borderColor: '#e7e5e4',
   },
-  radio: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    marginRight: 12,
+  optionContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
   },
-  radioSelected: {
-    borderColor: '#c97454',
-  },
-  radioDefault: {
-    borderColor: '#d6d3d1',
-  },
-  radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#c97454',
+  selectedCheck: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#c97454',
   },
   optionText: {
     fontSize: 16,
