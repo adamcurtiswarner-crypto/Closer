@@ -21,6 +21,7 @@ import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots } from '@components';
+import { DateNightCard } from '@/components/DateNightCard';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
 import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
@@ -353,6 +354,11 @@ export default function TodayScreen() {
             <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
           </Animated.View>
 
+          {/* Date Night Games */}
+          <Animated.View entering={FadeInUp.duration(500).delay(1000)} style={styles.goalSection}>
+            <DateNightCard />
+          </Animated.View>
+
           <AddGoalModal
             visible={showAddGoalModal}
             onClose={() => setShowAddGoalModal(false)}
@@ -518,6 +524,11 @@ export default function TodayScreen() {
             <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
           </Animated.View>
 
+          {/* Date Night Games */}
+          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={styles.goalSection}>
+            <DateNightCard />
+          </Animated.View>
+
           <AddGoalModal
             visible={showAddGoalModal}
             onClose={() => setShowAddGoalModal(false)}
@@ -645,7 +656,12 @@ export default function TodayScreen() {
             <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
           </Animated.View>
 
-          <Animated.View entering={FadeIn.duration(400).delay(1100)}>
+          {/* Date Night Games */}
+          <Animated.View entering={FadeInUp.duration(500).delay(1200)} style={styles.goalSection}>
+            <DateNightCard />
+          </Animated.View>
+
+          <Animated.View entering={FadeIn.duration(400).delay(1300)}>
             <View style={styles.doneRow}>
               <View style={styles.doneDot} />
               <Text style={styles.doneText}>{t('today.seeYouTomorrow')}</Text>
