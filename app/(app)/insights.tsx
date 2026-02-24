@@ -1,6 +1,15 @@
 import React, { useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  withSpring,
+  Easing,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInsights, formatWeekLabel } from '@/hooks/useInsights';
 import { useCouple } from '@/hooks/useCouple';
@@ -60,6 +69,93 @@ function EmptyState() {
         {t('insights.emptySubtitle')}
       </Text>
     </View>
+  );
+}
+
+function AnimatedBarRow({ week, index }: { week: { week: string; positive: number; neutral: number; negative: number; total: number }; index: number }) {
+  const scaleX = useSharedValue(0);
+
+  useEffect(() => {
+    scaleX.value = withDelay(
+      index * 60,
+      withTiming(1, { duration: 500, easing: Easing.out(Easing.cubic) })
+    );
+  }, []);
+
+  const barAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: scaleX.value }],
+  }));
+
+  return (
+    <Animated.View
+      entering={FadeInUp.duration(300).delay(index * 60)}
+      style={styles.emotionRow}
+    >
+      <Text style={styles.weekLabel}>{formatWeekLabel(week.week)}</Text>
+      {week.total > 0 ? (
+        <Animated.View style={[styles.barContainer, barAnimatedStyle]}>
+          {week.positive > 0 && (
+            <View style={[styles.barSegment, styles.barPositive, { flex: week.positive }]} />
+          )}
+          {week.neutral > 0 && (
+            <View style={[styles.barSegment, styles.barNeutral, { flex: week.neutral }]} />
+          )}
+          {week.negative > 0 && (
+            <View style={[styles.barSegment, styles.barNegative, { flex: week.negative }]} />
+          )}
+        </Animated.View>
+      ) : (
+        <Animated.View style={[styles.barContainer, barAnimatedStyle]}>
+          <View style={[styles.barSegment, styles.barEmpty, { flex: 1 }]} />
+        </Animated.View>
+      )}
+    </Animated.View>
+  );
+}
+
+function AnimatedTrendBar({ targetHeight, index, week }: { targetHeight: number; index: number; week: string }) {
+  const height = useSharedValue(4);
+
+  useEffect(() => {
+    height.value = withDelay(
+      index * 80,
+      withTiming(targetHeight, { duration: 600, easing: Easing.out(Easing.cubic) })
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    height: height.value,
+  }));
+
+  return (
+    <View style={styles.trendColumn}>
+      <Animated.View style={[styles.trendBar, animatedStyle]} />
+      <Text style={styles.trendWeekLabel}>{formatWeekLabel(week)}</Text>
+    </View>
+  );
+}
+
+function AnimatedLoveLanguageCircle({ children, delay }: { children: React.ReactNode; delay: number }) {
+  const scale = useSharedValue(0.8);
+
+  useEffect(() => {
+    scale.value = withDelay(
+      delay,
+      withSpring(1, { damping: 12, stiffness: 150 })
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View
+      entering={FadeInUp.duration(400).delay(delay)}
+      style={[animatedStyle, { flex: 1 }]}
+    >
+      {children}
+    </Animated.View>
   );
 }
 
