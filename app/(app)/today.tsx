@@ -20,7 +20,7 @@ import Animated, { FadeIn, FadeInUp, FadeInDown } from 'react-native-reanimated'
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal } from '@components';
+import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots } from '@components';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
 import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
@@ -418,11 +418,7 @@ export default function TodayScreen() {
 
             {isPartnerTyping && partnerTypingContext === 'prompt' ? (
               <Animated.View entering={FadeIn.duration(300)} style={styles.typingRow}>
-                <View style={styles.typingDots}>
-                  <View style={[styles.typingDot, { opacity: 0.4 }]} />
-                  <View style={[styles.typingDot, { opacity: 0.7 }]} />
-                  <View style={[styles.typingDot, { opacity: 1 }]} />
-                </View>
+                <PulsingDots color="#c97454" size={5} />
                 <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
               </Animated.View>
             ) : (
@@ -918,16 +914,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-  },
-  typingDots: {
-    flexDirection: 'row',
-    gap: 3,
-  },
-  typingDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: '#c97454',
   },
   typingText: {
     color: '#c97454',

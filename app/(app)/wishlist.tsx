@@ -23,6 +23,7 @@ import { getCategoryDisplay } from '@/config/wishlistCategories';
 import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
 import { AddWishlistModal } from '@/components/AddWishlistModal';
+import { AnimatedCheckbox } from '@/components/AnimatedCheckbox';
 
 export default function WishlistScreen() {
   const { t } = useTranslation();
@@ -222,13 +223,7 @@ function WishlistRow({
         onPress={() => onToggle(item)}
         activeOpacity={0.6}
       >
-        {item.isCompleted ? (
-          <View style={styles.checkboxFilled}>
-            <Text style={styles.checkmark}>{'\u2713'}</Text>
-          </View>
-        ) : (
-          <View style={styles.checkboxEmpty} />
-        )}
+        <AnimatedCheckbox checked={item.isCompleted} size={24} color="#22c55e" />
       </TouchableOpacity>
 
       {/* Content */}
@@ -392,27 +387,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 2,
-  },
-  checkboxEmpty: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#d6d3d1',
-  },
-  checkboxFilled: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#22c55e',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmark: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: -1,
   },
   rowContent: {
     flex: 1,

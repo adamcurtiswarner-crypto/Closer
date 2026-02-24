@@ -17,6 +17,8 @@ import {
   useWeeklyChallenge,
   type Goal,
 } from '@/hooks/useGoals';
+import { AnimatedProgressBar } from './AnimatedProgressBar';
+import { AnimatedCheckbox } from './AnimatedCheckbox';
 
 interface GoalTrackerProps {
   onAddGoal: () => void;
@@ -160,15 +162,7 @@ function GoalRow({
         onPress={() => onToggle(goal)}
         activeOpacity={0.6}
       >
-        {goal.isCompleted ? (
-          <View style={styles.checkboxFilled}>
-            <Text style={styles.checkmark}>{'\u2713'}</Text>
-          </View>
-        ) : (
-          <View style={styles.checkboxEmpty}>
-            <View style={styles.checkboxInner} />
-          </View>
-        )}
+        <AnimatedCheckbox checked={goal.isCompleted} size={24} />
       </TouchableOpacity>
       <View style={styles.goalInfo}>
         <View style={styles.goalTitleRow}>
@@ -184,7 +178,7 @@ function GoalRow({
             {goal.title}
           </Text>
         </View>
-        <ProgressBar
+        <ProgressBarRow
           current={goal.completedCount}
           target={goal.targetCount}
           isComplete={goal.isCompleted}
@@ -202,7 +196,7 @@ function GoalRow({
   );
 }
 
-function ProgressBar({
+function ProgressBarRow({
   current,
   target,
   isComplete,
@@ -214,15 +208,12 @@ function ProgressBar({
   const progress = Math.min(current / target, 1);
   return (
     <View style={styles.progressRow}>
-      <View style={styles.progressTrack}>
-        <View
-          style={[
-            styles.progressFill,
-            { width: `${progress * 100}%` },
-            isComplete && styles.progressFillComplete,
-          ]}
-        />
-      </View>
+      <AnimatedProgressBar
+        progress={progress}
+        color={isComplete ? '#22c55e' : '#c97454'}
+        height={6}
+        style={{ flex: 1 }}
+      />
       <Text style={[styles.progressLabel, isComplete && styles.progressLabelComplete]}>
         {current}/{target}
       </Text>
@@ -351,35 +342,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checkboxEmpty: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#d6d3d1',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#f5f5f4',
-  },
-  checkboxFilled: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#c97454',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmark: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: -1,
-  },
   goalInfo: {
     flex: 1,
     gap: 6,
@@ -430,21 +392,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  progressTrack: {
-    flex: 1,
-    height: 6,
-    backgroundColor: '#f5f5f4',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: 6,
-    backgroundColor: '#c97454',
-    borderRadius: 3,
-  },
-  progressFillComplete: {
-    backgroundColor: '#22c55e',
   },
   progressLabel: {
     fontSize: 11,
