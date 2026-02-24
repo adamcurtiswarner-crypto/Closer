@@ -27,7 +27,10 @@ import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
 import { useStreak } from '@/hooks/useStreak';
+import { useCouple } from '@/hooks/useCouple';
 import { useUnreadCount } from '@/hooks/useChat';
+import { updateWidgetData, buildWidgetData } from '@/services/widgetBridge';
+import { getAnniversaryCountdown } from '@/config/milestones';
 import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
@@ -83,6 +86,7 @@ export default function TodayScreen() {
   const submitFeedback = useSubmitFeedback();
   const triggerPrompt = useTriggerPrompt();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
+  const { data: couple } = useCouple();
   const unreadMessageCount = useUnreadCount();
   const { t } = useTranslation();
 
@@ -171,6 +175,47 @@ export default function TodayScreen() {
       markResponseViewed();
     }
   }, [mode, markResponseViewed]);
+
+  // Update iOS home screen widget data
+  useEffect(() => {
+    if (!user || !couple) return;
+
+    const daysAsCouple = couple.linkedAt
+      ? Math.floor((Date.now() - couple.linkedAt.getTime()) / 86400000)
+      : 0;
+
+    let anniversaryDaysLeft = -1;
+    let anniversaryIsToday = false;
+    if (couple.anniversaryDate) {
+      const countdown = getAnniversaryCountdown(couple.anniversaryDate);
+      anniversaryDaysLeft = countdown.days;
+      anniversaryIsToday = countdown.isToday;
+    }
+
+    let promptStatus: 'none' | 'your_turn' | 'waiting_partner' | 'complete' = 'none';
+    if (assignment) {
+      if (isComplete) {
+        promptStatus = 'complete';
+      } else if (!myResponse) {
+        promptStatus = 'your_turn';
+      } else {
+        promptStatus = 'waiting_partner';
+      }
+    }
+
+    const widgetData = buildWidgetData({
+      currentStreak,
+      daysAsCouple,
+      userName: user.displayName || '',
+      partnerName: user.partnerName || 'Partner',
+      promptStatus,
+      promptText: assignment?.promptText || '',
+      anniversaryDaysLeft,
+      anniversaryIsToday,
+    });
+
+    updateWidgetData(widgetData);
+  }, [user, couple, currentStreak, assignment, myResponse, isComplete]);
 
   const handleRespond = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
