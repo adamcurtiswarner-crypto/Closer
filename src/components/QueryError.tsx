@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 interface QueryErrorProps {
   message?: string;
@@ -11,39 +12,59 @@ export function QueryError({
   onRetry,
 }: QueryErrorProps) {
   return (
-    <View style={styles.container}>
+    <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
+      <Text style={styles.icon}>{'\u2601'}</Text>
+      <Text style={styles.title}>Couldn't load</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry && (
         <TouchableOpacity style={styles.button} onPress={onRetry}>
           <Text style={styles.buttonText}>Retry</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 32,
     alignItems: 'center',
+    width: '100%',
+    shadowColor: '#1c1917',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  icon: {
+    fontSize: 32,
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#292524',
+    marginBottom: 6,
   },
   message: {
     fontSize: 14,
     color: '#78716c',
     textAlign: 'center',
-    marginBottom: 16,
+    lineHeight: 20,
+    marginBottom: 20,
   },
   button: {
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#f5f5f4',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#e7e5e4',
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#c97454',
   },
   buttonText: {
     fontSize: 14,
-    color: '#57534e',
-    fontWeight: '500',
+    color: '#c97454',
+    fontWeight: '600',
   },
 });

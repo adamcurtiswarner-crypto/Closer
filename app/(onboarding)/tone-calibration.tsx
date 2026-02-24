@@ -82,16 +82,21 @@ export default function ToneCalibrationScreen() {
                 ]}
                 onPress={() => setSelectedTone(option.value)}
               >
-                <Text
-                  style={[
-                    styles.optionLabel,
-                    selectedTone === option.value
-                      ? styles.optionLabelSelected
-                      : styles.optionLabelDefault,
-                  ]}
-                >
-                  {option.label}
-                </Text>
+                <View style={styles.optionHeader}>
+                  <Text
+                    style={[
+                      styles.optionLabel,
+                      selectedTone === option.value
+                        ? styles.optionLabelSelected
+                        : styles.optionLabelDefault,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {selectedTone === option.value && (
+                    <Text style={styles.selectedCheck}>{'\u2713'}</Text>
+                  )}
+                </View>
                 <Text
                   style={[
                     styles.optionDescription,
@@ -150,13 +155,23 @@ const styles = StyleSheet.create({
   },
   optionCardSelected: {
     backgroundColor: '#fef7f4',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: '#c97454',
   },
   optionCardDefault: {
     backgroundColor: '#fff',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#e7e5e4',
+  },
+  optionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectedCheck: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#c97454',
   },
   optionLabel: {
     fontSize: 16,
