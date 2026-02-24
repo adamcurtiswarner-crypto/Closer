@@ -260,6 +260,9 @@ export default function InsightsScreen() {
                       <View key={m.id} style={styles.badge}>
                         <View style={[styles.badgeCircle, styles.badgeCircleLocked]}>
                           <Text style={styles.badgeIconLocked}>{m.icon}</Text>
+                          <View style={styles.lockOverlay}>
+                            <Text style={styles.lockIcon}>{'\uD83D\uDD12'}</Text>
+                          </View>
                         </View>
                         <Text style={[styles.badgeTitle, styles.badgeTitleLocked]} numberOfLines={1}>{m.title}</Text>
                       </View>
@@ -558,14 +561,15 @@ const styles = StyleSheet.create({
   },
   badgeCircleLocked: {
     backgroundColor: '#f5f5f4',
-    borderColor: '#e7e5e4',
+    borderColor: '#d6d3d1',
+    borderStyle: 'dashed',
   },
   badgeIcon: {
     fontSize: 18,
   },
   badgeIconLocked: {
     fontSize: 18,
-    opacity: 0.3,
+    opacity: 0.4,
   },
   badgeTitle: {
     fontSize: 10,
@@ -575,6 +579,24 @@ const styles = StyleSheet.create({
   },
   badgeTitleLocked: {
     color: '#a8a29e',
+  },
+  lockOverlay: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  lockIcon: {
+    fontSize: 8,
   },
   nextMilestone: {
     backgroundColor: '#fafaf9',
