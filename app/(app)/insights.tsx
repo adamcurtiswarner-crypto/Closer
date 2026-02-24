@@ -317,33 +317,37 @@ export default function InsightsScreen() {
             {/* Love Languages */}
             <InsightCard icon={'\u2764\uFE0F'} title="Love Languages" accentColor="#c97474" delay={75}>
               <View style={styles.loveLanguageRow}>
-                <View style={styles.loveLanguageItem}>
-                  <View style={[styles.loveLanguageCircle, userLang && styles.loveLanguageCircleSet]}>
-                    <Text style={styles.loveLanguageEmoji}>
-                      {userLang ? userLang.icon : '?'}
+                <AnimatedLoveLanguageCircle delay={0}>
+                  <View style={styles.loveLanguageItem}>
+                    <View style={[styles.loveLanguageCircle, userLang && styles.loveLanguageCircleSet]}>
+                      <Text style={styles.loveLanguageEmoji}>
+                        {userLang ? userLang.icon : '?'}
+                      </Text>
+                    </View>
+                    <Text style={styles.loveLanguageWho}>You</Text>
+                    <Text style={styles.loveLanguageName} numberOfLines={2}>
+                      {userLang ? userLang.label : 'Not set'}
+                    </Text>
+                    {!userLang && (
+                      <TouchableOpacity onPress={() => router.push('/(app)/settings')} activeOpacity={0.7}>
+                        <Text style={styles.loveLanguageSetLink}>Set yours</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </AnimatedLoveLanguageCircle>
+                <AnimatedLoveLanguageCircle delay={100}>
+                  <View style={styles.loveLanguageItem}>
+                    <View style={[styles.loveLanguageCircle, partnerLang && styles.loveLanguageCirclePartner]}>
+                      <Text style={styles.loveLanguageEmoji}>
+                        {partnerLang ? partnerLang.icon : '?'}
+                      </Text>
+                    </View>
+                    <Text style={styles.loveLanguageWho}>{user?.partnerName || 'Partner'}</Text>
+                    <Text style={styles.loveLanguageName} numberOfLines={2}>
+                      {partnerLang ? partnerLang.label : 'Not set yet'}
                     </Text>
                   </View>
-                  <Text style={styles.loveLanguageWho}>You</Text>
-                  <Text style={styles.loveLanguageName} numberOfLines={2}>
-                    {userLang ? userLang.label : 'Not set'}
-                  </Text>
-                  {!userLang && (
-                    <TouchableOpacity onPress={() => router.push('/(app)/settings')} activeOpacity={0.7}>
-                      <Text style={styles.loveLanguageSetLink}>Set yours</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-                <View style={styles.loveLanguageItem}>
-                  <View style={[styles.loveLanguageCircle, partnerLang && styles.loveLanguageCirclePartner]}>
-                    <Text style={styles.loveLanguageEmoji}>
-                      {partnerLang ? partnerLang.icon : '?'}
-                    </Text>
-                  </View>
-                  <Text style={styles.loveLanguageWho}>{user?.partnerName || 'Partner'}</Text>
-                  <Text style={styles.loveLanguageName} numberOfLines={2}>
-                    {partnerLang ? partnerLang.label : 'Not set yet'}
-                  </Text>
-                </View>
+                </AnimatedLoveLanguageCircle>
               </View>
             </InsightCard>
 
@@ -351,27 +355,8 @@ export default function InsightsScreen() {
             <InsightCard icon={'\u2600\uFE0F'} title="Emotional Journey" delay={200}>
               {insights.emotionalJourney.some((w) => w.total > 0) ? (
                 <>
-                  {insights.emotionalJourney.map((week) => (
-                    <View key={week.week} style={styles.emotionRow}>
-                      <Text style={styles.weekLabel}>{formatWeekLabel(week.week)}</Text>
-                      {week.total > 0 ? (
-                        <View style={styles.barContainer}>
-                          {week.positive > 0 && (
-                            <View style={[styles.barSegment, styles.barPositive, { flex: week.positive }]} />
-                          )}
-                          {week.neutral > 0 && (
-                            <View style={[styles.barSegment, styles.barNeutral, { flex: week.neutral }]} />
-                          )}
-                          {week.negative > 0 && (
-                            <View style={[styles.barSegment, styles.barNegative, { flex: week.negative }]} />
-                          )}
-                        </View>
-                      ) : (
-                        <View style={styles.barContainer}>
-                          <View style={[styles.barSegment, styles.barEmpty, { flex: 1 }]} />
-                        </View>
-                      )}
-                    </View>
+                  {insights.emotionalJourney.map((week, index) => (
+                    <AnimatedBarRow key={week.week} week={week} index={index} />
                   ))}
                   <View style={styles.legend}>
                     <View style={styles.legendItem}>
@@ -404,24 +389,26 @@ export default function InsightsScreen() {
             <InsightCard icon={'\uD83D\uDCAC'} title="Communication" accentColor="#8b7355" delay={300}>
               <View style={styles.commStatRow}>
                 <Text style={styles.commStatLabel}>Avg. response length</Text>
-                <Text style={styles.commStatValue}>~{insights.avgResponseWords} words</Text>
+                <AnimatedCounter value={insights.avgResponseWords} style={styles.commStatValue} prefix="~" suffix=" words" />
               </View>
               <View style={[styles.commStatRow, styles.commStatRowLast]}>
                 <Text style={styles.commStatLabel}>Talked about it after</Text>
-                <Text style={styles.commStatValue}>{insights.talkedAboutItRate}%</Text>
+                <AnimatedCounter value={insights.talkedAboutItRate} style={styles.commStatValue} suffix="%" />
               </View>
               {insights.responseLengthTrend.some((w) => w.avgWords > 0) && (
                 <View style={styles.trendRow}>
-                  {insights.responseLengthTrend.map((w) => {
+                  {insights.responseLengthTrend.map((w, index) => {
                     const maxWords = Math.max(...insights.responseLengthTrend.map((t) => t.avgWords), 1);
-                    const height = w.avgWords > 0
+                    const targetHeight = w.avgWords > 0
                       ? 20 + (w.avgWords / maxWords) * 40
                       : 4;
                     return (
-                      <View key={w.week} style={styles.trendColumn}>
-                        <View style={[styles.trendBar, { height }]} />
-                        <Text style={styles.trendWeekLabel}>{formatWeekLabel(w.week)}</Text>
-                      </View>
+                      <AnimatedTrendBar
+                        key={w.week}
+                        targetHeight={targetHeight}
+                        index={index}
+                        week={w.week}
+                      />
                     );
                   })}
                 </View>
@@ -454,12 +441,12 @@ export default function InsightsScreen() {
             <InsightCard icon={'\uD83D\uDD25'} title="Streak & Consistency" delay={500}>
               <View style={styles.streakRow}>
                 <View style={styles.streakStat}>
-                  <Text style={styles.streakValue}>{insights.currentStreak}</Text>
+                  <AnimatedCounter value={insights.currentStreak} style={styles.streakValue} />
                   <Text style={styles.streakStatLabel}>Current</Text>
                 </View>
                 <View style={styles.streakDivider} />
                 <View style={styles.streakStat}>
-                  <Text style={styles.streakValue}>{insights.longestStreak}</Text>
+                  <AnimatedCounter value={insights.longestStreak} style={styles.streakValue} />
                   <Text style={styles.streakStatLabel}>Longest</Text>
                 </View>
               </View>
