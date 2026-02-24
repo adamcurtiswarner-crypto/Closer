@@ -182,6 +182,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="games"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',

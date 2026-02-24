@@ -39,6 +39,15 @@ export { ResourceCard } from './ResourceCard';
 export { ChatBubble } from './ChatBubble';
 export { ChatInput } from './ChatInput';
 
+// Games
+export { DateNightCard } from './DateNightCard';
+export { GameLauncher } from './GameLauncher';
+export { GameComplete } from './GameComplete';
+export { PassPhone } from './PassPhone';
+export { WouldYouRather } from './WouldYouRather';
+export { HowWellDoYouKnowMe } from './HowWellDoYouKnowMe';
+export { TruthOrDare } from './TruthOrDare';
+
 // Animated primitives
 export { AnimatedProgressBar } from './AnimatedProgressBar';
 export { AnimatedCheckbox } from './AnimatedCheckbox';
