@@ -29,7 +29,12 @@
       "associatedDomains": [
         "applinks:stoke.app",
         "applinks:stoke.app"
-      ]
+      ],
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.stoke.app"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -66,7 +71,15 @@
           "color": "#ffffff"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "react-native-widget-extension",
+        {
+          "widgetsFolder": "widgets",
+          "groupIdentifier": "group.com.stoke.app",
+          "deploymentTarget": "16.0"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -77,7 +90,24 @@
         "origin": false
       },
       "eas": {
-        "projectId": "ed4dbe48-8597-4a51-8580-3402ea568d2f"
+        "projectId": "ed4dbe48-8597-4a51-8580-3402ea568d2f",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "widgets",
+                  "bundleIdentifier": "com.stoke.app.widgets",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.com.stoke.app"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
     },
     "owner": "adamcurtiswarner"
