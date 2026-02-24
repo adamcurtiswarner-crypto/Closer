@@ -16,7 +16,7 @@ import { router } from 'expo-router';
 import { pickImage } from '@/services/imageUpload';
 
 const logo = require('@/assets/logo.png');
-import Animated, { FadeIn, FadeInUp, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
@@ -40,6 +40,31 @@ function getGreeting(t: (key: string) => string): string {
   if (hour < 12) return t('today.goodMorning');
   if (hour < 17) return t('today.goodAfternoon');
   return t('today.goodEvening');
+}
+
+function AnimatedFeedbackButton({ option, onPress, isSelected, style }: {
+  option: { value: string; label: string; icon: string };
+  onPress: () => void;
+  isSelected: boolean;
+  style: any;
+}) {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  return (
+    <Animated.View style={animStyle}>
+      <TouchableOpacity
+        style={style}
+        onPressIn={() => { scale.value = withSpring(1.15, { damping: 12, stiffness: 200 }); }}
+        onPressOut={() => { scale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
+        onPress={onPress}
+      >
+        <Text style={styles.feedbackIcon}>{option.icon}</Text>
+        <Text style={styles.feedbackOptionText}>{option.label}</Text>
+      </TouchableOpacity>
+    </Animated.View>
+  );
 }
 
 export default function TodayScreen() {
@@ -73,6 +98,11 @@ export default function TodayScreen() {
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [showAddWishlistModal, setShowAddWishlistModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const submitScale = useSharedValue(1);
+  const submitAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: submitScale.value }],
+  }));
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -347,17 +377,21 @@ export default function TodayScreen() {
                 >
                   <Text style={styles.cancelText}>Back</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.submitButton, (responseText.length < 10 || submitResponse.isPending) && styles.disabled]}
-                  onPress={handleSubmit}
-                  disabled={responseText.length < 10 || submitResponse.isPending}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.submitText}>
-                    {submitResponse.isPending ? t('today.sending') : t('today.share')}
-                  </Text>
-                  {!submitResponse.isPending && <Text style={styles.submitArrow}>{'\u2192'}</Text>}
-                </TouchableOpacity>
+                <Animated.View style={[{ flex: 1 }, submitAnimStyle]}>
+                  <TouchableOpacity
+                    style={[styles.submitButton, (responseText.length < 10 || submitResponse.isPending) && styles.disabled]}
+                    onPress={handleSubmit}
+                    onPressIn={() => { submitScale.value = withTiming(0.96, { duration: 100 }); }}
+                    onPressOut={() => { submitScale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
+                    disabled={responseText.length < 10 || submitResponse.isPending}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.submitText}>
+                      {submitResponse.isPending ? t('today.sending') : t('today.share')}
+                    </Text>
+                    {!submitResponse.isPending && <Text style={styles.submitArrow}>{'\u2192'}</Text>}
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
             </View>
           </ScrollView>
@@ -505,9 +539,11 @@ export default function TodayScreen() {
                   { value: 'neutral', label: t('today.okay'), icon: '\u2601\uFE0F' },
                   { value: 'negative', label: t('today.hard'), icon: '\uD83C\uDF27\uFE0F' },
                 ] as const).map((option) => (
-                  <TouchableOpacity
+                  <AnimatedFeedbackButton
                     key={option.value}
+                    option={option}
                     style={styles.feedbackOption}
+                    isSelected={false}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       submitFeedback.mutate({
@@ -516,12 +552,7 @@ export default function TodayScreen() {
                       });
                       setFeedbackGiven(true);
                     }}
-                    disabled={submitFeedback.isPending}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.feedbackIcon}>{option.icon}</Text>
-                    <Text style={styles.feedbackOptionText}>{option.label}</Text>
-                  </TouchableOpacity>
+                  />
                 ))}
               </View>
             </Animated.View>
