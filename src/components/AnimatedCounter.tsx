@@ -13,6 +13,7 @@ interface AnimatedCounterProps {
   value: number;
   duration?: number;
   style?: TextStyle;
+  prefix?: string;
   suffix?: string;
 }
 
@@ -20,6 +21,7 @@ export function AnimatedCounter({
   value,
   duration = 600,
   style,
+  prefix = '',
   suffix = '',
 }: AnimatedCounterProps) {
   const animatedValue = useSharedValue(0);
@@ -32,7 +34,7 @@ export function AnimatedCounter({
   }, [value]);
 
   const animatedProps = useAnimatedProps(() => {
-    const text = `${Math.round(animatedValue.value)}${suffix}`;
+    const text = `${prefix}${Math.round(animatedValue.value)}${suffix}`;
     return {
       text,
       defaultValue: text,
