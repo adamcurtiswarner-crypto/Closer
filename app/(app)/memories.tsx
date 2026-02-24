@@ -14,12 +14,13 @@ import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-import { useWeeklyRecap, useSavedMemories, useSaveMemory } from '@/hooks/useMemories';
+import { useWeeklyRecap, useSavedMemories, useSaveMemory, useRemoveMemory } from '@/hooks/useMemories';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Paywall } from '@/components/Paywall';
 import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { MemoryCardSkeleton } from '@/components/Skeleton';
+import { SwipeableRow } from '@/components/SwipeableRow';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -33,6 +34,7 @@ export default function MemoriesScreen() {
   const { data: completions, isLoading: recapLoading, error: recapError, refetch: refetchRecap } = useWeeklyRecap();
   const { data: memories, isLoading: memoriesLoading, error: memoriesError, refetch: refetchMemories } = useSavedMemories();
   const saveMemory = useSaveMemory();
+  const removeMemory = useRemoveMemory();
   const { isPremium } = useSubscription();
   const [showPaywall, setShowPaywall] = useState(false);
 
@@ -168,26 +170,39 @@ export default function MemoriesScreen() {
           ) : (
             <>
               {(isPremium ? memories : memories.slice(0, FREE_MEMORY_LIMIT)).map((memory, index) => (
-                <Animated.View key={memory.id} entering={FadeInUp.duration(400).delay(Math.min(index * 80, 400))} style={styles.card}>
-                  <Text style={styles.promptText}>"{memory.promptText}"</Text>
+                <Animated.View key={memory.id} entering={FadeInUp.duration(400).delay(Math.min(index * 80, 400))}>
+                  <SwipeableRow
+                    rightActions={[{
+                      label: 'Remove',
+                      color: '#ef4444',
+                      onPress: () => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        removeMemory.mutate(memory.id);
+                      },
+                    }]}
+                  >
+                    <View style={styles.card}>
+                      <Text style={styles.promptText}>"{memory.promptText}"</Text>
 
-                  {memory.responses.map((response, idx) => (
-                    <View key={idx} style={styles.responseBlock}>
-                      <Text style={styles.responseLabel}>
-                        {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
-                      </Text>
-                      <Text style={styles.responseText}>{response.responseText}</Text>
-                      {response.imageUrl ? (
-                        <Image source={{ uri: response.imageUrl }} style={styles.responseImage} resizeMode="cover" />
-                      ) : null}
+                      {memory.responses.map((response, idx) => (
+                        <View key={idx} style={styles.responseBlock}>
+                          <Text style={styles.responseLabel}>
+                            {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
+                          </Text>
+                          <Text style={styles.responseText}>{response.responseText}</Text>
+                          {response.imageUrl ? (
+                            <Image source={{ uri: response.imageUrl }} style={styles.responseImage} resizeMode="cover" />
+                          ) : null}
+                        </View>
+                      ))}
+
+                      {memory.completedAt && (
+                        <Text style={styles.timestamp}>
+                          {format(memory.completedAt, 'EEEE, MMM d')}
+                        </Text>
+                      )}
                     </View>
-                  ))}
-
-                  {memory.completedAt && (
-                    <Text style={styles.timestamp}>
-                      {format(memory.completedAt, 'EEEE, MMM d')}
-                    </Text>
-                  )}
+                  </SwipeableRow>
                 </Animated.View>
               ))}
               {!isPremium && memories.length > FREE_MEMORY_LIMIT && (

@@ -24,6 +24,7 @@ import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
 import { AddWishlistModal } from '@/components/AddWishlistModal';
 import { AnimatedCheckbox } from '@/components/AnimatedCheckbox';
+import { SwipeableRow } from '@/components/SwipeableRow';
 
 export default function WishlistScreen() {
   const { t } = useTranslation();
@@ -135,12 +136,19 @@ export default function WishlistScreen() {
             key={item.id}
             entering={FadeInUp.duration(400).delay(50 + index * 60)}
           >
-            <WishlistRow
-              item={item}
-              isCurrentUser={item.addedBy === user?.id}
-              onToggle={handleToggle}
-              onDelete={handleDelete}
-            />
+            <SwipeableRow
+              rightActions={[{
+                label: 'Delete',
+                color: '#ef4444',
+                onPress: () => handleDelete(item.id),
+              }]}
+            >
+              <WishlistRow
+                item={item}
+                isCurrentUser={item.addedBy === user?.id}
+                onToggle={handleToggle}
+              />
+            </SwipeableRow>
           </Animated.View>
         ))}
 
@@ -165,12 +173,19 @@ export default function WishlistScreen() {
                 key={item.id}
                 entering={FadeInUp.duration(300).delay(index * 40)}
               >
-                <WishlistRow
-                  item={item}
-                  isCurrentUser={item.addedBy === user?.id}
-                  onToggle={handleToggle}
-                  onDelete={handleDelete}
-                />
+                <SwipeableRow
+                  rightActions={[{
+                    label: 'Delete',
+                    color: '#ef4444',
+                    onPress: () => handleDelete(item.id),
+                  }]}
+                >
+                  <WishlistRow
+                    item={item}
+                    isCurrentUser={item.addedBy === user?.id}
+                    onToggle={handleToggle}
+                  />
+                </SwipeableRow>
               </Animated.View>
             ))}
           </Animated.View>
@@ -205,12 +220,10 @@ function WishlistRow({
   item,
   isCurrentUser,
   onToggle,
-  onDelete,
 }: {
   item: WishlistItem;
   isCurrentUser: boolean;
   onToggle: (item: WishlistItem) => void;
-  onDelete: (itemId: string) => void;
 }) {
   const { t } = useTranslation();
   const cat = getCategoryDisplay(item.category);
@@ -246,16 +259,6 @@ function WishlistRow({
           {isCurrentUser ? t('common.addedByYou') : t('common.addedBy', { name: item.addedByName })}
         </Text>
       </View>
-
-      {/* Delete */}
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => onDelete(item.id)}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        activeOpacity={0.6}
-      >
-        <Text style={styles.deleteIcon}>{'\u00D7'}</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -422,21 +425,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: 24,
     marginTop: 2,
-  },
-  deleteButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fafaf9',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  deleteIcon: {
-    fontSize: 16,
-    color: '#a8a29e',
-    fontWeight: '600',
-    marginTop: -1,
   },
   // ─── Done Section ───
   doneHeader: {

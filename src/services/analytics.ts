@@ -13,6 +13,7 @@ type AnalyticsEvent =
   | 'emotional_response_submitted'
   | 'recap_viewed'
   | 'memory_saved'
+  | 'memory_removed'
   | 'session_started'
   | 'notification_opened'
   | 'goal_created'
