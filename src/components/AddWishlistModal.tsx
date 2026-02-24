@@ -9,12 +9,45 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { useAddWishlistItem } from '@/hooks/useWishlist';
 import { WISHLIST_CATEGORIES } from '@/config/wishlistCategories';
+
+function AnimatedPill({ children, onPress, style }: {
+  children: React.ReactNode;
+  onPress: () => void;
+  style: StyleProp<ViewStyle>;
+}) {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  return (
+    <Animated.View style={animatedStyle}>
+      <TouchableOpacity
+        style={style}
+        onPress={onPress}
+        onPressIn={() => { scale.value = withTiming(0.95, { duration: 80 }); }}
+        onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 200 }); }}
+        activeOpacity={1}
+      >
+        {children}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
 interface AddWishlistModalProps {
   visible: boolean;
@@ -29,6 +62,10 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
   const addItem = useAddWishlistItem();
 
   const canSubmit = title.trim().length > 0 && !addItem.isPending;
+  const createScale = useSharedValue(1);
+  const createAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: createScale.value }],
+  }));
 
   const handleCreate = async () => {
     if (!canSubmit) return;
@@ -118,20 +155,19 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
               {WISHLIST_CATEGORIES.map((c) => {
                 const isActive = category === c.value;
                 return (
-                  <TouchableOpacity
+                  <AnimatedPill
                     key={c.value}
                     style={[styles.categoryPill, isActive && styles.categoryPillActive]}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setCategory(c.value);
                     }}
-                    activeOpacity={0.8}
                   >
                     <Text style={styles.categoryIcon}>{c.icon}</Text>
                     <Text style={[styles.categoryText, isActive && styles.categoryTextActive]}>
                       {c.label}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPill>
                 );
               })}
             </View>
@@ -139,7 +175,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
 
           {/* Error message */}
           {addItem.isError && (
-            <Animated.View entering={FadeIn.duration(300)} style={styles.errorContainer}>
+            <Animated.View entering={FadeInUp.duration(300)} style={styles.errorContainer}>
               <Text style={styles.errorText}>
                 {(addItem.error as Error)?.message || t('wishlist.failedToAdd')}
               </Text>
@@ -153,17 +189,21 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
             <TouchableOpacity style={styles.cancelButton} onPress={handleClose} activeOpacity={0.8}>
               <Text style={styles.cancelText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.createButton, !canSubmit && styles.disabled]}
-              onPress={handleCreate}
-              disabled={!canSubmit}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.createText}>
-                {addItem.isPending ? t('wishlist.adding') : t('wishlist.addToWishlist')}
-              </Text>
-              {!addItem.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
-            </TouchableOpacity>
+            <Animated.View style={[{ flex: 1 }, createAnimatedStyle]}>
+              <TouchableOpacity
+                style={[styles.createButton, !canSubmit && styles.primaryDisabled]}
+                onPress={handleCreate}
+                onPressIn={() => { createScale.value = withTiming(0.97, { duration: 80 }); }}
+                onPressOut={() => { createScale.value = withSpring(1, { damping: 15, stiffness: 200 }); }}
+                disabled={!canSubmit}
+                activeOpacity={1}
+              >
+                <Text style={styles.createText}>
+                  {addItem.isPending ? t('wishlist.adding') : t('wishlist.addToWishlist')}
+                </Text>
+                {!addItem.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
+              </TouchableOpacity>
+            </Animated.View>
           </View>
         </Animated.View>
       </KeyboardAvoidingView>
@@ -323,6 +363,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.4,
+  },
+  primaryDisabled: {
+    backgroundColor: '#d4a48e',
   },
 });

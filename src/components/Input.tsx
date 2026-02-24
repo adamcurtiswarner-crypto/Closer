@@ -1,11 +1,14 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 import {
   TextInput,
   View,
   Text,
   TextInputProps,
   StyleSheet,
+  NativeSyntheticEvent,
+  TextInputFocusEventData,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -14,8 +17,20 @@ interface InputProps extends TextInputProps {
 }
 
 export const Input = forwardRef<TextInput, InputProps>(
-  ({ label, error, hint, style, ...props }, ref) => {
+  ({ label, error, hint, style, onFocus: userOnFocus, onBlur: userOnBlur, ...props }, ref) => {
     const hasError = !!error;
+    const [isFocused, setIsFocused] = useState(false);
+
+    const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      setIsFocused(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      userOnFocus?.(e);
+    };
+
+    const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      setIsFocused(false);
+      userOnBlur?.(e);
+    };
 
     return (
       <View style={styles.container}>
@@ -24,10 +39,13 @@ export const Input = forwardRef<TextInput, InputProps>(
           ref={ref}
           style={[
             styles.input,
+            isFocused && !hasError && styles.inputFocused,
             hasError && styles.inputError,
             style,
           ]}
           placeholderTextColor="#a8a29e"
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           {...props}
         />
         {hint && !error && <Text style={styles.hint}>{hint}</Text>}
@@ -60,8 +78,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e7e5e4',
   },
+  inputFocused: {
+    borderColor: '#c97454',
+  },
   inputError: {
     borderColor: '#f87171',
+    backgroundColor: '#fefbfb',
   },
   hint: {
     color: '#78716c',

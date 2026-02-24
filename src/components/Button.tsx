@@ -8,7 +8,14 @@ import {
   ViewStyle,
   TextStyle,
   View,
+  GestureResponderEvent,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -27,16 +34,37 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
     fullWidth = true,
     disabled,
     style,
+    onPressIn: userOnPressIn,
+    onPressOut: userOnPressOut,
     ...props
   },
   ref
 ) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = (e: GestureResponderEvent) => {
+    scale.value = withTiming(0.97, { duration: 100 });
+    userOnPressIn?.(e);
+  };
+
+  const handlePressOut = (e: GestureResponderEvent) => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+    userOnPressOut?.(e);
+  };
+
+  const isDisabled = disabled || loading;
+
   const buttonStyles: ViewStyle[] = [
     styles.base,
     styles[`${variant}Button`],
     styles[`${size}Size`],
     fullWidth && styles.fullWidth,
-    (disabled || loading) && styles.disabled,
+    isDisabled && variant === 'primary' && styles.primaryDisabled,
+    isDisabled && variant !== 'primary' && styles.disabled,
   ].filter(Boolean) as ViewStyle[];
 
   const textStyles: TextStyle[] = [
@@ -46,22 +74,26 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
   ];
 
   return (
-    <TouchableOpacity
-      ref={ref as any}
-      style={[buttonStyles, style]}
-      disabled={disabled || loading}
-      activeOpacity={0.8}
-      {...props}
-    >
-      {loading ? (
-        <ActivityIndicator
-          color={variant === 'primary' ? '#ffffff' : '#c97454'}
-          size="small"
-        />
-      ) : (
-        <Text style={textStyles}>{title}</Text>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={animatedStyle}>
+      <TouchableOpacity
+        ref={ref as any}
+        style={[buttonStyles, style]}
+        disabled={isDisabled}
+        activeOpacity={1}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        {...props}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={variant === 'primary' ? '#ffffff' : '#c97454'}
+            size="small"
+          />
+        ) : (
+          <Text style={textStyles}>{title}</Text>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 });
 
@@ -76,7 +108,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.4,
+  },
+  primaryDisabled: {
+    backgroundColor: '#d4a48e',
   },
   // Variants
   primaryButton: {
