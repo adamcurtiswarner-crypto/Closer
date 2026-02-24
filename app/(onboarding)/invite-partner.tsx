@@ -6,7 +6,9 @@ import {
   Share,
   TouchableOpacity,
   Alert,
+  StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Clipboard from 'expo-clipboard';
 import { logger } from '@/utils/logger';
 import { router } from 'expo-router';
@@ -57,59 +59,67 @@ export default function InvitePartnerScreen() {
     const code = inviteCode || pendingInvite?.code;
 
     return (
-      <SafeAreaView className="flex-1 bg-warm-50">
-        <View className="flex-1 px-6 justify-center">
-          <View className="items-center mb-8">
-            <Text className="text-2xl font-bold text-warm-900 text-center">
+      <SafeAreaView style={styles.container}>
+        <View style={styles.contentCentered}>
+          <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
+            <Text style={styles.title}>
               {t('onboarding.invitePartner.title')}
             </Text>
-            <Text className="text-warm-600 text-center mt-2">
+            <Text style={styles.subtitle}>
               {t('onboarding.invitePartner.subtitle')}
             </Text>
-          </View>
+          </Animated.View>
 
           {/* Invite code display */}
-          <TouchableOpacity
-            onPress={handleCopyCode}
-            className="bg-white rounded-2xl p-6 items-center border border-warm-200 mb-4"
-          >
-            <Text className="text-4xl font-mono font-bold text-primary-500 tracking-widest">
-              {code}
-            </Text>
-            <Text className="text-warm-500 text-sm mt-2">
-              {t('onboarding.invitePartner.tapToCopy')}
-            </Text>
-          </TouchableOpacity>
+          <Animated.View entering={FadeInUp.duration(400).delay(200)}>
+            <TouchableOpacity
+              onPress={handleCopyCode}
+              style={styles.codeCard}
+            >
+              <Text style={styles.codeText}>
+                {code}
+              </Text>
+              <Text style={styles.tapToCopy}>
+                {t('onboarding.invitePartner.tapToCopy')}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
 
-          <Text className="text-warm-500 text-xs text-center mb-6">
+          <Animated.Text entering={FadeIn.duration(400).delay(300)} style={styles.validDays}>
             {t('onboarding.invitePartner.validDays')}
-          </Text>
+          </Animated.Text>
 
-          <Button title={t('onboarding.invitePartner.share')} onPress={handleShare} />
+          <Animated.View entering={FadeInUp.duration(400).delay(400)}>
+            <Button title={t('onboarding.invitePartner.share')} onPress={handleShare} />
+          </Animated.View>
 
-          <View className="h-4" />
+          <View style={styles.spacerSmall} />
 
-          <Button
-            title={t('onboarding.invitePartner.waitForThem')}
-            variant="secondary"
-            onPress={() => router.push('/(onboarding)/waiting-partner')}
-          />
+          <Animated.View entering={FadeInUp.duration(400).delay(500)}>
+            <Button
+              title={t('onboarding.invitePartner.waitForThem')}
+              variant="secondary"
+              onPress={() => router.push('/(onboarding)/waiting-partner')}
+            />
+          </Animated.View>
 
           {/* Already have an invite to accept */}
-          <TouchableOpacity
-            className="mt-6"
-            onPress={() => router.push('/(onboarding)/accept-invite')}
-          >
-            <Text className="text-primary-500 text-center">
-              {t('onboarding.invitePartner.haveInviteCode')}
-            </Text>
-          </TouchableOpacity>
+          <Animated.View entering={FadeInUp.duration(400).delay(600)}>
+            <TouchableOpacity
+              style={styles.haveCodeLink}
+              onPress={() => router.push('/(onboarding)/accept-invite')}
+            >
+              <Text style={styles.linkText}>
+                {t('onboarding.invitePartner.haveInviteCode')}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
 
           <TouchableOpacity
-            style={{ marginTop: 24 }}
+            style={styles.skipLink}
             onPress={() => router.replace('/(app)/today')}
           >
-            <Text style={{ color: '#78716c', textAlign: 'center', fontSize: 14 }}>
+            <Text style={styles.skipText}>
               {t('common.skipForNow')}
             </Text>
           </TouchableOpacity>
@@ -120,36 +130,40 @@ export default function InvitePartnerScreen() {
 
   // No invite yet
   return (
-    <SafeAreaView className="flex-1 bg-warm-50">
-      <View className="flex-1 px-6 justify-center">
-        <View className="items-center mb-8">
-          <Text className="text-2xl font-bold text-warm-900 text-center">
+    <SafeAreaView style={styles.container}>
+      <View style={styles.contentCentered}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
+          <Text style={styles.title}>
             {t('onboarding.invitePartner.title')}
           </Text>
-          <Text className="text-warm-600 text-center mt-2">
+          <Text style={styles.subtitle}>
             {t('onboarding.invitePartner.subtitleCreate')}
           </Text>
-        </View>
+        </Animated.View>
 
-        <Button
-          title={t('onboarding.invitePartner.createInvite')}
-          onPress={handleCreateInvite}
-          loading={createInvite.isPending}
-        />
+        <Animated.View entering={FadeInUp.duration(400).delay(200)}>
+          <Button
+            title={t('onboarding.invitePartner.createInvite')}
+            onPress={handleCreateInvite}
+            loading={createInvite.isPending}
+          />
+        </Animated.View>
 
-        <View className="h-4" />
+        <View style={styles.spacerSmall} />
 
-        <Button
-          title={t('onboarding.invitePartner.haveInviteCode')}
-          variant="secondary"
-          onPress={() => router.push('/(onboarding)/accept-invite')}
-        />
+        <Animated.View entering={FadeInUp.duration(400).delay(300)}>
+          <Button
+            title={t('onboarding.invitePartner.haveInviteCode')}
+            variant="secondary"
+            onPress={() => router.push('/(onboarding)/accept-invite')}
+          />
+        </Animated.View>
 
         <TouchableOpacity
-          style={{ marginTop: 24 }}
+          style={styles.skipLink}
           onPress={() => router.replace('/(app)/today')}
         >
-          <Text style={{ color: '#78716c', textAlign: 'center', fontSize: 14 }}>
+          <Text style={styles.skipText}>
             {t('common.skipForNow')}
           </Text>
         </TouchableOpacity>
@@ -157,3 +171,75 @@ export default function InvitePartnerScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  contentCentered: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+  },
+  headerCenter: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1c1917',
+    textAlign: 'center',
+  },
+  subtitle: {
+    color: '#57534e',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  codeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
+    marginBottom: 16,
+  },
+  codeText: {
+    fontSize: 32,
+    fontFamily: 'monospace',
+    fontWeight: '700',
+    color: '#c97454',
+    letterSpacing: 4,
+  },
+  tapToCopy: {
+    color: '#a8a29e',
+    fontSize: 14,
+    marginTop: 8,
+  },
+  validDays: {
+    color: '#a8a29e',
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  spacerSmall: {
+    height: 16,
+  },
+  haveCodeLink: {
+    marginTop: 24,
+  },
+  linkText: {
+    color: '#c97454',
+    textAlign: 'center',
+  },
+  skipLink: {
+    marginTop: 24,
+  },
+  skipText: {
+    color: '#78716c',
+    textAlign: 'center',
+    fontSize: 14,
+  },
+});

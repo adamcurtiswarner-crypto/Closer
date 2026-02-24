@@ -3,7 +3,9 @@ import {
   View,
   Text,
   SafeAreaView,
+  StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Button } from '@/components';
 import { useCouple } from '@/hooks/useCouple';
@@ -30,32 +32,70 @@ export default function WaitingPartnerScreen() {
   }, [refetch]);
 
   return (
-    <SafeAreaView className="flex-1 bg-warm-50">
-      <View className="flex-1 px-6 justify-center">
-        <View className="items-center mb-12">
-          <Text className="text-4xl mb-4">⏳</Text>
-          <Text className="text-2xl font-bold text-warm-900 text-center">
+    <SafeAreaView style={styles.container}>
+      <View style={styles.contentCentered}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
+          <Text style={styles.emoji}>⏳</Text>
+          <Text style={styles.title}>
             {t('onboarding.waitingPartner.title')}
           </Text>
-          <Text className="text-warm-600 text-center mt-2">
+          <Text style={styles.subtitle}>
             {t('onboarding.waitingPartner.subtitle')}
           </Text>
-        </View>
+        </Animated.View>
 
-        <Button
-          title={t('onboarding.waitingPartner.resendInvite')}
-          variant="secondary"
-          onPress={() => router.push('/(onboarding)/invite-partner')}
-        />
+        <Animated.View entering={FadeInUp.duration(400).delay(200)}>
+          <Button
+            title={t('onboarding.waitingPartner.resendInvite')}
+            variant="secondary"
+            onPress={() => router.push('/(onboarding)/invite-partner')}
+          />
+        </Animated.View>
 
-        <View className="h-3" />
+        <View style={styles.spacerSmall} />
 
-        <Button
-          title={t('common.cancel')}
-          variant="ghost"
-          onPress={() => router.back()}
-        />
+        <Animated.View entering={FadeInUp.duration(400).delay(300)}>
+          <Button
+            title={t('common.cancel')}
+            variant="ghost"
+            onPress={() => router.back()}
+          />
+        </Animated.View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  contentCentered: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+  },
+  headerCenter: {
+    alignItems: 'center',
+    marginBottom: 48,
+  },
+  emoji: {
+    fontSize: 32,
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1c1917',
+    textAlign: 'center',
+  },
+  subtitle: {
+    color: '#57534e',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  spacerSmall: {
+    height: 12,
+  },
+});

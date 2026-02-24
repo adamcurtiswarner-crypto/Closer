@@ -5,7 +5,9 @@ import {
   SafeAreaView,
   TextInput,
   Alert,
+  StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button } from '@/components';
 import { useAcceptInvite } from '@/hooks/useCouple';
@@ -59,43 +61,90 @@ export default function AcceptInviteScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-warm-50">
-      <View className="flex-1 px-6 justify-center">
-        <View className="items-center mb-8">
-          <Text className="text-2xl font-bold text-warm-900 text-center">
+    <SafeAreaView style={styles.container}>
+      <View style={styles.contentCentered}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
+          <Text style={styles.title}>
             {t('onboarding.acceptInvite.title')}
           </Text>
-          <Text className="text-warm-600 text-center mt-2">
+          <Text style={styles.subtitle}>
             {t('onboarding.acceptInvite.subtitle')}
           </Text>
-        </View>
+        </Animated.View>
 
-        <TextInput
-          className="bg-white rounded-2xl p-6 text-center text-3xl font-mono font-bold text-primary-500 tracking-widest border border-warm-200"
-          placeholder="ABC123"
-          placeholderTextColor="#d6d3d1"
-          value={code}
-          onChangeText={(text) => setCode(text.toUpperCase().slice(0, 6))}
-          autoCapitalize="characters"
-          autoCorrect={false}
-          maxLength={6}
-        />
+        <Animated.View entering={FadeInUp.duration(400).delay(200)}>
+          <TextInput
+            style={styles.codeInput}
+            placeholder="ABC123"
+            placeholderTextColor="#d6d3d1"
+            value={code}
+            onChangeText={(text) => setCode(text.toUpperCase().slice(0, 6))}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            maxLength={6}
+          />
+        </Animated.View>
 
-        <View className="mt-8">
+        <Animated.View entering={FadeInUp.duration(400).delay(300)} style={styles.joinButtonContainer}>
           <Button
             title={t('onboarding.acceptInvite.join')}
             onPress={handleAccept}
             loading={acceptInvite.isPending}
             disabled={code.length !== 6}
           />
-        </View>
+        </Animated.View>
 
-        <Button
-          title={t('common.back')}
-          variant="ghost"
-          onPress={() => router.back()}
-        />
+        <Animated.View entering={FadeInUp.duration(400).delay(400)}>
+          <Button
+            title={t('common.back')}
+            variant="ghost"
+            onPress={() => router.back()}
+          />
+        </Animated.View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  contentCentered: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+  },
+  headerCenter: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1c1917',
+    textAlign: 'center',
+  },
+  subtitle: {
+    color: '#57534e',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  codeInput: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    textAlign: 'center',
+    fontSize: 28,
+    fontFamily: 'monospace',
+    fontWeight: '700',
+    color: '#c97454',
+    letterSpacing: 4,
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
+  },
+  joinButtonContainer: {
+    marginTop: 32,
+  },
+});

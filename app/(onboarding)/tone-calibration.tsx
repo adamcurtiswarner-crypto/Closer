@@ -4,7 +4,9 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -56,55 +58,130 @@ export default function ToneCalibrationScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-warm-50">
-      <View className="flex-1 px-6 pt-12">
-        <Text className="text-2xl font-bold text-warm-900">
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Animated.Text entering={FadeIn.duration(400)} style={styles.title}>
           {t('onboarding.toneCalibration.title')}
-        </Text>
-        <Text className="text-warm-600 mt-2">
+        </Animated.Text>
+        <Animated.Text entering={FadeIn.duration(400).delay(100)} style={styles.subtitle}>
           {t('onboarding.toneCalibration.subtitle')}
-        </Text>
+        </Animated.Text>
 
-        <View className="mt-8">
-          {TONE_OPTIONS.map((option) => (
-            <TouchableOpacity
+        <View style={styles.optionsContainer}>
+          {TONE_OPTIONS.map((option, index) => (
+            <Animated.View
               key={option.value}
-              className={`
-                p-4 rounded-xl mb-3
-                ${selectedTone === option.value ? 'bg-primary-50 border-2 border-primary-300' : 'bg-white border border-warm-200'}
-              `}
-              onPress={() => setSelectedTone(option.value)}
+              entering={FadeInUp.duration(400).delay(200 + index * 100)}
             >
-              <Text
-                className={`
-                  text-base font-medium
-                  ${selectedTone === option.value ? 'text-primary-700' : 'text-warm-800'}
-                `}
+              <TouchableOpacity
+                style={[
+                  styles.optionCard,
+                  selectedTone === option.value
+                    ? styles.optionCardSelected
+                    : styles.optionCardDefault,
+                ]}
+                onPress={() => setSelectedTone(option.value)}
               >
-                {option.label}
-              </Text>
-              <Text
-                className={`
-                  text-sm mt-1
-                  ${selectedTone === option.value ? 'text-primary-600' : 'text-warm-500'}
-                `}
-              >
-                {option.description}
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.optionLabel,
+                    selectedTone === option.value
+                      ? styles.optionLabelSelected
+                      : styles.optionLabelDefault,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+                <Text
+                  style={[
+                    styles.optionDescription,
+                    selectedTone === option.value
+                      ? styles.optionDescriptionSelected
+                      : styles.optionDescriptionDefault,
+                  ]}
+                >
+                  {option.description}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           ))}
         </View>
 
-        <View className="flex-1" />
+        <View style={styles.spacer} />
 
-        <View className="mb-8">
+        <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.buttonContainer}>
           <Button
             title={isSaving ? t('common.saving') : t('common.continue')}
             onPress={handleContinue}
             disabled={!selectedTone || isSaving}
           />
-        </View>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 48,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1c1917',
+  },
+  subtitle: {
+    color: '#57534e',
+    marginTop: 8,
+  },
+  optionsContainer: {
+    marginTop: 32,
+  },
+  optionCard: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  optionCardSelected: {
+    backgroundColor: '#fef7f4',
+    borderWidth: 2,
+    borderColor: '#c97454',
+  },
+  optionCardDefault: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
+  },
+  optionLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  optionLabelSelected: {
+    color: '#c97454',
+  },
+  optionLabelDefault: {
+    color: '#1c1917',
+  },
+  optionDescription: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  optionDescriptionSelected: {
+    color: '#c97454',
+  },
+  optionDescriptionDefault: {
+    color: '#a8a29e',
+  },
+  spacer: {
+    flex: 1,
+  },
+  buttonContainer: {
+    marginBottom: 32,
+  },
+});
