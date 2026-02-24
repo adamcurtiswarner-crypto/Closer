@@ -1,31 +1,47 @@
-# Stoke App
+# CLAUDE.md
 
-Relationship app helping long-term couples stay connected through daily prompts.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Quick Start
+Stoke — relationship app helping long-term couples stay connected through daily prompts.
+
+## Commands
 
 ```bash
-npm start              # Expo dev server
-npm test               # Jest tests
-npm run typecheck      # TypeScript checking
-npm run lint           # ESLint
+# App development (run from app/ directory)
+npm start                # Expo dev server
+npm test                 # All Jest tests
+npm test -- --testPathPattern="useAuth"  # Single test file by name
+npm test -- --watch      # Watch mode
+npm run typecheck        # TypeScript checking
+npm run lint             # ESLint
 
 # Cloud Functions (from functions/ directory)
-cd functions && npm run build         # Compile
-cd functions && npm run seed:emulator # Seed prompts to local Firestore
-cd functions && npm test              # Function tests
+cd functions && npm run build            # Compile TypeScript
+cd functions && npm test                 # Function tests
+cd functions && npm run seed:emulator    # Seed prompts to local Firestore
+cd functions && npm run seed:emulator:clear  # Clear + reseed
 
-# Firebase emulators
-firebase emulators:start              # Auth :9099, Firestore :8080, Functions :5001, Storage :9199
+# Firebase
+firebase emulators:start                 # Auth :9099, Firestore :8080, Functions :5001, Storage :9199
+firebase deploy --only functions         # Deploy all functions
+firebase deploy --only functions:deliverDailyPrompts  # Deploy single function
+
+# Admin dashboard (from admin/ directory)
+cd admin && npm run dev                  # Next.js dev server
+
+# EAS builds
+eas build --profile development --platform ios
+eas build --profile preview --platform ios
 ```
 
 ## Architecture
 
-- **Client**: React Native + Expo SDK 50 + Expo Router (file-based routing)
-- **Backend**: Firebase (Auth, Firestore, Cloud Functions, FCM, Storage)
-- **State**: React Query (server) + Zustand (local) + `useAuth()` hook
-- **Styling**: StyleSheet — no Tailwind in main app (NativeWind disabled, see babel.config.js)
+- **Client**: React Native + Expo SDK 50 + Expo Router v3 (file-based routing)
+- **Backend**: Firebase (Auth, Firestore, Cloud Functions Node.js 20, FCM, Storage)
+- **State**: React Query v5 (server) + Zustand v4 (local) + `useAuth()` hook
+- **Styling**: StyleSheet only — NativeWind is installed but DISABLED (see babel.config.js). Do not use `className` in new components.
 - **Language**: TypeScript (strict mode)
+- **Admin**: Next.js dashboard in `admin/` (separate app, own package.json)
 
 ## Project Structure
 
@@ -34,17 +50,23 @@ app/                          # Expo Router file-based routes
 ├── (auth)/                   # Login, signup, forgot password
 ├── (onboarding)/             # Partner linking, preferences, calibration
 └── (app)/                    # Tab bar: today, memories, insights, settings
-    └── wishlist.tsx          # Hidden tab (href: null), accessed via router.push
+    ├── chat.tsx              # Hidden tabs (href: null) — accessed via router.push
+    ├── wishlist.tsx
+    └── resources.tsx
 src/
 ├── components/               # UI components (barrel export via index.ts)
 ├── hooks/                    # React Query hooks + custom hooks
 ├── config/                   # Static config (firebase, milestones, challenges, categories)
-├── services/                 # analytics, encryption, imageUpload, notifications
+├── services/                 # analytics, calendar, encryption, imageUpload, notifications
 ├── types/                    # App-level TypeScript types
-└── utils/                    # authErrors, logger
+├── utils/                    # authErrors, logger
+├── i18n/                     # i18next config + locales/en.json (~185 keys)
+└── __tests__/                # Jest tests + __mocks__/
 functions/                    # Cloud Functions (Node.js 20, TypeScript)
-├── src/index.ts              # Function exports
-└── src/scripts/              # Seed scripts
+├── src/index.ts              # All function exports
+├── src/scripts/              # Seed scripts, BigQuery setup
+└── __tests__/                # Function tests
+admin/                        # Next.js admin dashboard
 ```
 
 ## Path Aliases
@@ -74,10 +96,18 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - Firestore fields: `snake_case` (e.g., `couple_id`, `photo_url`)
 - App TypeScript types: `camelCase` (e.g., `coupleId`, `photoUrl`)
 - Canonical type definitions: `../specs/types.ts` (outside app directory)
+- Analytics event names: `snake_case`
 
-### Analytics
-- `logEvent(name, properties)` from `src/services/analytics.ts`
-- Event names: `snake_case` (e.g., `prompt_completed`, `goal_created`)
+### Encryption
+- Response text stored as `[encrypted]` sentinel in `response_text`, real content in `response_text_encrypted`
+- AES-256-CBC, couple key in `expo-secure-store`
+- Hooks (`useMemories`, `useTodayPrompt`) decrypt on read — new code reading responses must handle this
+
+### Real-time & Offline
+- `useTodayPrompt` uses Firestore `onSnapshot` driving React Query cache (no polling)
+- `useChat` also uses `onSnapshot` for real-time messages
+- Offline: `useSubmitResponse` queues to AsyncStorage, flushes on reconnect via NetInfo listener
+- Presence/typing: `/presence/{coupleId}/members/{userId}` with typing context `'chat' | 'prompt' | null`
 
 ### Components
 - Barrel export: import from `@components` for common components
@@ -85,8 +115,10 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - Animations: FadeIn/FadeInUp from reanimated, 400-600ms, cascading 80-200ms delays
 - Modals: presentationStyle `pageSheet`, warm tint `#fef7f4` on active states
 
-### Hooks
-All server-state hooks use React Query. Create new hooks in `src/hooks/` following existing patterns.
+### i18n
+- `i18next` + `react-i18next` initialized in `src/i18n/index.ts`, imported in root layout
+- Keys in `src/i18n/locales/en.json` — auth screens fully converted, others incremental
+- Use `useTranslation()` hook in converted screens
 
 ## Design
 
@@ -119,34 +151,38 @@ All server-state hooks use React Query. Create new hooks in `src/hooks/` followi
 /couples/{coupleId}/goals/{goalId}
 /couples/{coupleId}/goals/{goalId}/completions/
 /couples/{coupleId}/wishlist_items/{itemId}
+/couples/{coupleId}/messages/{messageId}
+/couples/{coupleId}/chat_read_cursors/{userId}
+/presence/{coupleId}/members/{memberId}
+/admins/{adminId}
+/admin_state/ai_generation
 ```
+
+## Cloud Functions
+
+- **Scheduled**: `deliverDailyPrompts` (every 15 min), `weeklyRecap`, `cleanupDeletedAccounts` (daily 3AM PT), `exportEventsToBigQuery` (daily 4AM PT), `autoGeneratePrompts` (Monday 2AM PT)
+- **Callable**: `deleteAccount`, `exportUserData`, `anonymizeMyResponses`, `generateAIPrompts`, `triggerBigQueryExport`, `triggerPromptDelivery`, `migrateEncryptedResponses`
+- **Triggers**: `onResponseSubmitted`, `onChatMessageCreated`
+- AI generation uses `claude-sonnet-4-5-20250929` via Anthropic API
 
 ## Testing
 
 - Framework: Jest + React Native Testing Library
-- Tests live in `src/__tests__/`
-- Mocks in `src/__mocks__/` (react-native-purchases, netinfo, async-storage)
-- Run: `npm test`
+- Tests: `src/__tests__/` (20 files), `functions/__tests__/`
+- Mocks: `src/__mocks__/` (react-native-purchases, netinfo, async-storage)
+- `babel-jest` transform with `react-native` preset; `ts-jest` for functions
 
 ## Environment
 
 - Firebase config via `EXPO_PUBLIC_FIREBASE_*` env vars (see `.env.example`)
 - Never commit `.env` — it's gitignored
+- `GoogleService-Info.plist` is committed (iOS Firebase config)
 - EAS build profiles: `development` (simulator), `preview` (internal), `production`
+- `babel.config.js`: `react-native-reanimated/plugin` must be last
 
 ## Documentation
 
-Full specs live in `../docs/`:
-- `01-PRD.md` — Product requirements, wedge user, success metrics (WMEER)
-- `02-UX-FLOWS.md` — Screen specs, navigation, state transitions
-- `03-ARCHITECTURE.md` — Tech stack decisions, security, scaling
-- `04-DATA-MODEL.md` — All Firestore schemas with TypeScript interfaces
-- `05-API-DESIGN.md` — Cloud Function endpoints, request/response formats
-- `06-ANALYTICS.md` — Event taxonomy, WMEER calculation, retention queries
-- `08-SEED-PROMPTS.md` — 40 prompts, design principles, rotation algorithm
-- `09-CONTENT-TONE-GUIDE.md` — Brand voice, microcopy, words to use/avoid
-- `10-VALIDATION-PLAN.md` — Alpha/beta gates, interview protocols
-- `12-TWENTY-WEEK-PLAN.md` — Build phases, milestones, gate criteria
+Full specs in `../docs/`: PRD, UX flows, architecture, data model, API design, analytics, seed prompts, tone guide, validation plan, twenty-week plan.
 
 ---
 
@@ -154,51 +190,40 @@ Full specs live in `../docs/`:
 
 ### 1. Plan Mode Default
 - Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately — don't keep pushing
-- Use plan mode for verification steps, not just building
+- If something goes sideways, STOP and re-plan — don't keep pushing
 - Write detailed specs upfront to reduce ambiguity
 
 ### 2. Subagent Strategy
 - Use subagents liberally to keep main context window clean
 - Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
 - One task per subagent for focused execution
 
 ### 3. Self-Improvement Loop
 - After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
 - Review lessons at session start for relevant project
 
 ### 4. Verification Before Done
 - Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
 - Run tests, check logs, demonstrate correctness
+- Ask yourself: "Would a staff engineer approve this?"
 
 ### 5. Demand Elegance (Balanced)
 - For non-trivial changes: pause and ask "Is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
 - Skip this for simple, obvious fixes — don't over-engineer
-- Challenge your own work before presenting it
 
 ### 6. Autonomous Bug Fixing
 - When given a bug report: just fix it. Don't ask for hand-holding
 - Point at logs, errors, failing tests — then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
 
 ## Task Management
 
 1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
 2. **Verify Plan**: Check in before starting implementation
 3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+4. **Capture Lessons**: Update `tasks/lessons.md` after corrections
 
 ## Core Principles
 
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **Simplicity First**: Make every change as simple as possible. Minimal code impact.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- **Minimal Impact**: Changes should only touch what's necessary.
