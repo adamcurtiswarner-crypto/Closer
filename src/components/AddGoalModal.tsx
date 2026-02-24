@@ -9,8 +9,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  type StyleProp,
+  type ViewStyle,
 } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { useCreateGoal, type TargetFrequency } from '@/hooks/useGoals';
@@ -27,12 +36,41 @@ const FREQUENCIES: { value: TargetFrequency; label: string; hint: string }[] = [
   { value: 'one_time', label: 'One-time', hint: 'Just once' },
 ];
 
+function AnimatedPill({ children, onPress, style }: {
+  children: React.ReactNode;
+  onPress: () => void;
+  style: StyleProp<ViewStyle>;
+}) {
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  return (
+    <Animated.View style={animatedStyle}>
+      <TouchableOpacity
+        style={style}
+        onPress={onPress}
+        onPressIn={() => { scale.value = withTiming(0.95, { duration: 80 }); }}
+        onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 200 }); }}
+        activeOpacity={1}
+      >
+        {children}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
 export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [frequency, setFrequency] = useState<TargetFrequency>('weekly');
   const createGoal = useCreateGoal();
+
+  const createButtonScale = useSharedValue(1);
+  const createButtonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: createButtonScale.value }],
+  }));
 
   const canSubmit = title.trim().length > 0 && !createGoal.isPending;
 
@@ -124,14 +162,13 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
               {FREQUENCIES.map((f) => {
                 const isActive = frequency === f.value;
                 return (
-                  <TouchableOpacity
+                  <AnimatedPill
                     key={f.value}
                     style={[styles.frequencyPill, isActive && styles.frequencyPillActive]}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setFrequency(f.value);
                     }}
-                    activeOpacity={0.8}
                   >
                     <Text style={[styles.frequencyText, isActive && styles.frequencyTextActive]}>
                       {f.label}
@@ -139,7 +176,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
                     <Text style={[styles.frequencyHint, isActive && styles.frequencyHintActive]}>
                       {f.hint}
                     </Text>
-                  </TouchableOpacity>
+                  </AnimatedPill>
                 );
               })}
             </View>
@@ -147,7 +184,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
 
           {/* Error message */}
           {createGoal.isError && (
-            <Animated.View entering={FadeIn.duration(300)} style={styles.errorContainer}>
+            <Animated.View entering={FadeInUp.duration(300)} style={styles.errorContainer}>
               <Text style={styles.errorText}>
                 {(createGoal.error as Error)?.message || t('goals.failedToCreate')}
               </Text>
@@ -161,17 +198,21 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
             <TouchableOpacity style={styles.cancelButton} onPress={handleClose} activeOpacity={0.8}>
               <Text style={styles.cancelText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.createButton, !canSubmit && styles.disabled]}
-              onPress={handleCreate}
-              disabled={!canSubmit}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.createText}>
-                {createGoal.isPending ? t('common.saving') : t('goals.createGoal')}
-              </Text>
-              {!createGoal.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
-            </TouchableOpacity>
+            <Animated.View style={[{ flex: 1 }, createButtonAnimatedStyle]}>
+              <TouchableOpacity
+                style={[styles.createButton, !canSubmit && styles.primaryDisabled]}
+                onPress={handleCreate}
+                onPressIn={() => { createButtonScale.value = withTiming(0.97, { duration: 80 }); }}
+                onPressOut={() => { createButtonScale.value = withSpring(1, { damping: 15, stiffness: 200 }); }}
+                disabled={!canSubmit}
+                activeOpacity={1}
+              >
+                <Text style={styles.createText}>
+                  {createGoal.isPending ? t('common.saving') : t('goals.createGoal')}
+                </Text>
+                {!createGoal.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
+              </TouchableOpacity>
+            </Animated.View>
           </View>
         </Animated.View>
       </KeyboardAvoidingView>
@@ -336,6 +377,10 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.4,
+  },
+  primaryDisabled: {
+    opacity: 0.4,
+    backgroundColor: '#d4a48e',
   },
 });
