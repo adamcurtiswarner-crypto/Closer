@@ -19,6 +19,7 @@ import {
 } from '@/hooks/useGoals';
 import { AnimatedProgressBar } from './AnimatedProgressBar';
 import { AnimatedCheckbox } from './AnimatedCheckbox';
+import { SwipeableRow } from './SwipeableRow';
 
 interface GoalTrackerProps {
   onAddGoal: () => void;
@@ -101,12 +102,20 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
         </Animated.View>
       ) : activeChallenge ? (
         <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-          <GoalRow
-            goal={activeChallenge}
-            onToggle={handleToggle}
-            onArchive={handleArchive}
-            isChallenge
-          />
+          <SwipeableRow
+            rightActions={[{
+              label: 'Archive',
+              color: '#a8a29e',
+              onPress: () => handleArchive(activeChallenge.id),
+            }]}
+          >
+            <GoalRow
+              goal={activeChallenge}
+              onToggle={handleToggle}
+              onArchive={handleArchive}
+              isChallenge
+            />
+          </SwipeableRow>
         </Animated.View>
       ) : null}
 
@@ -116,11 +125,19 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
           key={goal.id}
           entering={FadeInUp.duration(400).delay(200 + index * 80)}
         >
-          <GoalRow
-            goal={goal}
-            onToggle={handleToggle}
-            onArchive={handleArchive}
-          />
+          <SwipeableRow
+            rightActions={[{
+              label: 'Archive',
+              color: '#a8a29e',
+              onPress: () => handleArchive(goal.id),
+            }]}
+          >
+            <GoalRow
+              goal={goal}
+              onToggle={handleToggle}
+              onArchive={handleArchive}
+            />
+          </SwipeableRow>
         </Animated.View>
       ))}
 
