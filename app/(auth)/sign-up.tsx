@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
@@ -70,70 +71,78 @@ export default function SignUpScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>{t('auth.signUp.title')}</Text>
+          <Animated.Text entering={FadeIn.duration(400)} style={styles.title}>
+            {t('auth.signUp.title')}
+          </Animated.Text>
 
           <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label={t('common.email')}
-                  placeholder={t('common.emailPlaceholder')}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  error={errors.email?.message}
-                />
-              )}
-            />
+            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label={t('common.email')}
+                    placeholder={t('common.emailPlaceholder')}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    error={errors.email?.message}
+                  />
+                )}
+              />
+            </Animated.View>
 
             <View style={styles.spacer} />
 
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label={t('common.password')}
-                  placeholder={t('auth.signUp.passwordPlaceholder')}
-                  secureTextEntry
-                  autoComplete="password-new"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  error={errors.password?.message}
-                />
-              )}
-            />
+            <Animated.View entering={FadeInUp.duration(400).delay(200)}>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label={t('common.password')}
+                    placeholder={t('auth.signUp.passwordPlaceholder')}
+                    secureTextEntry
+                    autoComplete="password-new"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    error={errors.password?.message}
+                  />
+                )}
+              />
+            </Animated.View>
           </View>
 
-          <View style={styles.submit}>
+          <Animated.View entering={FadeInUp.duration(500).delay(300)} style={styles.submit}>
             <Button
               title={t('auth.signUp.submit')}
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
             />
-          </View>
+          </Animated.View>
 
-          <Text style={styles.terms}>
-            {t('auth.signUp.terms')}
-            <Text style={styles.termsLink} onPress={() => router.push('/(app)/privacy-policy')}>
-              {t('auth.signUp.privacyPolicy')}
-            </Text>.
-          </Text>
+          <Animated.View entering={FadeIn.duration(400).delay(400)}>
+            <Text style={styles.terms}>
+              {t('auth.signUp.terms')}
+              <Text style={styles.termsLink} onPress={() => router.push('/(app)/privacy-policy')}>
+                {t('auth.signUp.privacyPolicy')}
+              </Text>.
+            </Text>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>{t('auth.signUp.hasAccount')}</Text>
-            <Link href="/(auth)/sign-in" asChild>
-              <TouchableOpacity>
-                <Text style={styles.footerLink}>{t('auth.signUp.signInLink')}</Text>
-              </TouchableOpacity>
-            </Link>
-          </View>
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>{t('auth.signUp.hasAccount')}</Text>
+              <Link href="/(auth)/sign-in" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.footerLink}>{t('auth.signUp.signInLink')}</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

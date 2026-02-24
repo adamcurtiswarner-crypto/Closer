@@ -7,6 +7,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
@@ -72,44 +73,48 @@ export default function ForgotPasswordScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <View style={styles.header}>
+          <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
             <Text style={styles.title}>{t('auth.forgotPassword.title')}</Text>
             <Text style={styles.subtitle}>
               {t('auth.forgotPassword.subtitle')}
             </Text>
-          </View>
+          </Animated.View>
 
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <Input
-                label={t('common.email')}
-                placeholder={t('common.emailPlaceholder')}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                onBlur={onBlur}
-                onChangeText={onChange}
-                value={value}
-                error={errors.email?.message}
-              />
-            )}
-          />
+          <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label={t('common.email')}
+                  placeholder={t('common.emailPlaceholder')}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={errors.email?.message}
+                />
+              )}
+            />
+          </Animated.View>
 
-          <View style={styles.submit}>
+          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.submit}>
             <Button
               title={t('auth.forgotPassword.submit')}
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
             />
-          </View>
+          </Animated.View>
 
-          <Button
-            title={t('common.back')}
-            variant="ghost"
-            onPress={() => router.back()}
-          />
+          <Animated.View entering={FadeIn.duration(400).delay(300)}>
+            <Button
+              title={t('common.back')}
+              variant="ghost"
+              onPress={() => router.back()}
+            />
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
