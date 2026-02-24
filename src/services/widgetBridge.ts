@@ -1,4 +1,6 @@
 import { Platform } from 'react-native';
+import SharedGroupPreferences from 'react-native-shared-group-preferences';
+import { reloadAllTimelines } from 'react-native-widget-extension';
 
 interface WidgetData {
   currentStreak: number;
@@ -23,10 +25,7 @@ export async function updateWidgetData(data: WidgetData): Promise<void> {
   if (Platform.OS !== 'ios') return;
 
   try {
-    const SharedGroupPreferences = (await import('react-native-shared-group-preferences')).default;
     await SharedGroupPreferences.setItem(STORAGE_KEY, data, APP_GROUP);
-
-    const { reloadAllTimelines } = await import('react-native-widget-extension');
     reloadAllTimelines();
   } catch (error) {
     console.warn('[WidgetBridge] Failed to update widget data:', error);
