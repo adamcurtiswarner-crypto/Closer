@@ -4,7 +4,9 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -47,63 +49,170 @@ export default function PreferencesScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-warm-50">
-      <View className="flex-1 px-6 pt-12">
-        <Text className="text-2xl font-bold text-warm-900">
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Animated.Text
+          entering={FadeIn.duration(400)}
+          style={styles.title}
+        >
           {t('onboarding.preferences.title')}
-        </Text>
+        </Animated.Text>
 
-        <View className="mt-8">
+        <Animated.View
+          entering={FadeIn.duration(400).delay(100)}
+          style={styles.inputSection}
+        >
           <Input
             label={t('onboarding.preferences.partnerLabel')}
             placeholder={t('onboarding.preferences.partnerPlaceholder')}
             value={partnerName}
             onChangeText={setPartnerName}
           />
-        </View>
+        </Animated.View>
 
-        <View className="mt-8">
-          <Text className="text-warm-700 text-sm font-medium mb-3">
+        <View style={styles.timeSection}>
+          <Animated.Text
+            entering={FadeIn.duration(400).delay(100)}
+            style={styles.timeLabel}
+          >
             {t('onboarding.preferences.promptTimeLabel')}
-          </Text>
+          </Animated.Text>
 
-          {TIME_OPTIONS.map((option) => (
-            <TouchableOpacity
+          {TIME_OPTIONS.map((option, index) => (
+            <Animated.View
               key={option.value}
-              className={`
-                flex-row items-center p-4 rounded-xl mb-2
-                ${selectedTime === option.value ? 'bg-primary-50 border border-primary-200' : 'bg-white border border-warm-200'}
-              `}
-              onPress={() => setSelectedTime(option.value)}
+              entering={FadeInUp.duration(400).delay(200 + index * 100)}
             >
-              <View
-                className={`
-                  w-5 h-5 rounded-full border-2 mr-3 items-center justify-center
-                  ${selectedTime === option.value ? 'border-primary-500' : 'border-warm-300'}
-                `}
+              <TouchableOpacity
+                style={[
+                  styles.optionRow,
+                  selectedTime === option.value
+                    ? styles.optionRowSelected
+                    : styles.optionRowDefault,
+                ]}
+                onPress={() => setSelectedTime(option.value)}
               >
-                {selectedTime === option.value && (
-                  <View className="w-3 h-3 rounded-full bg-primary-500" />
-                )}
-              </View>
-              <Text
-                className={`
-                  text-base
-                  ${selectedTime === option.value ? 'text-primary-700' : 'text-warm-700'}
-                `}
-              >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
+                <View
+                  style={[
+                    styles.radio,
+                    selectedTime === option.value
+                      ? styles.radioSelected
+                      : styles.radioDefault,
+                  ]}
+                >
+                  {selectedTime === option.value && (
+                    <View style={styles.radioDot} />
+                  )}
+                </View>
+                <Text
+                  style={[
+                    styles.optionText,
+                    selectedTime === option.value
+                      ? styles.optionTextSelected
+                      : styles.optionTextDefault,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           ))}
         </View>
 
-        <View className="flex-1" />
+        <View style={styles.spacer} />
 
-        <View className="mb-8">
-          <Button title={isSaving ? t('common.saving') : t('common.continue')} onPress={handleContinue} disabled={isSaving} />
-        </View>
+        <Animated.View
+          entering={FadeInUp.duration(500).delay(500)}
+          style={styles.buttonWrapper}
+        >
+          <Button
+            title={isSaving ? t('common.saving') : t('common.continue')}
+            onPress={handleContinue}
+            disabled={isSaving}
+          />
+        </Animated.View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fafaf9',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 48,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1c1917',
+  },
+  inputSection: {
+    marginTop: 32,
+  },
+  timeSection: {
+    marginTop: 32,
+  },
+  timeLabel: {
+    color: '#44403c',
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 12,
+  },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+  },
+  optionRowSelected: {
+    backgroundColor: '#fef7f4',
+    borderColor: '#e8c4b0',
+  },
+  optionRowDefault: {
+    backgroundColor: '#fff',
+    borderColor: '#e7e5e4',
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioSelected: {
+    borderColor: '#c97454',
+  },
+  radioDefault: {
+    borderColor: '#d6d3d1',
+  },
+  radioDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#c97454',
+  },
+  optionText: {
+    fontSize: 16,
+  },
+  optionTextSelected: {
+    color: '#9a5a3a',
+  },
+  optionTextDefault: {
+    color: '#44403c',
+  },
+  spacer: {
+    flex: 1,
+  },
+  buttonWrapper: {
+    marginBottom: 32,
+  },
+});
