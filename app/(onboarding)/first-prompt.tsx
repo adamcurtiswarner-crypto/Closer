@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Button } from '@/components';
 import { logger } from '@/utils/logger';
@@ -35,19 +36,19 @@ export default function FirstPromptScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>{t('onboarding.firstPrompt.title')}</Text>
+        <Animated.Text entering={FadeIn.duration(400)} style={styles.title}>{t('onboarding.firstPrompt.title')}</Animated.Text>
 
         <View style={styles.cardArea}>
           {/* Sample prompt card */}
-          <View style={styles.card}>
+          <Animated.View entering={FadeInUp.duration(500).delay(300)} style={styles.card}>
             <Text style={styles.promptText}>
               {t('onboarding.firstPrompt.samplePrompt')}
             </Text>
-          </View>
+          </Animated.View>
 
-          <Text style={styles.explanation}>
+          <Animated.Text entering={FadeIn.duration(400).delay(100)} style={styles.explanation}>
             {t('onboarding.firstPrompt.explanation')}
-          </Text>
+          </Animated.Text>
 
           {!showResponse ? (
             <TouchableOpacity
@@ -57,12 +58,12 @@ export default function FirstPromptScreen() {
               <Text style={styles.showButtonText}>{t('onboarding.firstPrompt.showMe')}</Text>
             </TouchableOpacity>
           ) : (
-            <View style={styles.responseCard}>
+            <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.responseCard}>
               <Text style={styles.responseLabel}>{t('onboarding.firstPrompt.theirResponse')}</Text>
               <Text style={styles.responseText}>
                 {t('onboarding.firstPrompt.sampleResponse')}
               </Text>
-            </View>
+            </Animated.View>
           )}
         </View>
 
@@ -74,12 +75,12 @@ export default function FirstPromptScreen() {
 
         <View style={styles.spacer} />
 
-        <View style={styles.buttonContainer}>
+        <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.buttonContainer}>
           <Button
             title={showResponse ? t('onboarding.firstPrompt.iGetIt') : t('onboarding.firstPrompt.showExample')}
             onPress={showResponse ? handleContinue : () => setShowResponse(true)}
           />
-        </View>
+        </Animated.View>
       </View>
     </SafeAreaView>
   );

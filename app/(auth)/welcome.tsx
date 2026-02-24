@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -14,26 +15,32 @@ export default function WelcomeScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         {/* Logo */}
-        <View style={styles.header}>
+        <Animated.View entering={FadeIn.duration(600)} style={styles.header}>
           <Image source={logo} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.tagline}>{t('auth.welcome.tagline')}</Text>
-        </View>
+        </Animated.View>
 
-        <Text style={styles.description}>
-          {t('auth.welcome.description')}
-        </Text>
+        <Animated.View entering={FadeIn.duration(500).delay(200)}>
+          <Text style={styles.tagline}>{t('auth.welcome.tagline')}</Text>
+          <Text style={styles.description}>
+            {t('auth.welcome.description')}
+          </Text>
+        </Animated.View>
 
         {/* CTAs */}
         <View style={styles.buttons}>
-          <Link href="/(auth)/sign-up" asChild>
-            <Button title={t('auth.welcome.getStarted')} />
-          </Link>
+          <Animated.View entering={FadeInUp.duration(500).delay(400)}>
+            <Link href="/(auth)/sign-up" asChild>
+              <Button title={t('auth.welcome.getStarted')} />
+            </Link>
+          </Animated.View>
 
           <View style={styles.spacer} />
 
-          <Link href="/(auth)/sign-in" asChild>
-            <Button title={t('auth.welcome.haveAccount')} variant="secondary" />
-          </Link>
+          <Animated.View entering={FadeInUp.duration(500).delay(500)}>
+            <Link href="/(auth)/sign-in" asChild>
+              <Button title={t('auth.welcome.haveAccount')} variant="secondary" />
+            </Link>
+          </Animated.View>
         </View>
 
         <Link href="/(onboarding)/accept-invite" asChild>
@@ -56,7 +63,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 16,
   },
   logo: {
     width: 140,
@@ -66,6 +73,7 @@ const styles = StyleSheet.create({
   tagline: {
     fontSize: 18,
     color: '#57534e',
+    textAlign: 'center',
     marginTop: 4,
   },
   description: {

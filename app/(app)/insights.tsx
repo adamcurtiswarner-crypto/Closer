@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInsights, formatWeekLabel } from '@/hooks/useInsights';
 import { useCouple } from '@/hooks/useCouple';
 import { InsightCard } from '@/components/InsightCard';
+import { AnimatedProgressBar, AnimatedCounter } from '@components';
 import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
 import { getMilestoneStatus, getAnniversaryCountdown } from '@/config/milestones';
@@ -20,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 function StatPill({ value, label }: { value: number; label: string }) {
   return (
     <View style={styles.statPill}>
-      <Text style={styles.statValue}>{value}</Text>
+      <AnimatedCounter value={value} style={styles.statValue} />
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
@@ -179,14 +180,13 @@ export default function InsightsScreen() {
                     </View>
                     <Text style={styles.nextMilestoneDesc}>{milestones.next.description}</Text>
                     <View style={styles.nextMilestoneBar}>
-                      <View style={styles.nextMilestoneTrack}>
-                        <View
-                          style={[
-                            styles.nextMilestoneFill,
-                            { width: `${Math.round((milestones.next.current / milestones.next.threshold) * 100)}%` },
-                          ]}
-                        />
-                      </View>
+                      <AnimatedProgressBar
+                        progress={milestones.next.current / milestones.next.threshold}
+                        color="#c97454"
+                        trackColor="#e7e5e4"
+                        height={6}
+                        style={{ flex: 1, borderRadius: 3 }}
+                      />
                       <Text style={styles.nextMilestoneCount}>
                         {milestones.next.current}/{milestones.next.threshold}
                       </Text>
@@ -341,9 +341,13 @@ export default function InsightsScreen() {
                       <Text style={styles.categoryIcon}>{cat.icon}</Text>
                       <Text style={styles.categoryName} numberOfLines={1}>{cat.label}</Text>
                     </View>
-                    <View style={styles.categoryBarTrack}>
-                      <View style={[styles.categoryBarFill, { width: `${cat.percentage}%` }]} />
-                    </View>
+                    <AnimatedProgressBar
+                      progress={cat.percentage / 100}
+                      color="#c97454"
+                      trackColor="#f5f5f4"
+                      height={8}
+                      style={{ flex: 1, borderRadius: 4 }}
+                    />
                     <Text style={styles.categoryCount}>{cat.count}</Text>
                   </View>
                 ))}
@@ -365,14 +369,13 @@ export default function InsightsScreen() {
               </View>
               <View style={styles.weeklyRateRow}>
                 <Text style={styles.weeklyRateLabel}>This week</Text>
-                <View style={styles.weeklyRateTrack}>
-                  <View
-                    style={[
-                      styles.weeklyRateFill,
-                      { width: `${Math.min(Math.round(insights.weeklyCompletionRate * 100), 100)}%` },
-                    ]}
-                  />
-                </View>
+                <AnimatedProgressBar
+                  progress={Math.min(insights.weeklyCompletionRate, 1)}
+                  color="#c97454"
+                  trackColor="#f5f5f4"
+                  height={8}
+                  style={{ flex: 1, borderRadius: 4 }}
+                />
                 <Text style={styles.weeklyRateText}>
                   {Math.round(insights.weeklyCompletionRate * 100)}%
                 </Text>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView, Alert, StyleSheet } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { sendEmailVerification } from 'firebase/auth';
 import { auth } from '@/config/firebase';
@@ -26,25 +27,29 @@ export default function VerifyEmailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>{t('onboarding.verifyEmail.title')}</Text>
-        <Text style={styles.subtitle}>
+        <Animated.Text entering={FadeIn.duration(400).delay(100)} style={styles.title}>{t('onboarding.verifyEmail.title')}</Animated.Text>
+        <Animated.Text entering={FadeIn.duration(400).delay(200)} style={styles.subtitle}>
           {t('onboarding.verifyEmail.subtitle', { email: auth.currentUser?.email || 'your email' })}
-        </Text>
+        </Animated.Text>
 
         <View style={styles.actions}>
-          <Button
-            title={t('common.continue')}
-            onPress={() => router.push('/(onboarding)/invite-partner')}
-          />
+          <Animated.View entering={FadeInUp.duration(500).delay(300)}>
+            <Button
+              title={t('common.continue')}
+              onPress={() => router.push('/(onboarding)/invite-partner')}
+            />
+          </Animated.View>
 
           <View style={styles.spacer} />
 
-          <Button
-            title={isSending ? t('onboarding.verifyEmail.resending') : t('onboarding.verifyEmail.resend')}
-            variant="secondary"
-            onPress={handleResend}
-            disabled={isSending}
-          />
+          <Animated.View entering={FadeInUp.duration(400).delay(400)}>
+            <Button
+              title={isSending ? t('onboarding.verifyEmail.resending') : t('onboarding.verifyEmail.resend')}
+              variant="secondary"
+              onPress={handleResend}
+              disabled={isSending}
+            />
+          </Animated.View>
         </View>
 
         <Text style={styles.note}>

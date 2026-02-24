@@ -211,3 +211,24 @@ export function useSaveMemory() {
     },
   });
 }
+
+export function useRemoveMemory() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (memoryId: string) => {
+      if (!user?.coupleId) throw new Error('No couple linked');
+
+      const memoryRef = doc(db, 'memory_artifacts', memoryId);
+      await updateDoc(memoryRef, { is_deleted: true });
+
+      return { memoryId };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['memories'] });
+      queryClient.invalidateQueries({ queryKey: ['weeklyRecap'] });
+      logEvent('memory_removed', { memory_id: data.memoryId });
+    },
+  });
+}

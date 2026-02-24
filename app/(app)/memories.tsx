@@ -10,15 +10,17 @@ import {
   RefreshControl,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-import { useWeeklyRecap, useSavedMemories, useSaveMemory } from '@/hooks/useMemories';
+import { useWeeklyRecap, useSavedMemories, useSaveMemory, useRemoveMemory } from '@/hooks/useMemories';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Paywall } from '@/components/Paywall';
 import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { MemoryCardSkeleton } from '@/components/Skeleton';
+import { SwipeableRow } from '@/components/SwipeableRow';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -32,6 +34,7 @@ export default function MemoriesScreen() {
   const { data: completions, isLoading: recapLoading, error: recapError, refetch: refetchRecap } = useWeeklyRecap();
   const { data: memories, isLoading: memoriesLoading, error: memoriesError, refetch: refetchMemories } = useSavedMemories();
   const saveMemory = useSaveMemory();
+  const removeMemory = useRemoveMemory();
   const { isPremium } = useSubscription();
   const [showPaywall, setShowPaywall] = useState(false);
 
@@ -64,12 +67,12 @@ export default function MemoriesScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <Text style={styles.title}>{t('memories.title')}</Text>
-      </View>
+      </Animated.View>
 
       {/* Tabs */}
-      <View style={styles.tabs}>
+      <Animated.View entering={FadeIn.duration(400).delay(100)} style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'recap' && styles.activeTab]}
           onPress={() => setActiveTab('recap')}
@@ -86,7 +89,7 @@ export default function MemoriesScreen() {
             {t('memories.saved')}
           </Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
         {activeTab === 'recap' ? (
@@ -101,15 +104,15 @@ export default function MemoriesScreen() {
               onRetry={() => refetchRecap()}
             />
           ) : !completions || completions.length === 0 ? (
-            <View style={styles.empty}>
+            <Animated.View entering={FadeIn.duration(500).delay(200)} style={styles.empty}>
               <Text style={styles.emptyTitle}>{t('memories.noCompletions')}</Text>
               <Text style={styles.emptySubtitle}>
                 {t('memories.noCompletionsSubtitle')}
               </Text>
-            </View>
+            </Animated.View>
           ) : (
-            completions.map((completion) => (
-              <View key={completion.id} style={styles.card}>
+            completions.map((completion, index) => (
+              <Animated.View key={completion.id} entering={FadeInUp.duration(400).delay(Math.min(index * 80, 400))} style={styles.card}>
                 <Text style={styles.promptText}>"{completion.promptText}"</Text>
 
                 {completion.responses.map((response, idx) => (
@@ -133,7 +136,7 @@ export default function MemoriesScreen() {
                 {!completion.isMemorySaved ? (
                   <TouchableOpacity
                     style={styles.saveButton}
-                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); saveMemory.mutate(completion); }}
+                    onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); saveMemory.mutate(completion); }}
                     disabled={saveMemory.isPending}
                   >
                     <Text style={styles.saveButtonText}>
@@ -143,7 +146,7 @@ export default function MemoriesScreen() {
                 ) : (
                   <Text style={styles.savedLabel}>{t('memories.savedLabel')}</Text>
                 )}
-              </View>
+              </Animated.View>
             ))
           )
         ) : (
@@ -158,36 +161,49 @@ export default function MemoriesScreen() {
               onRetry={() => refetchMemories()}
             />
           ) : !memories || memories.length === 0 ? (
-            <View style={styles.empty}>
+            <Animated.View entering={FadeIn.duration(500).delay(200)} style={styles.empty}>
               <Text style={styles.emptyTitle}>{t('memories.emptySavedTitle')}</Text>
               <Text style={styles.emptySubtitle}>
                 {t('memories.emptySavedSubtitle')}
               </Text>
-            </View>
+            </Animated.View>
           ) : (
             <>
-              {(isPremium ? memories : memories.slice(0, FREE_MEMORY_LIMIT)).map((memory) => (
-                <View key={memory.id} style={styles.card}>
-                  <Text style={styles.promptText}>"{memory.promptText}"</Text>
+              {(isPremium ? memories : memories.slice(0, FREE_MEMORY_LIMIT)).map((memory, index) => (
+                <Animated.View key={memory.id} entering={FadeInUp.duration(400).delay(Math.min(index * 80, 400))}>
+                  <SwipeableRow
+                    rightActions={[{
+                      label: 'Remove',
+                      color: '#ef4444',
+                      onPress: () => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        removeMemory.mutate(memory.id);
+                      },
+                    }]}
+                  >
+                    <View style={styles.card}>
+                      <Text style={styles.promptText}>"{memory.promptText}"</Text>
 
-                  {memory.responses.map((response, idx) => (
-                    <View key={idx} style={styles.responseBlock}>
-                      <Text style={styles.responseLabel}>
-                        {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
-                      </Text>
-                      <Text style={styles.responseText}>{response.responseText}</Text>
-                      {response.imageUrl ? (
-                        <Image source={{ uri: response.imageUrl }} style={styles.responseImage} resizeMode="cover" />
-                      ) : null}
+                      {memory.responses.map((response, idx) => (
+                        <View key={idx} style={styles.responseBlock}>
+                          <Text style={styles.responseLabel}>
+                            {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
+                          </Text>
+                          <Text style={styles.responseText}>{response.responseText}</Text>
+                          {response.imageUrl ? (
+                            <Image source={{ uri: response.imageUrl }} style={styles.responseImage} resizeMode="cover" />
+                          ) : null}
+                        </View>
+                      ))}
+
+                      {memory.completedAt && (
+                        <Text style={styles.timestamp}>
+                          {format(memory.completedAt, 'EEEE, MMM d')}
+                        </Text>
+                      )}
                     </View>
-                  ))}
-
-                  {memory.completedAt && (
-                    <Text style={styles.timestamp}>
-                      {format(memory.completedAt, 'EEEE, MMM d')}
-                    </Text>
-                  )}
-                </View>
+                  </SwipeableRow>
+                </Animated.View>
               ))}
               {!isPremium && memories.length > FREE_MEMORY_LIMIT && (
                 <TouchableOpacity

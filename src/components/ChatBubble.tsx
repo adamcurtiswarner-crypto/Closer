@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { format } from 'date-fns';
 import type { ChatMessage } from '@/hooks/useChat';
+import { SwipeableRow } from './SwipeableRow';
 
 type DeliveryStatus = 'sending' | 'sent' | 'read';
 
@@ -11,6 +12,7 @@ interface ChatBubbleProps {
   isOwn: boolean;
   showTimestamp: boolean;
   onLongPress?: () => void;
+  onDelete?: () => void;
   status?: DeliveryStatus;
 }
 
@@ -25,8 +27,8 @@ function StatusIndicator({ status }: { status: DeliveryStatus }) {
   return <Text style={styles.statusText}>{'\u2713'}</Text>;
 }
 
-export function ChatBubble({ message, isOwn, showTimestamp, onLongPress, status }: ChatBubbleProps) {
-  return (
+export function ChatBubble({ message, isOwn, showTimestamp, onLongPress, onDelete, status }: ChatBubbleProps) {
+  const bubbleContent = (
     <Animated.View entering={FadeInUp.duration(200)}>
       {showTimestamp && (
         <Text style={styles.timestamp}>
@@ -81,6 +83,18 @@ export function ChatBubble({ message, isOwn, showTimestamp, onLongPress, status 
       </View>
     </Animated.View>
   );
+
+  if (isOwn && onDelete) {
+    return (
+      <SwipeableRow
+        rightActions={[{ label: 'Delete', color: '#ef4444', onPress: onDelete }]}
+      >
+        {bubbleContent}
+      </SwipeableRow>
+    );
+  }
+
+  return bubbleContent;
 }
 
 const styles = StyleSheet.create({

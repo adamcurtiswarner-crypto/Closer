@@ -8,6 +8,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
@@ -70,69 +71,77 @@ export default function SignInScreen() {
         style={styles.keyboardView}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>{t('auth.signIn.title')}</Text>
+          <Animated.Text entering={FadeIn.duration(400)} style={styles.title}>
+            {t('auth.signIn.title')}
+          </Animated.Text>
 
           <View style={styles.form}>
-            <Controller
-              control={control}
-              name="email"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label={t('common.email')}
-                  placeholder={t('common.emailPlaceholder')}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  error={errors.email?.message}
-                />
-              )}
-            />
+            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+              <Controller
+                control={control}
+                name="email"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label={t('common.email')}
+                    placeholder={t('common.emailPlaceholder')}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    error={errors.email?.message}
+                  />
+                )}
+              />
+            </Animated.View>
 
             <View style={styles.spacer} />
 
-            <Controller
-              control={control}
-              name="password"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label={t('common.password')}
-                  placeholder={t('auth.signIn.passwordPlaceholder')}
-                  secureTextEntry
-                  autoComplete="password"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  error={errors.password?.message}
-                />
-              )}
-            />
+            <Animated.View entering={FadeInUp.duration(400).delay(200)}>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <Input
+                    label={t('common.password')}
+                    placeholder={t('auth.signIn.passwordPlaceholder')}
+                    secureTextEntry
+                    autoComplete="password"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    error={errors.password?.message}
+                  />
+                )}
+              />
+            </Animated.View>
           </View>
 
-          <Link href="/(auth)/forgot-password" asChild>
-            <TouchableOpacity style={styles.forgot}>
-              <Text style={styles.forgotText}>{t('auth.signIn.forgotPassword')}</Text>
-            </TouchableOpacity>
-          </Link>
-
-          <View style={styles.submit}>
+          <Animated.View entering={FadeInUp.duration(500).delay(300)} style={styles.submit}>
             <Button
               title={t('auth.signIn.submit')}
               onPress={handleSubmit(onSubmit)}
               loading={isLoading}
             />
-          </View>
+          </Animated.View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>{t('auth.signIn.noAccount')}</Text>
-            <Link href="/(auth)/sign-up" asChild>
-              <TouchableOpacity>
-                <Text style={styles.footerLink}>{t('auth.signIn.signUpLink')}</Text>
+          <Animated.View entering={FadeIn.duration(400).delay(400)}>
+            <Link href="/(auth)/forgot-password" asChild>
+              <TouchableOpacity style={styles.forgot}>
+                <Text style={styles.forgotText}>{t('auth.signIn.forgotPassword')}</Text>
               </TouchableOpacity>
             </Link>
-          </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>{t('auth.signIn.noAccount')}</Text>
+              <Link href="/(auth)/sign-up" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.footerLink}>{t('auth.signIn.signUpLink')}</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </Animated.View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

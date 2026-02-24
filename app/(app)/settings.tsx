@@ -13,6 +13,7 @@ import {
   Share,
   StyleSheet,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -193,137 +194,149 @@ export default function SettingsScreen() {
         <ProfileCard />
 
         {/* Notifications */}
-        <Text style={styles.sectionTitle}>{t('settings.notifications')}</Text>
-        <View style={styles.section}>
-          <TouchableOpacity style={styles.row} onPress={() => setShowTimePicker(true)}>
-            <Text style={styles.rowLabel}>{t('settings.dailyPromptTime')}</Text>
-            <Text style={styles.rowValue}>{getTimeDisplay(currentTime)} {'>'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
-            <Text style={styles.rowLabel}>{t('settings.promptFrequency')}</Text>
-            <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)} {'>'}</Text>
-          </TouchableOpacity>
-          <View style={styles.rowToggle}>
-            <Text style={styles.rowLabel}>{t('settings.remindMe')}</Text>
-            <Switch
-              value={remindMe}
-              onValueChange={handleToggleRemind}
-              trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
-              thumbColor={remindMe ? '#c97454' : '#fafaf9'}
-            />
+        <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+          <Text style={styles.sectionTitle}>{t('settings.notifications')}</Text>
+          <View style={styles.section}>
+            <TouchableOpacity style={styles.row} onPress={() => setShowTimePicker(true)}>
+              <Text style={styles.rowLabel}>{t('settings.dailyPromptTime')}</Text>
+              <Text style={styles.rowValue}>{getTimeDisplay(currentTime)} {'>'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
+              <Text style={styles.rowLabel}>{t('settings.promptFrequency')}</Text>
+              <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)} {'>'}</Text>
+            </TouchableOpacity>
+            <View style={styles.rowToggle}>
+              <Text style={styles.rowLabel}>{t('settings.remindMe')}</Text>
+              <Switch
+                value={remindMe}
+                onValueChange={handleToggleRemind}
+                trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
+                thumbColor={remindMe ? '#c97454' : '#fafaf9'}
+              />
+            </View>
+            <View style={styles.rowToggle}>
+              <Text style={styles.rowLabel}>{t('settings.notifyPartner')}</Text>
+              <Switch
+                value={partnerNotify}
+                onValueChange={handleTogglePartnerNotify}
+                trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
+                thumbColor={partnerNotify ? '#c97454' : '#fafaf9'}
+              />
+            </View>
+            <View style={[styles.rowToggle, styles.lastRow]}>
+              <Text style={styles.rowLabel}>{t('settings.syncToCalendar')}</Text>
+              <Switch
+                value={calendarSynced}
+                onValueChange={(value) => {
+                  if (value) {
+                    calendarSync.mutate();
+                  } else {
+                    calendarRemove.mutate();
+                  }
+                }}
+                trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
+                thumbColor={calendarSynced ? '#c97454' : '#fafaf9'}
+                disabled={calendarSync.isPending || calendarRemove.isPending}
+              />
+            </View>
           </View>
-          <View style={styles.rowToggle}>
-            <Text style={styles.rowLabel}>{t('settings.notifyPartner')}</Text>
-            <Switch
-              value={partnerNotify}
-              onValueChange={handleTogglePartnerNotify}
-              trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
-              thumbColor={partnerNotify ? '#c97454' : '#fafaf9'}
-            />
-          </View>
-          <View style={[styles.rowToggle, styles.lastRow]}>
-            <Text style={styles.rowLabel}>{t('settings.syncToCalendar')}</Text>
-            <Switch
-              value={calendarSynced}
-              onValueChange={(value) => {
-                if (value) {
-                  calendarSync.mutate();
-                } else {
-                  calendarRemove.mutate();
-                }
-              }}
-              trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
-              thumbColor={calendarSynced ? '#c97454' : '#fafaf9'}
-              disabled={calendarSync.isPending || calendarRemove.isPending}
-            />
-          </View>
-        </View>
+        </Animated.View>
 
         {/* Partnership */}
-        <PartnershipSection
-          sectionTitleStyle={styles.sectionTitle}
-          sectionStyle={styles.section}
-          rowStyle={styles.row}
-          lastRowStyle={styles.lastRow}
-          rowLabelStyle={styles.rowLabel}
-          rowValueStyle={styles.rowValue}
-          dangerTextStyle={styles.dangerText}
-        />
+        <Animated.View entering={FadeInUp.duration(400).delay(160)}>
+          <PartnershipSection
+            sectionTitleStyle={styles.sectionTitle}
+            sectionStyle={styles.section}
+            rowStyle={styles.row}
+            lastRowStyle={styles.lastRow}
+            rowLabelStyle={styles.rowLabel}
+            rowValueStyle={styles.rowValue}
+            dangerTextStyle={styles.dangerText}
+          />
+        </Animated.View>
 
         {/* Resources */}
-        <Text style={styles.sectionTitle}>{t('settings.resources')}</Text>
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={[styles.row, styles.lastRow]}
-            onPress={() => router.push('/(app)/resources')}
-          >
-            <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
-            <Text style={styles.rowValue}>{'>'}</Text>
-          </TouchableOpacity>
-        </View>
+        <Animated.View entering={FadeInUp.duration(400).delay(220)}>
+          <Text style={styles.sectionTitle}>{t('settings.resources')}</Text>
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={[styles.row, styles.lastRow]}
+              onPress={() => router.push('/(app)/resources')}
+            >
+              <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
+              <Text style={styles.rowValue}>{'>'}</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
         {/* Privacy & Data */}
-        <Text style={styles.sectionTitle}>{t('settings.privacyData')}</Text>
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.row}
-            onPress={handleExportData}
-            disabled={exportData.isPending}
-          >
-            <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
-            {exportData.isPending ? (
-              <ActivityIndicator size="small" color="#c97454" />
-            ) : (
+        <Animated.View entering={FadeInUp.duration(400).delay(280)}>
+          <Text style={styles.sectionTitle}>{t('settings.privacyData')}</Text>
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={handleExportData}
+              disabled={exportData.isPending}
+            >
+              <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
+              {exportData.isPending ? (
+                <ActivityIndicator size="small" color="#c97454" />
+              ) : (
+                <Text style={styles.rowValue}>{'>'}</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => setShowAnonymizeModal(true)}
+            >
+              <Text style={styles.rowLabel}>{t('settings.anonymize')}</Text>
               <Text style={styles.rowValue}>{'>'}</Text>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => setShowAnonymizeModal(true)}
-          >
-            <Text style={styles.rowLabel}>{t('settings.anonymize')}</Text>
-            <Text style={styles.rowValue}>{'>'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.row, styles.lastRow]}
-            onPress={() => setShowDeleteModal(true)}
-          >
-            <Text style={styles.dangerText}>{t('settings.deleteAccount')}</Text>
-          </TouchableOpacity>
-        </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.row, styles.lastRow]}
+              onPress={() => setShowDeleteModal(true)}
+            >
+              <Text style={styles.dangerText}>{t('settings.deleteAccount')}</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
 
         {/* Account */}
-        <Text style={styles.sectionTitle}>{t('settings.account')}</Text>
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.row}
-            onPress={() => !isPremium && setShowPaywall(true)}
-            disabled={isPremium}
-          >
-            <Text style={styles.rowLabel}>{t('settings.subscription')}</Text>
-            <Text style={[styles.rowValue, isPremium && styles.premiumText]}>
-              {isPremium ? t('settings.premium') : t('settings.free') + ' >'}
-            </Text>
-          </TouchableOpacity>
-          <View style={styles.row}>
-            <Text style={styles.rowLabel}>{t('settings.version')}</Text>
-            <Text style={styles.rowValue}>1.0.0</Text>
+        <Animated.View entering={FadeInUp.duration(400).delay(340)}>
+          <Text style={styles.sectionTitle}>{t('settings.account')}</Text>
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.row}
+              onPress={() => !isPremium && setShowPaywall(true)}
+              disabled={isPremium}
+            >
+              <Text style={styles.rowLabel}>{t('settings.subscription')}</Text>
+              <Text style={[styles.rowValue, isPremium && styles.premiumText]}>
+                {isPremium ? t('settings.premium') : t('settings.free') + ' >'}
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.row}>
+              <Text style={styles.rowLabel}>{t('settings.version')}</Text>
+              <Text style={styles.rowValue}>1.0.0</Text>
+            </View>
+            <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
+              <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>
+              <Text style={styles.rowValue}>{'>'}</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
-            <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>
-            <Text style={styles.rowValue}>{'>'}</Text>
-          </TouchableOpacity>
-        </View>
+        </Animated.View>
 
         {/* Safety */}
-        <View style={styles.safety}>
-          <Text style={styles.safetyText}>
-            {t('settings.safetyText')}
-          </Text>
-          <TouchableOpacity onPress={() => Linking.openURL('tel:1-800-799-7233')}>
-            <Text style={styles.safetyLink}>{t('settings.safetyLink')}</Text>
-          </TouchableOpacity>
-        </View>
+        <Animated.View entering={FadeInUp.duration(400).delay(400)}>
+          <View style={styles.safety}>
+            <Text style={styles.safetyText}>
+              {t('settings.safetyText')}
+            </Text>
+            <TouchableOpacity onPress={() => Linking.openURL('tel:1-800-799-7233')}>
+              <Text style={styles.safetyLink}>{t('settings.safetyLink')}</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
       </ScrollView>
 
       {/* Time Picker Modal */}

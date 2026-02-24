@@ -16,6 +16,7 @@ import {
   type WishlistItem,
 } from '@/hooks/useWishlist';
 import { getCategoryDisplay } from '@/config/wishlistCategories';
+import { AnimatedCheckbox } from './AnimatedCheckbox';
 
 interface WishlistCardProps {
   onAddItem: () => void;
@@ -147,13 +148,7 @@ function WishlistRow({
         onPress={() => onToggle(item)}
         activeOpacity={0.6}
       >
-        {item.isCompleted ? (
-          <View style={styles.checkboxFilled}>
-            <Text style={styles.checkmark}>{'\u2713'}</Text>
-          </View>
-        ) : (
-          <View style={styles.checkboxEmpty} />
-        )}
+        <AnimatedCheckbox checked={item.isCompleted} size={20} />
       </TouchableOpacity>
       <Text style={styles.itemIcon}>{cat?.icon ?? '\uD83D\uDCAB'}</Text>
       <Text
@@ -257,27 +252,6 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  checkboxEmpty: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#d6d3d1',
-  },
-  checkboxFilled: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#c97454',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkmark: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '700',
-    marginTop: -1,
   },
   itemIcon: {
     fontSize: 14,

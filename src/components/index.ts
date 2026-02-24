@@ -39,6 +39,13 @@ export { ResourceCard } from './ResourceCard';
 export { ChatBubble } from './ChatBubble';
 export { ChatInput } from './ChatInput';
 
+// Animated primitives
+export { AnimatedProgressBar } from './AnimatedProgressBar';
+export { AnimatedCheckbox } from './AnimatedCheckbox';
+export { AnimatedCounter } from './AnimatedCounter';
+export { PulsingDots } from './PulsingDots';
+export { SwipeableRow } from './SwipeableRow';
+
 // Error handling
 export { ErrorBoundary } from './ErrorBoundary';
 export { QueryError } from './QueryError';

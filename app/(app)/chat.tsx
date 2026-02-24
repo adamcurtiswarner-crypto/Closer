@@ -182,6 +182,11 @@ export default function ChatScreen() {
               ? () => handleDeleteMessage(item)
               : undefined
           }
+          onDelete={
+            item.senderId === user?.id && !item.isDeleted
+              ? () => handleDeleteMessage(item)
+              : undefined
+          }
         />
       </View>
     );

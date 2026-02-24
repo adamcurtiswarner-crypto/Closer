@@ -24,6 +24,9 @@ ui-debug.log
 # Tasks (local Claude workflow)
 tasks/
 
+# Worktrees
+.worktrees/
+
 # Native builds
 ios/
 android/

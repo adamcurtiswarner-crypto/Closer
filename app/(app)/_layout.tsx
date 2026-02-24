@@ -1,10 +1,112 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { OfflineBanner } from '@/components/OfflineBanner';
 
 const logo = require('@/assets/logo.png');
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  // Filter to only visible tabs (those without href: null)
+  const visibleRoutes = useMemo(
+    () =>
+      state.routes.filter((route) => {
+        const options = descriptors[route.key].options as Record<string, unknown>;
+        return options.href !== null;
+      }),
+    [state.routes, descriptors]
+  );
+
+  const tabCount = visibleRoutes.length;
+  const tabWidth = SCREEN_WIDTH / tabCount;
+
+  // Determine the visible tab index for the current active route
+  const activeVisibleIndex = useMemo(() => {
+    const activeRoute = state.routes[state.index];
+    const idx = visibleRoutes.findIndex((r) => r.key === activeRoute.key);
+    // If active route is a hidden tab, return -1
+    return idx;
+  }, [state.index, state.routes, visibleRoutes]);
+
+  const translateX = useSharedValue(0);
+
+  useEffect(() => {
+    if (activeVisibleIndex >= 0) {
+      translateX.value = withTiming(activeVisibleIndex * tabWidth + tabWidth / 2 - 3, {
+        duration: 250,
+      });
+    }
+  }, [activeVisibleIndex, tabWidth, translateX]);
+
+  const indicatorStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
+
+  return (
+    <View style={customTabBarStyles.container}>
+      <View style={customTabBarStyles.tabRow}>
+        {visibleRoutes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const isFocused = activeVisibleIndex === index;
+
+          const label = options.title ?? route.name;
+          const color = isFocused ? '#c97454' : '#a8a29e';
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key,
+            });
+          };
+
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              style={customTabBarStyles.tab}
+            >
+              {options.tabBarIcon?.({ focused: isFocused, color, size: 24 })}
+              <Text
+                style={[
+                  customTabBarStyles.label,
+                  { color },
+                ]}
+              >
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      <Animated.View style={[customTabBarStyles.indicator, indicatorStyle]} />
+    </View>
+  );
+}
 
 export default function AppLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -23,20 +125,11 @@ export default function AppLayout() {
     <View style={{ flex: 1 }}>
     <OfflineBanner />
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#fafaf9',
-          borderTopColor: '#e7e5e4',
-          paddingTop: 8,
-          height: 85,
-        },
         tabBarActiveTintColor: '#c97454',
         tabBarInactiveTintColor: '#a8a29e',
-        tabBarLabelStyle: {
-          fontSize: 12,
-          marginTop: 4,
-        },
       }}
     >
       <Tabs.Screen
@@ -101,6 +194,38 @@ export default function AppLayout() {
     </View>
   );
 }
+
+const customTabBarStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fafaf9',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#e7e5e4',
+    paddingTop: 8,
+    height: 85,
+  },
+  tabRow: {
+    flexDirection: 'row',
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+  },
+  label: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+  indicator: {
+    position: 'absolute',
+    top: 4,
+    left: 0,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#c97454',
+  },
+});
 
 const tabStyles = StyleSheet.create({
   tabLogo: {

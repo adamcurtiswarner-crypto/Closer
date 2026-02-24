@@ -1,23 +1,28 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import React, { useEffect } from 'react';
+import { Text, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useTranslation } from 'react-i18next';
 
 export function OfflineBanner() {
   const { isConnected } = useNetworkStatus();
   const { t } = useTranslation();
-  const translateY = useRef(new Animated.Value(-60)).current;
+  const translateY = useSharedValue(-60);
 
   useEffect(() => {
-    Animated.timing(translateY, {
-      toValue: isConnected ? -60 : 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  }, [isConnected, translateY]);
+    translateY.value = withTiming(isConnected ? -60 : 0, { duration: 300 });
+  }, [isConnected]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
 
   return (
-    <Animated.View style={[styles.banner, { transform: [{ translateY }] }]}>
+    <Animated.View style={[styles.banner, animatedStyle]}>
       <Text style={styles.text}>
         {t('offline.banner')}
       </Text>
