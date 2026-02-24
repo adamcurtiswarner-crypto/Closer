@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated';
 
 interface StreakRingProps {
   currentStreak: number;
@@ -21,20 +29,36 @@ function getMotivation(streak: number): string {
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive }: StreakRingProps) {
+  const ringScale = useSharedValue(0.6);
+  const numberOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    ringScale.value = withSpring(1, { damping: 14, stiffness: 160 });
+    numberOpacity.value = withDelay(300, withTiming(1, { duration: 400 }));
+  }, []);
+
+  const ringAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: ringScale.value }],
+  }));
+
+  const numberAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: numberOpacity.value,
+  }));
+
   return (
     <Animated.View entering={FadeIn.duration(500)} style={styles.container}>
       {/* Streak circle */}
-      <View style={styles.circleOuter}>
+      <Animated.View style={[styles.circleOuter, ringAnimatedStyle]}>
         <View style={[styles.circleInner, isStreakActive ? styles.circleActive : styles.circleInactive]}>
           <Text style={styles.streakEmoji}>{currentStreak > 0 ? '\uD83D\uDD25' : '\u26AA'}</Text>
-          <Text style={[styles.streakNumber, isStreakActive ? styles.numberActive : styles.numberInactive]}>
+          <Animated.Text style={[styles.streakNumber, isStreakActive ? styles.numberActive : styles.numberInactive, numberAnimatedStyle]}>
             {currentStreak}
-          </Text>
+          </Animated.Text>
           <Text style={styles.dayLabel}>
             {currentStreak === 1 ? 'day' : 'days'}
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
       <Animated.View entering={FadeInUp.duration(400).delay(200)} style={styles.textContainer}>
         <Text style={styles.motivation}>{getMotivation(currentStreak)}</Text>
