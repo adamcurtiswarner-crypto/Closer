@@ -14,7 +14,7 @@ interface WidgetData {
   lastUpdated: string;
 }
 
-const APP_GROUP = 'group.com.stoke.app';
+const APP_GROUP = 'group.io.getstoke.app';
 const STORAGE_KEY = 'widgetData';
 
 /**

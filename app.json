@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.stoke.app",
+      "bundleIdentifier": "io.getstoke.app",
       "buildNumber": "1",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
@@ -32,7 +32,7 @@
       ],
       "entitlements": {
         "com.apple.security.application-groups": [
-          "group.com.stoke.app"
+          "group.io.getstoke.app"
         ]
       }
     },
@@ -41,7 +41,7 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.stoke.app",
+      "package": "io.getstoke.app",
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
@@ -71,15 +71,7 @@
           "color": "#ffffff"
         }
       ],
-      "expo-localization",
-      [
-        "react-native-widget-extension",
-        {
-          "widgetsFolder": "widgets",
-          "groupIdentifier": "group.com.stoke.app",
-          "deploymentTarget": "16.0"
-        }
-      ]
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
@@ -90,24 +82,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "ed4dbe48-8597-4a51-8580-3402ea568d2f",
-        "build": {
-          "experimental": {
-            "ios": {
-              "appExtensions": [
-                {
-                  "targetName": "widgets",
-                  "bundleIdentifier": "com.stoke.app.widgets",
-                  "entitlements": {
-                    "com.apple.security.application-groups": [
-                      "group.com.stoke.app"
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        }
+        "projectId": "ed4dbe48-8597-4a51-8580-3402ea568d2f"
       }
     },
     "owner": "adamcurtiswarner"
