@@ -1,6 +1,4 @@
-import { Platform } from 'react-native';
-import SharedGroupPreferences from 'react-native-shared-group-preferences';
-import { reloadAllTimelines } from 'react-native-widget-extension';
+// Widget bridge temporarily disabled — will be re-enabled when widget extension is added back
 
 interface WidgetData {
   currentStreak: number;
@@ -14,27 +12,10 @@ interface WidgetData {
   lastUpdated: string;
 }
 
-const APP_GROUP = 'group.io.getstoke.app';
-const STORAGE_KEY = 'widgetData';
-
-/**
- * Update the iOS home screen widget data.
- * Writes to shared UserDefaults and triggers a widget timeline reload.
- */
-export async function updateWidgetData(data: WidgetData): Promise<void> {
-  if (Platform.OS !== 'ios') return;
-
-  try {
-    await SharedGroupPreferences.setItem(STORAGE_KEY, data, APP_GROUP);
-    reloadAllTimelines();
-  } catch (error) {
-    console.warn('[WidgetBridge] Failed to update widget data:', error);
-  }
+export async function updateWidgetData(_data: WidgetData): Promise<void> {
+  // no-op until widget extension is re-enabled
 }
 
-/**
- * Build widget data from app state.
- */
 export function buildWidgetData({
   currentStreak,
   daysAsCouple,
