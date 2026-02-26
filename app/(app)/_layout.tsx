@@ -188,6 +188,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="privacy-policy"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
