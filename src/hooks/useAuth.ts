@@ -123,10 +123,15 @@ export function useAuth(): AuthState & AuthActions {
         partner_photo_url: null,
         love_language: null,
       });
+
+      // Fetch user doc now that it exists — onAuthStateChanged may have
+      // already fired before setDoc completed, leaving user as null
+      const userData = await fetchUserDoc(newUser.uid);
+      setUser(userData);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchUserDoc]);
 
   // Sign out
   const signOut = useCallback(async () => {
