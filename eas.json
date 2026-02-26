@@ -22,6 +22,9 @@
     },
     "production": {
       "autoIncrement": true,
+      "ios": {
+        "image": "latest"
+      },
       "env": {
         "APP_ENV": "production"
       }
