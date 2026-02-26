@@ -5,16 +5,15 @@ import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/func
 import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
 import { logger } from '@/utils/logger';
 
-// Firebase configuration
-// Replace with your actual Firebase config from Firebase Console
+// Firebase configuration — env vars override for local dev, production values hardcoded
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || 'AIzaSyAaS_Go2ZP7eKwOS-eo-PuJpFIsQHK71YQ',
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || 'stoke-5f762.firebaseapp.com',
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID || 'stoke-5f762',
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET || 'stoke-5f762.firebasestorage.app',
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '1088752472801',
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID || '1:1088752472801:web:2e894cb6d653ed0914dda0',
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || 'G-GPN2QDMPYX',
 };
 
 // Initialize Firebase (prevent multiple initializations)
