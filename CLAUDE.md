@@ -36,7 +36,7 @@ eas build --profile preview --platform ios
 
 ## Architecture
 
-- **Client**: React Native + Expo SDK 50 + Expo Router v3 (file-based routing)
+- **Client**: React Native + Expo SDK 52 + Expo Router v4 (file-based routing)
 - **Backend**: Firebase (Auth, Firestore, Cloud Functions Node.js 20, FCM, Storage)
 - **State**: React Query v5 (server) + Zustand v4 (local) + `useAuth()` hook
 - **Styling**: StyleSheet only — NativeWind is installed but DISABLED (see babel.config.js). Do not use `className` in new components.
