@@ -17,17 +17,14 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "io.getstoke.app",
-      "buildNumber": "1",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
-          "remote-notification",
           "remote-notification"
         ],
         "ITSAppUsesNonExemptEncryption": false
       },
       "associatedDomains": [
-        "applinks:stoke.app",
         "applinks:stoke.app"
       ],
       "entitlements": {

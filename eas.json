@@ -23,7 +23,7 @@
     "production": {
       "autoIncrement": true,
       "ios": {
-        "image": "macos-sequoia-15.4-xcode-16.3"
+        "image": "macos-sequoia-15.5-xcode-16.4"
       },
       "env": {
         "APP_ENV": "production"
