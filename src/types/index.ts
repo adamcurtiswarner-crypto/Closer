@@ -24,6 +24,7 @@ export interface User {
   photoUrl: string | null;
   partnerPhotoUrl: string | null;
   loveLanguage: string | null;
+  locale: string | null;
 }
 
 export interface Couple {

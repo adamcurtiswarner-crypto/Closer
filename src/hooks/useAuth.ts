@@ -54,6 +54,7 @@ export function useAuth(): AuthState & AuthActions {
           photoUrl: data.photo_url || null,
           partnerPhotoUrl: data.partner_photo_url || null,
           loveLanguage: data.love_language || null,
+          locale: data.locale || null,
         };
       }
       return null;

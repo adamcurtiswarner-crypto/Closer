@@ -23,13 +23,14 @@ export default function WaitingPartnerScreen() {
   }, [couple]);
 
   // Poll for updates
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     const interval = setInterval(() => {
       refetch();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [refetch]);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>

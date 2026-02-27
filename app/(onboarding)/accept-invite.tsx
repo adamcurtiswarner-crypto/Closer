@@ -78,7 +78,7 @@ export default function AcceptInviteScreen() {
             placeholder="ABC123"
             placeholderTextColor="#d6d3d1"
             value={code}
-            onChangeText={(text) => setCode(text.toUpperCase().slice(0, 6))}
+            onChangeText={(text) => setCode(text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={6}

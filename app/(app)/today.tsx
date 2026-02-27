@@ -29,7 +29,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
 import { useStreak } from '@/hooks/useStreak';
 import { useCouple } from '@/hooks/useCouple';
-import { useUnreadCount } from '@/hooks/useChat';
 import { updateWidgetData, buildWidgetData } from '@/services/widgetBridge';
 import { getAnniversaryCountdown } from '@/config/milestones';
 import { logEvent } from '@/services/analytics';
@@ -88,12 +87,7 @@ export default function TodayScreen() {
   const triggerPrompt = useTriggerPrompt();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
   const { data: couple } = useCouple();
-  const unreadMessageCount = useUnreadCount();
   const { t } = useTranslation();
-
-  const handleChatPress = () => {
-    router.push('/(app)/chat');
-  };
 
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
@@ -307,8 +301,6 @@ export default function TodayScreen() {
             isStreakActive={isStreakActive}
             userPhotoUrl={user?.photoUrl}
             partnerPhotoUrl={user?.partnerPhotoUrl}
-            unreadMessageCount={unreadMessageCount}
-            onChatPress={handleChatPress}
           />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
@@ -479,8 +471,6 @@ export default function TodayScreen() {
             isStreakActive={isStreakActive}
             userPhotoUrl={user?.photoUrl}
             partnerPhotoUrl={user?.partnerPhotoUrl}
-            unreadMessageCount={unreadMessageCount}
-            onChatPress={handleChatPress}
           />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
@@ -570,8 +560,6 @@ export default function TodayScreen() {
             isStreakActive={isStreakActive}
             userPhotoUrl={user?.photoUrl}
             partnerPhotoUrl={user?.partnerPhotoUrl}
-            unreadMessageCount={unreadMessageCount}
-            onChatPress={handleChatPress}
           />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
@@ -708,8 +696,6 @@ export default function TodayScreen() {
             isStreakActive={isStreakActive}
             userPhotoUrl={user?.photoUrl}
             partnerPhotoUrl={user?.partnerPhotoUrl}
-            unreadMessageCount={unreadMessageCount}
-            onChatPress={handleChatPress}
           />
         </Animated.View>
 

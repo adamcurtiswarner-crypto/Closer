@@ -15,12 +15,12 @@ const logo = require('@/assets/logo.png');
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  // Filter to only visible tabs (those without href: null)
+  // Filter to only tabs that have an icon defined (hidden tabs use href:null and have no icon)
   const visibleRoutes = useMemo(
     () =>
       state.routes.filter((route) => {
-        const options = descriptors[route.key].options as Record<string, unknown>;
-        return options.href !== null;
+        const options = descriptors[route.key].options;
+        return options.tabBarIcon !== undefined;
       }),
     [state.routes, descriptors]
   );

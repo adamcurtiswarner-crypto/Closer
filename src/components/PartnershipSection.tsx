@@ -45,7 +45,7 @@ export function PartnershipSection({
       const result = await createInvite.mutateAsync();
       // Share the invite
       await Share.share({
-        message: `Join me on Closer! Use code ${result.code} or tap: ${result.shareUrl}`,
+        message: `Join me on Stoke! Use code ${result.code} or tap: ${result.shareUrl}`,
       });
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to create invite');
@@ -56,7 +56,7 @@ export function PartnershipSection({
     if (!pendingInvite) return;
     try {
       await Share.share({
-        message: `Join me on Closer! Use code ${pendingInvite.code} or tap: https://closer.app/join/${pendingInvite.code}`,
+        message: `Join me on Stoke! Use code ${pendingInvite.code} or tap: https://stoke.app/join/${pendingInvite.code}`,
       });
     } catch (error) {
       // User cancelled share

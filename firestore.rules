@@ -92,9 +92,13 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() &&
         request.resource.data.inviter_id == request.auth.uid;
+      // Inviter can update their own invite (cancel)
+      // Non-inviter can only accept a pending invite
       allow update: if isAuthenticated() &&
         (resource.data.inviter_id == request.auth.uid ||
-         request.auth.uid != resource.data.inviter_id);
+         (resource.data.status == 'pending' &&
+          request.auth.uid != resource.data.inviter_id &&
+          request.resource.data.status == 'accepted'));
       allow delete: if false;
     }
 

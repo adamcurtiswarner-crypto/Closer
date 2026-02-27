@@ -219,8 +219,6 @@ export function useAcceptInvite() {
         throw new Error("You can't accept your own invite");
       }
 
-      const inviteDoc = inviteSnap;
-
       const coupleId = inviteData.couple_id;
 
       // Update invite
@@ -235,9 +233,13 @@ export function useAcceptInvite() {
       const coupleDocSnap = await getDoc(coupleRef);
       const coupleData = coupleDocSnap.data();
 
+      if (!coupleData || coupleData.member_ids.length !== 1) {
+        throw new Error('Invalid couple state for acceptance');
+      }
+
       await updateDoc(coupleRef, {
-        member_ids: [...coupleData!.member_ids, user.id],
-        member_emails: [...coupleData!.member_emails, user.email],
+        member_ids: [...coupleData.member_ids, user.id],
+        member_emails: [...coupleData.member_emails, user.email],
         status: 'active',
         linked_at: serverTimestamp(),
         updated_at: serverTimestamp(),

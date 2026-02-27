@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 interface ConnectionHeaderProps {
@@ -13,8 +13,6 @@ interface ConnectionHeaderProps {
   isStreakActive: boolean;
   userPhotoUrl?: string | null;
   partnerPhotoUrl?: string | null;
-  unreadMessageCount?: number;
-  onChatPress?: () => void;
 }
 
 function getInitials(name: string | null): string {
@@ -47,8 +45,6 @@ export function ConnectionHeader({
   isStreakActive,
   userPhotoUrl,
   partnerPhotoUrl,
-  unreadMessageCount,
-  onChatPress,
 }: ConnectionHeaderProps) {
   const statusText = getStatusText(partnerName, isPartnerOnline, isPartnerTyping, typingContext);
 
@@ -101,24 +97,6 @@ export function ConnectionHeader({
           )}
         </View>
       </View>
-
-      {/* Chat entry point */}
-      {onChatPress && (
-        <TouchableOpacity
-          style={styles.chatButton}
-          onPress={onChatPress}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.chatIcon}>{'\uD83D\uDCAC'}</Text>
-          {(unreadMessageCount ?? 0) > 0 && (
-            <View style={styles.unreadBadge}>
-              <Text style={styles.unreadText}>
-                {unreadMessageCount! > 99 ? '99+' : unreadMessageCount}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      )}
 
       {/* Status text */}
       {statusText !== '' && (
@@ -229,30 +207,6 @@ const styles = StyleSheet.create({
   },
   streakCountInactive: {
     color: '#a8a29e',
-  },
-  chatButton: {
-    marginTop: 8,
-    position: 'relative',
-  },
-  chatIcon: {
-    fontSize: 18,
-  },
-  unreadBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -10,
-    backgroundColor: '#c97454',
-    borderRadius: 8,
-    minWidth: 16,
-    height: 16,
-    paddingHorizontal: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  unreadText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '700',
   },
   statusText: {
     marginTop: 6,

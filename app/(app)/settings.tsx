@@ -293,6 +293,13 @@ export default function SettingsScreen() {
               <Text style={styles.rowValue}>{'>'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              style={styles.row}
+              onPress={() => router.push('/(app)/privacy-policy')}
+            >
+              <Text style={styles.rowLabel}>{t('settings.privacyPolicy')}</Text>
+              <Text style={styles.rowValue}>{'>'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[styles.row, styles.lastRow]}
               onPress={() => setShowDeleteModal(true)}
             >
