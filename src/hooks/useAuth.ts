@@ -86,11 +86,15 @@ export function useAuth(): AuthState & AuthActions {
   const signIn = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { user: fbUser } = await signInWithEmailAndPassword(auth, email, password);
+      // Explicitly fetch and set user doc (matching signUp behavior)
+      // so state is ready before callers navigate away
+      const userData = await fetchUserDoc(fbUser.uid);
+      setUser(userData);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchUserDoc]);
 
   // Sign up with email/password
   const signUp = useCallback(async (email: string, password: string) => {
