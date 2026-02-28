@@ -10,6 +10,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@/components';
 
 export function OfflineBanner() {
   const { isConnected } = useNetworkStatus();
@@ -48,9 +49,9 @@ export function OfflineBanner() {
     <Animated.View
       style={[styles.banner, { paddingTop: insets.top + 8 }, animatedStyle]}
     >
-      <Animated.Text style={[styles.icon, iconAnimatedStyle]}>
-        {'\u26A0'}
-      </Animated.Text>
+      <Animated.View style={iconAnimatedStyle}>
+        <Icon name="warning" size="sm" color="#f59e0b" weight="fill" />
+      </Animated.View>
       <Text style={styles.text}>{t('offline.banner')}</Text>
     </Animated.View>
   );
@@ -70,10 +71,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-  },
-  icon: {
-    fontSize: 16,
-    color: '#ffffff',
   },
   text: {
     color: '#ffffff',

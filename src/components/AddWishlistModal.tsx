@@ -24,6 +24,7 @@ import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { useAddWishlistItem } from '@/hooks/useWishlist';
 import { WISHLIST_CATEGORIES } from '@/config/wishlistCategories';
+import { Icon } from '@/components';
 
 function AnimatedPill({ children, onPress, style }: {
   children: React.ReactNode;
@@ -201,7 +202,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
                 <Text style={styles.createText}>
                   {addItem.isPending ? t('wishlist.adding') : t('wishlist.addToWishlist')}
                 </Text>
-                {!addItem.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
+                {!addItem.isPending && <Icon name="arrow-right" size="sm" color="#ffffff" />}
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -357,10 +358,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
     letterSpacing: 0.2,
-  },
-  createArrow: {
-    color: '#ffffff',
-    fontSize: 17,
   },
   disabled: {
     opacity: 0.4,

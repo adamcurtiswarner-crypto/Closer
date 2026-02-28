@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   interpolateColor,
 } from 'react-native-reanimated';
+import { Icon } from '@/components';
 
 interface AnimatedCheckboxProps {
   checked: boolean;
@@ -67,9 +68,9 @@ export function AnimatedCheckbox({
         style,
       ]}
     >
-      <Animated.Text style={[styles.checkmark, { fontSize: size * 0.55 }, checkmarkStyle]}>
-        {'\u2713'}
-      </Animated.Text>
+      <Animated.View style={checkmarkStyle}>
+        <Icon name="check" size={Math.round(size * 0.55)} color="#ffffff" weight="bold" />
+      </Animated.View>
     </Animated.View>
   );
 }
@@ -79,9 +80,5 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  checkmark: {
-    color: '#fff',
-    fontWeight: '700',
   },
 });

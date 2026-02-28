@@ -10,6 +10,7 @@ import {
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
+import { Icon } from '@/components';
 
 interface PaywallProps {
   visible: boolean;
@@ -64,7 +65,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
                 style={styles.featureRow}
               >
                 <View style={styles.checkCircle}>
-                  <Text style={styles.checkIcon}>{'\u2713'}</Text>
+                  <Icon name="check" size="sm" color="#ffffff" weight="bold" />
                 </View>
                 <View style={styles.featureTextContainer}>
                   <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -154,11 +155,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
-  },
-  checkIcon: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
   },
   featureTextContainer: {
     flex: 1,

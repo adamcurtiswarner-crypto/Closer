@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { ResponseCard } from './ResponseCard';
+import { Icon } from '@/components';
 
 const SPARKLE_POSITIONS = [
   { x: 40, delay: 200 },
@@ -101,7 +102,7 @@ export function CompletionMoment({
 
         <Animated.View entering={FadeIn.duration(400)}>
           <View style={styles.headerRow}>
-            <Text style={styles.headerIcon}>{'\u2728'}</Text>
+            <Icon name="sparkle" size="lg" color="#c97454" weight="fill" />
             <Text style={styles.header}>You both answered</Text>
           </View>
         </Animated.View>
@@ -170,9 +171,6 @@ const styles = StyleSheet.create({
     gap: 6,
     marginBottom: 16,
     marginTop: 4,
-  },
-  headerIcon: {
-    fontSize: 16,
   },
   header: {
     color: '#57534e',

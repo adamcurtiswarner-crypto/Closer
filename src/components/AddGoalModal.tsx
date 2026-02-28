@@ -23,6 +23,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { useCreateGoal, type TargetFrequency } from '@/hooks/useGoals';
+import { Icon } from '@/components';
 
 interface AddGoalModalProps {
   visible: boolean;
@@ -210,7 +211,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
                 <Text style={styles.createText}>
                   {createGoal.isPending ? t('common.saving') : t('goals.createGoal')}
                 </Text>
-                {!createGoal.isPending && <Text style={styles.createArrow}>{'\u2192'}</Text>}
+                {!createGoal.isPending && <Icon name="arrow-right" size="sm" color="#ffffff" />}
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -371,10 +372,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
     letterSpacing: 0.2,
-  },
-  createArrow: {
-    color: '#ffffff',
-    fontSize: 17,
   },
   disabled: {
     opacity: 0.4,

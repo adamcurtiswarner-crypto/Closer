@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Linking, StyleSheet } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { logEvent } from '@/services/analytics';
 import type { TherapistResource } from '@/config/therapistResources';
+import { Icon } from '@/components';
 
 interface ResourceCardProps {
   resource: TherapistResource;
@@ -45,7 +46,7 @@ export function ResourceCard({ resource, delay = 0 }: ResourceCardProps) {
           </Text>
         </View>
 
-        <Text style={styles.chevron}>{'\u203A'}</Text>
+        <Icon name="caret-right" size="sm" color="#a8a29e" />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -107,10 +108,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#78716c',
     lineHeight: 18,
-  },
-  chevron: {
-    fontSize: 22,
-    color: '#d6d3d1',
-    fontWeight: '300',
   },
 });

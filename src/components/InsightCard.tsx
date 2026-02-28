@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 interface InsightCardProps {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   accentColor?: string;
   children: React.ReactNode;
@@ -21,7 +21,11 @@ export function InsightCard({
     <Animated.View entering={FadeInUp.duration(500).delay(delay)} style={styles.card}>
       <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
       <View style={styles.header}>
-        <Text style={styles.headerIcon}>{icon}</Text>
+        {typeof icon === 'string' ? (
+          <Text style={styles.headerIcon}>{icon}</Text>
+        ) : (
+          <View style={styles.headerIconContainer}>{icon}</View>
+        )}
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
       {children}
@@ -59,6 +63,10 @@ const styles = StyleSheet.create({
   },
   headerIcon: {
     fontSize: 16,
+  },
+  headerIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 15,

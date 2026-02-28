@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { Icon } from '@/components';
 
 interface QueryErrorProps {
   message?: string;
@@ -13,7 +14,9 @@ export function QueryError({
 }: QueryErrorProps) {
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
-      <Text style={styles.icon}>{'\u2601'}</Text>
+      <View style={styles.icon}>
+        <Icon name="cloud" size="lg" color="#a8a29e" />
+      </View>
       <Text style={styles.title}>Couldn't load</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry && (
@@ -39,7 +42,6 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   icon: {
-    fontSize: 32,
     marginBottom: 12,
   },
   title: {
