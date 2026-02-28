@@ -4,6 +4,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { format } from 'date-fns';
 import type { ChatMessage } from '@/hooks/useChat';
 import { SwipeableRow } from './SwipeableRow';
+import { Icon } from '@/components';
 
 type DeliveryStatus = 'sending' | 'sent' | 'read';
 
@@ -18,13 +19,13 @@ interface ChatBubbleProps {
 
 function StatusIndicator({ status }: { status: DeliveryStatus }) {
   if (status === 'sending') {
-    return <Text style={styles.statusText}>{'\u23F3'}</Text>;
+    return <Icon name="hourglass" size={10} color="#a8a29e" />;
   }
   if (status === 'read') {
-    return <Text style={[styles.statusText, styles.statusRead]}>{'\u2713\u2713'}</Text>;
+    return <Icon name="checks" size={10} color="#c97454" weight="bold" />;
   }
   // sent
-  return <Text style={styles.statusText}>{'\u2713'}</Text>;
+  return <Icon name="check" size={10} color="#a8a29e" weight="bold" />;
 }
 
 export function ChatBubble({ message, isOwn, showTimestamp, onLongPress, onDelete, status }: ChatBubbleProps) {
@@ -155,12 +156,5 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginTop: 2,
     paddingRight: 4,
-  },
-  statusText: {
-    fontSize: 10,
-    color: '#a8a29e',
-  },
-  statusRead: {
-    color: '#c97454',
   },
 });

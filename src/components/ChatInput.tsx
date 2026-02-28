@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Image, Text, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { pickImage } from '@/services/imageUpload';
+import { Icon } from '@/components';
 
 interface ChatInputProps {
   onSend: (text: string, imageUri?: string | null) => void;
@@ -43,7 +44,7 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
             style={styles.removeImage}
             onPress={() => setImageUri(null)}
           >
-            <Text style={styles.removeImageText}>{'\u2715'}</Text>
+            <Icon name="x" size="xs" color="#ffffff" weight="bold" />
           </TouchableOpacity>
         </View>
       )}
@@ -54,7 +55,7 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
           onPress={handlePickImage}
           activeOpacity={0.7}
         >
-          <Text style={styles.photoIcon}>{'\uD83D\uDCF7'}</Text>
+          <Icon name="camera" size="md" color="#78716c" />
         </TouchableOpacity>
 
         <TextInput
@@ -73,9 +74,7 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
           disabled={!canSend}
           activeOpacity={0.7}
         >
-          <Text style={[styles.sendIcon, canSend ? styles.sendIconActive : undefined]}>
-            {'\u2191'}
-          </Text>
+          <Icon name="arrow-up" size="sm" color={canSend ? '#ffffff' : '#a8a29e'} weight="bold" />
         </TouchableOpacity>
       </View>
     </View>
@@ -110,11 +109,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'flex-start',
   },
-  removeImageText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -128,9 +122,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 2,
-  },
-  photoIcon: {
-    fontSize: 16,
   },
   input: {
     flex: 1,
@@ -155,14 +146,5 @@ const styles = StyleSheet.create({
   },
   sendButtonActive: {
     backgroundColor: '#c97454',
-  },
-  sendIcon: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#a8a29e',
-    marginTop: -1,
-  },
-  sendIconActive: {
-    color: '#ffffff',
   },
 });

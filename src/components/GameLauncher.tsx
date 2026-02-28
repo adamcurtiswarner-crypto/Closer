@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Icon } from '@/components';
 
 export type GameMode = 'would-you-rather' | 'how-well' | 'truth-or-dare';
 
@@ -9,29 +10,36 @@ interface GameLauncherProps {
   onSelectMode: (mode: GameMode) => void;
 }
 
-const GAMES: { mode: GameMode; emoji: string; title: string; description: string; tint: string }[] = [
+const GAMES: { mode: GameMode; title: string; description: string; tint: string }[] = [
   {
     mode: 'would-you-rather',
-    emoji: '\uD83E\uDD14',
     title: 'Would You Rather',
     description: 'Pick between two options and see if you match',
     tint: '#fef7f4',
   },
   {
     mode: 'how-well',
-    emoji: '\uD83E\uDDE0',
     title: 'How Well Do You Know Me',
     description: 'Answer about yourself, then your partner guesses',
     tint: '#fef9f0',
   },
   {
     mode: 'truth-or-dare',
-    emoji: '\uD83D\uDD25',
     title: 'Truth or Dare',
     description: 'Take turns picking truths and dares',
     tint: '#fff7ed',
   },
 ];
+
+function GameIcon({ mode }: { mode: GameMode }) {
+  if (mode === 'would-you-rather') {
+    return <Icon name="chat-circle" size="lg" color="#c97454" />;
+  }
+  if (mode === 'how-well') {
+    return <Icon name="target" size="lg" color="#8b7355" />;
+  }
+  return <Icon name="flame" size="lg" color="#c97454" weight="fill" />;
+}
 
 export function GameLauncher({ onSelectMode }: GameLauncherProps) {
   return (
@@ -49,12 +57,12 @@ export function GameLauncher({ onSelectMode }: GameLauncherProps) {
             }}
             activeOpacity={0.8}
           >
-            <Text style={styles.emoji}>{game.emoji}</Text>
+            <GameIcon mode={game.mode} />
             <View style={styles.cardText}>
               <Text style={styles.title}>{game.title}</Text>
               <Text style={styles.description}>{game.description}</Text>
             </View>
-            <Text style={styles.arrow}>{'\u203A'}</Text>
+            <Icon name="caret-right" size="sm" color="#a8a29e" />
           </TouchableOpacity>
         </Animated.View>
       ))}

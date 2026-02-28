@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
+import { Icon } from '@/components';
 
 export function DateNightCard() {
   const handlePlay = () => {
@@ -16,16 +17,14 @@ export function DateNightCard() {
 
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.headerIcon}>{'\uD83C\uDFB2'}</Text>
+          <Icon name="game-controller" size="sm" color="#c97454" weight="regular" />
           <Text style={styles.headerTitle}>Date Night</Text>
         </View>
       </Animated.View>
 
       <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.body}>
         <View style={styles.emojiRow}>
-          <Text style={styles.gameEmoji}>{'\uD83E\uDD14'}</Text>
-          <Text style={styles.gameEmoji}>{'\uD83E\uDDE0'}</Text>
-          <Text style={styles.gameEmoji}>{'\uD83D\uDD25'}</Text>
+          <Icon name="game-controller" size="xl" color="#c97454" weight="light" />
         </View>
         <Text style={styles.bodyText}>
           Games and quizzes to play together. Grab the couch.
@@ -35,7 +34,7 @@ export function DateNightCard() {
       <Animated.View entering={FadeIn.duration(300).delay(300)}>
         <TouchableOpacity style={styles.playButton} onPress={handlePlay} activeOpacity={0.7}>
           <Text style={styles.playText}>Play now</Text>
-          <Text style={styles.playArrow}>{'\u2192'}</Text>
+          <Icon name="arrow-right" size="sm" color="#ffffff" />
         </TouchableOpacity>
       </Animated.View>
 

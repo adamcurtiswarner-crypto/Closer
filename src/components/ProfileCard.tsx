@@ -26,6 +26,7 @@ import { LOVE_LANGUAGES, getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/utils/logger';
+import { Icon } from '@/components';
 
 function getInitials(name: string | null): string {
   if (!name) return '?';
@@ -206,7 +207,7 @@ export function ProfileCard() {
             </View>
           ) : (
             <View style={styles.cameraOverlay}>
-              <Text style={styles.cameraIcon}>{'\uD83D\uDCF7'}</Text>
+              <Icon name="camera" size="xs" color="#ffffff" weight="fill" />
             </View>
           )}
         </TouchableOpacity>
@@ -251,7 +252,7 @@ export function ProfileCard() {
             </View>
           ) : (
             <View style={styles.cameraOverlay}>
-              <Text style={styles.cameraIcon}>{'\uD83D\uDCF7'}</Text>
+              <Icon name="camera" size="xs" color="#ffffff" weight="fill" />
             </View>
           )}
         </TouchableOpacity>
@@ -288,7 +289,7 @@ export function ProfileCard() {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.anniversaryIcon}>{'\uD83D\uDCC5'}</Text>
+              <Icon name="calendar" size="md" color="#c97454" />
               <View style={styles.anniversaryInfo}>
                 <Text style={styles.anniversaryLabel}>{t('profile.anniversary')}</Text>
                 <Text style={styles.anniversaryValue}>
@@ -311,7 +312,7 @@ export function ProfileCard() {
           onPress={() => setShowLoveLanguageModal(true)}
           activeOpacity={0.7}
         >
-          <Text style={styles.anniversaryIcon}>{'\u2764\uFE0F'}</Text>
+          <Icon name="heart" size="md" color="#c97454" weight="fill" />
           <View style={styles.anniversaryInfo}>
             <Text style={styles.anniversaryLabel}>{t('profile.yourLoveLanguage')}</Text>
             <Text style={styles.anniversaryValue}>
@@ -369,7 +370,7 @@ export function ProfileCard() {
                         {lang.description}
                       </Text>
                     </View>
-                    {isActive && <View style={styles.langCheck}><Text style={styles.langCheckText}>{'\u2713'}</Text></View>}
+                    {isActive && <View style={styles.langCheck}><Icon name="check" size="sm" color="#c97454" weight="bold" /></View>}
                   </TouchableOpacity>
                 );
               })}

@@ -1,52 +1,54 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { Icon } from '@/components';
+import type { IconName } from '@/components';
 
 // Prompt type visual config: icon, label, accent color, background tint
 const PROMPT_TYPE_CONFIG: Record<string, {
-  icon: string;
+  icon: IconName;
   label: string;
   accent: string;
   bgTint: string;
   bgTintDark: string;
 }> = {
   love_map_update: {
-    icon: '\u{1F5FA}\u{FE0F}',  // world map
+    icon: 'map-pin',
     label: 'Love Map',
     accent: '#c97454',
     bgTint: '#fef7f4',
     bgTintDark: '#fceee7',
   },
   conflict_navigation: {
-    icon: '\u{1F6E4}\u{FE0F}',  // railway track (navigation)
+    icon: 'path',
     label: 'Navigate Together',
     accent: '#8b7355',
     bgTint: '#faf8f5',
     bgTintDark: '#f3efe8',
   },
   bid_for_connection: {
-    icon: '\u{1F91D}',  // handshake
+    icon: 'handshake',
     label: 'Connection',
     accent: '#c97454',
     bgTint: '#fef7f4',
     bgTintDark: '#fceee7',
   },
   appreciation_expression: {
-    icon: '\u{2728}',  // sparkles
+    icon: 'sparkle',
     label: 'Appreciation',
     accent: '#b8860b',
     bgTint: '#fdfaf3',
     bgTintDark: '#faf5e6',
   },
   dream_exploration: {
-    icon: '\u{1F30C}',  // milky way
+    icon: 'compass',
     label: 'Dreams',
     accent: '#7b6fa0',
     bgTint: '#f8f6fb',
     bgTintDark: '#f0edf6',
   },
   repair_attempt: {
-    icon: '\u{1F495}',  // two hearts
+    icon: 'heart',
     label: 'Repair',
     accent: '#c97474',
     bgTint: '#fef5f5',
@@ -54,8 +56,14 @@ const PROMPT_TYPE_CONFIG: Record<string, {
   },
 };
 
-const DEFAULT_CONFIG = {
-  icon: '\u{1F4AC}',  // speech bubble
+const DEFAULT_CONFIG: {
+  icon: IconName;
+  label: string;
+  accent: string;
+  bgTint: string;
+  bgTintDark: string;
+} = {
+  icon: 'chat-text',
   label: 'Prompt',
   accent: '#c97454',
   bgTint: '#fef7f4',
@@ -87,7 +95,7 @@ export function PromptCard({
       {/* Type badge */}
       <Animated.View entering={FadeIn.duration(400).delay(100)} style={styles.badgeRow}>
         <View style={[styles.typeBadge, { backgroundColor: config.bgTintDark }]}>
-          <Text style={styles.typeIcon}>{config.icon}</Text>
+          <Icon name={config.icon as IconName} size="sm" color={config.accent} weight="regular" />
           <Text style={[styles.typeLabel, { color: config.accent }]}>{config.label}</Text>
         </View>
       </Animated.View>
@@ -113,7 +121,7 @@ export function PromptCard({
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Respond</Text>
-            <Text style={styles.buttonArrow}>{'\u2192'}</Text>
+            <Icon name="arrow-right" size="sm" color="#ffffff" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -155,9 +163,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
   },
-  typeIcon: {
-    fontSize: 14,
-  },
   typeLabel: {
     fontSize: 13,
     fontWeight: '600',
@@ -195,10 +200,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 17,
     letterSpacing: 0.2,
-  },
-  buttonArrow: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
   },
 });

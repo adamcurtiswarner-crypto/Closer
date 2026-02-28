@@ -15,6 +15,7 @@ import * as Haptics from 'expo-haptics';
 import { howWellDoYouKnowMe, getRandomQuestions } from '@/config/gameQuestions';
 import { PassPhone } from './PassPhone';
 import { GameComplete } from './GameComplete';
+import { Icon } from '@/components';
 
 const ROUND_COUNT = 10;
 
@@ -233,7 +234,7 @@ function RoundCounter({ round, total }: { round: number; total: number }) {
 function ExitButton({ onPress }: { onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.exitButton} onPress={onPress} activeOpacity={0.7}>
-      <Text style={styles.exitText}>{'\u2715'}</Text>
+      <Icon name="x" size="md" color="#78716c" />
     </TouchableOpacity>
   );
 }

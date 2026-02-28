@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { Icon } from '@/components';
 
 interface GameCompleteProps {
   title: string;
@@ -23,7 +24,7 @@ export function GameComplete({
   return (
     <View style={styles.container}>
       <Animated.View entering={FadeInUp.duration(500)} style={styles.content}>
-        <Text style={styles.emoji}>{'\u2728'}</Text>
+        <Icon name="sparkle" size="xl" color="#c97454" weight="fill" />
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
 

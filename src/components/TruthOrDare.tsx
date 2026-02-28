@@ -4,6 +4,7 @@ import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { truthOrDare, getRandomQuestions, type TruthOrDarePrompt } from '@/config/gameQuestions';
 import { GameComplete } from './GameComplete';
+import { Icon } from '@/components';
 
 const ROUND_COUNT = 10;
 
@@ -149,7 +150,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('truth')}
               activeOpacity={0.8}
             >
-              <Text style={styles.chooseEmoji}>{'\uD83E\uDD14'}</Text>
+              <Icon name="chat-circle" size="md" color="#c97454" />
               <Text style={styles.chooseButtonText}>Truth</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -160,7 +161,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('dare')}
               activeOpacity={0.8}
             >
-              <Text style={styles.chooseEmoji}>{'\uD83D\uDD25'}</Text>
+              <Icon name="flame" size="md" color="#c97454" weight="fill" />
               <Text style={styles.chooseButtonText}>Dare</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -181,7 +182,7 @@ function RoundCounter({ round, total }: { round: number; total: number }) {
 function ExitButton({ onPress }: { onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.exitButton} onPress={onPress} activeOpacity={0.7}>
-      <Text style={styles.exitText}>{'\u2715'}</Text>
+      <Icon name="x" size="md" color="#78716c" />
     </TouchableOpacity>
   );
 }
