@@ -4,6 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { Icon } from '@/components';
 import { GameLauncher, type GameMode } from '@/components/GameLauncher';
 import { WouldYouRather } from '@/components/WouldYouRather';
 import { HowWellDoYouKnowMe } from '@/components/HowWellDoYouKnowMe';
@@ -51,7 +52,7 @@ export default function GamesScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Text style={styles.backArrow}>{'\u2190'}</Text>
+          <Icon name="arrow-left" size="md" color="#1c1917" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Date Night</Text>

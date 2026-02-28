@@ -7,7 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { Button } from '@/components';
+import { Button, Icon } from '@/components';
 import { useCouple } from '@/hooks/useCouple';
 import { useTranslation } from 'react-i18next';
 
@@ -36,7 +36,7 @@ export default function WaitingPartnerScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
-          <Text style={styles.emoji}>⏳</Text>
+          <Icon name="hourglass" size="xl" color="#c97454" weight="light" />
           <Text style={styles.title}>
             {t('onboarding.waitingPartner.title')}
           </Text>

@@ -12,7 +12,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components';
+import { Button, Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 
 const TONE_OPTIONS = [
@@ -94,7 +94,7 @@ export default function ToneCalibrationScreen() {
                     {option.label}
                   </Text>
                   {selectedTone === option.value && (
-                    <Text style={styles.selectedCheck}>{'\u2713'}</Text>
+                    <Icon name="check" size="sm" color="#c97454" weight="bold" />
                   )}
                 </View>
                 <Text

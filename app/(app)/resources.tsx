@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { RESOURCE_CATEGORIES, getResourcesByCategory } from '@/config/therapistResources';
 import { ResourceCard } from '@/components/ResourceCard';
+import { Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 import { logEvent } from '@/services/analytics';
 
@@ -23,7 +24,7 @@ export default function ResourcesScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Text style={styles.backArrow}>{'\u2190'}</Text>
+          <Icon name="arrow-left" size="md" color="#1c1917" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('resources.title')}</Text>
         <View style={styles.backButton} />

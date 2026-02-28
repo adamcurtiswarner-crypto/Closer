@@ -20,7 +20,7 @@ import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyl
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots } from '@components';
+import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots, Icon } from '@components';
 import { DateNightCard } from '@/components/DateNightCard';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
 import { StreakRing } from '@/components/StreakRing';
@@ -46,7 +46,7 @@ function getGreeting(t: (key: string) => string): string {
 }
 
 function AnimatedFeedbackButton({ option, onPress, isSelected, style }: {
-  option: { value: string; label: string; icon: string };
+  option: { value: string; label: string; icon: React.ReactNode };
   onPress: () => void;
   isSelected: boolean;
   style: any;
@@ -63,7 +63,7 @@ function AnimatedFeedbackButton({ option, onPress, isSelected, style }: {
         onPressOut={() => { scale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
         onPress={onPress}
       >
-        <Text style={styles.feedbackIcon}>{option.icon}</Text>
+        <View style={styles.feedbackIconWrap}>{option.icon}</View>
         <Text style={styles.feedbackOptionText}>{option.label}</Text>
       </TouchableOpacity>
     </Animated.View>
@@ -304,7 +304,7 @@ export default function TodayScreen() {
           />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>{'\u2604\uFE0F'}</Text>
+            <Icon name="coffee" size="xl" color="#c97454" weight="light" />
             <Text style={styles.emptyTitle}>{t('today.promptOnWay')}</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
@@ -396,12 +396,12 @@ export default function TodayScreen() {
               <View style={styles.imagePreview}>
                 <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
                 <TouchableOpacity style={styles.removeImage} onPress={() => setSelectedImage(null)}>
-                  <Text style={styles.removeImageText}>{'\u2715'}</Text>
+                  <Icon name="x" size="xs" color="#ffffff" weight="bold" />
                 </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity style={styles.attachPhotoButton} onPress={handleAddPhoto}>
-                <Text style={styles.attachPhotoIcon}>{'\uD83D\uDCF7'}</Text>
+                <Icon name="camera" size="md" color="#78716c" />
                 <Text style={styles.attachPhotoText}>{t('today.addPhoto')}</Text>
               </TouchableOpacity>
             )}
@@ -432,7 +432,7 @@ export default function TodayScreen() {
                     <Text style={styles.submitText}>
                       {submitResponse.isPending ? t('today.sending') : t('today.share')}
                     </Text>
-                    {!submitResponse.isPending && <Text style={styles.submitArrow}>{'\u2192'}</Text>}
+                    {!submitResponse.isPending && <Icon name="arrow-right" size="sm" color="#ffffff" />}
                   </TouchableOpacity>
                 </Animated.View>
               </View>
@@ -498,7 +498,7 @@ export default function TodayScreen() {
               </Animated.View>
             ) : (
               <View style={styles.waitingMessageRow}>
-                <Text style={styles.waitingIcon}>{'\u23F3'}</Text>
+                <Icon name="hourglass" size={16} color="#a8a29e" />
                 <Text style={styles.waitingMessage}>{t('today.waitingFor', { name: partnerName.toLowerCase() })}</Text>
               </View>
             )}
@@ -579,10 +579,10 @@ export default function TodayScreen() {
               <Text style={styles.feedbackTitle}>{t('today.howDidThisFeel')}</Text>
               <View style={styles.feedbackRow}>
                 {([
-                  { value: 'positive', label: t('today.warm'), icon: '\u2600\uFE0F' },
-                  { value: 'neutral', label: t('today.okay'), icon: '\u2601\uFE0F' },
-                  { value: 'negative', label: t('today.hard'), icon: '\uD83C\uDF27\uFE0F' },
-                ] as const).map((option) => (
+                  { value: 'positive' as const, label: t('today.warm'), icon: <Icon name="sun-dim" size="md" /> },
+                  { value: 'neutral' as const, label: t('today.okay'), icon: <Icon name="cloud" size="md" /> },
+                  { value: 'negative' as const, label: t('today.hard'), icon: <Icon name="cloud-rain" size="md" /> },
+                ]).map((option) => (
                   <AnimatedFeedbackButton
                     key={option.value}
                     option={option}
@@ -616,7 +616,7 @@ export default function TodayScreen() {
                 onPress={() => setShowStreakDetail(!showStreakDetail)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.streakCelebrationIcon}>{'\uD83D\uDD25'}</Text>
+                <Icon name="flame" size="md" color="#c97454" weight="fill" />
                 <Text style={styles.streakCelebrationText}>
                   {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
                 </Text>
@@ -1047,8 +1047,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  feedbackIcon: {
-    fontSize: 20,
+  feedbackIconWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   feedbackOptionText: {
     fontSize: 13,

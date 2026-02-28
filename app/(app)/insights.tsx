@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInsights, formatWeekLabel } from '@/hooks/useInsights';
 import { useCouple } from '@/hooks/useCouple';
 import { InsightCard } from '@/components/InsightCard';
-import { AnimatedProgressBar, AnimatedCounter } from '@components';
+import { AnimatedProgressBar, AnimatedCounter, Icon } from '@components';
 import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
 import { getMilestoneStatus, getAnniversaryCountdown } from '@/config/milestones';
@@ -63,7 +63,7 @@ function EmptyState() {
   const { t } = useTranslation();
   return (
     <View style={styles.empty}>
-      <Text style={styles.emptyIcon}>{'\uD83D\uDD2D'}</Text>
+      <Icon name="binoculars" size="xl" color="#c97454" weight="light" />
       <Text style={styles.emptyTitle}>{t('insights.emptyTitle')}</Text>
       <Text style={styles.emptySubtitle}>
         {t('insights.emptySubtitle')}
@@ -239,7 +239,7 @@ export default function InsightsScreen() {
 
             {/* Milestones */}
             {milestones && (
-              <InsightCard icon={'\uD83C\uDFC6'} title="Milestones" accentColor="#b8860b" delay={50}>
+              <InsightCard icon={<Icon name="trophy" size="md" color="#c97454" />} title="Milestones" accentColor="#b8860b" delay={50}>
                 {/* Achieved badges */}
                 {milestones.achieved.length > 0 && (
                   <ScrollView
@@ -261,7 +261,7 @@ export default function InsightsScreen() {
                         <View style={[styles.badgeCircle, styles.badgeCircleLocked]}>
                           <Text style={styles.badgeIconLocked}>{m.icon}</Text>
                           <View style={styles.lockOverlay}>
-                            <Text style={styles.lockIcon}>{'\uD83D\uDD12'}</Text>
+                            <Icon name="lock" size={10} color="#a8a29e" weight="fill" />
                           </View>
                         </View>
                         <Text style={[styles.badgeTitle, styles.badgeTitleLocked]} numberOfLines={1}>{m.title}</Text>
@@ -297,13 +297,15 @@ export default function InsightsScreen() {
                 {anniversary && (
                   <View style={styles.anniversarySection}>
                     {anniversary.isToday ? (
-                      <Text style={styles.anniversaryText}>
-                        {'\uD83C\uDF89'} Happy Anniversary!
-                      </Text>
+                      <View style={styles.anniversaryRow}>
+                        <Icon name="sparkle" size="sm" color="#c97454" weight="fill" />
+                        <Text style={styles.anniversaryText}>Happy Anniversary!</Text>
+                      </View>
                     ) : (
-                      <Text style={styles.anniversaryText}>
-                        {'\uD83D\uDCC5'} {anniversary.days} {anniversary.days === 1 ? 'day' : 'days'} until your anniversary
-                      </Text>
+                      <View style={styles.anniversaryRow}>
+                        <Icon name="calendar" size="sm" color="#c97454" />
+                        <Text style={styles.anniversaryText}>{anniversary.days} {anniversary.days === 1 ? 'day' : 'days'} until your anniversary</Text>
+                      </View>
                     )}
                   </View>
                 )}
@@ -318,7 +320,7 @@ export default function InsightsScreen() {
             )}
 
             {/* Love Languages */}
-            <InsightCard icon={'\u2764\uFE0F'} title="Love Languages" accentColor="#c97474" delay={75}>
+            <InsightCard icon={<Icon name="heart" size="md" color="#c97454" weight="fill" />} title="Love Languages" accentColor="#c97474" delay={75}>
               <View style={styles.loveLanguageRow}>
                 <AnimatedLoveLanguageCircle delay={0}>
                   <View style={styles.loveLanguageItem}>
@@ -355,7 +357,7 @@ export default function InsightsScreen() {
             </InsightCard>
 
             {/* Emotional Journey */}
-            <InsightCard icon={'\u2600\uFE0F'} title="Emotional Journey" delay={200}>
+            <InsightCard icon={<Icon name="sun-dim" size="md" color="#f59e0b" />} title="Emotional Journey" delay={200}>
               {insights.emotionalJourney.some((w) => w.total > 0) ? (
                 <>
                   {insights.emotionalJourney.map((week, index) => (
@@ -389,7 +391,7 @@ export default function InsightsScreen() {
             </InsightCard>
 
             {/* Communication */}
-            <InsightCard icon={'\uD83D\uDCAC'} title="Communication" accentColor="#8b7355" delay={300}>
+            <InsightCard icon={<Icon name="chat-circle" size="md" color="#c97454" />} title="Communication" accentColor="#8b7355" delay={300}>
               <View style={styles.commStatRow}>
                 <Text style={styles.commStatLabel}>Avg. response length</Text>
                 <AnimatedCounter value={insights.avgResponseWords} style={styles.commStatValue} prefix="~" suffix=" words" />
@@ -420,7 +422,7 @@ export default function InsightsScreen() {
 
             {/* Prompt Categories */}
             {insights.promptCategories.length > 0 && (
-              <InsightCard icon={'\uD83C\uDFAF'} title="Prompt Categories" accentColor="#7b6fa0" delay={400}>
+              <InsightCard icon={<Icon name="target" size="md" color="#c97454" />} title="Prompt Categories" accentColor="#7b6fa0" delay={400}>
                 {insights.promptCategories.map((cat) => (
                   <View key={cat.type} style={styles.categoryRow}>
                     <View style={styles.categoryLabel}>
@@ -441,7 +443,7 @@ export default function InsightsScreen() {
             )}
 
             {/* Streak & Consistency */}
-            <InsightCard icon={'\uD83D\uDD25'} title="Streak & Consistency" delay={500}>
+            <InsightCard icon={<Icon name="flame" size="md" color="#c97454" weight="fill" />} title="Streak & Consistency" delay={500}>
               <View style={styles.streakRow}>
                 <View style={styles.streakStat}>
                   <AnimatedCounter value={insights.currentStreak} style={styles.streakValue} />
@@ -653,6 +655,12 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#e7e5e4',
+  },
+  anniversaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   anniversaryText: {
     fontSize: 14,

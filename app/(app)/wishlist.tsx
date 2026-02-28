@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { AddWishlistModal } from '@/components/AddWishlistModal';
 import { AnimatedCheckbox } from '@/components/AnimatedCheckbox';
 import { SwipeableRow } from '@/components/SwipeableRow';
+import { Icon } from '@/components';
 
 export default function WishlistScreen() {
   const { t } = useTranslation();
@@ -84,7 +85,7 @@ export default function WishlistScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Text style={styles.backArrow}>{'\u2190'}</Text>
+          <Icon name="arrow-left" size="md" color="#1c1917" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
@@ -107,7 +108,7 @@ export default function WishlistScreen() {
         {/* Empty state */}
         {isEmpty && (
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>{'\u2728'}</Text>
+            <Icon name="sparkle" size="xl" color="#c97454" weight="light" />
             <Text style={styles.emptyTitle}>{t('wishlist.startTogether')}</Text>
             <Text style={styles.emptySubtitle}>
               {t('wishlist.addDescription')}
@@ -163,9 +164,11 @@ export default function WishlistScreen() {
               <Text style={styles.doneHeaderText}>
                 {t('wishlist.done', { count: doneItems.length })}
               </Text>
-              <Text style={styles.doneChevron}>
-                {showDone ? '\u25B2' : '\u25BC'}
-              </Text>
+              {showDone ? (
+                <Icon name="sort-ascending" size="sm" />
+              ) : (
+                <Icon name="sort-descending" size="sm" />
+              )}
             </TouchableOpacity>
 
             {showDone && doneItems.map((item, index) => (
@@ -242,7 +245,11 @@ function WishlistRow({
       {/* Content */}
       <View style={styles.rowContent}>
         <View style={styles.rowTitleRow}>
-          <Text style={styles.rowIcon}>{cat?.icon ?? '\uD83D\uDCAB'}</Text>
+          {cat?.icon ? (
+            <Text style={styles.rowIcon}>{cat.icon}</Text>
+          ) : (
+            <Icon name="sparkle" size="sm" color="#8b7355" />
+          )}
           <Text
             style={[styles.rowTitle, item.isCompleted && styles.rowTitleDone]}
             numberOfLines={1}
