@@ -1,13 +1,6 @@
 {
   "indexes": [
     {
-      "collectionGroup": "users",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "couple_id", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "couples",
       "queryScope": "COLLECTION",
       "fields": [

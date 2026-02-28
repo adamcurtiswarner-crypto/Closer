@@ -49,16 +49,41 @@ function useAuthInternal(): AuthState & AuthActions {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user document from Firestore
-  const fetchUserDoc = useCallback(async (uid: string): Promise<User | null> => {
+  // Fetch user document from Firestore, auto-creating if missing
+  const fetchUserDoc = useCallback(async (fbUser: FirebaseUser): Promise<User | null> => {
     try {
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
+      const userRef = doc(db, 'users', fbUser.uid);
+      let userSnap = await getDoc(userRef);
+
+      // Safety net: if Auth account exists but Firestore doc is missing, create it
+      if (!userSnap.exists()) {
+        logger.warn('User doc missing for authenticated user, creating:', fbUser.uid);
+        await setDoc(userRef, {
+          email: (fbUser.email || '').toLowerCase(),
+          display_name: null,
+          partner_name: null,
+          couple_id: null,
+          notification_time: '19:00',
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          tone_calibration: 'solid',
+          push_tokens: [],
+          created_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
+          last_active_at: serverTimestamp(),
+          onboarding_completed_at: null,
+          is_onboarded: false,
+          is_deleted: false,
+          photo_url: null,
+          partner_photo_url: null,
+          love_language: null,
+        });
+        userSnap = await getDoc(userRef);
+      }
 
       if (userSnap.exists()) {
         const data = userSnap.data();
         return {
-          id: uid,
+          id: fbUser.uid,
           email: data.email,
           displayName: data.display_name,
           partnerName: data.partner_name,
@@ -86,7 +111,7 @@ function useAuthInternal(): AuthState & AuthActions {
       setFirebaseUser(fbUser);
 
       if (fbUser) {
-        const userData = await fetchUserDoc(fbUser.uid);
+        const userData = await fetchUserDoc(fbUser);
         setUser(userData);
       } else {
         setUser(null);
@@ -105,7 +130,7 @@ function useAuthInternal(): AuthState & AuthActions {
       const { user: fbUser } = await signInWithEmailAndPassword(auth, email, password);
       // Explicitly fetch and set user doc (matching signUp behavior)
       // so state is ready before callers navigate away
-      const userData = await fetchUserDoc(fbUser.uid);
+      const userData = await fetchUserDoc(fbUser);
       setUser(userData);
     } finally {
       setIsLoading(false);
@@ -147,7 +172,7 @@ function useAuthInternal(): AuthState & AuthActions {
 
       // Fetch user doc now that it exists — onAuthStateChanged may have
       // already fired before setDoc completed, leaving user as null
-      const userData = await fetchUserDoc(newUser.uid);
+      const userData = await fetchUserDoc(newUser);
       setUser(userData);
     } finally {
       setIsLoading(false);
@@ -173,7 +198,7 @@ function useAuthInternal(): AuthState & AuthActions {
   // Refresh user data
   const refreshUser = useCallback(async () => {
     if (firebaseUser) {
-      const userData = await fetchUserDoc(firebaseUser.uid);
+      const userData = await fetchUserDoc(firebaseUser);
       setUser(userData);
     }
   }, [firebaseUser, fetchUserDoc]);
