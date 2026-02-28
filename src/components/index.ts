@@ -58,3 +58,7 @@ export { SwipeableRow } from './SwipeableRow';
 // Error handling
 export { ErrorBoundary } from './ErrorBoundary';
 export { QueryError } from './QueryError';
+
+// Icons
+export { Icon } from './Icon';
+export type { IconName } from './Icon';
