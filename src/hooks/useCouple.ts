@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '@/config/firebase';
+import { getShareUrl } from '@/config/app';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import { generateCoupleKey } from '@/services/encryption';
@@ -179,7 +180,7 @@ export function useCreateInvite() {
 
       return {
         code,
-        shareUrl: `https://stoke.app/join/${code}`,
+        shareUrl: getShareUrl(code),
       };
     },
     onSuccess: () => {
