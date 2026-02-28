@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -18,6 +17,7 @@ import {
 import { getCategoryDisplay } from '@/config/wishlistCategories';
 import { AnimatedCheckbox } from './AnimatedCheckbox';
 import { Icon } from '@/components';
+import { WishlistCardSkeleton } from './Skeleton';
 
 interface WishlistCardProps {
   onAddItem: () => void;
@@ -47,13 +47,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.card}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#c97454" size="small" />
-        </View>
-      </View>
-    );
+    return <WishlistCardSkeleton />;
   }
 
   return (
@@ -177,10 +171,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
-  },
-  loadingContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
   },
   accentBar: {
     position: 'absolute',

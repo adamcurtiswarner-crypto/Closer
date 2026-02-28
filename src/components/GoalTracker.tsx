@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -21,6 +20,7 @@ import { AnimatedProgressBar } from './AnimatedProgressBar';
 import { AnimatedCheckbox } from './AnimatedCheckbox';
 import { SwipeableRow } from './SwipeableRow';
 import { Icon } from '@/components';
+import { GoalTrackerSkeleton } from './Skeleton';
 
 interface GoalTrackerProps {
   onAddGoal: () => void;
@@ -56,13 +56,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.card}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#c97454" size="small" />
-        </View>
-      </View>
-    );
+    return <GoalTrackerSkeleton />;
   }
 
   return (
@@ -251,10 +245,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
-  },
-  loadingContainer: {
-    paddingVertical: 20,
-    alignItems: 'center',
   },
   accentBar: {
     position: 'absolute',

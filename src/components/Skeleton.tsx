@@ -88,6 +88,79 @@ export function MemoryCardSkeleton() {
   );
 }
 
+export function GoalTrackerSkeleton() {
+  return (
+    <View style={goalSkeletonStyles.card}>
+      <View style={goalSkeletonStyles.accentBar} />
+      <View style={goalSkeletonStyles.header}>
+        <Skeleton width={18} height={18} borderRadius={9} />
+        <Skeleton width={120} height={14} style={{ marginLeft: 8 }} />
+      </View>
+      <Skeleton height={12} width="90%" style={{ marginBottom: 10 }} />
+      <Skeleton height={12} width="75%" style={{ marginBottom: 10 }} />
+      <Skeleton height={12} width="60%" />
+    </View>
+  );
+}
+
+const goalSkeletonStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    overflow: 'hidden',
+  },
+  accentBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#e7e5e4',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+});
+
+export function WishlistCardSkeleton() {
+  return (
+    <View style={wishlistSkeletonStyles.card}>
+      <View style={wishlistSkeletonStyles.accentBar} />
+      <View style={wishlistSkeletonStyles.header}>
+        <Skeleton width={18} height={18} borderRadius={9} />
+        <Skeleton width={80} height={14} style={{ marginLeft: 8 }} />
+      </View>
+      <Skeleton height={12} width="85%" style={{ marginBottom: 10 }} />
+      <Skeleton height={12} width="65%" />
+    </View>
+  );
+}
+
+const wishlistSkeletonStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    overflow: 'hidden',
+  },
+  accentBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#e7e5e4',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+});
+
 const skeletonStyles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
