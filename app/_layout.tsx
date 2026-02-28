@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useDeepLink } from '@/hooks/useDeepLink';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, AuthProvider } from '@/hooks/useAuth';
 import { setAnalyticsContext, logEvent } from '@/services/analytics';
 import { registerForPushNotifications, setupNotificationHandlers } from '@/services/notifications';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -82,19 +82,21 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <DeepLinkHandler />
-          <AppBootstrap />
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: '#fafaf9' },
-            }}
-          >
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(onboarding)" />
-            <Stack.Screen name="(app)" />
-          </Stack>
+          <AuthProvider>
+            <DeepLinkHandler />
+            <AppBootstrap />
+            <StatusBar style="dark" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#fafaf9' },
+              }}
+            >
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(onboarding)" />
+              <Stack.Screen name="(app)" />
+            </Stack>
+          </AuthProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </GestureHandlerRootView>

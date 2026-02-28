@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -28,7 +29,22 @@ interface AuthActions {
   refreshUser: () => Promise<void>;
 }
 
+const AuthContext = createContext<(AuthState & AuthActions) | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const value = useAuthInternal();
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
 export function useAuth(): AuthState & AuthActions {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
+
+function useAuthInternal(): AuthState & AuthActions {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
