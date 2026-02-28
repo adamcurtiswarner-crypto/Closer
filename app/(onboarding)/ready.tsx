@@ -7,7 +7,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { Button } from '@/components';
+import { Button, Icon } from '@/components';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
@@ -54,7 +54,9 @@ export default function ReadyScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
-          <Text style={styles.checkmark}>✓</Text>
+          <View style={styles.checkmark}>
+            <Icon name="check" size="xl" color="#c97454" weight="bold" />
+          </View>
           <Text style={styles.title}>
             {t('onboarding.ready.title')}
           </Text>
@@ -96,7 +98,6 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   checkmark: {
-    fontSize: 32,
     marginBottom: 16,
   },
   title: {
