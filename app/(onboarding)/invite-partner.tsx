@@ -51,6 +51,7 @@ export default function InvitePartnerScreen() {
       });
     } catch (error) {
       logger.error('Share failed:', error);
+      Alert.alert('Share failed', 'Could not open the share dialog. You can copy the code instead.');
     }
   };
 
