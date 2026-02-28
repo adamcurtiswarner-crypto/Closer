@@ -9,6 +9,7 @@ import Animated, {
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { Icon } from '@/components';
 
 const logo = require('@/assets/logo.png');
 
@@ -149,8 +150,8 @@ export default function AppLayout() {
         name="memories"
         options={{
           title: 'Memories',
-          tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24, color: focused ? '#c97454' : '#a8a29e' }}>♡</Text>
+          tabBarIcon: ({ focused, color }) => (
+            <Icon name="heart" size="md" color={color} weight={focused ? 'fill' : 'light'} />
           ),
         }}
       />
@@ -158,8 +159,8 @@ export default function AppLayout() {
         name="insights"
         options={{
           title: 'Insights',
-          tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24, color: focused ? '#c97454' : '#a8a29e' }}>{'\u2726'}</Text>
+          tabBarIcon: ({ focused, color }) => (
+            <Icon name="sparkle" size="md" color={color} weight={focused ? 'fill' : 'light'} />
           ),
         }}
       />
@@ -197,8 +198,8 @@ export default function AppLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24, color: focused ? '#c97454' : '#a8a29e' }}>⚙</Text>
+          tabBarIcon: ({ focused, color }) => (
+            <Icon name="gear" size="md" color={color} weight={focused ? 'regular' : 'light'} />
           ),
         }}
       />

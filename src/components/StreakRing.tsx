@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Icon } from '@/components';
 import Animated, {
   FadeIn,
   FadeInUp,
@@ -50,7 +51,10 @@ export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive }:
       {/* Streak circle */}
       <Animated.View style={[styles.circleOuter, ringAnimatedStyle]}>
         <View style={[styles.circleInner, isStreakActive ? styles.circleActive : styles.circleInactive]}>
-          <Text style={styles.streakEmoji}>{currentStreak > 0 ? '\uD83D\uDD25' : '\u26AA'}</Text>
+          {currentStreak > 0
+            ? <Icon name="flame" size={16} color="#c97454" weight="fill" />
+            : <Icon name="flame" size={16} color="#d6d3d1" weight="light" />
+          }
           <Animated.Text style={[styles.streakNumber, isStreakActive ? styles.numberActive : styles.numberInactive, numberAnimatedStyle]}>
             {currentStreak}
           </Animated.Text>
@@ -74,7 +78,7 @@ export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive }:
                 ]}
               >
                 {i < weeklyCompletions && (
-                  <Text style={styles.checkmark}>{'\u2713'}</Text>
+                  <Icon name="check" size="xs" color="#ffffff" weight="bold" />
                 )}
               </View>
               <Text style={styles.dayLabelText}>{label}</Text>
@@ -122,9 +126,6 @@ const styles = StyleSheet.create({
   circleInactive: {
     borderColor: '#e7e5e4',
   },
-  streakEmoji: {
-    fontSize: 16,
-  },
   streakNumber: {
     fontSize: 22,
     fontWeight: '800',
@@ -171,11 +172,6 @@ const styles = StyleSheet.create({
   },
   weekDotEmpty: {
     backgroundColor: '#f5f5f4',
-  },
-  checkmark: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
   },
   dayLabelText: {
     fontSize: 10,

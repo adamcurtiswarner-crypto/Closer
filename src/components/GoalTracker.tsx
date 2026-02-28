@@ -20,6 +20,7 @@ import {
 import { AnimatedProgressBar } from './AnimatedProgressBar';
 import { AnimatedCheckbox } from './AnimatedCheckbox';
 import { SwipeableRow } from './SwipeableRow';
+import { Icon } from '@/components';
 
 interface GoalTrackerProps {
   onAddGoal: () => void;
@@ -71,7 +72,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
-        <Text style={styles.headerIcon}>{'\uD83C\uDFAF'}</Text>
+        <Icon name="target" size="sm" color="#c97454" weight="regular" />
         <Text style={styles.headerTitle}>Goals & Challenges</Text>
       </Animated.View>
 
@@ -207,7 +208,7 @@ function GoalRow({
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         activeOpacity={0.6}
       >
-        <Text style={styles.archiveIcon}>{'\u00D7'}</Text>
+        <Icon name="x" size="xs" color="#a8a29e" />
       </TouchableOpacity>
     </View>
   );

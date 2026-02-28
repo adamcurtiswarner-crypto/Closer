@@ -17,6 +17,7 @@ import {
 } from '@/hooks/useWishlist';
 import { getCategoryDisplay } from '@/config/wishlistCategories';
 import { AnimatedCheckbox } from './AnimatedCheckbox';
+import { Icon } from '@/components';
 
 interface WishlistCardProps {
   onAddItem: () => void;
@@ -63,7 +64,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.headerIcon}>{'\u2728'}</Text>
+          <Icon name="sparkle" size="sm" color="#c97454" weight="regular" />
           <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
         </View>
         {totalCount > 0 && (
@@ -78,7 +79,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {/* Empty state */}
       {totalCount === 0 && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>{'\uD83C\uDF1F'}</Text>
+          <Icon name="star" size="lg" color="#c97454" weight="light" />
           <Text style={styles.emptyTitle}>{t('wishlist.dreamTogether')}</Text>
           <Text style={styles.emptySubtitle}>{t('wishlist.emptySubtitle')}</Text>
         </Animated.View>
@@ -108,7 +109,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
         <Animated.View entering={FadeIn.duration(300).delay(400)}>
           <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll} activeOpacity={0.7}>
             <Text style={styles.seeAllText}>{t('wishlist.seeAll')}</Text>
-            <Text style={styles.seeAllArrow}>{'\u2192'}</Text>
+            <Icon name="arrow-right" size="xs" color="#c97454" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -150,7 +151,10 @@ function WishlistRow({
       >
         <AnimatedCheckbox checked={item.isCompleted} size={20} />
       </TouchableOpacity>
-      <Text style={styles.itemIcon}>{cat?.icon ?? '\uD83D\uDCAB'}</Text>
+      {cat?.icon
+        ? <Text style={styles.itemIcon}>{cat.icon}</Text>
+        : <Icon name="sparkle" size="sm" color="#8b7355" />
+      }
       <Text
         style={[styles.itemTitle, item.isCompleted && styles.itemTitleDone]}
         numberOfLines={1}

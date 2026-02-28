@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { Icon } from '@/components';
 
 interface ConnectionHeaderProps {
   userName: string | null;
@@ -70,7 +71,7 @@ export function ConnectionHeader({
           <View style={styles.line} />
           {currentStreak > 0 && (
             <View style={[styles.streakPill, isStreakActive ? styles.streakPillActive : styles.streakPillInactive]}>
-              <Text style={styles.streakFlame}>{'\uD83D\uDD25'}</Text>
+              <Icon name="flame" size="xs" color="#c97454" weight="fill" />
               <Text style={[styles.streakCount, isStreakActive ? styles.streakCountActive : styles.streakCountInactive]}>
                 {currentStreak}
               </Text>
@@ -194,9 +195,6 @@ const styles = StyleSheet.create({
   },
   streakPillInactive: {
     backgroundColor: '#f5f5f4',
-  },
-  streakFlame: {
-    fontSize: 11,
   },
   streakCount: {
     fontSize: 12,
