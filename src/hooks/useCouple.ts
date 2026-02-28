@@ -10,9 +10,11 @@ import {
   query,
   where,
   serverTimestamp,
+  runTransaction,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '@/config/firebase';
+import { getShareUrl } from '@/config/app';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import { generateCoupleKey } from '@/services/encryption';
@@ -178,7 +180,7 @@ export function useCreateInvite() {
 
       return {
         code,
-        shareUrl: `https://stoke.app/join/${code}`,
+        shareUrl: getShareUrl(code),
       };
     },
     onSuccess: () => {
@@ -197,65 +199,70 @@ export function useAcceptInvite() {
       if (!user?.id) throw new Error('Not authenticated');
       if (user.coupleId) throw new Error('Already in a couple');
 
-      // Look up invite by code (code is the document ID)
-      const inviteRef = doc(db, 'couple_invites', inviteCode.toUpperCase());
-      const inviteSnap = await getDoc(inviteRef);
-
-      if (!inviteSnap.exists()) {
-        throw new Error('Invalid invite code');
-      }
-
-      const inviteData = inviteSnap.data();
-
-      if (inviteData.status !== 'pending') {
-        throw new Error('This invite has already been used');
-      }
-
-      if (inviteData.expires_at.toDate() < new Date()) {
-        throw new Error('This invite has expired');
-      }
-
-      if (inviteData.inviter_id === user.id) {
-        throw new Error("You can't accept your own invite");
-      }
-
-      const coupleId = inviteData.couple_id;
-
-      // Update invite
-      await updateDoc(inviteRef, {
-        status: 'accepted',
-        accepted_at: serverTimestamp(),
-        accepted_by: user.id,
-      });
-
-      // Update couple
-      const coupleRef = doc(db, 'couples', coupleId);
-      const coupleDocSnap = await getDoc(coupleRef);
-      const coupleData = coupleDocSnap.data();
-
-      if (!coupleData || coupleData.member_ids.length !== 1) {
-        throw new Error('Invalid couple state for acceptance');
-      }
-
-      await updateDoc(coupleRef, {
-        member_ids: [...coupleData.member_ids, user.id],
-        member_emails: [...coupleData.member_emails, user.email],
-        status: 'active',
-        linked_at: serverTimestamp(),
-        updated_at: serverTimestamp(),
-        cohort_week: getISOWeek(),
-      });
-
-      // Update user's couple_id
+      const code = inviteCode.toUpperCase();
+      const inviteRef = doc(db, 'couple_invites', code);
       const userRef = doc(db, 'users', user.id);
-      await updateDoc(userRef, {
-        couple_id: coupleId,
-        updated_at: serverTimestamp(),
+
+      const coupleId = await runTransaction(db, async (transaction) => {
+        // 1. Read invite doc
+        const inviteSnap = await transaction.get(inviteRef);
+        if (!inviteSnap.exists()) {
+          throw new Error('Invalid invite code');
+        }
+
+        const inviteData = inviteSnap.data();
+
+        // 2. Validate invite state
+        if (inviteData.status !== 'pending') {
+          throw new Error('This invite has already been used');
+        }
+
+        if (inviteData.expires_at.toDate() < new Date()) {
+          throw new Error('This invite has expired');
+        }
+
+        if (inviteData.inviter_id === user.id) {
+          throw new Error("You can't accept your own invite");
+        }
+
+        // 3. Read couple doc
+        const cId = inviteData.couple_id;
+        const coupleRef = doc(db, 'couples', cId);
+        const coupleSnap = await transaction.get(coupleRef);
+        const coupleData = coupleSnap.data();
+
+        if (!coupleData || coupleData.member_ids.length !== 1) {
+          throw new Error('Invalid couple state for acceptance');
+        }
+
+        // 4. Write invite: mark accepted
+        transaction.update(inviteRef, {
+          status: 'accepted',
+          accepted_at: serverTimestamp(),
+          accepted_by: user.id,
+        });
+
+        // 5. Write couple: add member, activate
+        transaction.update(coupleRef, {
+          member_ids: [...coupleData.member_ids, user.id],
+          member_emails: [...(coupleData.member_emails || []), user.email],
+          status: 'active',
+          linked_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
+          cohort_week: getISOWeek(),
+        });
+
+        // 6. Write user: set couple_id
+        transaction.update(userRef, {
+          couple_id: cId,
+          updated_at: serverTimestamp(),
+        });
+
+        return cId;
       });
 
-      // Generate encryption key for this couple
+      // After transaction succeeds (outside transaction — these are client-side operations)
       await generateCoupleKey(coupleId);
-
       await refreshUser();
 
       return { coupleId };
