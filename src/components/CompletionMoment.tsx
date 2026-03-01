@@ -112,7 +112,8 @@ export function CompletionMoment({
         </Animated.View>
 
         <View style={styles.responses}>
-          <Animated.View entering={FadeInUp.duration(400).delay(200)}>
+          {/* Your response - reveals first */}
+          <Animated.View entering={FadeInUp.duration(500).delay(400)}>
             <ResponseCard
               label="You"
               responseText={yourResponse}
@@ -121,7 +122,8 @@ export function CompletionMoment({
             />
           </Animated.View>
           <View style={styles.spacer} />
-          <Animated.View entering={FadeInUp.duration(400).delay(400)}>
+          {/* Partner response - reveals 200ms later */}
+          <Animated.View entering={FadeInUp.duration(500).delay(600)}>
             <ResponseCard
               label={partnerName}
               responseText={partnerResponse}
