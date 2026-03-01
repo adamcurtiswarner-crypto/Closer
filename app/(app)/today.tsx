@@ -14,6 +14,10 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { pickImage } from '@/services/imageUpload';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/config/firebase';
+import type { IconName } from '@/components/Icon';
 
 const logo = require('@/assets/logo.png');
 import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
@@ -36,6 +40,15 @@ import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
 import { logger } from '@/utils/logger';
 import { useTranslation } from 'react-i18next';
+
+type RelationshipStage = 'dating' | 'engaged' | 'married' | 'long_distance';
+
+const STAGES: { value: RelationshipStage; label: string; icon: IconName }[] = [
+  { value: 'dating', label: 'Dating', icon: 'heart' },
+  { value: 'engaged', label: 'Engaged', icon: 'star' },
+  { value: 'married', label: 'Married', icon: 'handshake' },
+  { value: 'long_distance', label: 'Long Distance', icon: 'map-pin' },
+];
 
 // Greeting based on time of day
 function getGreeting(t: (key: string) => string): string {
@@ -71,7 +84,7 @@ function AnimatedFeedbackButton({ option, onPress, isSelected, style }: {
 }
 
 export default function TodayScreen() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const {
     isPartnerOnline,
     isPartnerTyping,
@@ -97,6 +110,30 @@ export default function TodayScreen() {
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [showAddWishlistModal, setShowAddWishlistModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [stageDismissed, setStageDismissed] = useState(true); // Start true to avoid flash
+
+  useEffect(() => {
+    AsyncStorage.getItem('stage_prompt_dismissed').then(val => {
+      if (val !== 'true') setStageDismissed(false);
+    });
+  }, []);
+
+  const handleSetStage = async (stage: RelationshipStage) => {
+    if (!user?.id) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await updateDoc(doc(db, 'users', user.id), {
+      relationship_stage: stage,
+      updated_at: serverTimestamp(),
+    });
+    await refreshUser();
+    setStageDismissed(true);
+    AsyncStorage.setItem('stage_prompt_dismissed', 'true');
+  };
+
+  const handleDismissStage = () => {
+    setStageDismissed(true);
+    AsyncStorage.setItem('stage_prompt_dismissed', 'true');
+  };
 
   const submitScale = useSharedValue(1);
   const submitAnimStyle = useAnimatedStyle(() => ({
@@ -303,6 +340,24 @@ export default function TodayScreen() {
             partnerPhotoUrl={user?.partnerPhotoUrl}
           />
 
+          {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
+            <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
+              <Text style={styles.stagePromptTitle}>Help us personalize</Text>
+              <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
+              <View style={styles.stageButtons}>
+                {STAGES.map(s => (
+                  <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
+                    <Icon name={s.icon} size="sm" color="#c97454" />
+                    <Text style={styles.stageChipText}>{s.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity onPress={handleDismissStage}>
+                <Text style={styles.stageSkip}>Not now</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
             <Icon name="coffee" size="xl" color="#c97454" weight="light" />
             <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
@@ -473,6 +528,24 @@ export default function TodayScreen() {
             partnerPhotoUrl={user?.partnerPhotoUrl}
           />
 
+          {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
+            <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
+              <Text style={styles.stagePromptTitle}>Help us personalize</Text>
+              <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
+              <View style={styles.stageButtons}>
+                {STAGES.map(s => (
+                  <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
+                    <Icon name={s.icon} size="sm" color="#c97454" />
+                    <Text style={styles.stageChipText}>{s.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity onPress={handleDismissStage}>
+                <Text style={styles.stageSkip}>Not now</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
             <Text style={styles.waitingPrompt}>
               {'\u201C'}{assignment!.promptText}{'\u201D'}
@@ -559,6 +632,24 @@ export default function TodayScreen() {
             userPhotoUrl={user?.photoUrl}
             partnerPhotoUrl={user?.partnerPhotoUrl}
           />
+
+          {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
+            <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
+              <Text style={styles.stagePromptTitle}>Help us personalize</Text>
+              <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
+              <View style={styles.stageButtons}>
+                {STAGES.map(s => (
+                  <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
+                    <Icon name={s.icon} size="sm" color="#c97454" />
+                    <Text style={styles.stageChipText}>{s.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity onPress={handleDismissStage}>
+                <Text style={styles.stageSkip}>Not now</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
             <CompletionMoment
@@ -696,6 +787,24 @@ export default function TodayScreen() {
             partnerPhotoUrl={user?.partnerPhotoUrl}
           />
         </Animated.View>
+
+        {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
+          <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
+            <Text style={styles.stagePromptTitle}>Help us personalize</Text>
+            <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
+            <View style={styles.stageButtons}>
+              {STAGES.map(s => (
+                <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
+                  <Icon name={s.icon} size="sm" color="#c97454" />
+                  <Text style={styles.stageChipText}>{s.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity onPress={handleDismissStage}>
+              <Text style={styles.stageSkip}>Not now</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
 
         <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
           <PromptCard
@@ -1084,5 +1193,55 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     fontSize: 14,
     fontWeight: '500',
+  },
+  // ─── Stage Prompt ───
+  stagePromptCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#1c1917',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  stagePromptTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1c1917',
+    marginBottom: 4,
+  },
+  stagePromptSubtitle: {
+    fontSize: 13,
+    color: '#78716c',
+    marginBottom: 16,
+  },
+  stageButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  stageChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fef7f4',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#fceee7',
+  },
+  stageChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#c97454',
+  },
+  stageSkip: {
+    fontSize: 13,
+    color: '#a8a29e',
+    textAlign: 'center',
   },
 });
