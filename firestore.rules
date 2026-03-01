@@ -118,6 +118,36 @@ service cloud.firestore {
     }
 
     // ============================================
+    // GOALS
+    // ============================================
+
+    match /couples/{coupleId}/goals/{goalId} {
+      allow read: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId);
+      allow update: if isCoupleMember(coupleId);
+      allow delete: if false; // Soft delete via archived status
+    }
+
+    match /couples/{coupleId}/goals/{goalId}/completions/{completionId} {
+      allow read: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId);
+      // Delete allowed for toggling off a completion
+      allow delete: if isCoupleMember(coupleId);
+      allow update: if false;
+    }
+
+    // ============================================
+    // WISHLIST ITEMS
+    // ============================================
+
+    match /couples/{coupleId}/wishlist_items/{itemId} {
+      allow read: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId);
+      allow update: if isCoupleMember(coupleId);
+      allow delete: if false; // Soft delete via is_deleted field
+    }
+
+    // ============================================
     // COUPLE INVITES
     // ============================================
 
