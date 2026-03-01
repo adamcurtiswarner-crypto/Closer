@@ -103,3 +103,43 @@ export interface CheckIn {
   responses: { questionId: string; dimension: string; score: number }[];
   createdAt: Date;
 }
+
+// Date Night types
+export type DateNightCategory =
+  | 'at_home'
+  | 'out_about'
+  | 'adventure'
+  | 'creative'
+  | 'food_drink'
+  | 'free_budget'
+  | 'custom';
+
+export interface DateNight {
+  id: string;
+  title: string;
+  description: string;
+  category: DateNightCategory;
+  costTier: 'free' | '$' | '$$' | '$$$';
+  durationMinutes: number | null;
+  source: 'library' | 'custom';
+  sourceId: string | null;
+  status: 'saved' | 'scheduled' | 'completed' | 'skipped';
+  addedBy: string;
+  scheduledDate: Date | null;
+  scheduledTime: string | null;
+  completedAt: Date | null;
+  reflectionRating: 'warm' | 'okay' | 'not_great' | null;
+  reflectionNote: string | null;
+  isArchived: boolean;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+}
+
+export interface DateNightIdea {
+  id: string;
+  title: string;
+  description: string;
+  category: DateNightCategory;
+  costTier: 'free' | '$' | '$$' | '$$$';
+  durationMinutes: number | null;
+}

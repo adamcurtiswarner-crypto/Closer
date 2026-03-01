@@ -48,7 +48,13 @@ type AnalyticsEvent =
   | 'checkin_submitted'
   | 'checkin_dismissed'
   | 'network_disconnected'
-  | 'network_reconnected';
+  | 'network_reconnected'
+  | 'date_idea_viewed'
+  | 'date_idea_saved'
+  | 'date_night_scheduled'
+  | 'date_night_completed'
+  | 'date_night_reflected'
+  | 'date_night_skipped';
 
 interface EventContext {
   user_id?: string;

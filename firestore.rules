@@ -148,6 +148,17 @@ service cloud.firestore {
     }
 
     // ============================================
+    // DATE NIGHTS
+    // ============================================
+
+    match /couples/{coupleId}/date_nights/{dateNightId} {
+      allow read: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId);
+      allow update: if isCoupleMember(coupleId);
+      allow delete: if false;
+    }
+
+    // ============================================
     // COUPLE INVITES
     // ============================================
 
