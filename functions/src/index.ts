@@ -1166,6 +1166,33 @@ export const revenueCatWebhook = functions.https.onRequest(async (req, res) => {
         break;
     }
 
+    // Update couple-level premium fields
+    const userDoc = await db.collection('users').doc(appUserId).get();
+    const coupleId = userDoc.data()?.couple_id;
+
+    if (coupleId) {
+      const coupleRef = db.collection('couples').doc(coupleId);
+
+      if (eventType === 'INITIAL_PURCHASE' || eventType === 'RENEWAL' || eventType === 'PRODUCT_CHANGE') {
+        const expiresAt = event.expiration_at_ms
+          ? admin.firestore.Timestamp.fromMillis(event.expiration_at_ms)
+          : null;
+
+        await coupleRef.update({
+          premium_until: expiresAt,
+          premium_source: appUserId,
+          updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        console.log(`Premium activated for couple ${coupleId} until ${expiresAt?.toDate()}`);
+      } else if (eventType === 'EXPIRATION') {
+        // Don't clear premium_until — let it lapse naturally
+        console.log(`Subscription expired for couple ${coupleId}`);
+      }
+    } else {
+      console.warn('Subscription event for user without couple:', appUserId);
+    }
+
     res.status(200).send('OK');
   } catch (error) {
     console.error('RevenueCat webhook error:', error);
