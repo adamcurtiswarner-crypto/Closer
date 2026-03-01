@@ -26,6 +26,9 @@ export { AddGoalModal } from './AddGoalModal';
 export { WishlistCard } from './WishlistCard';
 export { AddWishlistModal } from './AddWishlistModal';
 
+// Check-in
+export { CheckInCard } from './CheckInCard';
+
 // Profile
 export { ProfileCard } from './ProfileCard';
 
