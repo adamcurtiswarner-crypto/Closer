@@ -247,6 +247,7 @@ async function flushOfflineQueue(userId: string, coupleId: string) {
       };
       if (newCount === 1) {
         updates.first_response_at = serverTimestamp();
+        updates.first_responder_id = userId;
         updates.status = 'partial';
       } else if (newCount === 2) {
         updates.second_response_at = serverTimestamp();
@@ -353,6 +354,7 @@ export function useSubmitResponse() {
 
       if (newResponseCount === 1) {
         updates.first_response_at = serverTimestamp();
+        updates.first_responder_id = user.id;
         updates.status = 'partial';
       } else if (newResponseCount === 2) {
         updates.second_response_at = serverTimestamp();

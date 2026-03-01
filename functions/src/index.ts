@@ -532,8 +532,24 @@ export const onResponseSubmitted = functions.firestore
         assignment_id: response.assignment_id,
         prompt_id: response.prompt_id,
       });
+
+      // Notify first responder that both have answered
+      const firstResponderId = assignment.first_responder_id;
+      if (firstResponderId && firstResponderId !== response.user_id) {
+        const secondResponderDoc = await db.collection('users').doc(response.user_id).get();
+        const secondResponderName = secondResponderDoc.data()?.display_name || 'Your partner';
+
+        await sendPushNotification(firstResponderId, {
+          title: secondResponderName,
+          body: 'answered too. Tap to reveal both responses.',
+        });
+      }
     } else {
-      // First response - notify partner
+      // First response - track first responder and notify partner
+      await assignmentRef.update({
+        first_responder_id: response.user_id,
+      });
+
       const coupleDoc = await db.collection('couples').doc(response.couple_id).get();
       const coupleData = coupleDoc.data()!;
       const partnerId = coupleData.member_ids.find(
@@ -545,9 +561,12 @@ export const onResponseSubmitted = functions.firestore
         const partnerDoc = await db.collection('users').doc(partnerId).get();
         const partnerData = partnerDoc.data();
         if (partnerData?.notify_partner_response !== false) {
+          const responderDoc = await db.collection('users').doc(response.user_id).get();
+          const responderName = responderDoc.data()?.display_name || 'Your partner';
+
           await sendPushNotification(partnerId, {
-            title: APP_NAME,
-            body: 'Your partner answered.',
+            title: responderName,
+            body: "answered today's prompt. Your turn \u2014 takes 2 minutes.",
           });
 
           await logEvent('partner_notified', response.user_id, response.couple_id, {
