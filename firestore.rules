@@ -91,6 +91,33 @@ service cloud.firestore {
     }
 
     // ============================================
+    // CHECK-INS — private per user, only the user who created can read their own
+    // ============================================
+
+    match /couples/{coupleId}/check_ins/{checkInId} {
+      allow read: if isCoupleMember(coupleId) && resource.data.user_id == request.auth.uid;
+      allow create: if isCoupleMember(coupleId) && request.resource.data.user_id == request.auth.uid;
+    }
+
+    // ============================================
+    // PULSE SCORES — couple members can read, only functions write
+    // ============================================
+
+    match /couples/{coupleId}/pulse_scores/{weekId} {
+      allow read: if isCoupleMember(coupleId);
+    }
+
+    // ============================================
+    // COACHING INSIGHTS — couple members can read and update (dismiss/acted_on), only functions create
+    // ============================================
+
+    match /couples/{coupleId}/coaching_insights/{weekId} {
+      allow read: if isCoupleMember(coupleId);
+      allow update: if isCoupleMember(coupleId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dismissed_at', 'acted_on']);
+    }
+
+    // ============================================
     // COUPLE INVITES
     // ============================================
 
