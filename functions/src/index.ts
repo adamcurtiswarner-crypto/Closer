@@ -2543,6 +2543,198 @@ export const deliverCheckIn = functions.pubsub
   });
 
 // ============================================
+// SCHEDULED: Compute Relationship Pulse (Monday 3 AM PT)
+// ============================================
+
+export const computeRelationshipPulse = functions.pubsub
+  .schedule('every monday 03:00')
+  .timeZone('America/Los_Angeles')
+  .onRun(async () => {
+    const couplesSnap = await db
+      .collection('couples')
+      .where('status', '==', 'active')
+      .get();
+
+    let processed = 0;
+    let failed = 0;
+
+    for (const coupleDoc of couplesSnap.docs) {
+      try {
+        await computePulseForCouple(coupleDoc.id, coupleDoc.data());
+        processed++;
+      } catch (err) {
+        console.error(`Pulse computation failed for couple ${coupleDoc.id}:`, err);
+        failed++;
+      }
+    }
+
+    console.log(`computeRelationshipPulse: processed ${processed}, failed ${failed}`);
+    return null;
+  });
+
+async function computePulseForCouple(coupleId: string, coupleData: any): Promise<void> {
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const weekId = getWeekId(new Date());
+
+  // 1. Fetch responses from last 7 days
+  const responsesSnap = await db
+    .collection('prompt_responses')
+    .where('couple_id', '==', coupleId)
+    .where('submitted_at', '>=', admin.firestore.Timestamp.fromDate(weekAgo))
+    .get();
+
+  const responses = responsesSnap.docs.map((d) => d.data());
+
+  // 2. Fetch assignments from last 7 days
+  const assignmentsSnap = await db
+    .collection('prompt_assignments')
+    .where('couple_id', '==', coupleId)
+    .where('assigned_date', '>=', formatDate(weekAgo))
+    .get();
+
+  const totalAssignments = assignmentsSnap.size;
+  const completedAssignments = assignmentsSnap.docs.filter(
+    (d) => d.data().status === 'completed'
+  ).length;
+  const partialAssignments = assignmentsSnap.docs.filter(
+    (d) => d.data().response_count === 1
+  ).length;
+
+  // 3. Fetch latest check-ins for both members
+  const memberIds: string[] = coupleData.member_ids || [];
+  const checkInScores: Record<string, number[]> = {};
+
+  for (const memberId of memberIds) {
+    const checkInSnap = await db
+      .collection('couples')
+      .doc(coupleId)
+      .collection('check_ins')
+      .where('user_id', '==', memberId)
+      .orderBy('created_at', 'desc')
+      .limit(1)
+      .get();
+
+    if (!checkInSnap.empty) {
+      const data = checkInSnap.docs[0].data();
+      checkInScores[memberId] = data.responses.map((r: any) => r.score);
+    }
+  }
+
+  // 4. Compute signal scores
+  const emotionPositive = responses.filter(
+    (r) => r.emotional_response === 'positive'
+  ).length;
+  const emotionNegative = responses.filter(
+    (r) => r.emotional_response === 'negative'
+  ).length;
+  const emotionTotal = responses.filter((r) => r.emotional_response).length;
+
+  const avgResponseLength =
+    responses.length > 0
+      ? responses.reduce((sum, r) => sum + (r.response_length || 0), 0) /
+        responses.length
+      : 0;
+
+  // 5. Compute pulse score (0-100)
+  let score = 50; // baseline
+
+  // Emotion signal (high weight, +/- 20 points)
+  if (emotionTotal > 0) {
+    const positiveRate = emotionPositive / emotionTotal;
+    const negativeRate = emotionNegative / emotionTotal;
+    score += (positiveRate - negativeRate) * 20;
+  }
+
+  // Completion rate (medium weight, +/- 15 points)
+  if (totalAssignments > 0) {
+    const completionRate = completedAssignments / totalAssignments;
+    score += (completionRate - 0.5) * 30; // 100% = +15, 0% = -15
+  }
+
+  // One-sided engagement (high weight, -10 points per one-sided day)
+  score -= partialAssignments * 10;
+
+  // Check-in scores (high weight, +/- 15 points)
+  const allCheckInScores = Object.values(checkInScores).flat();
+  if (allCheckInScores.length > 0) {
+    const avgCheckIn =
+      allCheckInScores.reduce((a, b) => a + b, 0) / allCheckInScores.length;
+    score += (avgCheckIn - 3) * 7.5; // 5/5 = +15, 1/5 = -15
+  }
+
+  // Response length (low weight, bonus for engagement)
+  if (avgResponseLength > 100) score += 5;
+  else if (avgResponseLength < 30) score -= 5;
+
+  // Clamp to 0-100
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  // Determine tier
+  const tier =
+    score >= 80
+      ? 'thriving'
+      : score >= 60
+        ? 'steady'
+        : score >= 40
+          ? 'cooling'
+          : 'needs_attention';
+
+  // 6. Write pulse score
+  await db
+    .collection('couples')
+    .doc(coupleId)
+    .collection('pulse_scores')
+    .doc(weekId)
+    .set({
+      score,
+      tier,
+      breakdown: {
+        emotion_positive: emotionPositive,
+        emotion_negative: emotionNegative,
+        emotion_total: emotionTotal,
+        completion_rate:
+          totalAssignments > 0 ? completedAssignments / totalAssignments : null,
+        one_sided_days: partialAssignments,
+        avg_response_length: Math.round(avgResponseLength),
+        avg_check_in:
+          allCheckInScores.length > 0
+            ? allCheckInScores.reduce((a, b) => a + b, 0) /
+              allCheckInScores.length
+            : null,
+      },
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+  // 7. Update couple doc with latest pulse
+  await db.collection('couples').doc(coupleId).update({
+    current_pulse_score: score,
+    current_pulse_tier: tier,
+  });
+
+  console.log(`Pulse for couple ${coupleId}: ${score} (${tier})`);
+}
+
+function getWeekId(date: Date): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  const weekNum =
+    1 +
+    Math.round(
+      ((d.getTime() - week1.getTime()) / 86400000 -
+        3 +
+        ((week1.getDay() + 6) % 7)) /
+        7
+    );
+  return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+
+function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+// ============================================
 // FIRESTORE TRIGGER: Chat Message Created
 // ============================================
 
