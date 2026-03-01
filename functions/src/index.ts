@@ -1170,9 +1170,12 @@ export const revenueCatWebhook = functions.https.onRequest(async (req, res) => {
     switch (eventType) {
       case 'INITIAL_PURCHASE':
       case 'RENEWAL':
-      case 'PRODUCT_CHANGE':
+      case 'PRODUCT_CHANGE': {
+        const purchaseUserDoc = await db.collection('users').doc(appUserId).get();
+        const purchaseCoupleId = purchaseUserDoc.data()?.couple_id || null;
         await subscriptionRef.set({
           user_id: appUserId,
+          couple_id: purchaseCoupleId,
           status: 'active',
           plan: 'premium',
           platform: event.store || 'unknown',
@@ -1182,6 +1185,7 @@ export const revenueCatWebhook = functions.https.onRequest(async (req, res) => {
           updated_at: admin.firestore.FieldValue.serverTimestamp(),
           created_at: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
+      }
         break;
 
       case 'CANCELLATION':

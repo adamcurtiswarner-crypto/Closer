@@ -266,7 +266,8 @@ service cloud.firestore {
 
     match /subscriptions/{subscriptionId} {
       allow read: if isAuthenticated() &&
-        (isOwner(resource.data.user_id) || isCoupleMember(resource.data.couple_id));
+        (isOwner(resource.data.user_id) ||
+         ('couple_id' in resource.data && resource.data.couple_id != null && isCoupleMember(resource.data.couple_id)));
       allow write: if false; // Managed by Cloud Functions
     }
 
