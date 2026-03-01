@@ -95,3 +95,11 @@ export interface OnboardingPreferencesFormData {
 export interface PromptResponseFormData {
   responseText: string;
 }
+
+// Check-in types
+export interface CheckIn {
+  id: string;
+  userId: string;
+  responses: { questionId: string; dimension: string; score: number }[];
+  createdAt: Date;
+}
