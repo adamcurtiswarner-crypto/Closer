@@ -130,6 +130,7 @@ export function useTodayPrompt() {
       const responsesRef = collection(db, 'prompt_responses');
       const responsesQuery = query(
         responsesRef,
+        where('couple_id', '==', coupleId),
         where('assignment_id', '==', assignment.id)
       );
 
