@@ -305,11 +305,11 @@ export default function TodayScreen() {
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
             <Icon name="coffee" size="xl" color="#c97454" weight="light" />
-            <Text style={styles.emptyTitle}>{t('today.promptOnWay')}</Text>
+            <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
                 ? t('today.arrivingAround', { time: format(new Date(nextPromptAt), 'h:mm a') })
-                : t('today.checkBackSoon')}
+                : t('today.emptySubtitle')}
             </Text>
             {user?.coupleId && (
               <TouchableOpacity
