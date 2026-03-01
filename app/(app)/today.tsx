@@ -24,7 +24,7 @@ import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyl
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots, Icon, CheckInCard, CoachingCard } from '@components';
+import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots, Icon, CheckInCard, CoachingCard, ExploreCategoryRow } from '@components';
 import { DateNightCard } from '@/components/DateNightCard';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
 import { StreakRing } from '@/components/StreakRing';
@@ -410,6 +410,8 @@ export default function TodayScreen() {
             )}
           </Animated.View>
 
+          <ExploreCategoryRow />
+
           {/* Streak section */}
           {(currentStreak > 0 || weeklyCompletions > 0) && (
             <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
@@ -627,6 +629,8 @@ export default function TodayScreen() {
             )}
           </Animated.View>
 
+          <ExploreCategoryRow />
+
           {/* Goal Tracker */}
           <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.goalSection}>
             <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
@@ -820,6 +824,8 @@ export default function TodayScreen() {
             </View>
           </Animated.View>
 
+          <ExploreCategoryRow />
+
           <AddGoalModal
             visible={showAddGoalModal}
             onClose={() => setShowAddGoalModal(false)}
@@ -910,6 +916,8 @@ export default function TodayScreen() {
             onRespond={handleRespond}
           />
         </Animated.View>
+
+        <ExploreCategoryRow />
       </ScrollView>
     </SafeAreaView>
   );
