@@ -13,8 +13,9 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useInsights, formatWeekLabel } from '@/hooks/useInsights';
 import { useCouple } from '@/hooks/useCouple';
+import { usePulseScore } from '@/hooks/usePulseScore';
 import { InsightCard } from '@/components/InsightCard';
-import { AnimatedProgressBar, AnimatedCounter, Icon } from '@components';
+import { AnimatedProgressBar, AnimatedCounter, Icon, PulseIndicator } from '@components';
 import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
 import { getMilestoneStatus, getAnniversaryCountdown } from '@/config/milestones';
@@ -164,6 +165,7 @@ export default function InsightsScreen() {
   const { t } = useTranslation();
   const { data: insights, isLoading, refetch, isRefetching } = useInsights();
   const { data: couple } = useCouple();
+  const { data: pulseData } = usePulseScore();
 
   // Fetch partner's love language
   const partnerId = couple?.memberIds?.find((id: string) => id !== user?.id) || null;
@@ -230,6 +232,16 @@ export default function InsightsScreen() {
           <EmptyState />
         ) : (
           <>
+            {/* Relationship Pulse */}
+            {pulseData?.current && (
+              <PulseIndicator
+                score={pulseData.current.score}
+                tier={pulseData.current.tier}
+                trend={pulseData.trend}
+                history={pulseData.history}
+              />
+            )}
+
             {/* Hero Stats */}
             <Animated.View entering={FadeIn.duration(400)} style={styles.heroRow}>
               <StatPill value={insights.totalCompletions} label={t('insights.prompts')} />
