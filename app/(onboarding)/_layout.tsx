@@ -17,6 +17,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="value-prop" />
       <Stack.Screen name="preferences" />
       <Stack.Screen name="tone-calibration" />
+      <Stack.Screen name="relationship-stage" />
       <Stack.Screen name="first-prompt" />
       <Stack.Screen name="ready" />
     </Stack>
