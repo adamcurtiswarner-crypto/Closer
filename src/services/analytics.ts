@@ -54,7 +54,8 @@ type AnalyticsEvent =
   | 'date_night_scheduled'
   | 'date_night_completed'
   | 'date_night_reflected'
-  | 'date_night_skipped';
+  | 'date_night_skipped'
+  | 'date_night_calendar_added';
 
 interface EventContext {
   user_id?: string;

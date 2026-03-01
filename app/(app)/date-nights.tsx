@@ -7,6 +7,8 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  Alert,
+  Linking,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { hapticImpact } from '@utils/haptics';
@@ -15,7 +17,6 @@ import { router } from 'expo-router';
 import { format, isPast, isToday } from 'date-fns';
 import {
   useDateNights,
-  useCompleteDateNight,
   useArchiveDateNight,
 } from '@/hooks/useDateNights';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,7 +26,14 @@ import {
   getIdeasByCategory,
 } from '@/config/dateNightIdeas';
 import { logEvent } from '@/services/analytics';
+import {
+  requestCalendarPermission,
+  getOrCreateStokeCalendar,
+  addDateNightEvent,
+} from '@/services/calendar';
+import { logger } from '@/utils/logger';
 import { AddDateNightModal } from '@/components/AddDateNightModal';
+import { CompleteDateNightModal } from '@/components/CompleteDateNightModal';
 import { SwipeableRow } from '@/components/SwipeableRow';
 import { Icon } from '@/components';
 
@@ -34,7 +42,6 @@ import type { DateNight, DateNightCategory, DateNightIdea } from '@/types';
 export default function DateNightsScreen() {
   const { user } = useAuth();
   const { data: dateNights, isLoading, refetch } = useDateNights();
-  const completeDateNight = useCompleteDateNight();
   const archiveDateNight = useArchiveDateNight();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -42,6 +49,7 @@ export default function DateNightsScreen() {
   const [selectedIdea, setSelectedIdea] = useState<DateNightIdea | undefined>(undefined);
   const [activeCategory, setActiveCategory] = useState<DateNightCategory | 'all'>('all');
   const [showPast, setShowPast] = useState(false);
+  const [completingDateNight, setCompletingDateNight] = useState<DateNight | null>(null);
 
   const scheduled = useMemo(
     () => dateNights?.filter((d) => d.status === 'scheduled').sort(
@@ -87,9 +95,9 @@ export default function DateNightsScreen() {
     setShowAddModal(true);
   };
 
-  const handleComplete = (dateNightId: string) => {
+  const handleComplete = (item: DateNight) => {
     hapticImpact();
-    completeDateNight.mutate({ dateNightId });
+    setCompletingDateNight(item);
   };
 
   const handleArchive = (dateNightId: string) => {
@@ -100,6 +108,46 @@ export default function DateNightsScreen() {
   const handleCloseModal = () => {
     setShowAddModal(false);
     setSelectedIdea(undefined);
+  };
+
+  const handleCloseCompleteModal = () => {
+    setCompletingDateNight(null);
+  };
+
+  const handleAddToCalendar = async (item: DateNight) => {
+    hapticImpact();
+    try {
+      const granted = await requestCalendarPermission();
+      if (!granted) {
+        Alert.alert(
+          'Calendar access needed',
+          'Enable calendar access in your device Settings to add date nights.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
+        );
+        return;
+      }
+
+      const calendarId = await getOrCreateStokeCalendar();
+      const eventId = await addDateNightEvent(
+        calendarId,
+        item.title,
+        item.scheduledDate!,
+        item.scheduledTime
+      );
+
+      if (eventId) {
+        Alert.alert('Added to calendar', 'Your date night has been added to the Stoke calendar.');
+        logEvent('date_night_calendar_added', { date_night_id: item.id });
+      } else {
+        Alert.alert('Could not add to calendar', 'Something went wrong. Please try again.');
+      }
+    } catch (error) {
+      logger.warn('Error adding date night to calendar:', error);
+      Alert.alert('Could not add to calendar', 'Something went wrong. Please try again.');
+    }
   };
 
   if (isLoading) {
@@ -174,7 +222,7 @@ export default function DateNightsScreen() {
                 {
                   label: 'Done',
                   color: '#22c55e',
-                  onPress: () => handleComplete(item.id),
+                  onPress: () => handleComplete(item),
                 },
                 {
                   label: 'Remove',
@@ -183,7 +231,12 @@ export default function DateNightsScreen() {
                 },
               ]}
             >
-              <DateNightRow item={item} getCategoryIcon={getCategoryIcon} />
+              <DateNightRow
+                item={item}
+                getCategoryIcon={getCategoryIcon}
+                onAddToCalendar={() => handleAddToCalendar(item)}
+                onMarkDone={() => handleComplete(item)}
+              />
             </SwipeableRow>
           </Animated.View>
         ))}
@@ -363,6 +416,12 @@ export default function DateNightsScreen() {
         onClose={handleCloseModal}
         idea={selectedIdea}
       />
+
+      <CompleteDateNightModal
+        visible={completingDateNight !== null}
+        onClose={handleCloseCompleteModal}
+        dateNight={completingDateNight}
+      />
     </SafeAreaView>
   );
 }
@@ -371,10 +430,14 @@ function DateNightRow({
   item,
   getCategoryIcon,
   isCompleted,
+  onAddToCalendar,
+  onMarkDone,
 }: {
   item: DateNight;
   getCategoryIcon: (cat: DateNightCategory) => string;
   isCompleted?: boolean;
+  onAddToCalendar?: () => void;
+  onMarkDone?: () => void;
 }) {
   const isPastDue =
     item.status === 'scheduled' &&
@@ -421,6 +484,20 @@ function DateNightRow({
               <View style={styles.rowMetaDot} />
               <Text style={styles.rowTime}>{item.scheduledTime}</Text>
             </>
+          )}
+        </View>
+
+        {/* Action links */}
+        <View style={styles.rowActions}>
+          {isPastDue && onMarkDone && (
+            <TouchableOpacity onPress={onMarkDone} activeOpacity={0.7}>
+              <Text style={styles.rowActionLink}>Mark as done</Text>
+            </TouchableOpacity>
+          )}
+          {item.status === 'scheduled' && item.scheduledDate && onAddToCalendar && (
+            <TouchableOpacity onPress={onAddToCalendar} activeOpacity={0.7}>
+              <Text style={styles.rowActionLink}>Add to calendar</Text>
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -588,6 +665,16 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 1.5,
     backgroundColor: '#d6d3d1',
+  },
+  rowActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  rowActionLink: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#c97454',
   },
   reflectionBadge: {
     width: 28,

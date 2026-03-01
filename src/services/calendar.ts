@@ -76,6 +76,48 @@ export async function addAnniversaryEvent(
   });
 }
 
+export async function addDateNightEvent(
+  calendarId: string,
+  title: string,
+  date: Date,
+  time?: string | null
+): Promise<string | null> {
+  try {
+    if (time) {
+      const [hours, minutes] = time.split(':').map(Number);
+      const startDate = new Date(date);
+      startDate.setHours(hours, minutes, 0, 0);
+
+      const endDate = new Date(startDate);
+      endDate.setHours(endDate.getHours() + 2);
+
+      const eventId = await Calendar.createEventAsync(calendarId, {
+        title: `Date Night: ${title}`,
+        startDate,
+        endDate,
+        allDay: false,
+        alarms: [{ relativeOffset: -60 }], // 1 hour before
+        notes: 'Added by Stoke',
+      });
+      return eventId;
+    }
+
+    // All-day event when no time is specified
+    const eventId = await Calendar.createEventAsync(calendarId, {
+      title: `Date Night: ${title}`,
+      startDate: date,
+      endDate: date,
+      allDay: true,
+      alarms: [{ relativeOffset: -1440 }], // 1 day before
+      notes: 'Added by Stoke',
+    });
+    return eventId;
+  } catch (error) {
+    logger.warn('Error creating date night calendar event:', error);
+    return null;
+  }
+}
+
 export async function addPromptReminder(
   calendarId: string,
   notificationTime: string

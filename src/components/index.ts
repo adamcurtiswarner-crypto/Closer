@@ -52,6 +52,7 @@ export { ChatInput } from './ChatInput';
 // Date Nights
 export { DateNightCard } from './DateNightCard';
 export { AddDateNightModal } from './AddDateNightModal';
+export { CompleteDateNightModal } from './CompleteDateNightModal';
 
 // Games
 export { GameLauncher } from './GameLauncher';
