@@ -151,8 +151,10 @@ service cloud.firestore {
     match /prompt_assignments/{assignmentId} {
       allow read: if isAuthenticated() &&
         isCoupleMember(resource.data.couple_id);
-      // Created by Cloud Functions only
-      allow create: if false;
+      // Cloud Functions create daily assignments; clients can create explore assignments
+      allow create: if isAuthenticated() &&
+        isCoupleMember(request.resource.data.couple_id) &&
+        request.resource.data.source == 'explore';
       allow update: if isCoupleMember(resource.data.couple_id);
       allow delete: if false;
     }
