@@ -32,6 +32,9 @@ export { CheckInCard } from './CheckInCard';
 // Coaching
 export { CoachingCard } from './CoachingCard';
 
+// Explore
+export { ExploreCategoryRow } from './ExploreCategoryRow';
+
 // Profile
 export { ProfileCard } from './ProfileCard';
 
