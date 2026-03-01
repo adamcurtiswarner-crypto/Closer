@@ -2491,6 +2491,58 @@ export const autoGeneratePrompts = functions.pubsub
   });
 
 // ============================================
+// SCHEDULED: Deliver Check-In (Sunday 10 AM PT)
+// ============================================
+
+export const deliverCheckIn = functions.pubsub
+  .schedule('every sunday 10:00')
+  .timeZone('America/Los_Angeles')
+  .onRun(async () => {
+    const now = admin.firestore.Timestamp.now();
+    const twoWeeksAgo = admin.firestore.Timestamp.fromMillis(
+      now.toMillis() - 14 * 24 * 60 * 60 * 1000
+    );
+
+    // Get all active couples
+    const couplesSnap = await db
+      .collection('couples')
+      .where('status', '==', 'active')
+      .get();
+
+    let flaggedCount = 0;
+
+    for (const coupleDoc of couplesSnap.docs) {
+      const memberIds: string[] = coupleDoc.data().member_ids || [];
+
+      for (const userId of memberIds) {
+        // Check latest check-in for this user
+        const checkInsSnap = await db
+          .collection('couples')
+          .doc(coupleDoc.id)
+          .collection('check_ins')
+          .where('user_id', '==', userId)
+          .orderBy('created_at', 'desc')
+          .limit(1)
+          .get();
+
+        const needsCheckIn =
+          checkInsSnap.empty ||
+          checkInsSnap.docs[0].data().created_at <= twoWeeksAgo;
+
+        if (needsCheckIn) {
+          await db.collection('users').doc(userId).update({
+            pending_check_in: true,
+          });
+          flaggedCount++;
+        }
+      }
+    }
+
+    console.log(`deliverCheckIn: flagged ${flaggedCount} users for check-in`);
+    return null;
+  });
+
+// ============================================
 // FIRESTORE TRIGGER: Chat Message Created
 // ============================================
 
