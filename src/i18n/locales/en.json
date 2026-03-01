@@ -353,11 +353,19 @@
     "title": "Stoke Premium",
     "subtitle": "Deepen your connection with premium features.",
     "features": {
-      "memories": "Unlimited saved memories",
-      "streaks": "Streak badges & insights",
-      "tone": "Tone calibration insights",
-      "support": "Priority support"
+      "coaching": "AI-powered relationship coaching",
+      "insights": "Personalized weekly insights",
+      "prompts": "Adaptive prompts that grow with you",
+      "checkins": "Private relationship check-ins"
     },
+    "plans": {
+      "bestValue": "Best Value",
+      "annual": "$49.99/year",
+      "annualMonthly": "$4.17/month",
+      "freeTrial": "7-day free trial",
+      "monthly": "$9.99/month"
+    },
+    "sharedNote": "One subscription covers both partners",
     "startPremium": "Start Premium — {{price}}",
     "restore": "Restore purchases",
     "notNow": "Not now"
