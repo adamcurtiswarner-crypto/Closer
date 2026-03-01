@@ -6,7 +6,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { useTranslation } from 'react-i18next';
 import {
   useGoals,
@@ -37,7 +37,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
   const customGoals = goals?.filter((g) => g.goalType === 'custom') ?? [];
 
   const handleToggle = (goal: Goal) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     toggleCompletion.mutate({
       goalId: goal.id,
       currentCount: goal.completedCount,
@@ -46,12 +46,12 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
   };
 
   const handleStartChallenge = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     activateChallenge.mutate();
   };
 
   const handleArchive = (goalId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     archiveGoal.mutate(goalId);
   };
 

@@ -20,7 +20,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { useTranslation } from 'react-i18next';
 import { useAddWishlistItem } from '@/hooks/useWishlist';
 import { WISHLIST_CATEGORIES } from '@/config/wishlistCategories';
@@ -70,7 +70,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
 
   const handleCreate = async () => {
     if (!canSubmit) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotification(NotificationFeedbackType.Success);
     try {
       await addItem.mutateAsync({
         title: title.trim(),
@@ -160,7 +160,7 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
                     key={c.value}
                     style={[styles.categoryPill, isActive && styles.categoryPillActive]}
                     onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      hapticImpact();
                       setCategory(c.value);
                     }}
                   >

@@ -21,7 +21,7 @@ import type { IconName } from '@/components/Icon';
 
 const logo = require('@/assets/logo.png');
 import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots, Icon, CheckInCard, CoachingCard, ExploreCategoryRow } from '@components';
@@ -126,7 +126,7 @@ export default function TodayScreen() {
 
   const handleSetStage = async (stage: RelationshipStage) => {
     if (!user?.id) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     await updateDoc(doc(db, 'users', user.id), {
       relationship_stage: stage,
       updated_at: serverTimestamp(),
@@ -280,7 +280,7 @@ export default function TodayScreen() {
   }, [user, couple, currentStreak, assignment, myResponse, isComplete]);
 
   const handleRespond = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     setIsResponding(true);
     if (assignment) {
       logEvent('prompt_started', { assignment_id: assignment.id });
@@ -289,7 +289,7 @@ export default function TodayScreen() {
 
   const handleSubmit = async () => {
     if (responseText.length < 10 || !assignment) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     setTyping(false);
     setIsResponding(false);
@@ -756,7 +756,7 @@ export default function TodayScreen() {
                     style={styles.feedbackOption}
                     isSelected={false}
                     onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      hapticImpact();
                       submitFeedback.mutate({
                         responseId: myResponse.id,
                         emotionalResponse: option.value,

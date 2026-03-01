@@ -9,7 +9,7 @@ import {
   StyleSheet,
   RefreshControl,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
@@ -136,7 +136,7 @@ export default function MemoriesScreen() {
                 {!completion.isMemorySaved ? (
                   <TouchableOpacity
                     style={styles.saveButton}
-                    onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); saveMemory.mutate(completion); }}
+                    onPress={() => { hapticNotification(NotificationFeedbackType.Success); saveMemory.mutate(completion); }}
                     disabled={saveMemory.isPending}
                   >
                     <Text style={styles.saveButtonText}>
@@ -176,7 +176,7 @@ export default function MemoriesScreen() {
                       label: 'Remove',
                       color: '#ef4444',
                       onPress: () => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        hapticImpact();
                         removeMemory.mutate(memory.id);
                       },
                     }]}

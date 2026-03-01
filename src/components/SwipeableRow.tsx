@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 
 interface SwipeAction {
   label: string;
@@ -25,7 +25,7 @@ export function SwipeableRow({
   const swipeableRef = useRef<Swipeable>(null);
 
   const handleAction = (action: SwipeAction) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     swipeableRef.current?.close();
     action.onPress();
   };
@@ -70,7 +70,7 @@ export function SwipeableRow({
       renderRightActions={rightActions.length > 0 ? renderRightActions : undefined}
       renderLeftActions={leftActions.length > 0 ? renderLeftActions : undefined}
       onSwipeableOpen={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        hapticImpact();
         onSwipeOpen?.();
       }}
       overshootRight={false}

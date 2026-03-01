@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { Icon } from '@/components';
 
 interface GameCompleteProps {
@@ -46,7 +46,7 @@ export function GameComplete({
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            hapticImpact(ImpactFeedbackStyle.Light);
             onPlayAgain();
           }}
           activeOpacity={0.8}
@@ -57,7 +57,7 @@ export function GameComplete({
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            hapticImpact(ImpactFeedbackStyle.Light);
             onExit();
           }}
           activeOpacity={0.7}

@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact } from '@utils/haptics';
 import { Button, Icon } from '@/components';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/config/firebase';
@@ -26,7 +26,7 @@ export default function RelationshipStageScreen() {
   const [saving, setSaving] = useState(false);
 
   const handleSelect = (stage: RelationshipStage) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     setSelected(stage);
   };
 

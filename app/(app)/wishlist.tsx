@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact } from '@utils/haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import {
@@ -52,7 +52,7 @@ export default function WishlistScreen() {
   }, [refetch]);
 
   const handleToggle = (item: WishlistItem) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     toggleItem.mutate({
       itemId: item.id,
       isCurrentlyCompleted: item.isCompleted,
@@ -60,7 +60,7 @@ export default function WishlistScreen() {
   };
 
   const handleDelete = (itemId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     deleteItem.mutate(itemId);
   };
 

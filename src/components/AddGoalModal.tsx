@@ -20,7 +20,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { useTranslation } from 'react-i18next';
 import { useCreateGoal, type TargetFrequency } from '@/hooks/useGoals';
 import { Icon } from '@/components';
@@ -77,7 +77,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
 
   const handleCreate = async () => {
     if (!canSubmit) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotification(NotificationFeedbackType.Success);
     try {
       await createGoal.mutateAsync({
         title: title.trim(),
@@ -167,7 +167,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
                     key={f.value}
                     style={[styles.frequencyPill, isActive && styles.frequencyPillActive]}
                     onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      hapticImpact();
                       setFrequency(f.value);
                     }}
                   >

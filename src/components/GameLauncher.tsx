@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { Icon } from '@/components';
 
 export type GameMode = 'would-you-rather' | 'how-well' | 'truth-or-dare';
@@ -52,7 +52,7 @@ export function GameLauncher({ onSelectMode }: GameLauncherProps) {
           <TouchableOpacity
             style={[styles.card, { backgroundColor: game.tint }]}
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              hapticImpact(ImpactFeedbackStyle.Light);
               onSelectMode(game.mode);
             }}
             activeOpacity={0.8}

@@ -6,7 +6,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact } from '@utils/haptics';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
@@ -34,7 +34,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
   const previewItems = activeItems.slice(0, 3);
 
   const handleToggle = (item: WishlistItem) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     toggleItem.mutate({
       itemId: item.id,
       isCurrentlyCompleted: item.isCompleted,
@@ -42,7 +42,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
   };
 
   const handleSeeAll = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     router.push('/(app)/wishlist');
   };
 

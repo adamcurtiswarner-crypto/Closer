@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, hapticNotification, ImpactFeedbackStyle, NotificationFeedbackType } from '@utils/haptics';
 import { Icon } from '@/components';
 
 interface PassPhoneProps {
@@ -12,7 +12,7 @@ interface PassPhoneProps {
 
 export function PassPhone({ partnerName, instruction, onReady }: PassPhoneProps) {
   useEffect(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    hapticNotification(NotificationFeedbackType.Warning);
   }, []);
 
   return (
@@ -29,7 +29,7 @@ export function PassPhone({ partnerName, instruction, onReady }: PassPhoneProps)
         <TouchableOpacity
           style={styles.button}
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            hapticImpact(ImpactFeedbackStyle.Light);
             onReady();
           }}
           activeOpacity={0.8}

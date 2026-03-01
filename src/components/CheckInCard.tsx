@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact } from '@utils/haptics';
 import { Icon } from '@/components';
 import { selectCheckInQuestions } from '@/config/checkInQuestions';
 import type { CheckInQuestion } from '@/config/checkInQuestions';
@@ -23,7 +23,7 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
   const questionText = currentQ.text.replace('{partner}', partnerName);
 
   const handleScore = (score: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     const newScores = [...scores];
     newScores[step] = score;
     setScores(newScores);

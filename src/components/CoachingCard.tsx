@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { Icon } from '@/components';
 import type { IconName } from '@/components/Icon';
 
@@ -25,7 +25,7 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
   const config = ACTION_CONFIG[actionType] || ACTION_CONFIG.conversation;
 
   const handleAction = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     onAction();
   };
 

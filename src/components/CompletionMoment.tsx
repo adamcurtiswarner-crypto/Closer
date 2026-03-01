@@ -10,7 +10,7 @@ import Animated, {
   withDelay,
   Easing,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { ResponseCard } from './ResponseCard';
 import { Icon } from '@/components';
 
@@ -82,7 +82,7 @@ export function CompletionMoment({
 
   useEffect(() => {
     cardScale.value = withSpring(1.0, { damping: 14, stiffness: 150 });
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotification(NotificationFeedbackType.Success);
   }, []);
 
   const cardAnimatedStyle = useAnimatedStyle(() => ({

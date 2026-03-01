@@ -15,7 +15,7 @@ import {
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, hapticNotification, ImpactFeedbackStyle, NotificationFeedbackType } from '@utils/haptics';
 import { format } from 'date-fns';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -67,7 +67,7 @@ export function ProfileCard() {
   const handleAnniversarySave = async (date: Date) => {
     try {
       await updateAnniversary.mutateAsync(date);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      hapticNotification(NotificationFeedbackType.Success);
       logEvent('anniversary_date_set');
     } catch (error) {
       logger.error('Error saving anniversary date:', error);
@@ -85,7 +85,7 @@ export function ProfileCard() {
         updated_at: serverTimestamp(),
       });
       await refreshUser();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      hapticNotification(NotificationFeedbackType.Success);
       logEvent('love_language_set', { value });
     } catch (error) {
       logger.error('Error saving love language:', error);
@@ -101,7 +101,7 @@ export function ProfileCard() {
     if (!uri) return;
 
     setUploadingUser(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact(ImpactFeedbackStyle.Light);
     try {
       const downloadUrl = await uploadProfilePhoto(user.id, uri);
       const userRef = doc(db, 'users', user.id);
@@ -126,7 +126,7 @@ export function ProfileCard() {
     if (!uri) return;
 
     setUploadingPartner(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact(ImpactFeedbackStyle.Light);
     try {
       const downloadUrl = await uploadPartnerPhoto(user.coupleId, user.id, uri);
       const userRef = doc(db, 'users', user.id);

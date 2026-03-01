@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { wouldYouRather, getRandomQuestions } from '@/config/gameQuestions';
 import { PassPhone } from './PassPhone';
 import { GameComplete } from './GameComplete';
@@ -29,20 +29,20 @@ export function WouldYouRather({ userName, partnerName, onExit }: WouldYouRather
   const currentQ = questions[round];
 
   const handleP1Pick = (choice: 'A' | 'B') => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     setP1Choice(choice);
     setPhase('pass_to_p2');
   };
 
   const handleP2Pick = (choice: 'A' | 'B') => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     setP2Choice(choice);
     if (choice === p1Choice) setMatches((m) => m + 1);
     setPhase('reveal');
   };
 
   const handleNext = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact(ImpactFeedbackStyle.Light);
     if (round + 1 >= ROUND_COUNT) {
       setPhase('complete');
     } else {

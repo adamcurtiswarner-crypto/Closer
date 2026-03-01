@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { truthOrDare, getRandomQuestions, type TruthOrDarePrompt } from '@/config/gameQuestions';
 import { GameComplete } from './GameComplete';
 import { Icon } from '@/components';
@@ -36,7 +36,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
   const currentPlayer = isUserTurn ? userName : partnerName;
 
   const handleChoose = (type: 'truth' | 'dare') => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     if (type === 'truth') {
       setCurrentPrompt(truths[truthIndex % truths.length]);
       setTruthIndex((i) => i + 1);
@@ -48,7 +48,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
   };
 
   const handleDone = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact(ImpactFeedbackStyle.Light);
     if (round + 1 >= ROUND_COUNT) {
       setPhase('complete');
     } else {

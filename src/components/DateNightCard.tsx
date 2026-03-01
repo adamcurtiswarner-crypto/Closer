@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact } from '@utils/haptics';
 import { router } from 'expo-router';
 import { Icon } from '@/components';
 
 export function DateNightCard() {
   const handlePlay = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     router.push('/(app)/games');
   };
 

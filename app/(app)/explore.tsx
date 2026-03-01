@@ -21,7 +21,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PROMPT_CATEGORIES, getCategoryByType } from '@/config/promptCategories';
 import {
@@ -64,7 +64,7 @@ export default function ExploreScreen() {
   }
 
   async function handleStartPrompt(prompt: ExplorePrompt) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact();
     try {
       const result = await startExplore.mutateAsync(prompt);
       setActivePrompt(prompt);
@@ -77,7 +77,7 @@ export default function ExploreScreen() {
 
   async function handleSubmit() {
     if (!activeAssignmentId || responseText.length < 10) return;
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     try {
       await submitResponse.mutateAsync({

@@ -11,7 +11,7 @@ import {
   Keyboard,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { howWellDoYouKnowMe, getRandomQuestions } from '@/config/gameQuestions';
 import { PassPhone } from './PassPhone';
 import { GameComplete } from './GameComplete';
@@ -45,19 +45,19 @@ export function HowWellDoYouKnowMe({ userName, partnerName, onExit }: HowWellDoY
   const handleSubmitAnswer = () => {
     if (!realAnswer.trim()) return;
     Keyboard.dismiss();
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact(ImpactFeedbackStyle.Light);
     setPhase('pass_to_guesser');
   };
 
   const handleSubmitGuess = () => {
     if (!guess.trim()) return;
     Keyboard.dismiss();
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticImpact(ImpactFeedbackStyle.Light);
     setPhase('reveal');
   };
 
   const handleScore = (correct: boolean) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     if (correct) setScore((s) => s + 1);
 
     if (round + 1 >= ROUND_COUNT) {
