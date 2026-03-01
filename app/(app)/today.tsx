@@ -478,16 +478,14 @@ export default function TodayScreen() {
               {'\u201C'}{assignment!.promptText}{'\u201D'}
             </Text>
 
-            <View style={styles.yourResponseSection}>
-              <View style={styles.responseLabel}>
-                <View style={[styles.labelDot, { backgroundColor: '#a8a29e' }]} />
-                <Text style={styles.labelText}>{t('today.yourResponse')}</Text>
-              </View>
-              <Text style={styles.responseBody}>{myResponse!.responseText}</Text>
-              {myResponse!.imageUrl ? (
-                <Image source={{ uri: myResponse!.imageUrl }} style={styles.responseImage} resizeMode="cover" />
-              ) : null}
-            </View>
+            {/* Sealed response card */}
+            <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
+              <Icon name="lock" size="md" color="#c97454" weight="light" />
+              <Text style={styles.sealedTitle}>Your answer is saved</Text>
+              <Text style={styles.sealedSubtitle}>
+                Waiting for {partnerName ?? 'your partner'}...
+              </Text>
+            </Animated.View>
 
             <View style={styles.waitingDivider} />
 
@@ -885,12 +883,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  responseImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    marginTop: 12,
-  },
   respondingFooter: {
     marginTop: 12,
   },
@@ -954,33 +946,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 24,
   },
-  yourResponseSection: {
-    backgroundColor: '#fafaf9',
-    borderRadius: 14,
-    padding: 16,
-  },
-  responseLabel: {
-    flexDirection: 'row',
+  sealedCard: {
+    backgroundColor: '#fef7f4',
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 16,
   },
-  labelDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  labelText: {
-    fontSize: 12,
+  sealedTitle: {
+    fontSize: 15,
     fontWeight: '600',
-    color: '#78716c',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    color: '#1c1917',
   },
-  responseBody: {
-    fontSize: 16,
-    color: '#292524',
-    lineHeight: 24,
+  sealedSubtitle: {
+    fontSize: 13,
+    color: '#a8a29e',
   },
   waitingDivider: {
     height: 1,
