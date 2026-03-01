@@ -4,6 +4,8 @@ import {
   getDocs,
   query,
   where,
+  orderBy,
+  limit,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from './useAuth';
@@ -39,6 +41,14 @@ interface PromptCategory {
   percentage: number;
 }
 
+interface CheckInTrendWeek {
+  week: string;
+  connection: number | null;
+  communication: number | null;
+  satisfaction: number | null;
+  avg: number | null;
+}
+
 export interface InsightsData {
   totalCompletions: number;
   daysAsCouple: number;
@@ -53,6 +63,7 @@ export interface InsightsData {
   longestStreak: number;
   weeklyCompletionRate: number;
   totalWeeksActive: number;
+  checkInTrend: CheckInTrendWeek[];
 }
 
 function getISOWeek(date: Date = new Date()): string {
@@ -91,7 +102,7 @@ export function useInsights() {
     queryFn: async (): Promise<InsightsData> => {
       const coupleId = user!.coupleId!;
 
-      const [completionsSnap, assignmentsSnap, memoriesSnap] = await Promise.all([
+      const [completionsSnap, assignmentsSnap, memoriesSnap, checkInsSnap] = await Promise.all([
         getDocs(
           query(collection(db, 'prompt_completions'), where('couple_id', '==', coupleId))
         ),
@@ -107,6 +118,14 @@ export function useInsights() {
             collection(db, 'memory_artifacts'),
             where('couple_id', '==', coupleId),
             where('is_deleted', '==', false)
+          )
+        ),
+        getDocs(
+          query(
+            collection(db, 'couples', coupleId, 'check_ins'),
+            where('user_id', '==', user!.id),
+            orderBy('created_at', 'desc'),
+            limit(8)
           )
         ),
       ]);
@@ -225,6 +244,29 @@ export function useInsights() {
       const weeklyCompletionRate = (couple?.currentWeekCompletions ?? 0) / 7;
       const totalWeeksActive = allWeeks.size;
 
+      // --- Check-In Trends ---
+      const checkInTrend: CheckInTrendWeek[] = checkInsSnap.docs
+        .map((d) => {
+          const data = d.data();
+          const createdAt = data.created_at?.toDate();
+          const week = createdAt ? getISOWeek(createdAt) : '';
+          const responses: { dimension: string; score: number }[] = data.responses || [];
+          const dimScores: Record<string, number> = {};
+          let total = 0;
+          for (const r of responses) {
+            dimScores[r.dimension] = r.score;
+            total += r.score;
+          }
+          return {
+            week,
+            connection: dimScores['connection'] ?? null,
+            communication: dimScores['communication'] ?? null,
+            satisfaction: dimScores['satisfaction'] ?? null,
+            avg: responses.length > 0 ? Math.round((total / responses.length) * 10) / 10 : null,
+          };
+        })
+        .reverse(); // oldest first for chart display
+
       return {
         totalCompletions,
         daysAsCouple,
@@ -239,6 +281,7 @@ export function useInsights() {
         longestStreak,
         weeklyCompletionRate,
         totalWeeksActive,
+        checkInTrend,
       };
     },
     enabled: !!user?.coupleId && !!couple,

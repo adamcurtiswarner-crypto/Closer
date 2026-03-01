@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from './useAuth';
+import { logEvent } from '@/services/analytics';
 
 export function useCheckIn() {
   const { user, refreshUser } = useAuth();
@@ -62,8 +63,32 @@ export function useCheckIn() {
 
       await refreshUser();
     },
-    onSuccess: () => {
+    onSuccess: (_data, responses) => {
+      const scores = responses.map(r => r.score);
+      const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+      const dimensionScores: Record<string, number> = {};
+      for (const r of responses) {
+        dimensionScores[r.dimension] = r.score;
+      }
+      logEvent('checkin_submitted', {
+        avg_score: Math.round(avgScore * 10) / 10,
+        dimension_scores: dimensionScores,
+      });
       queryClient.invalidateQueries({ queryKey: ['checkIn'] });
+    },
+  });
+
+  // Dismiss check-in (clear flag without submitting)
+  const dismissCheckIn = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('Not authenticated');
+
+      await updateDoc(doc(db, 'users', user.id), {
+        pending_check_in: false,
+      });
+
+      logEvent('checkin_dismissed');
+      await refreshUser();
     },
   });
 
@@ -72,5 +97,6 @@ export function useCheckIn() {
     latestCheckIn,
     isLoading,
     submitCheckIn,
+    dismissCheckIn,
   };
 }

@@ -103,7 +103,7 @@ export default function TodayScreen() {
   const triggerPrompt = useTriggerPrompt();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
   const { data: couple } = useCouple();
-  const { hasPendingCheckIn, submitCheckIn } = useCheckIn();
+  const { hasPendingCheckIn, submitCheckIn, dismissCheckIn } = useCheckIn();
   const { latestInsight, dismissInsight, markActedOn } = useCoachingInsight();
   const { isPremium } = useSubscription();
   const { t } = useTranslation();
@@ -585,7 +585,7 @@ export default function TodayScreen() {
                 <CheckInCard
                   partnerName={user?.partnerName ?? 'your partner'}
                   onSubmit={(responses) => submitCheckIn.mutate(responses)}
-                  onDismiss={() => {/* check-in dismisses itself until next delivery */}}
+                  onDismiss={() => dismissCheckIn.mutate()}
                 />
               )}
               {isPremium && latestInsight && !latestInsight.dismissedAt && (
@@ -714,7 +714,7 @@ export default function TodayScreen() {
                 <CheckInCard
                   partnerName={user?.partnerName ?? 'your partner'}
                   onSubmit={(responses) => submitCheckIn.mutate(responses)}
-                  onDismiss={() => {/* check-in dismisses itself until next delivery */}}
+                  onDismiss={() => dismissCheckIn.mutate()}
                 />
               )}
               {isPremium && latestInsight && !latestInsight.dismissedAt && (
@@ -893,7 +893,7 @@ export default function TodayScreen() {
               <CheckInCard
                 partnerName={user?.partnerName ?? 'your partner'}
                 onSubmit={(responses) => submitCheckIn.mutate(responses)}
-                onDismiss={() => {/* check-in dismisses itself until next delivery */}}
+                onDismiss={() => dismissCheckIn.mutate()}
               />
             )}
             {isPremium && latestInsight && !latestInsight.dismissedAt && (

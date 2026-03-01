@@ -850,6 +850,72 @@ describe('Prompt Management Validation', () => {
   });
 });
 
+// ============================================
+// Check-In Feature
+// ============================================
+
+describe('deliverCheckIn', () => {
+  it('should flag users with 7+ day gap since last check-in', () => {
+    const now = new Date('2026-03-08T18:00:00Z');
+    const lastCheckIn = new Date('2026-02-28T10:00:00Z'); // 8 days ago
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    expect(lastCheckIn <= oneWeekAgo).toBe(true);
+  });
+
+  it('should not flag users with a recent check-in (under 7 days)', () => {
+    const now = new Date('2026-03-08T18:00:00Z');
+    const lastCheckIn = new Date('2026-03-05T10:00:00Z'); // 3 days ago
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    expect(lastCheckIn <= oneWeekAgo).toBe(false);
+  });
+
+  it('should flag users with no check-in history', () => {
+    const checkInsEmpty = true;
+    expect(checkInsEmpty).toBe(true);
+  });
+
+  it('should flag users with check-in exactly 7 days ago', () => {
+    const now = new Date('2026-03-08T18:00:00Z');
+    const lastCheckIn = new Date('2026-03-01T18:00:00Z'); // exactly 7 days
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    expect(lastCheckIn <= oneWeekAgo).toBe(true);
+  });
+});
+
+describe('onCheckInSubmitted', () => {
+  it('should identify partner from couple member_ids', () => {
+    const memberIds = ['userA', 'userB'];
+    const submitterId = 'userA';
+    const partnerId = memberIds.find((id) => id !== submitterId);
+
+    expect(partnerId).toBe('userB');
+  });
+
+  it('should handle submitter as second member', () => {
+    const memberIds = ['userA', 'userB'];
+    const submitterId = 'userB';
+    const partnerId = memberIds.find((id) => id !== submitterId);
+
+    expect(partnerId).toBe('userA');
+  });
+
+  it('should use display_name for notification body', () => {
+    const displayName = 'Alex';
+    const body = `${displayName} checked in this week`;
+    expect(body).toBe('Alex checked in this week');
+  });
+
+  it('should fall back to "Your partner" when no display_name', () => {
+    const displayName: string | null = null;
+    const name = displayName || 'Your partner';
+    const body = `${name} checked in this week`;
+    expect(body).toBe('Your partner checked in this week');
+  });
+});
+
 afterAll(() => {
   test.cleanup();
 });

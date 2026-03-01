@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { hapticImpact } from '@utils/haptics';
 import { Icon } from './Icon';
 import { selectCheckInQuestions } from '@/config/checkInQuestions';
 import type { CheckInQuestion } from '@/config/checkInQuestions';
+import { logEvent } from '@/services/analytics';
 
 interface CheckInCardProps {
   partnerName: string;
@@ -18,6 +19,10 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
   const [questions] = useState<CheckInQuestion[]>(() => selectCheckInQuestions());
   const [step, setStep] = useState(0);
   const [scores, setScores] = useState<number[]>([0, 0, 0]);
+
+  useEffect(() => {
+    logEvent('checkin_viewed');
+  }, []);
 
   const currentQ = questions[step];
   const questionText = currentQ.text.replace('{partner}', partnerName);

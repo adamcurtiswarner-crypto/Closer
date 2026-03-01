@@ -454,6 +454,48 @@ export default function InsightsScreen() {
               </InsightCard>
             )}
 
+            {/* Check-In Trends */}
+            {insights.checkInTrend.length > 0 && (
+              <InsightCard icon={<Icon name="heartbeat" size="md" color="#c97454" />} title="Weekly Check-In" accentColor="#c97474" delay={450}>
+                {(['connection', 'communication', 'satisfaction'] as const).map((dim) => {
+                  const scores = insights.checkInTrend
+                    .map(w => w[dim])
+                    .filter((s): s is number => s !== null);
+                  if (scores.length === 0) return null;
+                  const avg = Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10;
+                  const latest = scores[scores.length - 1];
+                  const label = dim.charAt(0).toUpperCase() + dim.slice(1);
+                  return (
+                    <View key={dim} style={styles.checkInDimRow}>
+                      <Text style={styles.checkInDimLabel}>{label}</Text>
+                      <View style={styles.checkInScoreRow}>
+                        {insights.checkInTrend.map((w, i) => {
+                          const score = w[dim];
+                          if (score === null) return (
+                            <View key={i} style={styles.checkInDot}>
+                              <View style={[styles.checkInDotInner, styles.checkInDotEmpty]} />
+                            </View>
+                          );
+                          return (
+                            <View key={i} style={styles.checkInDot}>
+                              <View style={[
+                                styles.checkInDotInner,
+                                { opacity: 0.3 + (score / 5) * 0.7 },
+                              ]} />
+                            </View>
+                          );
+                        })}
+                        <Text style={styles.checkInAvgText}>{avg.toFixed(1)}</Text>
+                      </View>
+                    </View>
+                  );
+                })}
+                <Text style={styles.checkInFooter}>
+                  Based on your last {insights.checkInTrend.length} check-in{insights.checkInTrend.length !== 1 ? 's' : ''}
+                </Text>
+              </InsightCard>
+            )}
+
             {/* Streak & Consistency */}
             <InsightCard icon={<Icon name="flame" size="md" color="#c97454" weight="fill" />} title="Streak & Consistency" delay={500}>
               <View style={styles.streakRow}>
@@ -954,6 +996,51 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#a8a29e',
     marginTop: 16,
+    fontStyle: 'italic',
+  },
+
+  // Check-In Trends
+  checkInDimRow: {
+    marginBottom: 14,
+  },
+  checkInDimLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#57534e',
+    marginBottom: 6,
+  },
+  checkInScoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  checkInDot: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkInDotInner: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#c97454',
+  },
+  checkInDotEmpty: {
+    backgroundColor: '#e7e5e4',
+    opacity: 1,
+  },
+  checkInAvgText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#78716c',
+    marginLeft: 4,
+  },
+  checkInFooter: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#a8a29e',
+    marginTop: 8,
     fontStyle: 'italic',
   },
 

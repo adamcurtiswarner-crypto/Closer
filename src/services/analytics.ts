@@ -43,7 +43,10 @@ type AnalyticsEvent =
   | 'chat_image_sent'
   | 'explore_category_tapped'
   | 'explore_prompt_started'
-  | 'explore_prompt_completed';
+  | 'explore_prompt_completed'
+  | 'checkin_viewed'
+  | 'checkin_submitted'
+  | 'checkin_dismissed';
 
 interface EventContext {
   user_id?: string;

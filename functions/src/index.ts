@@ -2538,8 +2538,8 @@ export const deliverCheckIn = functions.pubsub
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
     const now = admin.firestore.Timestamp.now();
-    const twoWeeksAgo = admin.firestore.Timestamp.fromMillis(
-      now.toMillis() - 14 * 24 * 60 * 60 * 1000
+    const oneWeekAgo = admin.firestore.Timestamp.fromMillis(
+      now.toMillis() - 7 * 24 * 60 * 60 * 1000
     );
 
     // Get all active couples
@@ -2566,7 +2566,7 @@ export const deliverCheckIn = functions.pubsub
 
         const needsCheckIn =
           checkInsSnap.empty ||
-          checkInsSnap.docs[0].data().created_at <= twoWeeksAgo;
+          checkInsSnap.docs[0].data().created_at <= oneWeekAgo;
 
         if (needsCheckIn) {
           await db.collection('users').doc(userId).update({
@@ -2919,6 +2919,40 @@ function formatDate(date: Date): string {
 // ============================================
 // FIRESTORE TRIGGER: Chat Message Created
 // ============================================
+
+// ============================================
+// TRIGGER: On Check-In Submitted
+// ============================================
+
+export const onCheckInSubmitted = functions.firestore
+  .document('couples/{coupleId}/check_ins/{checkInId}')
+  .onCreate(async (snap, context) => {
+    const { coupleId } = context.params;
+    const checkInData = snap.data();
+    const submitterId = checkInData.user_id;
+
+    // Get couple to find partner
+    const coupleDoc = await db.collection('couples').doc(coupleId).get();
+    if (!coupleDoc.exists) return;
+
+    const coupleData = coupleDoc.data()!;
+    const memberIds: string[] = coupleData.member_ids || [];
+    const partnerId = memberIds.find((id: string) => id !== submitterId);
+
+    if (!partnerId) return;
+
+    // Get submitter's name
+    const submitterDoc = await db.collection('users').doc(submitterId).get();
+    const submitterName = submitterDoc.exists
+      ? submitterDoc.data()?.display_name || 'Your partner'
+      : 'Your partner';
+
+    await sendPushNotification(
+      partnerId,
+      { title: 'Stoke', body: `${submitterName} checked in this week` },
+      { type: 'check_in' }
+    );
+  });
 
 export const onChatMessageCreated = functions.firestore
   .document('couples/{coupleId}/messages/{messageId}')
