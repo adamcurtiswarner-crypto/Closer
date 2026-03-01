@@ -111,6 +111,7 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
     prompt_type: prompt.type,
     requires_conversation: prompt.requires_conversation,
     assigned_date: today,
+    source: 'daily',
     delivered_at: admin.firestore.FieldValue.serverTimestamp(),
     delivery_timezone: timezone,
     status: 'delivered',

@@ -10,7 +10,6 @@ import {
   query,
   where,
   orderBy,
-  limit,
   serverTimestamp,
   Timestamp,
   onSnapshot,
@@ -35,6 +34,7 @@ interface PromptAssignment {
   promptType: string;
   requiresConversation: boolean;
   assignedDate: string;
+  source?: 'daily' | 'explore';
   status: 'delivered' | 'partial' | 'completed' | 'expired';
 }
 
@@ -94,12 +94,16 @@ export function useTodayPrompt() {
     const assignmentQuery = query(
       assignmentsRef,
       where('couple_id', '==', coupleId),
-      where('assigned_date', '==', today),
-      limit(1)
+      where('assigned_date', '==', today)
     );
 
     const unsubAssignment = onSnapshot(assignmentQuery, (assignmentSnap) => {
-      if (assignmentSnap.empty) {
+      // Filter out explore assignments — keep daily and legacy (no source field)
+      const dailyDocs = assignmentSnap.docs.filter(
+        (d) => d.data().source !== 'explore'
+      );
+
+      if (dailyDocs.length === 0) {
         queryClient.setQueryData(['todayPrompt', coupleId], {
           ...EMPTY_TODAY,
           nextPromptAt: `${today}T${notificationTime || '19:00'}:00`,
@@ -107,7 +111,7 @@ export function useTodayPrompt() {
         return;
       }
 
-      const assignmentDoc = assignmentSnap.docs[0];
+      const assignmentDoc = dailyDocs[0];
       const assignmentData = assignmentDoc.data();
 
       const assignment: PromptAssignment = {
@@ -157,7 +161,7 @@ export function useTodayPrompt() {
         }
 
         // Re-read assignment status from the latest snapshot
-        const latestStatus = assignmentSnap.docs[0]?.data()?.status || assignment.status;
+        const latestStatus = dailyDocs[0]?.data()?.status || assignment.status;
 
         queryClient.setQueryData(['todayPrompt', coupleId], {
           assignment: { ...assignment, status: latestStatus },

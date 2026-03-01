@@ -41,6 +41,7 @@ import {
   CompassIcon,
   LightbulbIcon,
   ClockCounterClockwiseIcon,
+  BandaidsIcon,
 } from 'phosphor-react-native';
 import { iconSize } from '@/config/theme';
 
@@ -85,6 +86,7 @@ const iconMap = {
   compass: CompassIcon,
   lightbulb: LightbulbIcon,
   'clock-counter-clockwise': ClockCounterClockwiseIcon,
+  bandaids: BandaidsIcon,
 } as const;
 
 export type IconName = keyof typeof iconMap;

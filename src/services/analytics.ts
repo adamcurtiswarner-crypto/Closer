@@ -40,7 +40,10 @@ type AnalyticsEvent =
   | 'calendar_removed'
   | 'chat_message_sent'
   | 'chat_opened'
-  | 'chat_image_sent';
+  | 'chat_image_sent'
+  | 'explore_category_tapped'
+  | 'explore_prompt_started'
+  | 'explore_prompt_completed';
 
 interface EventContext {
   user_id?: string;
