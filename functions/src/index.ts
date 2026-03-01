@@ -141,7 +141,7 @@ async function getCoupleTimezone(coupleId: string): Promise<string> {
   return userDoc.data()?.timezone || 'America/Los_Angeles';
 }
 
-// Tone weight multipliers per prompt type
+// Tone weight multipliers per prompt type (legacy fallback)
 const TONE_WEIGHTS: Record<string, Record<string, number>> = {
   solid: {}, // No weighting changes
   distant: {
@@ -155,6 +155,36 @@ const TONE_WEIGHTS: Record<string, Record<string, number>> = {
     conflict_navigation: 2,
     bid_for_connection: 1.5,
     dream_exploration: 0.5,
+  },
+};
+
+// Pulse-based weight multipliers per prompt type
+const PULSE_WEIGHTS: Record<string, Record<string, number>> = {
+  thriving: {
+    dream_exploration: 1.5,
+    growth_challenge: 1.5,
+  },
+  steady: {
+    appreciation_expression: 1.5,
+    bid_for_connection: 1.5,
+  },
+  cooling: {
+    appreciation_expression: 2,
+    bid_for_connection: 2,
+    fun_playful: 2,
+    nostalgic_reflection: 1.5,
+    conflict_navigation: 0.3,
+    repair_attempt: 0.5,
+  },
+  needs_attention: {
+    appreciation_expression: 2.5,
+    fun_playful: 2.5,
+    bid_for_connection: 2,
+    nostalgic_reflection: 2,
+    conflict_navigation: 0.1,
+    repair_attempt: 0.3,
+    dream_exploration: 0.5,
+    growth_challenge: 0.3,
   },
 };
 
@@ -234,20 +264,28 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
     return fallback ? { id: fallback.id, ...fallback.data() } : null;
   }
 
-  // Fetch tone calibration from both users
-  const memberIds: string[] = coupleData.member_ids || [];
-  const tones: string[] = [];
-  for (const memberId of memberIds) {
-    const memberDoc = await db.collection('users').doc(memberId).get();
-    if (memberDoc.exists) {
-      tones.push(memberDoc.data()!.tone_calibration || 'solid');
-    }
-  }
-  const effectiveTone = getEffectiveTone(tones);
-  const toneWeights = TONE_WEIGHTS[effectiveTone] || {};
+  // Prefer pulse-based weights if available, fall back to tone calibration
+  const pulseTier = coupleData.current_pulse_tier;
+  let promptWeights: Record<string, number>;
 
-  // Weighted random selection based on tone
-  const weights = eligiblePrompts.map((p: any) => toneWeights[p.type] || 1);
+  if (pulseTier && PULSE_WEIGHTS[pulseTier]) {
+    promptWeights = PULSE_WEIGHTS[pulseTier];
+  } else {
+    // Fallback: fetch tone calibration from both users
+    const memberIds: string[] = coupleData.member_ids || [];
+    const tones: string[] = [];
+    for (const memberId of memberIds) {
+      const memberDoc = await db.collection('users').doc(memberId).get();
+      if (memberDoc.exists) {
+        tones.push(memberDoc.data()!.tone_calibration || 'solid');
+      }
+    }
+    const effectiveTone = getEffectiveTone(tones);
+    promptWeights = TONE_WEIGHTS[effectiveTone] || {};
+  }
+
+  // Weighted random selection based on pulse tier or tone
+  const weights = eligiblePrompts.map((p: any) => promptWeights[p.type] || 1);
   const totalWeight = weights.reduce((sum: number, w: number) => sum + w, 0);
   let random = Math.random() * totalWeight;
 
