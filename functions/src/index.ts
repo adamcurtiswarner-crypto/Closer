@@ -3001,3 +3001,69 @@ export const onChatMessageCreated = functions.firestore
       );
     }
   });
+
+// ============================================
+// SCHEDULED: Date Night Reminders
+// ============================================
+
+export const dateNightReminder = functions.pubsub
+  .schedule('every day 09:00')
+  .timeZone('America/Los_Angeles')
+  .onRun(async () => {
+    const couplesSnapshot = await db
+      .collection('couples')
+      .where('status', '==', 'active')
+      .get();
+
+    let remindersSent = 0;
+
+    for (const coupleDoc of couplesSnapshot.docs) {
+      const coupleData = coupleDoc.data();
+
+      // Query scheduled (non-archived) date nights for this couple
+      const dateNightsSnapshot = await db
+        .collection('couples')
+        .doc(coupleDoc.id)
+        .collection('date_nights')
+        .where('status', '==', 'scheduled')
+        .where('is_archived', '==', false)
+        .get();
+
+      if (dateNightsSnapshot.empty) continue;
+
+      const now = new Date();
+      const todayStr = format(now, 'yyyy-MM-dd');
+      const tomorrowStr = format(new Date(now.getTime() + 86400000), 'yyyy-MM-dd');
+
+      for (const nightDoc of dateNightsSnapshot.docs) {
+        const nightData = nightDoc.data();
+        if (!nightData.scheduled_date) continue;
+
+        const scheduledDate = nightData.scheduled_date.toDate();
+        const scheduledStr = format(scheduledDate, 'yyyy-MM-dd');
+        const title = nightData.title || 'Date night';
+
+        let body: string | null = null;
+
+        if (scheduledStr === todayStr) {
+          body = `Your date night is today — ${title}`;
+        } else if (scheduledStr === tomorrowStr) {
+          body = `Tomorrow's date night: ${title}`;
+        }
+
+        if (!body) continue;
+
+        for (const memberId of coupleData.member_ids) {
+          await sendPushNotification(
+            memberId,
+            { title: APP_NAME, body },
+            { type: 'date_night_reminder' }
+          );
+        }
+        remindersSent++;
+      }
+    }
+
+    console.log(`Sent ${remindersSent} date night reminders`);
+    return null;
+  });
