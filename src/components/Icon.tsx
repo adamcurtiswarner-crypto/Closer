@@ -15,6 +15,7 @@ import {
   LockIcon,
   CalendarBlankIcon,
   HeartIcon,
+  HeartbeatIcon,
   TrophyIcon,
   ChatCircleIcon,
   CaretRightIcon,
@@ -24,6 +25,7 @@ import {
   XIcon,
   ArrowRightIcon,
   ArrowUpIcon,
+  ArrowDownIcon,
   ArrowLeftIcon,
   StarIcon,
   GearSixIcon,
@@ -38,6 +40,7 @@ import {
   HandshakeIcon,
   CompassIcon,
   LightbulbIcon,
+  ClockCounterClockwiseIcon,
 } from 'phosphor-react-native';
 import { iconSize } from '@/config/theme';
 
@@ -56,6 +59,7 @@ const iconMap = {
   lock: LockIcon,
   calendar: CalendarBlankIcon,
   heart: HeartIcon,
+  heartbeat: HeartbeatIcon,
   trophy: TrophyIcon,
   'chat-circle': ChatCircleIcon,
   'chat-text': ChatTextIcon,
@@ -67,6 +71,7 @@ const iconMap = {
   'arrow-right': ArrowRightIcon,
   'arrow-left': ArrowLeftIcon,
   'arrow-up': ArrowUpIcon,
+  'arrow-down': ArrowDownIcon,
   star: StarIcon,
   gear: GearSixIcon,
   warning: WarningIcon,
@@ -79,6 +84,7 @@ const iconMap = {
   handshake: HandshakeIcon,
   compass: CompassIcon,
   lightbulb: LightbulbIcon,
+  'clock-counter-clockwise': ClockCounterClockwiseIcon,
 } as const;
 
 export type IconName = keyof typeof iconMap;

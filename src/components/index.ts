@@ -29,11 +29,15 @@ export { AddWishlistModal } from './AddWishlistModal';
 // Check-in
 export { CheckInCard } from './CheckInCard';
 
+// Coaching
+export { CoachingCard } from './CoachingCard';
+
 // Profile
 export { ProfileCard } from './ProfileCard';
 
 // Insights
 export { InsightCard } from './InsightCard';
+export { PulseIndicator } from './PulseIndicator';
 
 // Resources
 export { ResourceCard } from './ResourceCard';
