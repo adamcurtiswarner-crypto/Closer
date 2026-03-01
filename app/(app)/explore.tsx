@@ -197,11 +197,12 @@ export default function ExploreScreen() {
       </View>
 
       {/* Category tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoryRow}
-      >
+      <View style={styles.categoryScrollContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryRow}
+        >
         {PROMPT_CATEGORIES.map((cat) => {
           const isActive = cat.type === selectedCategory;
           return (
@@ -231,7 +232,8 @@ export default function ExploreScreen() {
             </Pressable>
           );
         })}
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       {/* Category description */}
       {currentCategory && (
@@ -333,10 +335,12 @@ const styles = StyleSheet.create({
   },
 
   // Category tabs
+  categoryScrollContainer: { flexShrink: 0 },
   categoryRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 12 },
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
