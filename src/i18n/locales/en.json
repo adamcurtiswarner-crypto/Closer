@@ -389,5 +389,17 @@
   },
   "offline": {
     "banner": "You're offline. Changes will sync when you reconnect."
+  },
+  "explore": {
+    "heading": "Explore prompts",
+    "respond": "Respond",
+    "waiting": "Waiting for partner",
+    "completed": "Completed",
+    "emptyCategory": "No prompts in this category yet",
+    "moreCharacters": "{{count}} more characters",
+    "readyToShare": "Ready to share",
+    "share": "Share",
+    "sending": "Sending...",
+    "back": "Back"
   }
 }
