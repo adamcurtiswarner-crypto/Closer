@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 import Animated, {
   FadeIn,
   FadeInUp,

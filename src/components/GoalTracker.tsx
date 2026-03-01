@@ -19,7 +19,7 @@ import {
 import { AnimatedProgressBar } from './AnimatedProgressBar';
 import { AnimatedCheckbox } from './AnimatedCheckbox';
 import { SwipeableRow } from './SwipeableRow';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 import { GoalTrackerSkeleton } from './Skeleton';
 
 interface GoalTrackerProps {

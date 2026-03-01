@@ -4,7 +4,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { format } from 'date-fns';
 import type { ChatMessage } from '@/hooks/useChat';
 import { SwipeableRow } from './SwipeableRow';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 type DeliveryStatus = 'sending' | 'sent' | 'read';
 

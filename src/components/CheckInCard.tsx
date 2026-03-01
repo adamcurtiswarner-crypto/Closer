@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { hapticImpact } from '@utils/haptics';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 import { selectCheckInQuestions } from '@/config/checkInQuestions';
 import type { CheckInQuestion } from '@/config/checkInQuestions';
 

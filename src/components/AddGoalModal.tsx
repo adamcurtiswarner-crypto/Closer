@@ -23,7 +23,7 @@ import Animated, {
 import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { useTranslation } from 'react-i18next';
 import { useCreateGoal, type TargetFrequency } from '@/hooks/useGoals';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 interface AddGoalModalProps {
   visible: boolean;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 interface ConnectionHeaderProps {
   userName: string | null;

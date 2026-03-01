@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 interface PulseIndicatorProps {
   score: number;

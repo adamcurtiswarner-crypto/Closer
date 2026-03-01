@@ -4,7 +4,7 @@ import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { truthOrDare, getRandomQuestions, type TruthOrDarePrompt } from '@/config/gameQuestions';
 import { GameComplete } from './GameComplete';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 const ROUND_COUNT = 10;
 

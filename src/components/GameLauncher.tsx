@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 export type GameMode = 'would-you-rather' | 'how-well' | 'truth-or-dare';
 

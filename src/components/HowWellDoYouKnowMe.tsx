@@ -15,7 +15,7 @@ import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { howWellDoYouKnowMe, getRandomQuestions } from '@/config/gameQuestions';
 import { PassPhone } from './PassPhone';
 import { GameComplete } from './GameComplete';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 const ROUND_COUNT = 10;
 

@@ -26,7 +26,7 @@ import { LOVE_LANGUAGES, getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/utils/logger';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 function getInitials(name: string | null): string {
   if (!name) return '?';

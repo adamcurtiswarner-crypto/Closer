@@ -10,7 +10,7 @@ import {
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 interface PaywallProps {
   visible: boolean;

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { Icon } from '@/components';
-import type { IconName } from '@/components';
+import { Icon } from './Icon';
+import type { IconName } from './Icon';
 
 // Prompt type visual config: icon, label, accent color, background tint
 const PROMPT_TYPE_CONFIG: Record<string, {

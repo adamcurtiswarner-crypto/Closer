@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { ResponseCard } from './ResponseCard';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 const SPARKLE_POSITIONS = [
   { x: 40, delay: 200 },

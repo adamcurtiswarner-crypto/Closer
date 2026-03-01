@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   interpolateColor,
 } from 'react-native-reanimated';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 interface AnimatedCheckboxProps {
   checked: boolean;

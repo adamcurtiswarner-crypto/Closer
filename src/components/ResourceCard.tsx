@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Linking, StyleSheet } from 'react-native'
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { logEvent } from '@/services/analytics';
 import type { TherapistResource } from '@/config/therapistResources';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 interface ResourceCardProps {
   resource: TherapistResource;

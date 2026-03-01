@@ -24,7 +24,7 @@ import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@uti
 import { useTranslation } from 'react-i18next';
 import { useAddWishlistItem } from '@/hooks/useWishlist';
 import { WISHLIST_CATEGORIES } from '@/config/wishlistCategories';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 function AnimatedPill({ children, onPress, style }: {
   children: React.ReactNode;

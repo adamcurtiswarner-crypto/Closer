@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { pickImage } from '@/services/imageUpload';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 interface ChatInputProps {
   onSend: (text: string, imageUri?: string | null) => void;

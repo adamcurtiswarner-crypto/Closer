@@ -16,7 +16,7 @@ import {
 } from '@/hooks/useWishlist';
 import { getCategoryDisplay } from '@/config/wishlistCategories';
 import { AnimatedCheckbox } from './AnimatedCheckbox';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 import { WishlistCardSkeleton } from './Skeleton';
 
 interface WishlistCardProps {

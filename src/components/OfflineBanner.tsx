@@ -10,7 +10,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useTranslation } from 'react-i18next';
-import { Icon } from '@/components';
+import { Icon } from './Icon';
 
 export function OfflineBanner() {
   const { isConnected } = useNetworkStatus();
