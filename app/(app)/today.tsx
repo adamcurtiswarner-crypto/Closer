@@ -24,7 +24,7 @@ import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyl
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots, Icon } from '@components';
+import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots, Icon, CheckInCard, CoachingCard } from '@components';
 import { DateNightCard } from '@/components/DateNightCard';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
 import { StreakRing } from '@/components/StreakRing';
@@ -33,6 +33,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
 import { useStreak } from '@/hooks/useStreak';
 import { useCouple } from '@/hooks/useCouple';
+import { useCheckIn } from '@/hooks/useCheckIn';
+import { useCoachingInsight } from '@/hooks/useCoachingInsight';
+import { useSubscription } from '@/hooks/useSubscription';
 import { updateWidgetData, buildWidgetData } from '@/services/widgetBridge';
 import { getAnniversaryCountdown } from '@/config/milestones';
 import { logEvent } from '@/services/analytics';
@@ -100,6 +103,9 @@ export default function TodayScreen() {
   const triggerPrompt = useTriggerPrompt();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
   const { data: couple } = useCouple();
+  const { hasPendingCheckIn, submitCheckIn } = useCheckIn();
+  const { latestInsight, dismissInsight, markActedOn } = useCoachingInsight();
+  const { isPremium } = useSubscription();
   const { t } = useTranslation();
 
   const [isResponding, setIsResponding] = useState(false);
@@ -133,6 +139,30 @@ export default function TodayScreen() {
   const handleDismissStage = () => {
     setStageDismissed(true);
     AsyncStorage.setItem('stage_prompt_dismissed', 'true');
+  };
+
+  const handleCoachingAction = (actionType: string, actionText: string) => {
+    if (latestInsight?.id) {
+      markActedOn.mutate(latestInsight.id);
+    }
+
+    switch (actionType) {
+      case 'goal':
+        setShowAddGoalModal(true);
+        break;
+      case 'date_night':
+        router.push('/(app)/wishlist');
+        break;
+      case 'conversation':
+        // The suggestion is about talking — no navigation needed
+        break;
+      case 'revisit':
+        router.push('/(app)/memories');
+        break;
+      case 'check_in':
+        // Handled by the check-in card itself
+        break;
+    }
   };
 
   const submitScale = useSharedValue(1);
@@ -546,6 +576,28 @@ export default function TodayScreen() {
             </Animated.View>
           )}
 
+          {/* Engagement cards */}
+          {(hasPendingCheckIn || (isPremium && latestInsight && !latestInsight.dismissedAt)) && (
+            <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: 16, marginTop: 16 }}>
+              {hasPendingCheckIn && (
+                <CheckInCard
+                  partnerName={user?.partnerName ?? 'your partner'}
+                  onSubmit={(responses) => submitCheckIn.mutate(responses)}
+                  onDismiss={() => {/* check-in dismisses itself until next delivery */}}
+                />
+              )}
+              {isPremium && latestInsight && !latestInsight.dismissedAt && (
+                <CoachingCard
+                  insightText={latestInsight.insightText}
+                  actionType={latestInsight.actionType}
+                  actionText={latestInsight.actionText}
+                  onAction={() => handleCoachingAction(latestInsight.actionType, latestInsight.actionText)}
+                  onDismiss={() => latestInsight.id && dismissInsight.mutate(latestInsight.id)}
+                />
+              )}
+            </Animated.View>
+          )}
+
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
             <Text style={styles.waitingPrompt}>
               {'\u201C'}{assignment!.promptText}{'\u201D'}
@@ -648,6 +700,28 @@ export default function TodayScreen() {
               <TouchableOpacity onPress={handleDismissStage}>
                 <Text style={styles.stageSkip}>Not now</Text>
               </TouchableOpacity>
+            </Animated.View>
+          )}
+
+          {/* Engagement cards */}
+          {(hasPendingCheckIn || (isPremium && latestInsight && !latestInsight.dismissedAt)) && (
+            <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: 16, marginTop: 16 }}>
+              {hasPendingCheckIn && (
+                <CheckInCard
+                  partnerName={user?.partnerName ?? 'your partner'}
+                  onSubmit={(responses) => submitCheckIn.mutate(responses)}
+                  onDismiss={() => {/* check-in dismisses itself until next delivery */}}
+                />
+              )}
+              {isPremium && latestInsight && !latestInsight.dismissedAt && (
+                <CoachingCard
+                  insightText={latestInsight.insightText}
+                  actionType={latestInsight.actionType}
+                  actionText={latestInsight.actionText}
+                  onAction={() => handleCoachingAction(latestInsight.actionType, latestInsight.actionText)}
+                  onDismiss={() => latestInsight.id && dismissInsight.mutate(latestInsight.id)}
+                />
+              )}
             </Animated.View>
           )}
 
@@ -803,6 +877,28 @@ export default function TodayScreen() {
             <TouchableOpacity onPress={handleDismissStage}>
               <Text style={styles.stageSkip}>Not now</Text>
             </TouchableOpacity>
+          </Animated.View>
+        )}
+
+        {/* Engagement cards */}
+        {(hasPendingCheckIn || (isPremium && latestInsight && !latestInsight.dismissedAt)) && (
+          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: 16, marginTop: 16 }}>
+            {hasPendingCheckIn && (
+              <CheckInCard
+                partnerName={user?.partnerName ?? 'your partner'}
+                onSubmit={(responses) => submitCheckIn.mutate(responses)}
+                onDismiss={() => {/* check-in dismisses itself until next delivery */}}
+              />
+            )}
+            {isPremium && latestInsight && !latestInsight.dismissedAt && (
+              <CoachingCard
+                insightText={latestInsight.insightText}
+                actionType={latestInsight.actionType}
+                actionText={latestInsight.actionText}
+                onAction={() => handleCoachingAction(latestInsight.actionType, latestInsight.actionText)}
+                onDismiss={() => latestInsight.id && dismissInsight.mutate(latestInsight.id)}
+              />
+            )}
           </Animated.View>
         )}
 
