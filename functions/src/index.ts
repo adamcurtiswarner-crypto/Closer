@@ -2750,6 +2750,149 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
   });
 
   console.log(`Pulse for couple ${coupleId}: ${score} (${tier})`);
+
+  // === AI Coaching Generation ===
+  // Check if coaching is needed: score < 80 OR dropped 15+ points from last week
+  const prevWeekId = getWeekId(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+  const prevPulseDoc = await db.collection('couples').doc(coupleId)
+    .collection('pulse_scores').doc(prevWeekId).get();
+  const prevScore = prevPulseDoc.exists ? prevPulseDoc.data()?.score : null;
+  const scoreDrop = prevScore !== null ? prevScore - score : 0;
+
+  const needsCoaching = score < 80 || scoreDrop >= 15;
+
+  if (needsCoaching) {
+    // Check for Premium access
+    const premiumUntil = coupleData.premium_until?.toDate?.() || coupleData.premium_until;
+    if (!premiumUntil || new Date(premiumUntil) < new Date()) {
+      console.log(`Couple ${coupleId} needs coaching but is not Premium — skipping`);
+      return;
+    }
+
+    // Fetch last week's coaching for follow-up context
+    const lastCoaching = await db.collection('couples').doc(coupleId)
+      .collection('coaching_insights').doc(prevWeekId).get();
+    const lastAction = lastCoaching.exists ? lastCoaching.data() : null;
+
+    // Build the Claude prompt
+    const coachingPrompt = buildCoachingPrompt({
+      score, prevScore, tier,
+      emotionPositive, emotionNegative, emotionTotal,
+      avgResponseLength,
+      completedAssignments, totalAssignments,
+      partialAssignments,
+      checkInScores: allCheckInScores,
+      lastAction: lastAction ? {
+        text: lastAction.action_text,
+        actedOn: !!lastAction.acted_on,
+      } : null,
+    });
+
+    // Call Claude API (match existing Anthropic usage pattern)
+    const apiKey = functions.config().anthropic?.api_key;
+    if (!apiKey) {
+      console.log(`Couple ${coupleId} needs coaching but Anthropic API key not configured — skipping`);
+      return;
+    }
+
+    const coachingResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        max_tokens: 300,
+        messages: [{ role: 'user', content: coachingPrompt }],
+      }),
+    });
+
+    const coachingResult = await coachingResponse.json();
+    const responseText = coachingResult.content?.[0]?.type === 'text'
+      ? coachingResult.content[0].text
+      : '';
+    const { insightText, actionType, actionText } = parseCoachingResponse(responseText);
+
+    // Write coaching insight
+    await db.collection('couples').doc(coupleId)
+      .collection('coaching_insights').doc(weekId).set({
+        pulse_score: score,
+        insight_text: insightText,
+        action_type: actionType,
+        action_text: actionText,
+        created_at: admin.firestore.FieldValue.serverTimestamp(),
+        dismissed_at: null,
+        acted_on: null,
+      });
+
+    // Notify both partners
+    const memberIds: string[] = coupleData.member_ids || [];
+    for (const memberId of memberIds) {
+      const notifBody = tier === 'cooling' || tier === 'needs_attention'
+        ? 'We put together something for you two this week'
+        : 'Your weekly relationship insight is ready';
+
+      await sendPushNotification(memberId, {
+        title: 'Stoke',
+        body: notifBody,
+      }, { type: 'coaching_insight' });
+    }
+
+    console.log(`Coaching insight generated for couple ${coupleId}: ${actionType}`);
+  }
+}
+
+function buildCoachingPrompt(data: {
+  score: number; prevScore: number | null; tier: string;
+  emotionPositive: number; emotionNegative: number; emotionTotal: number;
+  avgResponseLength: number;
+  completedAssignments: number; totalAssignments: number;
+  partialAssignments: number;
+  checkInScores: number[];
+  lastAction: { text: string; actedOn: boolean } | null;
+}): string {
+  const emotionSummary = data.emotionTotal > 0
+    ? `${data.emotionPositive} warm, ${data.emotionTotal - data.emotionPositive - data.emotionNegative} okay, ${data.emotionNegative} hard`
+    : 'No emotion data this week';
+
+  const checkInSummary = data.checkInScores.length > 0
+    ? `Avg score: ${(data.checkInScores.reduce((a, b) => a + b, 0) / data.checkInScores.length).toFixed(1)}/5`
+    : 'No check-in data';
+
+  const lastActionSummary = data.lastAction
+    ? `Last week's suggestion: "${data.lastAction.text}" — ${data.lastAction.actedOn ? 'completed' : 'not taken'}`
+    : 'No previous suggestion';
+
+  return `You are a warm, non-judgmental relationship coach. Based on this couple's engagement data from the past week, write a brief (2-3 sentence) personalized insight and one specific, actionable suggestion.
+
+Data:
+- Pulse score: ${data.score}/100 (was ${data.prevScore ?? 'unknown'})
+- Emotion trend: ${emotionSummary}
+- Days active: ${data.completedAssignments}/${data.totalAssignments} prompts completed
+- One-sided days: ${data.partialAssignments} (one partner responded but not the other)
+- Check-in: ${checkInSummary}
+- ${lastActionSummary}
+
+Respond in exactly this format:
+Insight: [Your 2-3 sentence observation]
+Suggestion: [One specific actionable thing they can do]
+Type: [One of: goal, date_night, conversation, revisit, check_in]
+
+Tone: Warm, quiet, direct. No exclamation points. No emojis. Never blame either partner. Focus on the relationship, not individuals.`;
+}
+
+function parseCoachingResponse(text: string): { insightText: string; actionType: string; actionText: string } {
+  const insightMatch = text.match(/Insight:\s*(.+?)(?=\nSuggestion:)/s);
+  const suggestionMatch = text.match(/Suggestion:\s*(.+?)(?=\nType:)/s);
+  const typeMatch = text.match(/Type:\s*(\w+)/);
+
+  return {
+    insightText: insightMatch?.[1]?.trim() || text.split('\n')[0],
+    actionText: suggestionMatch?.[1]?.trim() || 'Take a moment to connect today',
+    actionType: typeMatch?.[1]?.trim() || 'conversation',
+  };
 }
 
 function getWeekId(date: Date): string {
