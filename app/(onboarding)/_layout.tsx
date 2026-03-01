@@ -14,6 +14,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="invite-partner" />
       <Stack.Screen name="accept-invite" />
       <Stack.Screen name="waiting-partner" />
+      <Stack.Screen name="value-prop" />
       <Stack.Screen name="preferences" />
       <Stack.Screen name="tone-calibration" />
       <Stack.Screen name="first-prompt" />

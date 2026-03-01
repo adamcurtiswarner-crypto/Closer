@@ -50,7 +50,7 @@ export default function AcceptInviteScreen() {
     try {
       await acceptInvite.mutateAsync(code.toUpperCase());
       await clearPendingInviteCode();
-      router.replace('/(onboarding)/preferences');
+      router.replace('/(onboarding)/value-prop');
     } catch (error: any) {
       hasAutoSubmitted.current = false; // Allow retry
       Alert.alert(
