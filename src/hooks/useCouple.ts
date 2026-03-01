@@ -30,6 +30,8 @@ interface Couple {
   currentStreak: number;
   longestStreak: number;
   anniversaryDate: Date | null;
+  premiumUntil: Date | null;
+  premiumSource: string | null;
 }
 
 interface Invite {
@@ -74,6 +76,8 @@ export function useCouple() {
         currentStreak: data.current_streak || 0,
         longestStreak: data.longest_streak || 0,
         anniversaryDate: data.anniversary_date?.toDate() || null,
+        premiumUntil: data.premium_until?.toDate() || null,
+        premiumSource: data.premium_source || null,
       };
     },
     enabled: !!user?.coupleId,

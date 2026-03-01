@@ -38,6 +38,8 @@ export interface Couple {
   currentStreak: number;
   longestStreak: number;
   promptFrequency: 'daily' | 'weekdays' | 'weekends';
+  premiumUntil: Date | null;
+  premiumSource: string | null; // user ID of purchaser
 }
 
 export type ToneCalibration = 'solid' | 'distant' | 'struggling';

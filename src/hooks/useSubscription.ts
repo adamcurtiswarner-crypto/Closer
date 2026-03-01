@@ -6,6 +6,7 @@ import Purchases, {
   CustomerInfo,
 } from 'react-native-purchases';
 import { useAuth } from './useAuth';
+import { useCouple } from './useCouple';
 import { configurePurchases } from '@/config/purchases';
 
 const PREMIUM_ENTITLEMENT = 'premium';
@@ -20,10 +21,18 @@ interface SubscriptionState {
 
 export function useSubscription(): SubscriptionState {
   const { user } = useAuth();
-  // TODO: Remove DEV override before production
-  const [isPremium, setIsPremium] = useState(__DEV__ ? true : false);
+  const { data: couple } = useCouple();
+  const [revenueCatPremium, setRevenueCatPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+
+  // Check couple-level premium from Firestore
+  const coupleIsPremium = couple?.premiumUntil
+    ? new Date(couple.premiumUntil) > new Date()
+    : false;
+
+  // Combined premium: RevenueCat entitlement OR couple-level OR dev mode
+  const isPremium = revenueCatPremium || coupleIsPremium || __DEV__;
 
   // Configure and check status on mount
   useEffect(() => {
@@ -40,7 +49,7 @@ export function useSubscription(): SubscriptionState {
 
         const customerInfo = await Purchases.getCustomerInfo();
         if (!cancelled) {
-          setIsPremium(
+          setRevenueCatPremium(
             customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined
           );
         }
@@ -60,7 +69,7 @@ export function useSubscription(): SubscriptionState {
 
     // Listen for customer info changes
     const listener = (info: CustomerInfo) => {
-      setIsPremium(
+      setRevenueCatPremium(
         info.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined
       );
     };
@@ -75,7 +84,7 @@ export function useSubscription(): SubscriptionState {
   const purchase = useCallback(async (pkg: PurchasesPackage) => {
     try {
       const { customerInfo } = await Purchases.purchasePackage(pkg);
-      setIsPremium(
+      setRevenueCatPremium(
         customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined
       );
     } catch (error: any) {
@@ -90,7 +99,7 @@ export function useSubscription(): SubscriptionState {
       const customerInfo = await Purchases.restorePurchases();
       const restored =
         customerInfo.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
-      setIsPremium(restored);
+      setRevenueCatPremium(restored);
       if (!restored) {
         Alert.alert('No Purchases Found', 'No previous purchases were found to restore.');
       }
