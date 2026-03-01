@@ -12,7 +12,7 @@ import {
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
 import { logger } from '@/utils/logger';
-import { User, ToneCalibration } from '@/types';
+import { User, ToneCalibration, RelationshipStage } from '@/types';
 
 interface AuthState {
   user: User | null;
@@ -76,6 +76,8 @@ function useAuthInternal(): AuthState & AuthActions {
           photo_url: null,
           partner_photo_url: null,
           love_language: null,
+          relationship_stage: null,
+          pending_check_in: false,
         });
         userSnap = await getDoc(userRef);
       }
@@ -96,6 +98,8 @@ function useAuthInternal(): AuthState & AuthActions {
           partnerPhotoUrl: data.partner_photo_url || null,
           loveLanguage: data.love_language || null,
           locale: data.locale || null,
+          relationshipStage: data.relationship_stage || null,
+          pendingCheckIn: data.pending_check_in || false,
         };
       }
       return null;
@@ -168,6 +172,8 @@ function useAuthInternal(): AuthState & AuthActions {
         photo_url: null,
         partner_photo_url: null,
         love_language: null,
+        relationship_stage: null,
+        pending_check_in: false,
       });
 
       // Fetch user doc now that it exists — onAuthStateChanged may have

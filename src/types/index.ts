@@ -25,6 +25,8 @@ export interface User {
   partnerPhotoUrl: string | null;
   loveLanguage: string | null;
   locale: string | null;
+  relationshipStage: RelationshipStage | null;
+  pendingCheckIn: boolean;
 }
 
 export interface Couple {
@@ -40,6 +42,7 @@ export interface Couple {
 
 export type ToneCalibration = 'solid' | 'distant' | 'struggling';
 export type CoupleStatus = 'pending' | 'active' | 'paused' | 'deleted';
+export type RelationshipStage = 'dating' | 'engaged' | 'married' | 'long_distance';
 
 // Navigation types
 export type RootStackParamList = {
