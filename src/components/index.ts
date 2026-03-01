@@ -49,8 +49,11 @@ export { ResourceCard } from './ResourceCard';
 export { ChatBubble } from './ChatBubble';
 export { ChatInput } from './ChatInput';
 
-// Games
+// Date Nights
 export { DateNightCard } from './DateNightCard';
+export { AddDateNightModal } from './AddDateNightModal';
+
+// Games
 export { GameLauncher } from './GameLauncher';
 export { GameComplete } from './GameComplete';
 export { PassPhone } from './PassPhone';

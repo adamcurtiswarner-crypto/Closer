@@ -201,6 +201,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="date-nights"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
