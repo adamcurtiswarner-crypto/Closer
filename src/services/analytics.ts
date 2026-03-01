@@ -46,7 +46,9 @@ type AnalyticsEvent =
   | 'explore_prompt_completed'
   | 'checkin_viewed'
   | 'checkin_submitted'
-  | 'checkin_dismissed';
+  | 'checkin_dismissed'
+  | 'network_disconnected'
+  | 'network_reconnected';
 
 interface EventContext {
   user_id?: string;

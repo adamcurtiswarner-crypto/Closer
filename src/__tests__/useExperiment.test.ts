@@ -72,7 +72,7 @@ describe('useFeatureFlag', () => {
   });
 
   it('should return isEnabled=false when variant is control', () => {
-    const variant = 'control';
+    const variant: string = 'control';
     const isInExperiment = true;
     const isEnabled = isInExperiment && variant === 'enabled';
     expect(isEnabled).toBe(false);
