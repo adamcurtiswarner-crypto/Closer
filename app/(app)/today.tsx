@@ -2,11 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   TouchableOpacity,
   RefreshControl,
@@ -17,16 +13,22 @@ import { pickImage } from '@/services/imageUpload';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import type { IconName } from '@/components/Icon';
-
-const logo = require('@/assets/logo.png');
-import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
-import { PromptCard, CompletionMoment, GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, PulsingDots, Icon, CheckInCard, CoachingCard, ExploreCategoryRow } from '@components';
-import { DateNightCard } from '@/components/DateNightCard';
-import { ConnectionHeader } from '@/components/ConnectionHeader';
+import {
+  PromptCard,
+  CompletionMoment,
+  PulsingDots,
+  Icon,
+  TodayScreenHeader,
+  RelationshipStagePrompt,
+  EngagementCards,
+  RespondingScreen,
+  TodayBottomSections,
+} from '@components';
+import type { RelationshipStage } from '@components';
 import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,15 +45,6 @@ import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
 import { logger } from '@/utils/logger';
 import { useTranslation } from 'react-i18next';
-
-type RelationshipStage = 'dating' | 'engaged' | 'married' | 'long_distance';
-
-const STAGES: { value: RelationshipStage; label: string; icon: IconName }[] = [
-  { value: 'dating', label: 'Dating', icon: 'heart' },
-  { value: 'engaged', label: 'Engaged', icon: 'star' },
-  { value: 'married', label: 'Married', icon: 'handshake' },
-  { value: 'long_distance', label: 'Long Distance', icon: 'map-pin' },
-];
 
 // Greeting based on time of day
 function getGreeting(t: (key: string) => string): string {
@@ -154,21 +147,14 @@ export default function TodayScreen() {
         router.push('/(app)/wishlist');
         break;
       case 'conversation':
-        // The suggestion is about talking — no navigation needed
         break;
       case 'revisit':
         router.push('/(app)/memories');
         break;
       case 'check_in':
-        // Handled by the check-in card itself
         break;
     }
   };
-
-  const submitScale = useSharedValue(1);
-  const submitAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: submitScale.value }],
-  }));
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -314,6 +300,44 @@ export default function TodayScreen() {
   const partnerName = user?.partnerName || 'Partner';
   const userName = user?.displayName || null;
 
+  const showStagePrompt = !user?.relationshipStage && user?.isOnboarded && !stageDismissed;
+
+  // Shared props for header component
+  const headerProps = {
+    userName,
+    partnerName,
+    isPartnerOnline,
+    isPartnerTyping,
+    typingContext: partnerTypingContext,
+    lastSeen: partnerLastSeen,
+    currentStreak,
+    isStreakActive,
+    userPhotoUrl: user?.photoUrl,
+    partnerPhotoUrl: user?.partnerPhotoUrl,
+  };
+
+  // Shared props for engagement cards
+  const engagementProps = {
+    hasPendingCheckIn,
+    partnerName: user?.partnerName ?? 'your partner',
+    onCheckInSubmit: (responses: any) => submitCheckIn.mutate(responses),
+    onCheckInDismiss: () => dismissCheckIn.mutate(),
+    isPremium,
+    latestInsight,
+    onCoachingAction: () => latestInsight && handleCoachingAction(latestInsight.actionType, latestInsight.actionText),
+    onCoachingDismiss: () => latestInsight?.id && dismissInsight.mutate(latestInsight.id),
+  };
+
+  // Shared props for bottom sections
+  const bottomProps = {
+    showAddGoalModal,
+    onOpenGoalModal: () => setShowAddGoalModal(true),
+    onCloseGoalModal: () => setShowAddGoalModal(false),
+    showAddWishlistModal,
+    onOpenWishlistModal: () => setShowAddWishlistModal(true),
+    onCloseWishlistModal: () => setShowAddWishlistModal(false),
+  };
+
   // ─── Loading ───
   if (mode === 'loading') {
     return (
@@ -340,6 +364,23 @@ export default function TodayScreen() {
     );
   }
 
+  // ─── Responding ───
+  if (mode === 'responding') {
+    return (
+      <RespondingScreen
+        promptText={assignment!.promptText}
+        responseText={responseText}
+        onChangeText={handleTextChange}
+        onSubmit={handleSubmit}
+        onCancel={() => { setIsResponding(false); setResponseText(''); }}
+        onAddPhoto={handleAddPhoto}
+        selectedImage={selectedImage}
+        onRemovePhoto={() => setSelectedImage(null)}
+        isPending={submitResponse.isPending}
+      />
+    );
+  }
+
   // ─── No prompt yet ───
   if (mode === 'no-prompt') {
     return (
@@ -349,43 +390,10 @@ export default function TodayScreen() {
           contentContainerStyle={styles.scrollContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
         >
-          <View style={styles.greetingRow}>
-            <View style={styles.greetingTop}>
-              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>{getGreeting(t)}</Text>
-            </View>
-            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-          </View>
+          <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
 
-          <ConnectionHeader
-            userName={userName}
-            partnerName={partnerName}
-            isPartnerOnline={isPartnerOnline}
-            isPartnerTyping={isPartnerTyping}
-            typingContext={partnerTypingContext}
-            lastSeen={partnerLastSeen}
-            currentStreak={currentStreak}
-            isStreakActive={isStreakActive}
-            userPhotoUrl={user?.photoUrl}
-            partnerPhotoUrl={user?.partnerPhotoUrl}
-          />
-
-          {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
-            <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
-              <Text style={styles.stagePromptTitle}>Help us personalize</Text>
-              <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
-              <View style={styles.stageButtons}>
-                {STAGES.map(s => (
-                  <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
-                    <Icon name={s.icon} size="sm" color="#c97454" />
-                    <Text style={styles.stageChipText}>{s.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <TouchableOpacity onPress={handleDismissStage}>
-                <Text style={styles.stageSkip}>Not now</Text>
-              </TouchableOpacity>
-            </Animated.View>
+          {showStagePrompt && (
+            <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
           )}
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
@@ -410,9 +418,6 @@ export default function TodayScreen() {
             )}
           </Animated.View>
 
-          <ExploreCategoryRow />
-
-          {/* Streak section */}
           {(currentStreak > 0 || weeklyCompletions > 0) && (
             <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
               <StreakRing
@@ -423,109 +428,8 @@ export default function TodayScreen() {
             </Animated.View>
           )}
 
-          {/* Goal Tracker */}
-          <Animated.View entering={FadeInUp.duration(500).delay(600)} style={styles.goalSection}>
-            <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
-          </Animated.View>
-
-          {/* Wishlist */}
-          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={styles.goalSection}>
-            <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
-          </Animated.View>
-
-          {/* Date Night Games */}
-          <Animated.View entering={FadeInUp.duration(500).delay(1000)} style={styles.goalSection}>
-            <DateNightCard />
-          </Animated.View>
-
-          <AddGoalModal
-            visible={showAddGoalModal}
-            onClose={() => setShowAddGoalModal(false)}
-          />
-          <AddWishlistModal
-            visible={showAddWishlistModal}
-            onClose={() => setShowAddWishlistModal(false)}
-          />
+          <TodayBottomSections {...bottomProps} animationBaseDelay={600} />
         </ScrollView>
-      </SafeAreaView>
-    );
-  }
-
-  // ─── Responding ───
-  if (mode === 'responding') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.flex}
-        >
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.respondingScroll} keyboardShouldPersistTaps="handled">
-            <Animated.View entering={FadeIn.duration(300)} style={styles.respondingHeader}>
-              <Text style={styles.respondingPrompt}>
-                {'\u201C'}{assignment!.promptText}{'\u201D'}
-              </Text>
-            </Animated.View>
-
-            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-              <TextInput
-                style={styles.textInput}
-                placeholder={t('today.sharePlaceholder')}
-                placeholderTextColor="#a8a29e"
-                multiline
-                textAlignVertical="top"
-                value={responseText}
-                onChangeText={handleTextChange}
-                autoFocus
-              />
-            </Animated.View>
-
-            {selectedImage ? (
-              <View style={styles.imagePreview}>
-                <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
-                <TouchableOpacity style={styles.removeImage} onPress={() => setSelectedImage(null)}>
-                  <Icon name="x" size="xs" color="#ffffff" weight="bold" />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity style={styles.attachPhotoButton} onPress={handleAddPhoto}>
-                <Icon name="camera" size="md" color="#78716c" />
-                <Text style={styles.attachPhotoText}>{t('today.addPhoto')}</Text>
-              </TouchableOpacity>
-            )}
-
-            <View style={styles.respondingFooter}>
-              <Text style={styles.charHint}>
-                {responseText.length < 10
-                  ? t('today.moreCharacters', { count: 10 - responseText.length })
-                  : t('today.readyToShare')}
-              </Text>
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => { setIsResponding(false); setResponseText(''); }}
-                >
-                  <Text style={styles.cancelText}>Back</Text>
-                </TouchableOpacity>
-                <Animated.View style={[{ flex: 1 }, submitAnimStyle]}>
-                  <TouchableOpacity
-                    style={[styles.submitButton, (responseText.length < 10 || submitResponse.isPending) && styles.disabled]}
-                    onPress={handleSubmit}
-                    onPressIn={() => { submitScale.value = withTiming(0.96, { duration: 100 }); }}
-                    onPressOut={() => { submitScale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
-                    disabled={responseText.length < 10 || submitResponse.isPending}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.submitText}>
-                      {submitResponse.isPending ? t('today.sending') : t('today.share')}
-                    </Text>
-                    {!submitResponse.isPending && <Icon name="arrow-right" size="sm" color="#ffffff" />}
-                  </TouchableOpacity>
-                </Animated.View>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
@@ -539,73 +443,19 @@ export default function TodayScreen() {
           contentContainerStyle={styles.scrollContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
         >
-          <View style={styles.greetingRow}>
-            <View style={styles.greetingTop}>
-              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>{t('today.niceOne')}</Text>
-            </View>
-            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-          </View>
+          <TodayScreenHeader greeting={t('today.niceOne')} {...headerProps} />
 
-          <ConnectionHeader
-            userName={userName}
-            partnerName={partnerName}
-            isPartnerOnline={isPartnerOnline}
-            isPartnerTyping={isPartnerTyping}
-            typingContext={partnerTypingContext}
-            lastSeen={partnerLastSeen}
-            currentStreak={currentStreak}
-            isStreakActive={isStreakActive}
-            userPhotoUrl={user?.photoUrl}
-            partnerPhotoUrl={user?.partnerPhotoUrl}
-          />
-
-          {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
-            <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
-              <Text style={styles.stagePromptTitle}>Help us personalize</Text>
-              <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
-              <View style={styles.stageButtons}>
-                {STAGES.map(s => (
-                  <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
-                    <Icon name={s.icon} size="sm" color="#c97454" />
-                    <Text style={styles.stageChipText}>{s.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <TouchableOpacity onPress={handleDismissStage}>
-                <Text style={styles.stageSkip}>Not now</Text>
-              </TouchableOpacity>
-            </Animated.View>
+          {showStagePrompt && (
+            <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
           )}
 
-          {/* Engagement cards */}
-          {(hasPendingCheckIn || (isPremium && latestInsight && !latestInsight.dismissedAt)) && (
-            <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: 16, marginTop: 16 }}>
-              {hasPendingCheckIn && (
-                <CheckInCard
-                  partnerName={user?.partnerName ?? 'your partner'}
-                  onSubmit={(responses) => submitCheckIn.mutate(responses)}
-                  onDismiss={() => dismissCheckIn.mutate()}
-                />
-              )}
-              {isPremium && latestInsight && !latestInsight.dismissedAt && (
-                <CoachingCard
-                  insightText={latestInsight.insightText}
-                  actionType={latestInsight.actionType}
-                  actionText={latestInsight.actionText}
-                  onAction={() => handleCoachingAction(latestInsight.actionType, latestInsight.actionText)}
-                  onDismiss={() => latestInsight.id && dismissInsight.mutate(latestInsight.id)}
-                />
-              )}
-            </Animated.View>
-          )}
+          <EngagementCards {...engagementProps} />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
             <Text style={styles.waitingPrompt}>
               {'\u201C'}{assignment!.promptText}{'\u201D'}
             </Text>
 
-            {/* Sealed response card */}
             <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
               <Icon name="lock" size="md" color="#c97454" weight="light" />
               <Text style={styles.sealedTitle}>Your answer is saved</Text>
@@ -629,31 +479,7 @@ export default function TodayScreen() {
             )}
           </Animated.View>
 
-          <ExploreCategoryRow />
-
-          {/* Goal Tracker */}
-          <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.goalSection}>
-            <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
-          </Animated.View>
-
-          {/* Wishlist */}
-          <Animated.View entering={FadeInUp.duration(500).delay(600)} style={styles.goalSection}>
-            <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
-          </Animated.View>
-
-          {/* Date Night Games */}
-          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={styles.goalSection}>
-            <DateNightCard />
-          </Animated.View>
-
-          <AddGoalModal
-            visible={showAddGoalModal}
-            onClose={() => setShowAddGoalModal(false)}
-          />
-          <AddWishlistModal
-            visible={showAddWishlistModal}
-            onClose={() => setShowAddWishlistModal(false)}
-          />
+          <TodayBottomSections {...bottomProps} animationBaseDelay={400} />
         </ScrollView>
       </SafeAreaView>
     );
@@ -668,66 +494,13 @@ export default function TodayScreen() {
           contentContainerStyle={styles.scrollContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
         >
-          <View style={styles.greetingRow}>
-            <View style={styles.greetingTop}>
-              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>{t('today.beautiful')}</Text>
-            </View>
-            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-          </View>
+          <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
 
-          <ConnectionHeader
-            userName={userName}
-            partnerName={partnerName}
-            isPartnerOnline={isPartnerOnline}
-            isPartnerTyping={isPartnerTyping}
-            typingContext={partnerTypingContext}
-            lastSeen={partnerLastSeen}
-            currentStreak={currentStreak}
-            isStreakActive={isStreakActive}
-            userPhotoUrl={user?.photoUrl}
-            partnerPhotoUrl={user?.partnerPhotoUrl}
-          />
-
-          {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
-            <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
-              <Text style={styles.stagePromptTitle}>Help us personalize</Text>
-              <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
-              <View style={styles.stageButtons}>
-                {STAGES.map(s => (
-                  <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
-                    <Icon name={s.icon} size="sm" color="#c97454" />
-                    <Text style={styles.stageChipText}>{s.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <TouchableOpacity onPress={handleDismissStage}>
-                <Text style={styles.stageSkip}>Not now</Text>
-              </TouchableOpacity>
-            </Animated.View>
+          {showStagePrompt && (
+            <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
           )}
 
-          {/* Engagement cards */}
-          {(hasPendingCheckIn || (isPremium && latestInsight && !latestInsight.dismissedAt)) && (
-            <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: 16, marginTop: 16 }}>
-              {hasPendingCheckIn && (
-                <CheckInCard
-                  partnerName={user?.partnerName ?? 'your partner'}
-                  onSubmit={(responses) => submitCheckIn.mutate(responses)}
-                  onDismiss={() => dismissCheckIn.mutate()}
-                />
-              )}
-              {isPremium && latestInsight && !latestInsight.dismissedAt && (
-                <CoachingCard
-                  insightText={latestInsight.insightText}
-                  actionType={latestInsight.actionType}
-                  actionText={latestInsight.actionText}
-                  onAction={() => handleCoachingAction(latestInsight.actionType, latestInsight.actionText)}
-                  onDismiss={() => latestInsight.id && dismissInsight.mutate(latestInsight.id)}
-                />
-              )}
-            </Animated.View>
-          )}
+          <EngagementCards {...engagementProps} />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
             <CompletionMoment
@@ -801,20 +574,7 @@ export default function TodayScreen() {
             </Animated.View>
           )}
 
-          {/* Goal Tracker */}
-          <Animated.View entering={FadeInUp.duration(500).delay(800)} style={styles.goalSection}>
-            <GoalTracker onAddGoal={() => setShowAddGoalModal(true)} />
-          </Animated.View>
-
-          {/* Wishlist */}
-          <Animated.View entering={FadeInUp.duration(500).delay(1000)} style={styles.goalSection}>
-            <WishlistCard onAddItem={() => setShowAddWishlistModal(true)} />
-          </Animated.View>
-
-          {/* Date Night Games */}
-          <Animated.View entering={FadeInUp.duration(500).delay(1200)} style={styles.goalSection}>
-            <DateNightCard />
-          </Animated.View>
+          <TodayBottomSections {...bottomProps} animationBaseDelay={800} />
 
           <Animated.View entering={FadeIn.duration(400).delay(1300)}>
             <View style={styles.doneRow}>
@@ -823,17 +583,6 @@ export default function TodayScreen() {
               <View style={styles.doneDot} />
             </View>
           </Animated.View>
-
-          <ExploreCategoryRow />
-
-          <AddGoalModal
-            visible={showAddGoalModal}
-            onClose={() => setShowAddGoalModal(false)}
-          />
-          <AddWishlistModal
-            visible={showAddWishlistModal}
-            onClose={() => setShowAddWishlistModal(false)}
-          />
         </ScrollView>
       </SafeAreaView>
     );
@@ -844,69 +593,14 @@ export default function TodayScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         <Animated.View entering={FadeIn.duration(400)}>
-          <View style={styles.greetingRow}>
-            <View style={styles.greetingTop}>
-              <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-              <Text style={styles.greeting}>{getGreeting(t)}</Text>
-            </View>
-            <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-          </View>
+          <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
         </Animated.View>
 
-        <Animated.View entering={FadeIn.duration(500).delay(100)}>
-          <ConnectionHeader
-            userName={userName}
-            partnerName={partnerName}
-            isPartnerOnline={isPartnerOnline}
-            isPartnerTyping={isPartnerTyping}
-            typingContext={partnerTypingContext}
-            lastSeen={partnerLastSeen}
-            currentStreak={currentStreak}
-            isStreakActive={isStreakActive}
-            userPhotoUrl={user?.photoUrl}
-            partnerPhotoUrl={user?.partnerPhotoUrl}
-          />
-        </Animated.View>
-
-        {!user?.relationshipStage && user?.isOnboarded && !stageDismissed && (
-          <Animated.View entering={FadeIn.duration(400)} style={styles.stagePromptCard}>
-            <Text style={styles.stagePromptTitle}>Help us personalize</Text>
-            <Text style={styles.stagePromptSubtitle}>What stage is your relationship?</Text>
-            <View style={styles.stageButtons}>
-              {STAGES.map(s => (
-                <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => handleSetStage(s.value)}>
-                  <Icon name={s.icon} size="sm" color="#c97454" />
-                  <Text style={styles.stageChipText}>{s.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <TouchableOpacity onPress={handleDismissStage}>
-              <Text style={styles.stageSkip}>Not now</Text>
-            </TouchableOpacity>
-          </Animated.View>
+        {showStagePrompt && (
+          <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
         )}
 
-        {/* Engagement cards */}
-        {(hasPendingCheckIn || (isPremium && latestInsight && !latestInsight.dismissedAt)) && (
-          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: 16, marginTop: 16 }}>
-            {hasPendingCheckIn && (
-              <CheckInCard
-                partnerName={user?.partnerName ?? 'your partner'}
-                onSubmit={(responses) => submitCheckIn.mutate(responses)}
-                onDismiss={() => dismissCheckIn.mutate()}
-              />
-            )}
-            {isPremium && latestInsight && !latestInsight.dismissedAt && (
-              <CoachingCard
-                insightText={latestInsight.insightText}
-                actionType={latestInsight.actionType}
-                actionText={latestInsight.actionText}
-                onAction={() => handleCoachingAction(latestInsight.actionType, latestInsight.actionText)}
-                onDismiss={() => latestInsight.id && dismissInsight.mutate(latestInsight.id)}
-              />
-            )}
-          </Animated.View>
-        )}
+        <EngagementCards {...engagementProps} />
 
         <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
           <PromptCard
@@ -916,8 +610,6 @@ export default function TodayScreen() {
             onRespond={handleRespond}
           />
         </Animated.View>
-
-        <ExploreCategoryRow />
       </ScrollView>
     </SafeAreaView>
   );
@@ -927,9 +619,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fafaf9',
-  },
-  flex: {
-    flex: 1,
   },
   centered: {
     flex: 1,
@@ -944,18 +633,9 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 40,
   },
-  // ─── Header / Greeting ───
+  // ─── Loading greeting (no logo) ───
   greetingRow: {
     marginBottom: 8,
-  },
-  greetingTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logoMark: {
-    width: 32,
-    height: 32,
   },
   greeting: {
     fontSize: 28,
@@ -984,10 +664,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 1,
-  },
-  emptyIcon: {
-    fontSize: 36,
-    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 20,
@@ -1019,125 +695,6 @@ const styles = StyleSheet.create({
   },
   streakSection: {
     marginTop: 24,
-  },
-  goalSection: {
-    marginTop: 24,
-  },
-  // ─── Responding ───
-  respondingScroll: {
-    paddingTop: 32,
-    paddingBottom: 32,
-    flexGrow: 1,
-  },
-  respondingHeader: {
-    marginBottom: 24,
-  },
-  respondingPrompt: {
-    fontSize: 18,
-    color: '#57534e',
-    fontStyle: 'italic',
-    textAlign: 'center',
-    lineHeight: 26,
-  },
-  textInput: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    fontSize: 17,
-    color: '#1c1917',
-    borderWidth: 1.5,
-    borderColor: '#e7e5e4',
-    minHeight: 140,
-    maxHeight: 240,
-    lineHeight: 24,
-  },
-  attachPhotoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignSelf: 'flex-start',
-    backgroundColor: '#f5f5f4',
-    borderRadius: 10,
-  },
-  attachPhotoIcon: {
-    fontSize: 14,
-  },
-  attachPhotoText: {
-    fontSize: 14,
-    color: '#78716c',
-    fontWeight: '500',
-  },
-  imagePreview: {
-    marginTop: 12,
-    position: 'relative',
-    alignSelf: 'flex-start',
-  },
-  previewImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-  },
-  removeImage: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#57534e',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeImageText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  respondingFooter: {
-    marginTop: 12,
-  },
-  charHint: {
-    color: '#a8a29e',
-    fontSize: 13,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  cancelButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    backgroundColor: '#f5f5f4',
-    borderRadius: 14,
-  },
-  cancelText: {
-    color: '#57534e',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  submitButton: {
-    flex: 1,
-    paddingVertical: 16,
-    backgroundColor: '#c97454',
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
-  },
-  submitText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  submitArrow: {
-    color: '#ffffff',
-    fontSize: 17,
   },
   // ─── Waiting ───
   waitingCard: {
@@ -1197,9 +754,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-  },
-  waitingIcon: {
-    fontSize: 16,
   },
   waitingMessage: {
     color: '#78716c',
@@ -1268,9 +822,6 @@ const styles = StyleSheet.create({
     gap: 8,
     alignSelf: 'center',
   },
-  streakCelebrationIcon: {
-    fontSize: 20,
-  },
   streakCelebrationText: {
     fontSize: 17,
     fontWeight: '700',
@@ -1297,55 +848,5 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     fontSize: 14,
     fontWeight: '500',
-  },
-  // ─── Stage Prompt ───
-  stagePromptCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#1c1917',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 1,
-  },
-  stagePromptTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1c1917',
-    marginBottom: 4,
-  },
-  stagePromptSubtitle: {
-    fontSize: 13,
-    color: '#78716c',
-    marginBottom: 16,
-  },
-  stageButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  stageChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#fef7f4',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#fceee7',
-  },
-  stageChipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#c97454',
-  },
-  stageSkip: {
-    fontSize: 13,
-    color: '#a8a29e',
-    textAlign: 'center',
   },
 });
