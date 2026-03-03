@@ -4,12 +4,20 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithCredential,
+  getAdditionalUserInfo,
+  OAuthProvider,
+  GoogleAuthProvider,
   signOut as firebaseSignOut,
   sendPasswordResetEmail,
   sendEmailVerification,
   User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
+import { Platform } from 'react-native';
 import { auth, db } from '@/config/firebase';
 import { logger } from '@/utils/logger';
 import { User, ToneCalibration, RelationshipStage } from '@/types';
@@ -21,9 +29,15 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
+interface SocialAuthResult {
+  isNewUser: boolean;
+}
+
 interface AuthActions {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<SocialAuthResult>;
+  signInWithApple: () => Promise<SocialAuthResult>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -185,6 +199,122 @@ function useAuthInternal(): AuthState & AuthActions {
     }
   }, [fetchUserDoc]);
 
+  // Create Firestore user doc for social auth users
+  const createSocialUserDoc = useCallback(async (
+    fbUser: FirebaseUser,
+    authProvider: 'google' | 'apple',
+    displayName?: string | null,
+    photoUrl?: string | null,
+  ) => {
+    const userRef = doc(db, 'users', fbUser.uid);
+    await setDoc(userRef, {
+      email: (fbUser.email || '').toLowerCase(),
+      display_name: displayName || null,
+      partner_name: null,
+      couple_id: null,
+      notification_time: '19:00',
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      tone_calibration: 'solid',
+      push_tokens: [],
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
+      last_active_at: serverTimestamp(),
+      onboarding_completed_at: null,
+      is_onboarded: false,
+      is_deleted: false,
+      photo_url: photoUrl || null,
+      partner_photo_url: null,
+      love_language: null,
+      relationship_stage: null,
+      pending_check_in: false,
+      auth_provider: authProvider,
+    });
+  }, []);
+
+  // Sign in with Google
+  const signInWithGoogleFn = useCallback(async (): Promise<SocialAuthResult> => {
+    setIsLoading(true);
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      const idToken = response.data?.idToken;
+      if (!idToken) throw new Error('Google sign-in failed: no ID token');
+
+      const credential = GoogleAuthProvider.credential(idToken);
+      const result = await signInWithCredential(auth, credential);
+      const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
+
+      if (isNewUser) {
+        await createSocialUserDoc(
+          result.user,
+          'google',
+          result.user.displayName,
+          result.user.photoURL,
+        );
+      }
+
+      const userData = await fetchUserDoc(result.user);
+      setUser(userData);
+      return { isNewUser };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchUserDoc, createSocialUserDoc]);
+
+  // Sign in with Apple
+  const signInWithAppleFn = useCallback(async (): Promise<SocialAuthResult> => {
+    setIsLoading(true);
+    try {
+      // Generate nonce for security
+      const rawNonce = Math.random().toString(36).substring(2, 34);
+      const hashedNonce = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        rawNonce,
+      );
+
+      const appleCredential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+        nonce: hashedNonce,
+      });
+
+      if (!appleCredential.identityToken) {
+        throw new Error('Apple sign-in failed: no identity token');
+      }
+
+      const provider = new OAuthProvider('apple.com');
+      const credential = provider.credential({
+        idToken: appleCredential.identityToken,
+        rawNonce,
+      });
+      const result = await signInWithCredential(auth, credential);
+      const isNewUser = getAdditionalUserInfo(result)?.isNewUser ?? false;
+
+      if (isNewUser) {
+        // Apple only shares name on first auth — capture it now
+        const fullName = appleCredential.fullName;
+        const displayName = fullName
+          ? [fullName.givenName, fullName.familyName].filter(Boolean).join(' ') || null
+          : null;
+
+        await createSocialUserDoc(
+          result.user,
+          'apple',
+          displayName,
+          null,
+        );
+      }
+
+      const userData = await fetchUserDoc(result.user);
+      setUser(userData);
+      return { isNewUser };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchUserDoc, createSocialUserDoc]);
+
   // Sign out
   const signOut = useCallback(async () => {
     setIsLoading(true);
@@ -216,6 +346,8 @@ function useAuthInternal(): AuthState & AuthActions {
     isAuthenticated: !!firebaseUser,
     signIn,
     signUp,
+    signInWithGoogle: signInWithGoogleFn,
+    signInWithApple: signInWithAppleFn,
     signOut,
     resetPassword,
     refreshUser,

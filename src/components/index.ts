@@ -69,6 +69,17 @@ export { AnimatedCounter } from './AnimatedCounter';
 export { PulsingDots } from './PulsingDots';
 export { SwipeableRow } from './SwipeableRow';
 
+// Today screen sections
+export { TodayScreenHeader } from './TodayScreenHeader';
+export { RelationshipStagePrompt } from './RelationshipStagePrompt';
+export type { RelationshipStage } from './RelationshipStagePrompt';
+export { EngagementCards } from './EngagementCards';
+export { RespondingScreen } from './RespondingScreen';
+export { TodayBottomSections } from './TodayBottomSections';
+
+// Social auth
+export { SocialAuthButtons } from './SocialAuthButtons';
+
 // Error handling
 export { ErrorBoundary } from './ErrorBoundary';
 export { QueryError } from './QueryError';

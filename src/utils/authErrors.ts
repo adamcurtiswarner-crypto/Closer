@@ -9,6 +9,9 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   'auth/invalid-credential': 'Incorrect email or password.',
   'auth/network-request-failed': 'Network error. Check your connection and try again.',
   'auth/operation-not-allowed': 'This sign-in method is not enabled.',
+  'auth/account-exists-with-different-credential': 'An account already exists with this email. Try signing in with your password instead.',
+  'auth/popup-closed-by-user': 'Sign-in was cancelled.',
+  'auth/cancelled-popup-request': 'Sign-in was cancelled.',
 };
 
 export function getAuthErrorMessage(error: any): string {

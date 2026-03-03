@@ -4,7 +4,7 @@ import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@components';
+import { Button, SocialAuthButtons } from '@components';
 
 const logo = require('@/assets/logo.png');
 
@@ -26,17 +26,20 @@ export default function WelcomeScreen() {
           </Text>
         </Animated.View>
 
-        {/* CTAs */}
+        {/* Social auth */}
+        <SocialAuthButtons animationDelay={400} />
+
+        {/* Email CTAs */}
         <View style={styles.buttons}>
-          <Animated.View entering={FadeInUp.duration(500).delay(400)}>
+          <Animated.View entering={FadeInUp.duration(500).delay(600)}>
             <Link href="/(auth)/sign-up" asChild>
-              <Button title={t('auth.welcome.getStarted')} />
+              <Button title="Get started with email" />
             </Link>
           </Animated.View>
 
           <View style={styles.spacer} />
 
-          <Animated.View entering={FadeInUp.duration(500).delay(500)}>
+          <Animated.View entering={FadeInUp.duration(500).delay(700)}>
             <Link href="/(auth)/sign-in" asChild>
               <Button title={t('auth.welcome.haveAccount')} variant="secondary" />
             </Link>

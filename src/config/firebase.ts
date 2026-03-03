@@ -3,6 +3,7 @@ import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, Functions, connectFunctionsEmulator } from 'firebase/functions';
 import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { logger } from '@/utils/logger';
 
 // Firebase configuration — env vars override for local dev, production values hardcoded
@@ -46,5 +47,10 @@ if (__DEV__) {
   }
 }
 
+
+// Configure Google Sign-In (iOS client ID from GoogleService-Info.plist)
+GoogleSignin.configure({
+  iosClientId: '1088752472801-qdv0p454v628s1bq3g7db9n4ik3m0972.apps.googleusercontent.com',
+});
 
 export { app, auth, db, functions, storage };

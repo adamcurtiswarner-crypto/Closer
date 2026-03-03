@@ -75,7 +75,15 @@
           "color": "#ffffff"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "@sentry/react-native",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.1088752472801-qdv0p454v628s1bq3g7db9n4ik3m0972"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

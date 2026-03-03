@@ -15,7 +15,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { Button, Input } from '@components';
+import { Button, Input, SocialAuthButtons } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getPendingInviteCode, clearPendingInviteCode } from '@/hooks/useDeepLink';
 import { getAuthErrorMessage } from '@/utils/authErrors';
@@ -74,6 +74,8 @@ export default function SignInScreen() {
           <Animated.Text entering={FadeIn.duration(400)} style={styles.title}>
             {t('auth.signIn.title')}
           </Animated.Text>
+
+          <SocialAuthButtons animationDelay={100} />
 
           <View style={styles.form}>
             <Animated.View entering={FadeInUp.duration(400).delay(100)}>
