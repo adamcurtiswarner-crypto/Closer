@@ -22,7 +22,8 @@ ui-debug.log
 # OS
 .DS_Store
 
-# Tasks (local Claude workflow)
+# Claude Code
+.claude/
 tasks/
 
 # Worktrees
