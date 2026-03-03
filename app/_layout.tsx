@@ -4,12 +4,49 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Sentry from '@sentry/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useDeepLink } from '@/hooks/useDeepLink';
 import { useAuth, AuthProvider } from '@/hooks/useAuth';
 import { setAnalyticsContext, logEvent } from '@/services/analytics';
 import { registerForPushNotifications, setupNotificationHandlers } from '@/services/notifications';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+// Initialize Sentry before any rendering
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  enabled: !__DEV__,
+  beforeSend(event) {
+    // Strip sensitive relationship data from error payloads
+    if (event.breadcrumbs) {
+      event.breadcrumbs = event.breadcrumbs.map((breadcrumb) => {
+        if (breadcrumb.data) {
+          const sanitized = { ...breadcrumb.data };
+          delete sanitized.response_text;
+          delete sanitized.response_text_encrypted;
+          delete sanitized.partnerName;
+          delete sanitized.displayName;
+          // Remove any value containing the encryption sentinel
+          for (const key of Object.keys(sanitized)) {
+            if (typeof sanitized[key] === 'string' && sanitized[key].includes('[encrypted]')) {
+              delete sanitized[key];
+            }
+          }
+          breadcrumb.data = sanitized;
+        }
+        return breadcrumb;
+      });
+    }
+    // Strip sensitive fields from extra context
+    if (event.extra) {
+      delete event.extra.response_text;
+      delete event.extra.response_text_encrypted;
+      delete event.extra.partnerName;
+      delete event.extra.displayName;
+    }
+    return event;
+  },
+});
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -46,10 +83,13 @@ function AppBootstrap() {
     }
   }, [isLoading]);
 
-  // Set analytics context when user changes
+  // Set analytics and Sentry context when user changes
   useEffect(() => {
     if (user) {
       setAnalyticsContext({ user_id: user.id, couple_id: user.coupleId });
+      Sentry.setUser({ id: user.id });
+    } else {
+      Sentry.setUser(null);
     }
   }, [user]);
 
@@ -76,7 +116,7 @@ function AppBootstrap() {
   return null;
 }
 
-export default function RootLayout() {
+function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -102,3 +142,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);

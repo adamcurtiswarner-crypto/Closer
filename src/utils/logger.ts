@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/react-native';
+
 const isDev = __DEV__;
 
 export const logger = {
@@ -8,7 +10,15 @@ export const logger = {
     if (isDev) console.warn(...args);
   },
   error: (...args: any[]) => {
-    if (isDev) console.error(...args);
-    // In production, could send to a crash reporting service here
+    if (isDev) {
+      console.error(...args);
+    } else {
+      const error = args[0];
+      if (error instanceof Error) {
+        Sentry.captureException(error);
+      } else {
+        Sentry.captureMessage(String(error), 'error');
+      }
+    }
   },
 };
