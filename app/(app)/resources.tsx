@@ -110,6 +110,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.3,
   },
@@ -124,6 +125,7 @@ const styles = StyleSheet.create({
   intro: {
     fontSize: 15,
     color: '#78716c',
+    fontFamily: 'Inter-Regular',
     lineHeight: 22,
     marginBottom: 24,
   },
@@ -140,11 +142,13 @@ const styles = StyleSheet.create({
   categoryLabel: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     color: '#292524',
   },
   categoryDescription: {
     fontSize: 13,
     color: '#a8a29e',
+    fontFamily: 'Inter-Regular',
     marginTop: 1,
   },
   safety: {
@@ -156,6 +160,7 @@ const styles = StyleSheet.create({
   safetyText: {
     fontSize: 14,
     color: '#57534e',
+    fontFamily: 'Inter-Regular',
     lineHeight: 20,
   },
 });

@@ -100,12 +100,14 @@ const styles = StyleSheet.create({
   },
   back: {
     fontSize: 16,
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     marginBottom: 12,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   scrollView: {
@@ -117,11 +119,13 @@ const styles = StyleSheet.create({
   updated: {
     fontSize: 13,
     color: '#a8a29e',
+    fontFamily: 'Inter-Regular',
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 17,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#1c1917',
     marginTop: 20,
     marginBottom: 8,
@@ -129,6 +133,7 @@ const styles = StyleSheet.create({
   body: {
     fontSize: 15,
     color: '#57534e',
+    fontFamily: 'Inter-Regular',
     lineHeight: 22,
   },
   bottomSpacer: {
