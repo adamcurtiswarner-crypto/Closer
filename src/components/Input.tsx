@@ -62,12 +62,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
+    fontFamily: 'Inter-Medium',
     color: '#57534e',
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 6,
   },
   input: {
+    fontFamily: 'Inter-Regular',
     width: '100%',
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -79,7 +81,7 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   inputFocused: {
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
   },
   inputError: {
     borderColor: '#f87171',
