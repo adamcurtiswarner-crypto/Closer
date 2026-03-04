@@ -137,6 +137,10 @@ export default function TodayScreen() {
   const handleCoachingAction = (actionType: string, actionText: string) => {
     if (latestInsight?.id) {
       markActedOn.mutate(latestInsight.id);
+      logEvent('coaching_insight_acted', {
+        action_type: actionType,
+        pulse_tier: couple?.currentPulseTier,
+      });
     }
 
     switch (actionType) {
@@ -326,7 +330,14 @@ export default function TodayScreen() {
     isPremium,
     latestInsight,
     onCoachingAction: () => latestInsight && handleCoachingAction(latestInsight.actionType, latestInsight.actionText),
-    onCoachingDismiss: () => latestInsight?.id && dismissInsight.mutate(latestInsight.id),
+    onCoachingDismiss: () => {
+      if (latestInsight?.id) {
+        dismissInsight.mutate(latestInsight.id);
+        logEvent('coaching_insight_dismissed', {
+          pulse_tier: couple?.currentPulseTier,
+        });
+      }
+    },
     pulseTier: couple?.currentPulseTier ?? undefined,
   };
 
