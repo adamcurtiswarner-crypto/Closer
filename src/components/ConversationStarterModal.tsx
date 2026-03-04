@@ -78,7 +78,7 @@ export function ConversationStarterModal({
               activeOpacity={0.8}
             >
               <Icon
-                name={copied ? 'check' : 'copy'}
+                name={copied ? 'check' : 'chat-text'}
                 size="sm"
                 color={copied ? '#22c55e' : '#c97454'}
               />
