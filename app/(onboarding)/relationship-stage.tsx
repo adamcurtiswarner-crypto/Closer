@@ -1,24 +1,56 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { hapticImpact } from '@utils/haptics';
-import { Button, Icon } from '@/components';
+import { Button } from '@/components';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/config/firebase';
 import { logger } from '@/utils/logger';
-import type { IconName } from '@/components/Icon';
 
-type RelationshipStage = 'dating' | 'engaged' | 'married' | 'long_distance';
+type RelationshipStage =
+  | 'comfortable_but_busy'
+  | 'new_and_exciting'
+  | 'a_little_disconnected'
+  | 'going_through_a_lot'
+  | 'deep_and_steady'
+  | 'in_a_bit_of_a_rut'
+  | 'reduce_stress';
 
-const STAGES: { value: RelationshipStage; label: string; icon: IconName }[] = [
-  { value: 'dating', label: 'Dating', icon: 'heart' },
-  { value: 'engaged', label: 'Engaged', icon: 'star' },
-  { value: 'married', label: 'Married', icon: 'handshake' },
-  { value: 'long_distance', label: 'Long Distance', icon: 'map-pin' },
+type StageItem = {
+  value: RelationshipStage;
+  label: string;
+  column: 0 | 1;
+};
+
+// Cards arranged in two columns with varying heights achieved via content/padding
+const LEFT_COLUMN: StageItem[] = [
+  { value: 'comfortable_but_busy', label: 'Comfortable but busy', column: 0 },
+  { value: 'a_little_disconnected', label: 'A little disconnected', column: 0 },
+  { value: 'deep_and_steady', label: 'Deep and steady', column: 0 },
+  { value: 'reduce_stress', label: 'Reduce Stress', column: 0 },
 ];
+
+const RIGHT_COLUMN: StageItem[] = [
+  { value: 'new_and_exciting', label: 'New and exciting', column: 1 },
+  { value: 'going_through_a_lot', label: 'Going through a lot', column: 1 },
+  { value: 'in_a_bit_of_a_rut', label: 'In a bit of a rut', column: 1 },
+];
+
+// Varying minimum heights per card for masonry effect
+const CARD_MIN_HEIGHTS: Record<RelationshipStage, number> = {
+  comfortable_but_busy: 96,
+  new_and_exciting: 112,
+  a_little_disconnected: 112,
+  going_through_a_lot: 96,
+  deep_and_steady: 96,
+  in_a_bit_of_a_rut: 112,
+  reduce_stress: 96,
+};
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function RelationshipStageScreen() {
   const { user, refreshUser } = useAuth();
@@ -47,61 +79,49 @@ export default function RelationshipStageScreen() {
     }
   };
 
+  const renderCard = (stage: StageItem, index: number, columnOffset: number) => {
+    const isSelected = selected === stage.value;
+    const animationDelay = 200 + (index + columnOffset) * 80;
+
+    return (
+      <AnimatedPressable
+        key={stage.value}
+        entering={FadeInUp.duration(400).delay(animationDelay)}
+        style={[
+          styles.card,
+          { minHeight: CARD_MIN_HEIGHTS[stage.value] },
+          isSelected ? styles.cardSelected : styles.cardDefault,
+        ]}
+        onPress={() => handleSelect(stage.value)}
+      >
+        <Text style={[styles.cardLabel, isSelected && styles.cardLabelSelected]}>
+          {stage.label}
+        </Text>
+      </AnimatedPressable>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Animated.Text entering={FadeIn.duration(400)} style={styles.title}>
-          Where are you two?
-        </Animated.Text>
-        <Animated.Text entering={FadeIn.duration(400).delay(100)} style={styles.subtitle}>
-          This helps us tailor your experience
+          What does your relationship feel like right now?
         </Animated.Text>
 
-        <View style={styles.optionsContainer}>
-          {STAGES.map((stage, index) => (
-            <Animated.View
-              key={stage.value}
-              entering={FadeInUp.duration(400).delay(200 + index * 100)}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.optionCard,
-                  selected === stage.value
-                    ? styles.optionCardSelected
-                    : styles.optionCardDefault,
-                ]}
-                onPress={() => handleSelect(stage.value)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.optionRow}>
-                  <Icon
-                    name={stage.icon}
-                    size="md"
-                    color={selected === stage.value ? '#ef5323' : '#78716c'}
-                    weight={selected === stage.value ? 'fill' : 'light'}
-                  />
-                  <Text
-                    style={[
-                      styles.optionLabel,
-                      selected === stage.value
-                        ? styles.optionLabelSelected
-                        : styles.optionLabelDefault,
-                    ]}
-                  >
-                    {stage.label}
-                  </Text>
-                  {selected === stage.value && (
-                    <View style={styles.checkBadge}>
-                      <Icon name="check" size="xs" color="#ffffff" weight="bold" />
-                    </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
-          ))}
-        </View>
-
-        <View style={styles.spacer} />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.gridContainer}>
+            <View style={styles.column}>
+              {LEFT_COLUMN.map((stage, index) => renderCard(stage, index, 0))}
+            </View>
+            <View style={styles.column}>
+              {RIGHT_COLUMN.map((stage, index) => renderCard(stage, index, LEFT_COLUMN.length))}
+            </View>
+          </View>
+        </ScrollView>
 
         <Animated.View entering={FadeInUp.duration(400).delay(600)} style={styles.buttonContainer}>
           <Button
@@ -127,61 +147,51 @@ const styles = StyleSheet.create({
     paddingTop: 48,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
+    lineHeight: 36,
+    marginBottom: 8,
   },
-  subtitle: {
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
-    marginTop: 8,
+  scrollView: {
+    flex: 1,
+    marginTop: 24,
   },
-  optionsContainer: {
-    marginTop: 32,
+  scrollContent: {
+    paddingBottom: 16,
   },
-  optionCard: {
+  gridContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  column: {
+    flex: 1,
+    gap: 12,
+  },
+  card: {
+    borderRadius: 20,
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    justifyContent: 'center',
   },
-  optionCardSelected: {
-    backgroundColor: '#fef5f0',
-    borderWidth: 1.5,
-    borderColor: '#ef5323',
-  },
-  optionCardDefault: {
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
+  cardDefault: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
     borderColor: '#e7e5e4',
   },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
+  cardSelected: {
+    backgroundColor: '#fef5f0',
+    borderWidth: 2,
+    borderColor: '#ef5323',
   },
-  optionLabel: {
+  cardLabel: {
     fontSize: 16,
     fontWeight: '500',
     fontFamily: 'Inter-Medium',
-    flex: 1,
-  },
-  optionLabelSelected: {
-    color: '#ef5323',
-  },
-  optionLabelDefault: {
     color: '#1c1917',
   },
-  checkBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#ef5323',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  spacer: {
-    flex: 1,
+  cardLabelSelected: {
+    color: '#ef5323',
   },
   buttonContainer: {
     marginBottom: 32,
