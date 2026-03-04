@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -22,12 +23,33 @@ const TIME_OPTIONS = [
   { label: 'Night (9 PM)', value: '21:00' },
 ];
 
+const DAYS_OF_WEEK = [
+  { key: 'su', label: 'SU' },
+  { key: 'mo', label: 'M' },
+  { key: 'tu', label: 'T' },
+  { key: 'we', label: 'W' },
+  { key: 'th', label: 'TH' },
+  { key: 'fr', label: 'F' },
+  { key: 'sa', label: 'S' },
+];
+
+const ALL_DAYS = DAYS_OF_WEEK.map((d) => d.key);
+
 export default function PreferencesScreen() {
   const { user, refreshUser } = useAuth();
   const [partnerName, setPartnerName] = useState('');
   const [selectedTime, setSelectedTime] = useState('19:00');
+  const [selectedDays, setSelectedDays] = useState<string[]>(ALL_DAYS);
   const [isSaving, setIsSaving] = useState(false);
   const { t } = useTranslation();
+
+  const toggleDay = (dayKey: string) => {
+    setSelectedDays((prev) =>
+      prev.includes(dayKey)
+        ? prev.filter((d) => d !== dayKey)
+        : [...prev, dayKey]
+    );
+  };
 
   const handleContinue = async () => {
     if (!user?.id) return;
@@ -37,6 +59,7 @@ export default function PreferencesScreen() {
       await updateDoc(userRef, {
         partner_name: partnerName || null,
         notification_time: selectedTime,
+        notification_days: selectedDays,
         updated_at: serverTimestamp(),
       });
       await refreshUser();
@@ -48,14 +71,28 @@ export default function PreferencesScreen() {
     }
   };
 
+  const handleSkip = () => {
+    router.push('/(onboarding)/tone-calibration');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Animated.Text
           entering={FadeIn.duration(400)}
           style={styles.title}
         >
-          {t('onboarding.preferences.title')}
+          What times would you prefer to engage with Stoke?
+        </Animated.Text>
+        <Animated.Text
+          entering={FadeIn.duration(400).delay(50)}
+          style={styles.helperText}
+        >
+          Any time you can choose but we recommend first thing in the morning
         </Animated.Text>
 
         <Animated.View
@@ -112,19 +149,68 @@ export default function PreferencesScreen() {
           ))}
         </View>
 
+        <Animated.View
+          entering={FadeInUp.duration(400).delay(600)}
+          style={styles.daySection}
+        >
+          <Text style={styles.daySectionTitle}>
+            Which day would you like to receive prompts?
+          </Text>
+          <Text style={styles.daySectionHelper}>
+            Everyday is best, but we recommend picking at least four
+          </Text>
+
+          <View style={styles.dayRow}>
+            {DAYS_OF_WEEK.map((day, index) => {
+              const isSelected = selectedDays.includes(day.key);
+              return (
+                <Animated.View
+                  key={day.key}
+                  entering={FadeInUp.duration(300).delay(650 + index * 40)}
+                >
+                  <TouchableOpacity
+                    style={[
+                      styles.dayCircle,
+                      isSelected && styles.dayCircleSelected,
+                    ]}
+                    onPress={() => toggleDay(day.key)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.dayLabel,
+                        isSelected && styles.dayLabelSelected,
+                      ]}
+                    >
+                      {day.label}
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </Animated.View>
+
         <View style={styles.spacer} />
 
         <Animated.View
-          entering={FadeInUp.duration(500).delay(500)}
+          entering={FadeInUp.duration(500).delay(700)}
           style={styles.buttonWrapper}
         >
           <Button
-            title={isSaving ? t('common.saving') : t('common.continue')}
+            title={isSaving ? t('common.saving') : 'SAVE'}
             onPress={handleContinue}
             disabled={isSaving}
           />
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={handleSkip}
+            activeOpacity={0.6}
+          >
+            <Text style={styles.skipText}>NO THANKS</Text>
+          </TouchableOpacity>
         </Animated.View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -134,16 +220,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fafaf9',
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 48,
+    paddingBottom: 32,
   },
   title: {
     fontSize: 24,
     fontWeight: '700',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
+  },
+  helperText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#78716c',
+    marginTop: 8,
+    lineHeight: 20,
   },
   inputSection: {
     marginTop: 32,
@@ -196,10 +293,65 @@ const styles = StyleSheet.create({
   optionTextDefault: {
     color: '#44403c',
   },
+  daySection: {
+    marginTop: 32,
+  },
+  daySectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#1c1917',
+  },
+  daySectionHelper: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#78716c',
+    marginTop: 6,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dayCircle: {
+    width: 41,
+    height: 41,
+    borderRadius: 20.5,
+    borderWidth: 1,
+    borderColor: '#e7e5e4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayCircleSelected: {
+    backgroundColor: '#ef5323',
+    borderColor: '#ef5323',
+  },
+  dayLabel: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 13,
+    color: '#57534e',
+  },
+  dayLabelSelected: {
+    color: '#ffffff',
+  },
   spacer: {
     flex: 1,
+    minHeight: 24,
   },
   buttonWrapper: {
-    marginBottom: 32,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  skipButton: {
+    marginTop: 16,
+    paddingVertical: 8,
+  },
+  skipText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#a8a29e',
+    letterSpacing: 1,
   },
 });
