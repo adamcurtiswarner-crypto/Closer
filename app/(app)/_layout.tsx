@@ -59,7 +59,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           const isFocused = activeVisibleIndex === index;
 
           const label = options.title ?? route.name;
-          const color = isFocused ? '#c97454' : '#a8a29e';
+          const color = isFocused ? '#ef5323' : '#a8a29e';
 
           const onPress = () => {
             const event = navigation.emit({
@@ -129,7 +129,7 @@ export default function AppLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#c97454',
+        tabBarActiveTintColor: '#ef5323',
         tabBarInactiveTintColor: '#a8a29e',
       }}
     >
@@ -240,6 +240,7 @@ const customTabBarStyles = StyleSheet.create({
   label: {
     fontSize: 12,
     marginTop: 4,
+    fontFamily: 'Inter-Medium',
   },
   indicator: {
     position: 'absolute',
@@ -248,7 +249,7 @@ const customTabBarStyles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
 });
 
