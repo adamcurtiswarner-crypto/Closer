@@ -2576,6 +2576,11 @@ export const deliverCheckIn = functions.pubsub
           await db.collection('users').doc(userId).update({
             pending_check_in: true,
           });
+          await sendPushNotification(
+            userId,
+            { title: 'Stoke', body: 'A quiet moment to reflect on your week together' },
+            { type: 'check_in' }
+          );
           flaggedCount++;
         }
       }
@@ -2662,6 +2667,16 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
       checkInScores[memberId] = data.responses.map((r: any) => r.score);
     }
   }
+
+  // Extract tone calibration from member docs
+  const tones: string[] = [];
+  for (const memberId of memberIds) {
+    const memberDoc = await db.collection('users').doc(memberId).get();
+    if (memberDoc.exists) {
+      tones.push(memberDoc.data()!.tone_calibration || 'solid');
+    }
+  }
+  const effectiveTone = getEffectiveTone(tones);
 
   // 4. Compute signal scores
   const emotionPositive = responses.filter(
@@ -2791,6 +2806,7 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
         text: lastAction.action_text,
         actedOn: !!lastAction.acted_on,
       } : null,
+      toneCalibration: effectiveTone,
     });
 
     // Call Claude API (match existing Anthropic usage pattern)
@@ -2857,6 +2873,7 @@ function buildCoachingPrompt(data: {
   partialAssignments: number;
   checkInScores: number[];
   lastAction: { text: string; actedOn: boolean } | null;
+  toneCalibration: string;
 }): string {
   const emotionSummary = data.emotionTotal > 0
     ? `${data.emotionPositive} warm, ${data.emotionTotal - data.emotionPositive - data.emotionNegative} okay, ${data.emotionNegative} hard`
@@ -2869,6 +2886,12 @@ function buildCoachingPrompt(data: {
   const lastActionSummary = data.lastAction
     ? `Last week's suggestion: "${data.lastAction.text}" — ${data.lastAction.actedOn ? 'completed' : 'not taken'}`
     : 'No previous suggestion';
+
+  const toneInstruction = data.toneCalibration === 'struggling'
+    ? 'This couple has acknowledged struggling to connect. Be especially gentle and validating. Acknowledge that showing up matters. Suggest the smallest possible action — lower the bar, not raise it.'
+    : data.toneCalibration === 'distant'
+      ? 'This couple has acknowledged feeling distant. Be gently encouraging. Emphasize small reconnection moments. Frame suggestions as easy first steps.'
+      : 'Warm, quiet, direct. No exclamation points. No emojis. Never blame either partner. Focus on the relationship, not individuals.';
 
   return `You are a warm, non-judgmental relationship coach. Based on this couple's engagement data from the past week, write a brief (2-3 sentence) personalized insight and one specific, actionable suggestion.
 
@@ -2885,7 +2908,7 @@ Insight: [Your 2-3 sentence observation]
 Suggestion: [One specific actionable thing they can do]
 Type: [One of: goal, date_night, conversation, revisit, check_in]
 
-Tone: Warm, quiet, direct. No exclamation points. No emojis. Never blame either partner. Focus on the relationship, not individuals.`;
+Tone: ${toneInstruction}`;
 }
 
 function parseCoachingResponse(text: string): { insightText: string; actionType: string; actionText: string } {
