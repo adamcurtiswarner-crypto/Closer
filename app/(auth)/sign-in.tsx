@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 32,
   },
@@ -177,7 +178,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   forgotText: {
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     fontSize: 14,
   },
   submit: {
@@ -189,10 +191,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
   },
   footerLink: {
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     fontWeight: '500',
   },
 });

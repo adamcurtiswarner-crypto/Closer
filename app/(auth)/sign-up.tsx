@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 32,
   },
@@ -178,6 +179,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   terms: {
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     fontSize: 12,
     textAlign: 'center',
@@ -185,7 +187,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   termsLink: {
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     textDecorationLine: 'underline',
   },
   footer: {
@@ -194,10 +197,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
   },
   footerLink: {
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     fontWeight: '500',
   },
 });
