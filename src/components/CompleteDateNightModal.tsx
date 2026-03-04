@@ -262,6 +262,7 @@ const styles = StyleSheet.create({
   dateNightTitle: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.5,
     marginBottom: 32,
@@ -269,6 +270,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#57534e',
     marginBottom: 16,
   },
@@ -290,8 +292,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingPillActive: {
-    backgroundColor: '#fef7f4',
-    borderColor: '#c97454',
+    backgroundColor: '#fef5f0',
+    borderColor: '#ef5323',
   },
   ratingLabel: {
     fontSize: 15,
@@ -299,7 +301,7 @@ const styles = StyleSheet.create({
     color: '#57534e',
   },
   ratingLabelActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   ratingSublabel: {
     fontSize: 11,
@@ -307,7 +309,7 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
   },
   ratingSublabelActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   // --- Note Input ---
   noteInput: {
@@ -362,7 +364,7 @@ const styles = StyleSheet.create({
   doneButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -370,10 +372,11 @@ const styles = StyleSheet.create({
   doneText: {
     color: '#ffffff',
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     letterSpacing: 0.2,
   },
   primaryDisabled: {
-    backgroundColor: '#d4a48e',
+    backgroundColor: '#f9a07a',
   },
 });

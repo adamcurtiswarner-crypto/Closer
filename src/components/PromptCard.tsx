@@ -15,23 +15,23 @@ const PROMPT_TYPE_CONFIG: Record<string, {
   love_map_update: {
     icon: 'map-pin',
     label: 'Love Map',
-    accent: '#c97454',
-    bgTint: '#fef7f4',
-    bgTintDark: '#fceee7',
+    accent: '#ef5323',
+    bgTint: '#fef5f0',
+    bgTintDark: '#fce8dc',
   },
   conflict_navigation: {
     icon: 'path',
     label: 'Navigate Together',
-    accent: '#8b7355',
+    accent: '#490f5f',
     bgTint: '#faf8f5',
     bgTintDark: '#f3efe8',
   },
   bid_for_connection: {
     icon: 'handshake',
     label: 'Connection',
-    accent: '#c97454',
-    bgTint: '#fef7f4',
-    bgTintDark: '#fceee7',
+    accent: '#ef5323',
+    bgTint: '#fef5f0',
+    bgTintDark: '#fce8dc',
   },
   appreciation_expression: {
     icon: 'sparkle',
@@ -65,9 +65,9 @@ const DEFAULT_CONFIG: {
 } = {
   icon: 'chat-text',
   label: 'Prompt',
-  accent: '#c97454',
-  bgTint: '#fef7f4',
-  bgTintDark: '#fceee7',
+  accent: '#ef5323',
+  bgTint: '#fef5f0',
+  bgTintDark: '#fce8dc',
 };
 
 interface PromptCardProps {
@@ -166,12 +166,14 @@ const styles = StyleSheet.create({
   typeLabel: {
     fontSize: 13,
     fontWeight: '600',
+    fontFamily: 'Inter-Medium',
     letterSpacing: 0.3,
   },
   promptText: {
     color: '#1c1917',
     fontSize: 22,
     fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
     textAlign: 'center',
     lineHeight: 32,
     letterSpacing: -0.3,
@@ -179,6 +181,7 @@ const styles = StyleSheet.create({
   hint: {
     color: '#78716c',
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     textAlign: 'center',
     marginTop: 14,
     lineHeight: 20,
@@ -198,6 +201,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     textAlign: 'center',
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 17,
     letterSpacing: 0.2,
   },

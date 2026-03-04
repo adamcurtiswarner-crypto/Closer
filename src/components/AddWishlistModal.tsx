@@ -236,11 +236,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.5,
   },
   modalSubtitle: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     marginTop: 4,
     marginBottom: 32,
@@ -293,8 +295,8 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   categoryPillActive: {
-    backgroundColor: '#fef7f4',
-    borderColor: '#c97454',
+    backgroundColor: '#fef5f0',
+    borderColor: '#ef5323',
   },
   categoryIcon: {
     fontSize: 16,
@@ -305,7 +307,7 @@ const styles = StyleSheet.create({
     color: '#78716c',
   },
   categoryTextActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   errorContainer: {
     backgroundColor: '#fef2f2',
@@ -346,7 +348,7 @@ const styles = StyleSheet.create({
   createButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -356,6 +358,7 @@ const styles = StyleSheet.create({
   createText: {
     color: '#ffffff',
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     letterSpacing: 0.2,
   },
@@ -363,6 +366,6 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   primaryDisabled: {
-    backgroundColor: '#d4a48e',
+    backgroundColor: '#f9a07a',
   },
 });

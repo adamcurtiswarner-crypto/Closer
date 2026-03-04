@@ -150,7 +150,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('truth')}
               activeOpacity={0.8}
             >
-              <Icon name="chat-circle" size="md" color="#c97454" />
+              <Icon name="chat-circle" size="md" color="#ef5323" />
               <Text style={styles.chooseButtonText}>Truth</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -161,7 +161,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('dare')}
               activeOpacity={0.8}
             >
-              <Icon name="flame" size="md" color="#c97454" weight="fill" />
+              <Icon name="flame" size="md" color="#ef5323" weight="fill" />
               <Text style={styles.chooseButtonText}>Dare</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -234,11 +234,12 @@ const styles = StyleSheet.create({
   turnName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#ef5323',
   },
   chooseTitle: {
     fontSize: 28,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   chooseButtonTruth: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
   },
   chooseButtonDare: {
     backgroundColor: '#fff7ed',
@@ -274,6 +275,7 @@ const styles = StyleSheet.create({
   chooseButtonText: {
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     color: '#292524',
   },
   // ─── Prompt Phase ───
@@ -284,7 +286,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   typeBadge: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -296,7 +298,7 @@ const styles = StyleSheet.create({
   typeBadgeText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#ef5323',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -306,6 +308,7 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 22,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     textAlign: 'center',
     lineHeight: 30,
@@ -319,7 +322,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 40,

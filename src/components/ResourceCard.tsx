@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#292524',
     flex: 1,
   },
@@ -106,6 +107,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     lineHeight: 18,
   },

@@ -67,10 +67,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
   },
   typingText: {
-    color: '#c97454',
+    color: '#ef5323',
     fontStyle: 'italic',
   },
   typingDots: {
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   dot1: {
     opacity: 0.4,

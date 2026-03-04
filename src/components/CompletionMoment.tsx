@@ -53,7 +53,7 @@ function SparkleParticle({ x, delay }: { x: number; delay: number }) {
           width: 4,
           height: 4,
           borderRadius: 2,
-          backgroundColor: '#c97454',
+          backgroundColor: '#ef5323',
         },
         animatedStyle,
       ]}
@@ -102,7 +102,7 @@ export function CompletionMoment({
 
         <Animated.View entering={FadeIn.duration(400)}>
           <View style={styles.headerRow}>
-            <Icon name="sparkle" size="lg" color="#c97454" weight="fill" />
+            <Icon name="sparkle" size="lg" color="#ef5323" weight="fill" />
             <Text style={styles.header}>You both answered</Text>
           </View>
         </Animated.View>
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   headerRow: {
     flexDirection: 'row',
@@ -178,10 +178,12 @@ const styles = StyleSheet.create({
     color: '#57534e',
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   promptText: {
     color: '#57534e',
     fontSize: 17,
+    fontFamily: 'Inter-Regular',
     textAlign: 'center',
     marginBottom: 24,
     fontStyle: 'italic',
@@ -208,5 +210,6 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     fontSize: 13,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
 });

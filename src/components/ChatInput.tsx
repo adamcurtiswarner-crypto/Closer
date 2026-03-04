@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#1c1917',
     maxHeight: 100,
     borderWidth: 1,
@@ -145,6 +146,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   sendButtonActive: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
 });

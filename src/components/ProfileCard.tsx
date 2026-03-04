@@ -289,7 +289,7 @@ export function ProfileCard() {
               }}
               activeOpacity={0.7}
             >
-              <Icon name="calendar" size="md" color="#c97454" />
+              <Icon name="calendar" size="md" color="#ef5323" />
               <View style={styles.anniversaryInfo}>
                 <Text style={styles.anniversaryLabel}>{t('profile.anniversary')}</Text>
                 <Text style={styles.anniversaryValue}>
@@ -312,7 +312,7 @@ export function ProfileCard() {
           onPress={() => setShowLoveLanguageModal(true)}
           activeOpacity={0.7}
         >
-          <Icon name="heart" size="md" color="#c97454" weight="fill" />
+          <Icon name="heart" size="md" color="#ef5323" weight="fill" />
           <View style={styles.anniversaryInfo}>
             <Text style={styles.anniversaryLabel}>{t('profile.yourLoveLanguage')}</Text>
             <Text style={styles.anniversaryValue}>
@@ -370,7 +370,7 @@ export function ProfileCard() {
                         {lang.description}
                       </Text>
                     </View>
-                    {isActive && <View style={styles.langCheck}><Icon name="check" size="sm" color="#c97454" weight="bold" /></View>}
+                    {isActive && <View style={styles.langCheck}><Icon name="check" size="sm" color="#ef5323" weight="bold" /></View>}
                   </TouchableOpacity>
                 );
               })}
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   profileRow: {
     flexDirection: 'row',
@@ -482,10 +482,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   avatarPartner: {
-    backgroundColor: '#8b7355',
+    backgroundColor: '#490f5f',
   },
   avatarText: {
     color: '#ffffff',
@@ -514,6 +514,7 @@ const styles = StyleSheet.create({
   profileLabel: {
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     letterSpacing: 0.8,
     marginBottom: 4,
@@ -521,12 +522,14 @@ const styles = StyleSheet.create({
   nameInput: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#1c1917',
     padding: 0,
     marginBottom: 2,
   },
   emailText: {
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
     color: '#a8a29e',
     marginTop: 2,
   },
@@ -583,11 +586,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     marginBottom: 16,
   },
@@ -616,7 +621,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   modalSaveText: {
     fontSize: 16,
@@ -653,9 +658,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   langOptionActive: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     borderWidth: 1,
-    borderColor: '#e9b8a3',
+    borderColor: '#f9a07a',
   },
   langOptionIcon: {
     fontSize: 24,
@@ -669,7 +674,7 @@ const styles = StyleSheet.create({
     color: '#1c1917',
   },
   langOptionLabelActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   langOptionDesc: {
     fontSize: 12,
@@ -677,13 +682,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   langOptionDescActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   langCheck: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     justifyContent: 'center',
     alignItems: 'center',
   },

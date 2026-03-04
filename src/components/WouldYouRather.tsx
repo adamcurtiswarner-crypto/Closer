@@ -236,11 +236,12 @@ const styles = StyleSheet.create({
   pickerName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#ef5323',
   },
   questionLabel: {
     fontSize: 22,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -265,6 +266,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 17,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#292524',
     textAlign: 'center',
     lineHeight: 24,
@@ -294,7 +296,7 @@ const styles = StyleSheet.create({
   },
   revealCardMatch: {
     borderWidth: 2,
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
   },
   revealName: {
     fontSize: 12,
@@ -313,13 +315,13 @@ const styles = StyleSheet.create({
   matchLabel: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#ef5323',
     textAlign: 'center',
     marginBottom: 16,
   },
   nextButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 40,

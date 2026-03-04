@@ -15,7 +15,7 @@ const GAMES: { mode: GameMode; title: string; description: string; tint: string 
     mode: 'would-you-rather',
     title: 'Would You Rather',
     description: 'Pick between two options and see if you match',
-    tint: '#fef7f4',
+    tint: '#fef5f0',
   },
   {
     mode: 'how-well',
@@ -33,12 +33,12 @@ const GAMES: { mode: GameMode; title: string; description: string; tint: string 
 
 function GameIcon({ mode }: { mode: GameMode }) {
   if (mode === 'would-you-rather') {
-    return <Icon name="chat-circle" size="lg" color="#c97454" />;
+    return <Icon name="chat-circle" size="lg" color="#ef5323" />;
   }
   if (mode === 'how-well') {
-    return <Icon name="target" size="lg" color="#8b7355" />;
+    return <Icon name="target" size="lg" color="#490f5f" />;
   }
-  return <Icon name="flame" size="lg" color="#c97454" weight="fill" />;
+  return <Icon name="flame" size="lg" color="#ef5323" weight="fill" />;
 }
 
 export function GameLauncher({ onSelectMode }: GameLauncherProps) {
@@ -96,11 +96,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,
   },
   description: {
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     lineHeight: 18,
   },

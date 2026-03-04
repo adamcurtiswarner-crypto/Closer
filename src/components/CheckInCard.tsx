@@ -52,7 +52,7 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
       <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="heart" size="sm" color="#c97454" weight="light" />
+        <Icon name="heart" size="sm" color="#ef5323" weight="light" />
         <Text style={styles.headerText}>{t('checkIn.title')}</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
           <Icon name="x" size="xs" color="#a8a29e" />
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   header: {
     flexDirection: 'row',
@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,
     flex: 1,
@@ -151,6 +152,7 @@ const styles = StyleSheet.create({
   stepLabel: {
     fontSize: 11,
     fontWeight: '600',
+    fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -159,6 +161,7 @@ const styles = StyleSheet.create({
   questionText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#1c1917',
     textAlign: 'center',
     lineHeight: 22,
@@ -179,8 +182,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreBtnSelected: {
-    borderColor: '#c97454',
-    backgroundColor: '#c97454',
+    borderColor: '#ef5323',
+    backgroundColor: '#ef5323',
   },
   scoreNum: {
     fontSize: 16,
@@ -192,12 +195,12 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 12,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
     marginTop: 4,
   },
   nextBtn: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

@@ -12,7 +12,7 @@ interface PulseIndicatorProps {
 
 const TIER_CONFIG: Record<string, { label: string; color: string }> = {
   thriving: { label: 'Thriving', color: '#22c55e' },
-  steady: { label: 'Steady', color: '#c97454' },
+  steady: { label: 'Steady', color: '#ef5323' },
   cooling: { label: 'Cooling', color: '#f59e0b' },
   needs_attention: { label: 'Needs attention', color: '#ef4444' },
 };
@@ -64,7 +64,7 @@ export function PulseIndicator({ score, tier, trend, history }: PulseIndicatorPr
                     : h.score >= 40
                       ? 'cooling'
                       : 'needs_attention';
-              const barColor = TIER_CONFIG[barTier]?.color || '#c97454';
+              const barColor = TIER_CONFIG[barTier]?.color || '#ef5323';
               return (
                 <View key={h.weekId} style={styles.barCol}>
                   <View style={[styles.bar, { height: heightPct * 0.4, backgroundColor: barColor }]} />
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,
   },
@@ -160,5 +161,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#a8a29e',
     fontWeight: '600',
+    fontFamily: 'Inter-Medium',
   },
 });

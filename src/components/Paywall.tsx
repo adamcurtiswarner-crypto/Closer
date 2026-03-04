@@ -64,7 +64,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
                 entering={FadeInUp.duration(400).delay(200 + index * 80)}
                 style={styles.featureRow}
               >
-                <Icon name={feature.icon} size="sm" color="#c97454" weight="bold" />
+                <Icon name={feature.icon} size="sm" color="#ef5323" weight="bold" />
                 <Text style={styles.featureText}>{feature.text}</Text>
               </Animated.View>
             ))}
@@ -133,10 +133,10 @@ const styles = StyleSheet.create({
   },
   accentBar: {
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   headerArea: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     paddingTop: 28,
     paddingBottom: 24,
     paddingHorizontal: 24,
@@ -144,11 +144,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
     marginTop: 8,
@@ -168,6 +170,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#292524',
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     flex: 1,
   },
   planRow: {
@@ -186,13 +189,13 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   planCardSelected: {
-    borderColor: '#c97454',
-    backgroundColor: '#fef7f4',
+    borderColor: '#ef5323',
+    backgroundColor: '#fef5f0',
   },
   planBadge: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#c97454',
+    color: '#ef5323',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -209,7 +212,7 @@ const styles = StyleSheet.create({
   },
   planTrial: {
     fontSize: 11,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
     marginTop: 4,
   },
@@ -220,13 +223,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   ctaButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     marginHorizontal: 24,
     marginTop: 16,
-    shadowColor: '#c97454',
+    shadowColor: '#ef5323',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -239,6 +242,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 17,
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
   },
   restoreButton: {
     marginTop: 16,

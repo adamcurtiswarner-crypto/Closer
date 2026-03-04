@@ -66,7 +66,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
-        <Icon name="target" size="sm" color="#c97454" weight="regular" />
+        <Icon name="target" size="sm" color="#ef5323" weight="regular" />
         <Text style={styles.headerTitle}>Goals & Challenges</Text>
       </Animated.View>
 
@@ -222,7 +222,7 @@ function ProgressBarRow({
     <View style={styles.progressRow}>
       <AnimatedProgressBar
         progress={progress}
-        color={isComplete ? '#22c55e' : '#c97454'}
+        color={isComplete ? '#22c55e' : '#ef5323'}
         height={6}
         style={{ flex: 1 }}
       />
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#8b7355',
+    backgroundColor: '#490f5f',
   },
   header: {
     flexDirection: 'row',
@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,
   },
@@ -274,12 +275,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     borderRadius: 14,
     padding: 14,
     marginBottom: 4,
     borderWidth: 1,
-    borderColor: '#fceee7',
+    borderColor: '#fce8dc',
   },
   challengeCtaLeft: {
     flexDirection: 'row',
@@ -309,7 +310,8 @@ const styles = StyleSheet.create({
   challengeCtaLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#c97454',
+    fontFamily: 'Inter-Medium',
+    color: '#ef5323',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginBottom: 3,
@@ -321,7 +323,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   startButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 10,
@@ -368,12 +370,13 @@ const styles = StyleSheet.create({
   weeklyBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#c97454',
+    color: '#ef5323',
     letterSpacing: 0.5,
   },
   goalTitle: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#292524',
     flex: 1,
   },
@@ -427,21 +430,22 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 15,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   // ─── Footer ───
   footerDots: {
