@@ -152,6 +152,7 @@ export default function TodayScreen() {
         router.push('/(app)/memories');
         break;
       case 'check_in':
+        refreshUser();
         break;
     }
   };
@@ -326,6 +327,7 @@ export default function TodayScreen() {
     latestInsight,
     onCoachingAction: () => latestInsight && handleCoachingAction(latestInsight.actionType, latestInsight.actionText),
     onCoachingDismiss: () => latestInsight?.id && dismissInsight.mutate(latestInsight.id),
+    pulseTier: couple?.currentPulseTier ?? undefined,
   };
 
   // Shared props for bottom sections

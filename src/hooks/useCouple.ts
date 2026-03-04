@@ -32,6 +32,7 @@ interface Couple {
   anniversaryDate: Date | null;
   premiumUntil: Date | null;
   premiumSource: string | null;
+  currentPulseTier: string | null;
 }
 
 interface Invite {
@@ -78,6 +79,7 @@ export function useCouple() {
         anniversaryDate: data.anniversary_date?.toDate() || null,
         premiumUntil: data.premium_until?.toDate() || null,
         premiumSource: data.premium_source || null,
+        currentPulseTier: data.current_pulse_tier || null,
       };
     },
     enabled: !!user?.coupleId,

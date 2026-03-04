@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { CheckInCard, CoachingCard } from '@components';
+import { logEvent } from '@/services/analytics';
 
 interface CoachingInsight {
   id?: string;
@@ -19,6 +20,7 @@ interface EngagementCardsProps {
   latestInsight: CoachingInsight | null | undefined;
   onCoachingAction: () => void;
   onCoachingDismiss: () => void;
+  pulseTier?: string;
 }
 
 export function EngagementCards({
@@ -30,8 +32,21 @@ export function EngagementCards({
   latestInsight,
   onCoachingAction,
   onCoachingDismiss,
+  pulseTier,
 }: EngagementCardsProps) {
   const hasCoachingInsight = isPremium && latestInsight && !latestInsight.dismissedAt;
+
+  const viewedInsightRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (hasCoachingInsight && latestInsight?.id && latestInsight.id !== viewedInsightRef.current) {
+      viewedInsightRef.current = latestInsight.id;
+      logEvent('coaching_insight_viewed', {
+        pulse_tier: pulseTier,
+        action_type: latestInsight.actionType,
+      });
+    }
+  }, [hasCoachingInsight, latestInsight, pulseTier]);
 
   if (!hasPendingCheckIn && !hasCoachingInsight) {
     return null;
