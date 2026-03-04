@@ -10,9 +10,10 @@ import { getAuthErrorMessage } from '@/utils/authErrors';
 
 interface SocialAuthButtonsProps {
   animationDelay?: number;
+  dividerText?: string;
 }
 
-export function SocialAuthButtons({ animationDelay = 0 }: SocialAuthButtonsProps) {
+export function SocialAuthButtons({ animationDelay = 0, dividerText = 'or' }: SocialAuthButtonsProps) {
   const { signInWithGoogle, signInWithApple } = useAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
@@ -87,7 +88,7 @@ export function SocialAuthButtons({ animationDelay = 0 }: SocialAuthButtonsProps
 
       <View style={styles.divider}>
         <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>or</Text>
+        <Text style={styles.dividerText}>{dividerText}</Text>
         <View style={styles.dividerLine} />
       </View>
     </Animated.View>
@@ -127,8 +128,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(139, 115, 85, 0.2)',
   },
   dividerText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#a8a29e',
     fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });

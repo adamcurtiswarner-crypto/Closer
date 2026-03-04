@@ -75,7 +75,7 @@ export default function SignInScreen() {
             {t('auth.signIn.title')}
           </Animated.Text>
 
-          <SocialAuthButtons animationDelay={100} />
+          <SocialAuthButtons animationDelay={100} dividerText="OR LOG IN WITH EMAIL" />
 
           <View style={styles.form}>
             <Animated.View entering={FadeInUp.duration(400).delay(100)}>
@@ -93,6 +93,7 @@ export default function SignInScreen() {
                     onChangeText={onChange}
                     value={value}
                     error={errors.email?.message}
+                    style={{ borderRadius: 38 }}
                   />
                 )}
               />
@@ -114,6 +115,7 @@ export default function SignInScreen() {
                     onChangeText={onChange}
                     value={value}
                     error={errors.password?.message}
+                    style={{ borderRadius: 38 }}
                   />
                 )}
               />
