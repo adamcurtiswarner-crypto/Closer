@@ -104,7 +104,7 @@ export default function PreferencesScreen() {
                     {option.label}
                   </Text>
                   {selectedTime === option.value && (
-                    <Icon name="check" size="sm" color="#c97454" weight="bold" />
+                    <Icon name="check" size="sm" color="#ef5323" weight="bold" />
                   )}
                 </View>
               </TouchableOpacity>
@@ -142,6 +142,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   inputSection: {
@@ -154,6 +155,7 @@ const styles = StyleSheet.create({
     color: '#44403c',
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     marginBottom: 12,
   },
   optionRow: {
@@ -165,8 +167,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   optionRowSelected: {
-    backgroundColor: '#fef7f4',
-    borderColor: '#c97454',
+    backgroundColor: '#fef5f0',
+    borderColor: '#ef5323',
     borderWidth: 2,
   },
   optionRowDefault: {
@@ -182,13 +184,14 @@ const styles = StyleSheet.create({
   selectedCheck: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#ef5323',
   },
   optionText: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
   },
   optionTextSelected: {
-    color: '#9a5a3a',
+    color: '#b5370f',
   },
   optionTextDefault: {
     color: '#44403c',

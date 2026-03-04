@@ -36,7 +36,7 @@ export default function WaitingPartnerScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
-          <Icon name="hourglass" size="xl" color="#c97454" weight="light" />
+          <Icon name="hourglass" size="xl" color="#ef5323" weight="light" />
           <Text style={styles.title}>
             {t('onboarding.waitingPartner.title')}
           </Text>
@@ -88,10 +88,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     textAlign: 'center',
   },
   subtitle: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     textAlign: 'center',
     marginTop: 8,

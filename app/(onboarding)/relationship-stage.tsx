@@ -77,7 +77,7 @@ export default function RelationshipStageScreen() {
                   <Icon
                     name={stage.icon}
                     size="md"
-                    color={selected === stage.value ? '#c97454' : '#78716c'}
+                    color={selected === stage.value ? '#ef5323' : '#78716c'}
                     weight={selected === stage.value ? 'fill' : 'light'}
                   />
                   <Text
@@ -129,9 +129,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   subtitle: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     marginTop: 8,
   },
@@ -144,9 +146,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   optionCardSelected: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
   },
   optionCardDefault: {
     backgroundColor: '#fff',
@@ -161,10 +163,11 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     flex: 1,
   },
   optionLabelSelected: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   optionLabelDefault: {
     color: '#1c1917',
@@ -173,7 +176,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     justifyContent: 'center',
     alignItems: 'center',
   },

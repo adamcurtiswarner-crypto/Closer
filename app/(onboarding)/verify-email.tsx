@@ -74,11 +74,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     lineHeight: 24,
     marginBottom: 32,
@@ -88,6 +90,7 @@ const styles = StyleSheet.create({
     height: 12,
   },
   note: {
+    fontFamily: 'Inter-Regular',
     color: '#a8a29e',
     fontSize: 13,
     textAlign: 'center',

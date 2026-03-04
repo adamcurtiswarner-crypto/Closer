@@ -123,10 +123,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     textAlign: 'center',
   },
   subtitle: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     textAlign: 'center',
     marginTop: 8,
@@ -139,7 +141,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'monospace',
     fontWeight: '700',
-    color: '#c97454',
+    color: '#ef5323',
     letterSpacing: 4,
     borderWidth: 1,
     borderColor: '#e7e5e4',

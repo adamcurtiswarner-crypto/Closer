@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   cardArea: {
@@ -120,10 +121,12 @@ const styles = StyleSheet.create({
     color: '#1c1917',
     fontSize: 20,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
     lineHeight: 28,
   },
   explanation: {
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
     marginTop: 16,
@@ -132,7 +135,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   showButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -142,20 +145,23 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     textAlign: 'center',
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 15,
   },
   responseCard: {
-    backgroundColor: '#fef3ee',
+    backgroundColor: '#fce8dc',
     borderRadius: 12,
     padding: 16,
   },
   responseLabel: {
-    color: '#c97454',
+    color: '#ef5323',
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     marginBottom: 8,
   },
   responseText: {
+    fontFamily: 'Inter-Regular',
     color: '#44403c',
     fontSize: 16,
     fontStyle: 'italic',
@@ -165,6 +171,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   taglineText: {
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
     fontSize: 15,
