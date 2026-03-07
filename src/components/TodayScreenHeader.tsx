@@ -68,8 +68,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logoMark: {
-    width: 32,
-    height: 32,
+    width: 72,
+    height: 28,
   },
   greeting: {
     fontSize: 28,
