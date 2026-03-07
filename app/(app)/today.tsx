@@ -143,6 +143,8 @@ export default function TodayScreen() {
       logEvent('coaching_insight_acted', {
         action_type: actionType,
         pulse_tier: couple?.currentPulseTier,
+        pulse_score: couple?.currentPulseScore,
+        week_id: latestInsight?.createdAt ? format(latestInsight.createdAt, "yyyy-'W'ww") : undefined,
       });
     }
 
@@ -343,6 +345,7 @@ export default function TodayScreen() {
         });
       }
     },
+    onViewCoaching: () => router.push('/(app)/coaching'),
     pulseTier: couple?.currentPulseTier ?? undefined,
   };
 

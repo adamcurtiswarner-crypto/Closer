@@ -11,6 +11,7 @@ interface CoachingCardProps {
   actionText: string;
   onAction: () => void;
   onDismiss: () => void;
+  onViewCoaching?: () => void;
 }
 
 const ACTION_CONFIG: Record<string, { icon: IconName; label: string }> = {
@@ -21,7 +22,7 @@ const ACTION_CONFIG: Record<string, { icon: IconName; label: string }> = {
   check_in: { icon: 'heart', label: 'Check in' },
 };
 
-export function CoachingCard({ insightText, actionType, actionText, onAction, onDismiss }: CoachingCardProps) {
+export function CoachingCard({ insightText, actionType, actionText, onAction, onDismiss, onViewCoaching }: CoachingCardProps) {
   const config = ACTION_CONFIG[actionType] || ACTION_CONFIG.conversation;
 
   const handleAction = () => {
@@ -55,6 +56,13 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
           <Icon name="arrow-right" size="sm" color="#ffffff" />
         </TouchableOpacity>
       </Animated.View>
+
+      {onViewCoaching && (
+        <TouchableOpacity onPress={onViewCoaching} style={styles.viewCoachingLink}>
+          <Text style={styles.viewCoachingText}>View all insights</Text>
+          <Icon name="arrow-right" size="xs" color="#78716c" />
+        </TouchableOpacity>
+      )}
     </Animated.View>
   );
 }
@@ -134,5 +142,18 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     color: '#ffffff',
     lineHeight: 19,
+  },
+  viewCoachingLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    marginTop: 12,
+    paddingVertical: 4,
+  },
+  viewCoachingText: {
+    fontSize: 13,
+    fontFamily: 'Inter-Medium',
+    color: '#78716c',
   },
 });

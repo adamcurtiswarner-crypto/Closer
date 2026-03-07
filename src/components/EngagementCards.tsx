@@ -20,6 +20,7 @@ interface EngagementCardsProps {
   latestInsight: CoachingInsight | null | undefined;
   onCoachingAction: () => void;
   onCoachingDismiss: () => void;
+  onViewCoaching?: () => void;
   pulseTier?: string;
 }
 
@@ -32,6 +33,7 @@ export function EngagementCards({
   latestInsight,
   onCoachingAction,
   onCoachingDismiss,
+  onViewCoaching,
   pulseTier,
 }: EngagementCardsProps) {
   const hasCoachingInsight = isPremium && latestInsight && !latestInsight.dismissedAt;
@@ -68,6 +70,7 @@ export function EngagementCards({
           actionText={latestInsight.actionText}
           onAction={onCoachingAction}
           onDismiss={onCoachingDismiss}
+          onViewCoaching={onViewCoaching}
         />
       )}
     </Animated.View>
