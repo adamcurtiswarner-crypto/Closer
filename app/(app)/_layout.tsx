@@ -134,6 +134,15 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ focused, color }) => (
+            <Icon name="house-simple" size="md" color={color} weight={focused ? 'fill' : 'light'} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="today"
         options={{
           title: 'Today',

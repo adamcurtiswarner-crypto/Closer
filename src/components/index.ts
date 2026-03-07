@@ -33,6 +33,10 @@ export { CheckInCard } from './CheckInCard';
 export { CoachingCard } from './CoachingCard';
 export { ConversationStarterModal } from './ConversationStarterModal';
 
+// Home
+export { ConversationStarterCard } from './ConversationStarterCard';
+export { RecommendedCard } from './RecommendedCard';
+
 // Explore
 export { ExploreCategoryRow } from './ExploreCategoryRow';
 
