@@ -436,5 +436,19 @@
     "emptyPast": "Completed dates will appear here",
     "seeAll": "See all",
     "allCategories": "All"
+  },
+  "checkIn": {
+    "title": "Quick check-in",
+    "privacy": "Private — only you can see your answers",
+    "questionOf": "Question {{current}} of {{total}}",
+    "next": "Next",
+    "submit": "Submit",
+    "scoreLabels": {
+      "1": "Not at all",
+      "2": "A little",
+      "3": "Somewhat",
+      "4": "Quite",
+      "5": "Very much"
+    }
   }
 }

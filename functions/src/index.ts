@@ -3090,3 +3090,39 @@ export const dateNightReminder = functions.pubsub
     console.log(`Sent ${remindersSent} date night reminders`);
     return null;
   });
+
+// ============================================
+// SCHEDULED: Clean Up Expired Coaching Insights
+// Runs daily at 3:30 AM PT. Deletes coaching_insights documents
+// older than 90 days across all couples.
+// ============================================
+
+export const cleanupCoachingInsights = functions.pubsub
+  .schedule('30 3 * * *')
+  .timeZone('America/Los_Angeles')
+  .onRun(async () => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
+
+    const couplesSnapshot = await db.collection('couples').get();
+    let totalDeleted = 0;
+
+    for (const coupleDoc of couplesSnapshot.docs) {
+      const insightsQuery = await db
+        .collection('couples')
+        .doc(coupleDoc.id)
+        .collection('coaching_insights')
+        .where('created_at', '<', cutoff)
+        .get();
+
+      if (insightsQuery.empty) continue;
+
+      const batch = db.batch();
+      insightsQuery.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      totalDeleted += insightsQuery.size;
+    }
+
+    console.log(`cleanupCoachingInsights: deleted ${totalDeleted} expired insight documents`);
+    return null;
+  });

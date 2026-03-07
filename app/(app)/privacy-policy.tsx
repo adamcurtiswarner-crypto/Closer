@@ -15,18 +15,18 @@ export default function PrivacyPolicyScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        <Text style={styles.updated}>Last updated: February 2026</Text>
+        <Text style={styles.updated}>Last updated: March 2026</Text>
 
         <Text style={styles.sectionTitle}>What We Collect</Text>
         <Text style={styles.body}>
-          Closer collects your email address, display name, and the responses you
+          Stoke collects your email address, display name, and the responses you
           share with your partner. We also store your notification preferences and
           timezone to deliver prompts at the right time.
         </Text>
 
         <Text style={styles.sectionTitle}>How We Use Your Data</Text>
         <Text style={styles.body}>
-          Your data is used solely to power the Closer experience: delivering daily
+          Your data is used solely to power the Stoke experience: delivering daily
           prompts, showing responses between you and your partner, and generating
           weekly recaps. We do not sell your data or share it with third parties for
           advertising.
@@ -67,9 +67,19 @@ export default function PrivacyPolicyScreen() {
           device settings.
         </Text>
 
+        <Text style={styles.sectionTitle}>AI-Assisted Features</Text>
+        <Text style={styles.body}>
+          Stoke includes AI-powered features such as relationship coaching insights. These
+          features analyze anonymized engagement patterns (e.g., prompt response frequency,
+          streak data) to generate personalized suggestions. Individual response content is
+          not transmitted to AI systems. AI-generated insights are not a substitute for
+          professional relationship counseling or therapy. Coaching insight data is retained
+          for 90 days and then permanently deleted.
+        </Text>
+
         <Text style={styles.sectionTitle}>Contact</Text>
         <Text style={styles.body}>
-          For privacy questions or data requests, contact us at privacy@closerapp.co.
+          For privacy questions or data requests, contact us at privacy@getstoke.io.
         </Text>
 
         <View style={styles.bottomSpacer} />
