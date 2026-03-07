@@ -25,5 +25,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   testMatch: ['**/__tests__/**/*.(ts|tsx)', '**/*.(test|spec).(ts|tsx)'],
-  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/functions/'],
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/functions/', '<rootDir>/.worktrees/'],
 };
