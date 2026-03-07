@@ -207,6 +207,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="coaching"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',

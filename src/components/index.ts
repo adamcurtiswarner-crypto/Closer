@@ -81,6 +81,9 @@ export { TodayBottomSections } from './TodayBottomSections';
 // Social auth
 export { SocialAuthButtons } from './SocialAuthButtons';
 
+// Paywall
+export { Paywall } from './Paywall';
+
 // Error handling
 export { ErrorBoundary } from './ErrorBoundary';
 export { QueryError } from './QueryError';

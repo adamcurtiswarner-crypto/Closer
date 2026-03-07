@@ -42,6 +42,8 @@ import {
   LightbulbIcon,
   ClockCounterClockwiseIcon,
   BandaidsIcon,
+  MinusIcon,
+  CheckCircleIcon,
 } from 'phosphor-react-native';
 import { iconSize } from '@/config/theme';
 
@@ -87,6 +89,8 @@ const iconMap = {
   lightbulb: LightbulbIcon,
   'clock-counter-clockwise': ClockCounterClockwiseIcon,
   bandaids: BandaidsIcon,
+  minus: MinusIcon,
+  'check-circle': CheckCircleIcon,
 } as const;
 
 export type IconName = keyof typeof iconMap;
