@@ -27,6 +27,7 @@ import {
   EngagementCards,
   RespondingScreen,
   TodayBottomSections,
+  ConversationStarterModal,
 } from '@components';
 import type { RelationshipStage } from '@components';
 import { StreakRing } from '@/components/StreakRing';
@@ -110,6 +111,8 @@ export default function TodayScreen() {
   const [showAddWishlistModal, setShowAddWishlistModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [stageDismissed, setStageDismissed] = useState(true); // Start true to avoid flash
+  const [showConversationModal, setShowConversationModal] = useState(false);
+  const [conversationStarterText, setConversationStarterText] = useState('');
 
   useEffect(() => {
     AsyncStorage.getItem('stage_prompt_dismissed').then(val => {
@@ -137,6 +140,10 @@ export default function TodayScreen() {
   const handleCoachingAction = (actionType: string, actionText: string) => {
     if (latestInsight?.id) {
       markActedOn.mutate(latestInsight.id);
+      logEvent('coaching_insight_acted', {
+        action_type: actionType,
+        pulse_tier: couple?.currentPulseTier,
+      });
     }
 
     switch (actionType) {
@@ -147,11 +154,14 @@ export default function TodayScreen() {
         router.push('/(app)/wishlist');
         break;
       case 'conversation':
+        setConversationStarterText(actionText);
+        setShowConversationModal(true);
         break;
       case 'revisit':
         router.push('/(app)/memories');
         break;
       case 'check_in':
+        refreshUser();
         break;
     }
   };
@@ -325,7 +335,15 @@ export default function TodayScreen() {
     isPremium,
     latestInsight,
     onCoachingAction: () => latestInsight && handleCoachingAction(latestInsight.actionType, latestInsight.actionText),
-    onCoachingDismiss: () => latestInsight?.id && dismissInsight.mutate(latestInsight.id),
+    onCoachingDismiss: () => {
+      if (latestInsight?.id) {
+        dismissInsight.mutate(latestInsight.id);
+        logEvent('coaching_insight_dismissed', {
+          pulse_tier: couple?.currentPulseTier,
+        });
+      }
+    },
+    pulseTier: couple?.currentPulseTier ?? undefined,
   };
 
   // Shared props for bottom sections
@@ -481,6 +499,11 @@ export default function TodayScreen() {
 
           <TodayBottomSections {...bottomProps} animationBaseDelay={400} />
         </ScrollView>
+        <ConversationStarterModal
+          visible={showConversationModal}
+          onClose={() => setShowConversationModal(false)}
+          starterText={conversationStarterText}
+        />
       </SafeAreaView>
     );
   }
@@ -584,6 +607,11 @@ export default function TodayScreen() {
             </View>
           </Animated.View>
         </ScrollView>
+        <ConversationStarterModal
+          visible={showConversationModal}
+          onClose={() => setShowConversationModal(false)}
+          starterText={conversationStarterText}
+        />
       </SafeAreaView>
     );
   }
@@ -611,6 +639,11 @@ export default function TodayScreen() {
           />
         </Animated.View>
       </ScrollView>
+      <ConversationStarterModal
+        visible={showConversationModal}
+        onClose={() => setShowConversationModal(false)}
+        starterText={conversationStarterText}
+      />
     </SafeAreaView>
   );
 }

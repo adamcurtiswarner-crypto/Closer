@@ -254,8 +254,8 @@ const customTabBarStyles = StyleSheet.create({
 
 const tabStyles = StyleSheet.create({
   tabLogo: {
-    width: 26,
-    height: 26,
+    width: 52,
+    height: 20,
   },
   tabLogoInactive: {
     opacity: 0.4,

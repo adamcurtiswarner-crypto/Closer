@@ -31,6 +31,7 @@ export { CheckInCard } from './CheckInCard';
 
 // Coaching
 export { CoachingCard } from './CoachingCard';
+export { ConversationStarterModal } from './ConversationStarterModal';
 
 // Explore
 export { ExploreCategoryRow } from './ExploreCategoryRow';

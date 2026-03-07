@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { hapticImpact } from '@utils/haptics';
 import { Icon } from './Icon';
 import { selectCheckInQuestions } from '@/config/checkInQuestions';
@@ -13,9 +14,8 @@ interface CheckInCardProps {
   onDismiss: () => void;
 }
 
-const SCORE_LABELS = ['', 'Not at all', 'A little', 'Somewhat', 'Quite', 'Very much'];
-
 export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardProps) {
+  const { t } = useTranslation();
   const [questions] = useState<CheckInQuestion[]>(() => selectCheckInQuestions());
   const [step, setStep] = useState(0);
   const [scores, setScores] = useState<number[]>([0, 0, 0]);
@@ -53,16 +53,16 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
 
       <View style={styles.header}>
         <Icon name="heart" size="sm" color="#c97454" weight="light" />
-        <Text style={styles.headerText}>Quick check-in</Text>
+        <Text style={styles.headerText}>{t('checkIn.title')}</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
           <Icon name="x" size="xs" color="#a8a29e" />
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.privacy}>Private — only you can see your answers</Text>
+      <Text style={styles.privacy}>{t('checkIn.privacy')}</Text>
 
       <Animated.View key={step} entering={FadeInUp.duration(300)} style={styles.questionArea}>
-        <Text style={styles.stepLabel}>Question {step + 1} of 3</Text>
+        <Text style={styles.stepLabel}>{t('checkIn.questionOf', { current: step + 1, total: 3 })}</Text>
         <Text style={styles.questionText}>{questionText}</Text>
 
         <View style={styles.scoreRow}>
@@ -80,7 +80,7 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
 
         {scores[step] > 0 && (
           <Animated.Text entering={FadeIn.duration(200)} style={styles.scoreLabel}>
-            {SCORE_LABELS[scores[step]]}
+            {t(`checkIn.scoreLabels.${scores[step]}`)}
           </Animated.Text>
         )}
       </Animated.View>
@@ -91,7 +91,7 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
         disabled={scores[step] === 0}
         activeOpacity={0.8}
       >
-        <Text style={styles.nextBtnText}>{step < 2 ? 'Next' : 'Submit'}</Text>
+        <Text style={styles.nextBtnText}>{step < 2 ? t('checkIn.next') : t('checkIn.submit')}</Text>
       </TouchableOpacity>
     </Animated.View>
   );

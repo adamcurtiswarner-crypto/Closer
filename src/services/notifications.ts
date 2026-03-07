@@ -88,6 +88,8 @@ export function setupNotificationHandlers(): () => void {
       router.push('/(app)/memories');
     } else if (type === 'date_night' || type === 'date_night_reminder') {
       router.push('/(app)/date-nights');
+    } else if (type === 'check_in' || type === 'coaching_insight') {
+      router.push('/(app)/today');
     } else {
       // Default: go to today screen
       router.push('/(app)/today');
