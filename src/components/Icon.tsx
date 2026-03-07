@@ -44,6 +44,9 @@ import {
   BandaidsIcon,
   MinusIcon,
   CheckCircleIcon,
+  HouseSimpleIcon,
+  PlayIcon,
+  TimerIcon,
 } from 'phosphor-react-native';
 import { iconSize } from '@/config/theme';
 
@@ -91,6 +94,9 @@ const iconMap = {
   bandaids: BandaidsIcon,
   minus: MinusIcon,
   'check-circle': CheckCircleIcon,
+  'house-simple': HouseSimpleIcon,
+  play: PlayIcon,
+  timer: TimerIcon,
 } as const;
 
 export type IconName = keyof typeof iconMap;
