@@ -154,7 +154,7 @@ export default function DateNightsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#c97454" size="large" />
+          <ActivityIndicator color="#ef5323" size="large" />
         </View>
       </SafeAreaView>
     );
@@ -202,7 +202,7 @@ export default function DateNightsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />
         }
       >
         {/* ── Upcoming Section ── */}
@@ -345,7 +345,7 @@ export default function DateNightsScreen() {
               <Text style={styles.ideaTitle} numberOfLines={2}>{idea.title}</Text>
               <Text style={styles.ideaDescription} numberOfLines={2}>{idea.description}</Text>
               <View style={styles.ideaSaveRow}>
-                <Icon name="arrow-right" size="xs" color="#c97454" />
+                <Icon name="arrow-right" size="xs" color="#ef5323" />
                 <Text style={styles.ideaSaveText}>Save this idea</Text>
               </View>
             </TouchableOpacity>
@@ -388,7 +388,7 @@ export default function DateNightsScreen() {
         {/* Empty state when no data at all */}
         {(dateNights?.length ?? 0) === 0 && filteredIdeas.length === 0 && (
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyCard}>
-            <Icon name="calendar" size="xl" color="#c97454" weight="light" />
+            <Icon name="calendar" size="xl" color="#ef5323" weight="light" />
             <Text style={styles.emptyTitle}>No date nights yet</Text>
             <Text style={styles.emptySubtitle}>
               Browse ideas above or plan something custom.
@@ -546,12 +546,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.3,
   },
   headerCount: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     marginTop: 2,
   },
@@ -559,7 +561,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -582,6 +584,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
@@ -610,7 +613,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -627,6 +630,7 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#292524',
   },
   rowTitleDone: {
@@ -640,7 +644,8 @@ const styles = StyleSheet.create({
   rowDate: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#c97454',
+    fontFamily: 'Inter-SemiBold',
+    color: '#ef5323',
   },
   rowDatePastDue: {
     color: '#ef4444',
@@ -674,13 +679,14 @@ const styles = StyleSheet.create({
   rowActionLink: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#c97454',
+    fontFamily: 'Inter-SemiBold',
+    color: '#ef5323',
   },
   reflectionBadge: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -707,8 +713,8 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   categoryChipActive: {
-    backgroundColor: '#fef7f4',
-    borderColor: '#c97454',
+    backgroundColor: '#fef5f0',
+    borderColor: '#ef5323',
   },
   categoryChipIcon: {
     fontSize: 14,
@@ -716,10 +722,11 @@ const styles = StyleSheet.create({
   categoryChipText: {
     fontSize: 13,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#78716c',
   },
   categoryChipTextActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   // --- Idea Cards ---
   ideaCard: {
@@ -767,12 +774,14 @@ const styles = StyleSheet.create({
   ideaTitle: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#292524',
     marginBottom: 4,
   },
   ideaDescription: {
     fontSize: 13,
     color: '#78716c',
+    fontFamily: 'Inter-Regular',
     lineHeight: 18,
     marginBottom: 10,
   },
@@ -784,7 +793,8 @@ const styles = StyleSheet.create({
   ideaSaveText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#c97454',
+    fontFamily: 'Inter-SemiBold',
+    color: '#ef5323',
   },
   // --- Past Section ---
   pastHeader: {
@@ -818,6 +828,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     marginTop: 16,
     marginBottom: 8,
@@ -826,6 +837,7 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 15,
     color: '#78716c',
+    fontFamily: 'Inter-Regular',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -843,20 +855,21 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 17,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 15,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
 });

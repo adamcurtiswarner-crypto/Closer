@@ -94,7 +94,7 @@ export default function ToneCalibrationScreen() {
                     {option.label}
                   </Text>
                   {selectedTone === option.value && (
-                    <Icon name="check" size="sm" color="#c97454" weight="bold" />
+                    <Icon name="check" size="sm" color="#ef5323" weight="bold" />
                   )}
                 </View>
                 <Text
@@ -139,9 +139,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   subtitle: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     marginTop: 8,
   },
@@ -154,9 +156,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   optionCardSelected: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
   },
   optionCardDefault: {
     backgroundColor: '#fff',
@@ -171,24 +173,26 @@ const styles = StyleSheet.create({
   selectedCheck: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#ef5323',
   },
   optionLabel: {
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
   optionLabelSelected: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   optionLabelDefault: {
     color: '#1c1917',
   },
   optionDescription: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     marginTop: 4,
   },
   optionDescriptionSelected: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   optionDescriptionDefault: {
     color: '#a8a29e',

@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   typingText: {
     fontSize: 12,
-    color: '#c97454',
+    color: '#ef5323',
     fontStyle: 'italic',
     marginTop: 2,
   },

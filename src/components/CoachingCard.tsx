@@ -34,7 +34,7 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
       <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
+        <Icon name="lightbulb" size="sm" color="#ef5323" weight="light" />
         <Text style={styles.headerText}>Weekly insight</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
           <Icon name="x" size="xs" color="#a8a29e" />
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   header: {
     flexDirection: 'row',
@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 15,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,
     flex: 1,
@@ -103,6 +104,7 @@ const styles = StyleSheet.create({
   },
   insightText: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     lineHeight: 22,
     marginBottom: 16,
@@ -111,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 14,
     padding: 16,
   },
@@ -129,6 +131,7 @@ const styles = StyleSheet.create({
   actionDetail: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#ffffff',
     lineHeight: 19,
   },

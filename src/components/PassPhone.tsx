@@ -18,7 +18,7 @@ export function PassPhone({ partnerName, instruction, onReady }: PassPhoneProps)
   return (
     <View style={styles.container}>
       <Animated.View entering={FadeInUp.duration(500)} style={styles.content}>
-        <Icon name="device-mobile" size="xl" color="#c97454" weight="light" />
+        <Icon name="device-mobile" size="xl" color="#ef5323" weight="light" />
         <Text style={styles.title}>Pass to {partnerName}</Text>
         {instruction && (
           <Text style={styles.instruction}>{instruction}</Text>
@@ -44,7 +44,7 @@ export function PassPhone({ partnerName, instruction, onReady }: PassPhoneProps)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
@@ -60,12 +60,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
   },
   instruction: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
     marginTop: 12,
@@ -74,12 +76,13 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 16,
     paddingHorizontal: 36,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 16,
   },
   buttonText: {
     fontSize: 17,
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     color: '#ffffff',
   },
 });

@@ -210,8 +210,8 @@ export default function SettingsScreen() {
               <Switch
                 value={remindMe}
                 onValueChange={handleToggleRemind}
-                trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
-                thumbColor={remindMe ? '#c97454' : '#fafaf9'}
+                trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
+                thumbColor={remindMe ? '#ef5323' : '#fafaf9'}
               />
             </View>
             <View style={styles.rowToggle}>
@@ -219,8 +219,8 @@ export default function SettingsScreen() {
               <Switch
                 value={partnerNotify}
                 onValueChange={handleTogglePartnerNotify}
-                trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
-                thumbColor={partnerNotify ? '#c97454' : '#fafaf9'}
+                trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
+                thumbColor={partnerNotify ? '#ef5323' : '#fafaf9'}
               />
             </View>
             <View style={[styles.rowToggle, styles.lastRow]}>
@@ -234,8 +234,8 @@ export default function SettingsScreen() {
                     calendarRemove.mutate();
                   }
                 }}
-                trackColor={{ false: '#e7e5e4', true: '#e9b8a3' }}
-                thumbColor={calendarSynced ? '#c97454' : '#fafaf9'}
+                trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
+                thumbColor={calendarSynced ? '#ef5323' : '#fafaf9'}
                 disabled={calendarSync.isPending || calendarRemove.isPending}
               />
             </View>
@@ -280,7 +280,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
               {exportData.isPending ? (
-                <ActivityIndicator size="small" color="#c97454" />
+                <ActivityIndicator size="small" color="#ef5323" />
               ) : (
                 <Text style={styles.rowValue}>{'>'}</Text>
               )}
@@ -561,6 +561,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   scrollView: {
@@ -570,6 +571,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     color: '#78716c',
     marginTop: 24,
     marginBottom: 8,
@@ -605,13 +607,15 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontSize: 16,
     color: '#1c1917',
+    fontFamily: 'Inter-Regular',
   },
   rowValue: {
     fontSize: 16,
     color: '#78716c',
+    fontFamily: 'Inter-Regular',
   },
   premiumText: {
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
   },
   dangerText: {
@@ -628,11 +632,13 @@ const styles = StyleSheet.create({
   safetyText: {
     fontSize: 14,
     color: '#57534e',
+    fontFamily: 'Inter-Regular',
     lineHeight: 20,
   },
   safetyLink: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     marginTop: 8,
   },
   // Modal styles
@@ -651,12 +657,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 14,
     color: '#78716c',
+    fontFamily: 'Inter-Regular',
     marginBottom: 20,
   },
   timeOption: {
@@ -670,7 +678,7 @@ const styles = StyleSheet.create({
   timeOptionActive: {
     backgroundColor: '#fef3ee',
     borderWidth: 1,
-    borderColor: '#e9b8a3',
+    borderColor: '#f9a07a',
   },
   radio: {
     width: 20,
@@ -683,20 +691,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   radioActive: {
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
   },
   radioInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   timeOptionText: {
     fontSize: 16,
     color: '#57534e',
+    fontFamily: 'Inter-Regular',
   },
   timeOptionTextActive: {
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '500',
   },
   frequencyDescription: {
@@ -748,10 +757,11 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     color: '#ffffff',
   },
   anonymizeButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

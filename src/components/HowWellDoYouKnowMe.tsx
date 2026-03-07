@@ -280,11 +280,12 @@ const styles = StyleSheet.create({
   pickerName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#ef5323',
   },
   questionText: {
     fontSize: 22,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 16,
     alignItems: 'center',
   },
@@ -353,6 +354,7 @@ const styles = StyleSheet.create({
   revealLabel: {
     fontSize: 12,
     fontWeight: '700',
+    fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -361,6 +363,7 @@ const styles = StyleSheet.create({
   revealText: {
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Inter-Regular',
     color: '#292524',
     lineHeight: 22,
   },
@@ -385,7 +388,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreButtonYes: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   scoreButtonNo: {
     backgroundColor: '#f5f5f4',

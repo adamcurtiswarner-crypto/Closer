@@ -75,7 +75,7 @@ export default function SignUpScreen() {
             {t('auth.signUp.title')}
           </Animated.Text>
 
-          <SocialAuthButtons animationDelay={100} />
+          <SocialAuthButtons animationDelay={100} dividerText="OR SIGN UP WITH EMAIL" />
 
           <View style={styles.form}>
             <Animated.View entering={FadeInUp.duration(400).delay(100)}>
@@ -93,6 +93,7 @@ export default function SignUpScreen() {
                     onChangeText={onChange}
                     value={value}
                     error={errors.email?.message}
+                    style={{ borderRadius: 38 }}
                   />
                 )}
               />
@@ -114,6 +115,7 @@ export default function SignUpScreen() {
                     onChangeText={onChange}
                     value={value}
                     error={errors.password?.message}
+                    style={{ borderRadius: 38 }}
                   />
                 )}
               />
@@ -167,6 +169,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 32,
   },
@@ -178,6 +181,7 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   terms: {
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     fontSize: 12,
     textAlign: 'center',
@@ -185,7 +189,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   termsLink: {
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     textDecorationLine: 'underline',
   },
   footer: {
@@ -194,10 +199,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
   },
   footerLink: {
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     fontWeight: '500',
   },
 });

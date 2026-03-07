@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
   },
   respondingPrompt: {
     fontSize: 18,
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     fontStyle: 'italic',
     textAlign: 'center',
@@ -221,7 +222,7 @@ const styles = StyleSheet.create({
   submitButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -231,6 +232,7 @@ const styles = StyleSheet.create({
   submitText: {
     color: '#ffffff',
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 16,
   },
   disabled: {

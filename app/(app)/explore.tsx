@@ -249,7 +249,7 @@ export default function ExploreScreen() {
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#c97454" />
+            <ActivityIndicator size="small" color="#ef5323" />
           </View>
         ) : !prompts || prompts.length === 0 ? (
           <Animated.View entering={FadeIn.duration(400)} style={styles.emptyState}>
@@ -266,7 +266,7 @@ export default function ExploreScreen() {
                 entering={FadeInUp.duration(400).delay(index * 80)}
               >
                 <View style={styles.promptCard}>
-                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || '#c97454' }]} />
+                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || '#ef5323' }]} />
                   <View style={styles.promptContent}>
                     <Text style={styles.promptText}>{prompt.text}</Text>
                     {prompt.hint && (
@@ -294,7 +294,7 @@ export default function ExploreScreen() {
                         <TouchableOpacity
                           style={[
                             styles.respondButton,
-                            { backgroundColor: currentCategory?.color || '#c97454' },
+                            { backgroundColor: currentCategory?.color || '#ef5323' },
                           ]}
                           onPress={() => handleStartPrompt(prompt)}
                           disabled={startExplore.isPending}
@@ -331,6 +331,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
 
@@ -346,11 +347,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
   },
-  categoryChipLabel: { fontSize: 13, fontWeight: '500' },
+  categoryChipLabel: { fontSize: 13, fontWeight: '500', fontFamily: 'Inter-Medium' },
 
   // Category description
   categoryDesc: { paddingHorizontal: 20, paddingBottom: 12 },
-  categoryDescText: { fontSize: 14, color: '#78716c' },
+  categoryDescText: { fontSize: 14, color: '#78716c', fontFamily: 'Inter-Regular' },
 
   // Prompt list
   promptList: { paddingHorizontal: 16, paddingBottom: 40, gap: 12 },
@@ -374,6 +375,7 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     color: '#1c1917',
     lineHeight: 24,
     marginBottom: 8,
@@ -381,6 +383,7 @@ const styles = StyleSheet.create({
   promptHint: {
     fontSize: 13,
     color: '#78716c',
+    fontFamily: 'Inter-Regular',
     fontStyle: 'italic',
     marginBottom: 12,
   },
@@ -408,7 +411,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  respondButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
+  respondButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600', fontFamily: 'Inter-SemiBold' },
 
   // Responding mode
   respondingScroll: { padding: 20, flexGrow: 1 },
@@ -416,6 +419,7 @@ const styles = StyleSheet.create({
   respondingPrompt: {
     fontSize: 20,
     fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     lineHeight: 30,
     fontStyle: 'italic',
@@ -444,7 +448,7 @@ const styles = StyleSheet.create({
   cancelButton: { paddingVertical: 14, paddingHorizontal: 16 },
   cancelText: { fontSize: 16, color: '#78716c', fontWeight: '500' },
   submitButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 16,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -452,6 +456,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  submitText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  submitText: { color: '#ffffff', fontSize: 16, fontWeight: '600', fontFamily: 'Inter-SemiBold' },
   disabled: { opacity: 0.5 },
 });

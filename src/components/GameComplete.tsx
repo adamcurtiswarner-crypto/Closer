@@ -24,7 +24,7 @@ export function GameComplete({
   return (
     <View style={styles.container}>
       <Animated.View entering={FadeInUp.duration(500)} style={styles.content}>
-        <Icon name="sparkle" size="xl" color="#c97454" weight="fill" />
+        <Icon name="sparkle" size="xl" color="#ef5323" weight="fill" />
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
 
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -95,6 +96,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
     lineHeight: 22,
@@ -119,11 +121,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#c97454',
+    color: '#ef5323',
   },
   statLabel: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     marginTop: 4,
     textTransform: 'uppercase',
@@ -135,13 +138,14 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 16,
     alignItems: 'center',
   },
   primaryButtonText: {
     fontSize: 17,
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     color: '#ffffff',
   },
   secondaryButton: {

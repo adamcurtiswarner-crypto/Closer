@@ -9,8 +9,8 @@ export const colors = {
   surface: {
     background: '#fafaf9',
     card: '#ffffff',
-    warmTint: '#fef7f4',
-    warmTintDeep: '#fceee7',
+    warmTint: '#fef5f0',
+    warmTintDeep: '#fce8dc',
   },
 
   // Text
@@ -24,17 +24,23 @@ export const colors = {
 
   // Accent
   accent: {
-    primary: '#c97454',
-    primaryLight: '#e9b8a3',
-    secondary: '#8b7355',
-    secondaryLight: '#b8a88a',
+    primary: '#ef5323',
+    primaryLight: '#f9a07a',
+    secondary: '#490f5f',
+    secondaryLight: '#7b3f8d',
   },
 
   // Gradients (start, end)
   gradient: {
-    warmGlow: ['#fef7f4', '#fceee7'] as const,
-    ember: ['#c97454', '#d4956f'] as const,
-    sunrise: ['#fceee7', '#fef7f4'] as const,
+    warmGlow: ['#fef5f0', '#fce8dc'] as const,
+    ember: ['#ef5323', '#f5734a'] as const,
+    sunrise: ['#fce8dc', '#fef5f0'] as const,
+  },
+
+  // Brand
+  brand: {
+    purple: '#490f5f',
+    purpleLight: '#6b2d7b',
   },
 
   // Semantic
@@ -51,7 +57,7 @@ export const colors = {
   border: {
     default: '#e7e5e4',
     subtle: '#f5f5f4',
-    accent: '#c97454',
+    accent: '#ef5323',
   },
 
   // Skeleton
@@ -66,46 +72,53 @@ export const colors = {
 // ============================================
 
 export const typography = {
+  hero: {
+    fontSize: 38,
+    fontFamily: 'Alexandria-SemiBold',
+    lineHeight: 46,
+    letterSpacing: -0.5,
+  } as TextStyle,
+
   display: {
     fontSize: 32,
-    fontWeight: '700',
-    letterSpacing: -0.5,
+    fontFamily: 'Alexandria-SemiBold',
     lineHeight: 38,
+    letterSpacing: -0.5,
   } as TextStyle,
 
   heading: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 28,
+    fontFamily: 'Alexandria-SemiBold',
+    lineHeight: 34,
     letterSpacing: -0.3,
-    lineHeight: 30,
   } as TextStyle,
 
   title: {
     fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: -0.3,
+    fontFamily: 'Inter-SemiBold',
     lineHeight: 22,
+    letterSpacing: -0.3,
   } as TextStyle,
 
   body: {
-    fontSize: 15,
-    fontWeight: '400',
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    lineHeight: 24,
     letterSpacing: 0,
-    lineHeight: 22,
   } as TextStyle,
 
   caption: {
     fontSize: 13,
-    fontWeight: '400',
-    letterSpacing: 0,
+    fontFamily: 'Inter-Regular',
     lineHeight: 18,
+    letterSpacing: 0,
   } as TextStyle,
 
   overline: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.8,
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
     lineHeight: 14,
+    letterSpacing: 0.7,
     textTransform: 'uppercase',
   } as TextStyle,
 } as const;

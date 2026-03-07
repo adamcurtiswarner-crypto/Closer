@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Sentry from '@sentry/react-native';
+import { useFonts } from 'expo-font';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useDeepLink } from '@/hooks/useDeepLink';
 import { useAuth, AuthProvider } from '@/hooks/useAuth';
@@ -117,6 +118,18 @@ function AppBootstrap() {
 }
 
 function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'Alexandria-SemiBold': require('../src/assets/fonts/Alexandria-SemiBold.ttf'),
+    'Alexandria-Bold': require('../src/assets/fonts/Alexandria-Bold.ttf'),
+    'Inter-Regular': require('../src/assets/fonts/Inter-Regular.ttf'),
+    'Inter-Medium': require('../src/assets/fonts/Inter-Medium.ttf'),
+    'Inter-SemiBold': require('../src/assets/fonts/Inter-SemiBold.ttf'),
+  });
+
+  // Keep splash screen visible until fonts are loaded
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -75,12 +75,14 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 18,
+    fontFamily: 'Alexandria-SemiBold',
     color: '#57534e',
     textAlign: 'center',
     marginTop: 4,
   },
   description: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     textAlign: 'center',
     marginBottom: 48,
@@ -91,7 +93,8 @@ const styles = StyleSheet.create({
     height: 12,
   },
   inviteLink: {
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-Medium',
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,

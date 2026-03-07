@@ -190,10 +190,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     textAlign: 'center',
   },
   subtitle: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     textAlign: 'center',
     marginTop: 8,
@@ -211,15 +213,17 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: 'monospace',
     fontWeight: '700',
-    color: '#c97454',
+    color: '#ef5323',
     letterSpacing: 4,
   },
   tapToCopy: {
+    fontFamily: 'Inter-Regular',
     color: '#a8a29e',
     fontSize: 14,
     marginTop: 8,
   },
   validDays: {
+    fontFamily: 'Inter-Regular',
     color: '#a8a29e',
     fontSize: 12,
     textAlign: 'center',
@@ -232,13 +236,15 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   linkText: {
-    color: '#c97454',
+    fontFamily: 'Inter-Medium',
+    color: '#ef5323',
     textAlign: 'center',
   },
   skipLink: {
     marginTop: 24,
   },
   skipText: {
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
     fontSize: 14,

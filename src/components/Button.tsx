@@ -86,7 +86,7 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
       >
         {loading ? (
           <ActivityIndicator
-            color={variant === 'primary' ? '#ffffff' : '#c97454'}
+            color={variant === 'primary' ? '#ffffff' : '#ef5323'}
             size="small"
           />
         ) : (
@@ -111,11 +111,11 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   primaryDisabled: {
-    backgroundColor: '#d4a48e',
+    backgroundColor: '#f9a07a',
   },
   // Variants
   primaryButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   secondaryButton: {
     backgroundColor: '#f5f5f4',
@@ -138,6 +138,7 @@ const styles = StyleSheet.create({
   },
   // Text
   text: {
+    fontFamily: 'Inter-SemiBold',
     fontWeight: '600',
   },
   primaryText: {
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     color: '#292524',
   },
   ghostText: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   smText: {
     fontSize: 14,

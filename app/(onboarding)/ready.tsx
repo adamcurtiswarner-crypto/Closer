@@ -55,7 +55,7 @@ export default function ReadyScreen() {
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
           <View style={styles.checkmark}>
-            <Icon name="check" size="xl" color="#c97454" weight="bold" />
+            <Icon name="check" size="xl" color="#ef5323" weight="bold" />
           </View>
           <Text style={styles.title}>
             {t('onboarding.ready.title')}
@@ -103,10 +103,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     textAlign: 'center',
   },
   subtitle: {
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     textAlign: 'center',
     marginTop: 8,

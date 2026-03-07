@@ -91,7 +91,7 @@ export default function MemoriesScreen() {
         </TouchableOpacity>
       </Animated.View>
 
-      <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
+      <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}>
         {activeTab === 'recap' ? (
           recapLoading ? (
             <View>
@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   tabs: {
@@ -253,11 +254,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f4',
   },
   activeTab: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   tabText: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     color: '#78716c',
   },
   activeTabText: {
@@ -281,11 +283,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     color: '#57534e',
+    fontFamily: 'Inter-SemiBold',
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 14,
     color: '#78716c',
+    fontFamily: 'Inter-Regular',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -300,6 +304,7 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 16,
     color: '#57534e',
+    fontFamily: 'Inter-Regular',
     fontStyle: 'italic',
     textAlign: 'center',
     marginBottom: 16,
@@ -314,11 +319,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#78716c',
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     marginBottom: 4,
   },
   responseText: {
     fontSize: 15,
     color: '#292524',
+    fontFamily: 'Inter-Regular',
     lineHeight: 22,
   },
   responseImage: {
@@ -339,13 +346,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3ee',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e9b8a3',
+    borderColor: '#f9a07a',
     alignItems: 'center',
   },
   saveButtonText: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
   savedLabel: {
     marginTop: 12,
@@ -360,12 +368,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3ee',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e9b8a3',
+    borderColor: '#f9a07a',
     alignItems: 'center',
   },
   unlockText: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#ef5323',
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
   },
 });

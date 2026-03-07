@@ -105,12 +105,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.3,
   },
   headerSubtitle: {
     fontSize: 12,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     marginTop: 2,
   },

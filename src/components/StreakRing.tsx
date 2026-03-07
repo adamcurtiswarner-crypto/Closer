@@ -52,7 +52,7 @@ export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive }:
       <Animated.View style={[styles.circleOuter, ringAnimatedStyle]}>
         <View style={[styles.circleInner, isStreakActive ? styles.circleActive : styles.circleInactive]}>
           {currentStreak > 0
-            ? <Icon name="flame" size={16} color="#c97454" weight="fill" />
+            ? <Icon name="flame" size={16} color="#ef5323" weight="fill" />
             : <Icon name="flame" size={16} color="#d6d3d1" weight="light" />
           }
           <Animated.Text style={[styles.streakNumber, isStreakActive ? styles.numberActive : styles.numberInactive, numberAnimatedStyle]}>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
   circleActive: {
-    borderColor: '#c97454',
+    borderColor: '#ef5323',
   },
   circleInactive: {
     borderColor: '#e7e5e4',
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   numberActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   numberInactive: {
     color: '#a8a29e',
@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
   motivation: {
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
     color: '#57534e',
     marginBottom: 14,
   },
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   weekDotFilled: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   weekDotEmpty: {
     backgroundColor: '#f5f5f4',
@@ -180,6 +181,7 @@ const styles = StyleSheet.create({
   },
   weekLabel: {
     fontSize: 12,
+    fontFamily: 'Inter-Regular',
     color: '#a8a29e',
     marginTop: 10,
   },

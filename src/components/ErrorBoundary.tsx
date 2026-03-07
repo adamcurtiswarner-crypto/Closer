@@ -65,11 +65,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 8,
   },
   message: {
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
     marginBottom: 24,
@@ -78,12 +80,13 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 12,
     paddingHorizontal: 24,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 12,
   },
   buttonText: {
     color: '#ffffff',
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 15,
   },
 });

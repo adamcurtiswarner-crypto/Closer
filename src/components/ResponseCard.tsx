@@ -56,11 +56,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#a8a29e',
   },
   partnersDot: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   label: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
@@ -73,6 +74,7 @@ const styles = StyleSheet.create({
   responseText: {
     color: '#292524',
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     lineHeight: 24,
   },
   responseImage: {

@@ -15,7 +15,7 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Know Each Other',
     description: 'Deepen your understanding',
     icon: 'compass',
-    color: '#c97454',
+    color: '#ef5323',
     bgColor: '#fef7f4',
   },
   {
@@ -47,7 +47,7 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Navigate',
     description: 'Work through friction',
     icon: 'compass',
-    color: '#8b7355',
+    color: '#490f5f',
     bgColor: '#f7f4f0',
   },
   {

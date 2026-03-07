@@ -140,10 +140,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
   subtitle: {
     fontSize: 16,
+    fontFamily: 'Inter-Regular',
     color: '#57534e',
     marginTop: 8,
   },

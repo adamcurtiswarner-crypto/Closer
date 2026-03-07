@@ -256,7 +256,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                 onPress={() => setShowDatePicker(!showDatePicker)}
                 activeOpacity={0.7}
               >
-                <Icon name="calendar" size="sm" color={scheduledDate ? '#c97454' : '#a8a29e'} />
+                <Icon name="calendar" size="sm" color={scheduledDate ? '#ef5323' : '#a8a29e'} />
                 <Text style={[styles.dateButtonText, scheduledDate && styles.dateButtonTextActive]}>
                   {scheduledDate ? formatDateLabel(scheduledDate) : 'Pick a date'}
                 </Text>
@@ -268,7 +268,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                   onPress={() => setShowTimePicker(!showTimePicker)}
                   activeOpacity={0.7}
                 >
-                  <Icon name="hourglass" size="sm" color={scheduledTime ? '#c97454' : '#a8a29e'} />
+                  <Icon name="hourglass" size="sm" color={scheduledTime ? '#ef5323' : '#a8a29e'} />
                   <Text style={[styles.dateButtonText, scheduledTime && styles.dateButtonTextActive]}>
                     {scheduledTime ? formatTimeLabel(scheduledTime) : 'Set time'}
                   </Text>
@@ -299,7 +299,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   minimumDate={new Date()}
                   onChange={handleDateChange}
-                  accentColor="#c97454"
+                  accentColor="#ef5323"
                 />
                 {Platform.OS === 'ios' && (
                   <TouchableOpacity
@@ -320,7 +320,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                   mode="time"
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   onChange={handleTimeChange}
-                  accentColor="#c97454"
+                  accentColor="#ef5323"
                 />
                 {Platform.OS === 'ios' && (
                   <TouchableOpacity
@@ -401,11 +401,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.5,
   },
   modalSubtitle: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     marginTop: 4,
     marginBottom: 32,
@@ -458,8 +460,8 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   categoryPillActive: {
-    backgroundColor: '#fef7f4',
-    borderColor: '#c97454',
+    backgroundColor: '#fef5f0',
+    borderColor: '#ef5323',
   },
   categoryIcon: {
     fontSize: 16,
@@ -470,7 +472,7 @@ const styles = StyleSheet.create({
     color: '#78716c',
   },
   categoryTextActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   // --- Date & Time ---
   dateTimeRow: {
@@ -491,8 +493,8 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   dateButtonActive: {
-    backgroundColor: '#fef7f4',
-    borderColor: '#c97454',
+    backgroundColor: '#fef5f0',
+    borderColor: '#ef5323',
   },
   dateButtonText: {
     fontSize: 14,
@@ -500,7 +502,7 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
   },
   dateButtonTextActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   clearDateButton: {
     width: 32,
@@ -526,7 +528,7 @@ const styles = StyleSheet.create({
   pickerDoneText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#ef5323',
   },
   // --- Error ---
   errorContainer: {
@@ -569,7 +571,7 @@ const styles = StyleSheet.create({
   createButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -579,10 +581,11 @@ const styles = StyleSheet.create({
   createText: {
     color: '#ffffff',
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     letterSpacing: 0.2,
   },
   primaryDisabled: {
-    backgroundColor: '#d4a48e',
+    backgroundColor: '#f9a07a',
   },
 });

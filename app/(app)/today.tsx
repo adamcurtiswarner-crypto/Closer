@@ -406,7 +406,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}
         >
           <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
 
@@ -415,7 +415,7 @@ export default function TodayScreen() {
           )}
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
-            <Icon name="coffee" size="xl" color="#c97454" weight="light" />
+            <Icon name="coffee" size="xl" color="#ef5323" weight="light" />
             <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
@@ -459,7 +459,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}
         >
           <TodayScreenHeader greeting={t('today.niceOne')} {...headerProps} />
 
@@ -475,7 +475,7 @@ export default function TodayScreen() {
             </Text>
 
             <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
-              <Icon name="lock" size="md" color="#c97454" weight="light" />
+              <Icon name="lock" size="md" color="#ef5323" weight="light" />
               <Text style={styles.sealedTitle}>Your answer is saved</Text>
               <Text style={styles.sealedSubtitle}>
                 Waiting for {partnerName ?? 'your partner'}...
@@ -486,7 +486,7 @@ export default function TodayScreen() {
 
             {isPartnerTyping && partnerTypingContext === 'prompt' ? (
               <Animated.View entering={FadeIn.duration(300)} style={styles.typingRow}>
-                <PulsingDots color="#c97454" size={5} />
+                <PulsingDots color="#ef5323" size={5} />
                 <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
               </Animated.View>
             ) : (
@@ -515,7 +515,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}
         >
           <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
 
@@ -579,7 +579,7 @@ export default function TodayScreen() {
                 onPress={() => setShowStreakDetail(!showStreakDetail)}
                 activeOpacity={0.8}
               >
-                <Icon name="flame" size="md" color="#c97454" weight="fill" />
+                <Icon name="flame" size="md" color="#ef5323" weight="fill" />
                 <Text style={styles.streakCelebrationText}>
                   {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
                 </Text>
@@ -675,11 +675,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1c1917',
     letterSpacing: -0.5,
+    fontFamily: 'Alexandria-SemiBold',
   },
   dateText: {
     fontSize: 15,
     color: '#78716c',
     marginTop: 2,
+    fontFamily: 'Inter-Regular',
   },
   // ─── Prompt ───
   promptSection: {
@@ -704,24 +706,27 @@ const styles = StyleSheet.create({
     color: '#292524',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Alexandria-SemiBold',
   },
   emptySubtitle: {
     fontSize: 15,
     color: '#78716c',
     textAlign: 'center',
     lineHeight: 22,
+    fontFamily: 'Inter-Regular',
   },
   triggerButton: {
     marginTop: 24,
     paddingVertical: 14,
     paddingHorizontal: 28,
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
     borderRadius: 14,
   },
   triggerButtonText: {
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
   },
   disabled: {
     opacity: 0.5,
@@ -748,9 +753,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 24,
+    fontFamily: 'Inter-Regular',
   },
   sealedCard: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -761,10 +767,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#1c1917',
+    fontFamily: 'Alexandria-SemiBold',
   },
   sealedSubtitle: {
     fontSize: 13,
     color: '#a8a29e',
+    fontFamily: 'Inter-Regular',
   },
   waitingDivider: {
     height: 1,
@@ -778,9 +786,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   typingText: {
-    color: '#c97454',
+    color: '#ef5323',
     fontStyle: 'italic',
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
   waitingMessageRow: {
     flexDirection: 'row',
@@ -791,6 +800,7 @@ const styles = StyleSheet.create({
   waitingMessage: {
     color: '#78716c',
     fontSize: 14,
+    fontFamily: 'Inter-Regular',
   },
   // ─── Complete ───
   completionSection: {
@@ -813,6 +823,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#57534e',
     marginBottom: 16,
+    fontFamily: 'Inter-Medium',
   },
   feedbackRow: {
     flexDirection: 'row',
@@ -836,19 +847,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#57534e',
     fontWeight: '500',
+    fontFamily: 'Inter-Medium',
   },
   feedbackThanks: {
     marginTop: 16,
     fontSize: 14,
     color: '#a8a29e',
     textAlign: 'center',
+    fontFamily: 'Inter-Regular',
   },
   streakCelebration: {
     marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 16,
@@ -858,7 +871,8 @@ const styles = StyleSheet.create({
   streakCelebrationText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#ef5323',
+    fontFamily: 'Inter-SemiBold',
   },
   streakDetailSection: {
     marginTop: 16,
@@ -881,5 +895,6 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: 'Inter-Regular',
   },
 });

@@ -26,7 +26,7 @@ export function RelationshipStagePrompt({ onSelectStage, onDismiss }: Relationsh
       <View style={styles.stageButtons}>
         {STAGES.map(s => (
           <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => onSelectStage(s.value)}>
-            <Icon name={s.icon} size="sm" color="#c97454" />
+            <Icon name={s.icon} size="sm" color="#ef5323" />
             <Text style={styles.stageChipText}>{s.label}</Text>
           </TouchableOpacity>
         ))}
@@ -53,11 +53,13 @@ const styles = StyleSheet.create({
   stagePromptTitle: {
     fontSize: 16,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 4,
   },
   stagePromptSubtitle: {
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     marginBottom: 16,
   },
@@ -71,20 +73,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#fef5f0',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#fceee7',
+    borderColor: '#fce8dc',
   },
   stageChipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#c97454',
+    fontFamily: 'Inter-SemiBold',
+    color: '#ef5323',
   },
   stageSkip: {
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
     color: '#a8a29e',
     textAlign: 'center',
   },

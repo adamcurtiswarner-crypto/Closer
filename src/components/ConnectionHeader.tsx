@@ -71,7 +71,7 @@ export function ConnectionHeader({
           <View style={styles.line} />
           {currentStreak > 0 && (
             <View style={[styles.streakPill, isStreakActive ? styles.streakPillActive : styles.streakPillInactive]}>
-              <Icon name="flame" size="xs" color="#c97454" weight="fill" />
+              <Icon name="flame" size="xs" color="#ef5323" weight="fill" />
               <Text style={[styles.streakCount, isStreakActive ? styles.streakCountActive : styles.streakCountInactive]}>
                 {currentStreak}
               </Text>
@@ -132,15 +132,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   avatarPartner: {
-    backgroundColor: '#8b7355',
+    backgroundColor: '#490f5f',
   },
   avatarText: {
     color: '#ffffff',
     fontSize: 18,
     fontWeight: '700',
+    fontFamily: 'Inter-SemiBold',
   },
   onlineDot: {
     position: 'absolute',
@@ -176,10 +177,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   dotLeft: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#ef5323',
   },
   dotRight: {
-    backgroundColor: '#8b7355',
+    backgroundColor: '#490f5f',
   },
   streakPill: {
     flexDirection: 'row',
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   streakCountActive: {
-    color: '#c97454',
+    color: '#ef5323',
   },
   streakCountInactive: {
     color: '#a8a29e',
@@ -209,10 +210,11 @@ const styles = StyleSheet.create({
   statusText: {
     marginTop: 6,
     fontSize: 13,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
   },
   statusTyping: {
-    color: '#c97454',
+    color: '#ef5323',
     fontStyle: 'italic',
   },
 });
