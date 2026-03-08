@@ -92,6 +92,12 @@ export { Paywall } from './Paywall';
 export { ErrorBoundary } from './ErrorBoundary';
 export { QueryError } from './QueryError';
 
+// Photos & Milestones
+export { PhotoGrid } from './PhotoGrid';
+export { PhotoViewer } from './PhotoViewer';
+export { MilestoneTimeline } from './MilestoneTimeline';
+export { AddMilestoneModal } from './AddMilestoneModal';
+
 // Icons
 export { Icon } from './Icon';
 export type { IconName } from './Icon';

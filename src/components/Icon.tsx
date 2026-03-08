@@ -47,6 +47,9 @@ import {
   HouseSimpleIcon,
   PlayIcon,
   TimerIcon,
+  PlusIcon,
+  GiftIcon,
+  NoteIcon,
 } from 'phosphor-react-native';
 import { iconSize } from '@/config/theme';
 
@@ -97,6 +100,9 @@ const iconMap = {
   'house-simple': HouseSimpleIcon,
   play: PlayIcon,
   timer: TimerIcon,
+  plus: PlusIcon,
+  gift: GiftIcon,
+  note: NoteIcon,
 } as const;
 
 export type IconName = keyof typeof iconMap;

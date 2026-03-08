@@ -14,31 +14,50 @@ import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
-import { useWeeklyRecap, useSavedMemories, useSaveMemory, useRemoveMemory } from '@/hooks/useMemories';
+import { useWeeklyRecap, useSaveMemory } from '@/hooks/useMemories';
+import { usePhotoGrid, type PhotoItem } from '@/hooks/usePhotoGrid';
+import { useMilestones, useCreateMilestone, useDeleteMilestone } from '@/hooks/useMilestones';
+import { useAddPhoto } from '@/hooks/useAddPhoto';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Paywall } from '@/components/Paywall';
 import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { MemoryCardSkeleton } from '@/components/Skeleton';
-import { SwipeableRow } from '@/components/SwipeableRow';
+import { PhotoGrid } from '@/components/PhotoGrid';
+import { PhotoViewer } from '@/components/PhotoViewer';
+import { MilestoneTimeline } from '@/components/MilestoneTimeline';
+import { AddMilestoneModal } from '@/components/AddMilestoneModal';
+import { Icon } from '@components';
+import { pickImage } from '@/services/imageUpload';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-type Tab = 'recap' | 'saved';
+type Tab = 'recap' | 'photos' | 'milestones';
 
 export default function MemoriesScreen() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('recap');
 
+  // This Week
   const { data: completions, isLoading: recapLoading, error: recapError, refetch: refetchRecap } = useWeeklyRecap();
-  const { data: memories, isLoading: memoriesLoading, error: memoriesError, refetch: refetchMemories } = useSavedMemories();
   const saveMemory = useSaveMemory();
-  const removeMemory = useRemoveMemory();
+
+  // Photos
+  const photoGrid = usePhotoGrid();
+  const allPhotos = photoGrid.data?.pages.flatMap(p => p.items) || [];
+  const addPhoto = useAddPhoto();
+  const [selectedPhoto, setSelectedPhoto] = useState<PhotoItem | null>(null);
+  const [showViewer, setShowViewer] = useState(false);
+
+  // Milestones
+  const { data: milestones, isLoading: milestonesLoading, refetch: refetchMilestones } = useMilestones();
+  const createMilestone = useCreateMilestone();
+  const deleteMilestone = useDeleteMilestone();
+  const [showAddMilestone, setShowAddMilestone] = useState(false);
+
   const { isPremium } = useSubscription();
   const [showPaywall, setShowPaywall] = useState(false);
-
-  const FREE_MEMORY_LIMIT = 3;
 
   const partnerName = user?.partnerName || 'Partner';
   const [refreshing, setRefreshing] = useState(false);
@@ -47,22 +66,47 @@ export default function MemoriesScreen() {
     setRefreshing(true);
     if (activeTab === 'recap') {
       await refetchRecap();
+    } else if (activeTab === 'photos') {
+      await photoGrid.refetch();
     } else {
-      await refetchMemories();
+      await refetchMilestones();
     }
     setRefreshing(false);
-  }, [activeTab, refetchRecap, refetchMemories]);
+  }, [activeTab, refetchRecap, photoGrid.refetch, refetchMilestones]);
 
-  // Log recap_viewed when tab is shown
+  // Analytics
   useEffect(() => {
     if (activeTab === 'recap' && completions && completions.length > 0) {
       logEvent('recap_viewed', { completion_count: completions.length });
+    }
+    if (activeTab === 'photos') {
+      logEvent('photo_grid_viewed', {});
+    }
+    if (activeTab === 'milestones') {
+      logEvent('milestone_viewed', {});
     }
   }, [activeTab, completions]);
 
   const getDisplayName = (userId: string) => {
     if (userId === user?.id) return 'You';
     return partnerName;
+  };
+
+  const handlePhotoPress = (photo: PhotoItem) => {
+    setSelectedPhoto(photo);
+    setShowViewer(true);
+    logEvent('photo_viewed', { source: photo.source });
+  };
+
+  const handleAddStandalonePhoto = async () => {
+    if (!isPremium) {
+      setShowPaywall(true);
+      return;
+    }
+    const uri = await pickImage();
+    if (uri) {
+      addPhoto.mutate({ uri });
+    }
   };
 
   return (
@@ -82,18 +126,26 @@ export default function MemoriesScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'saved' && styles.activeTab]}
-          onPress={() => setActiveTab('saved')}
+          style={[styles.tab, activeTab === 'photos' && styles.activeTab]}
+          onPress={() => setActiveTab('photos')}
         >
-          <Text style={[styles.tabText, activeTab === 'saved' && styles.activeTabText]}>
-            {t('memories.saved')}
+          <Text style={[styles.tabText, activeTab === 'photos' && styles.activeTabText]}>
+            Photos
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'milestones' && styles.activeTab]}
+          onPress={() => setActiveTab('milestones')}
+        >
+          <Text style={[styles.tabText, activeTab === 'milestones' && styles.activeTabText]}>
+            Milestones
           </Text>
         </TouchableOpacity>
       </Animated.View>
 
-      <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}>
-        {activeTab === 'recap' ? (
-          recapLoading ? (
+      {activeTab === 'recap' ? (
+        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
+          {recapLoading ? (
             <View>
               <MemoryCardSkeleton />
               <MemoryCardSkeleton />
@@ -148,77 +200,78 @@ export default function MemoriesScreen() {
                 )}
               </Animated.View>
             ))
-          )
-        ) : (
-          memoriesLoading ? (
+          )}
+        </ScrollView>
+      ) : activeTab === 'photos' ? (
+        <View style={styles.photosContainer}>
+          <PhotoGrid
+            photos={allPhotos}
+            onPhotoPress={handlePhotoPress}
+            onEndReached={() => {
+              if (photoGrid.hasNextPage && !photoGrid.isFetchingNextPage) {
+                photoGrid.fetchNextPage();
+              }
+            }}
+            isLoadingMore={photoGrid.isFetchingNextPage}
+            ListHeaderComponent={
+              <TouchableOpacity
+                style={styles.addPhotoBtn}
+                onPress={handleAddStandalonePhoto}
+                activeOpacity={0.8}
+              >
+                {addPhoto.isPending ? (
+                  <ActivityIndicator size="small" color="#c97454" />
+                ) : (
+                  <>
+                    <Icon name="plus" size="sm" color="#c97454" />
+                    <Text style={styles.addPhotoBtnText}>Add photo</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            }
+          />
+        </View>
+      ) : (
+        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
+          {milestonesLoading ? (
             <View>
               <MemoryCardSkeleton />
               <MemoryCardSkeleton />
             </View>
-          ) : memoriesError ? (
-            <QueryError
-              message={t('memories.errorLoadingSaved')}
-              onRetry={() => refetchMemories()}
-            />
-          ) : !memories || memories.length === 0 ? (
-            <Animated.View entering={FadeIn.duration(500).delay(200)} style={styles.empty}>
-              <Text style={styles.emptyTitle}>{t('memories.emptySavedTitle')}</Text>
-              <Text style={styles.emptySubtitle}>
-                {t('memories.emptySavedSubtitle')}
-              </Text>
-            </Animated.View>
           ) : (
-            <>
-              {(isPremium ? memories : memories.slice(0, FREE_MEMORY_LIMIT)).map((memory, index) => (
-                <Animated.View key={memory.id} entering={FadeInUp.duration(400).delay(Math.min(index * 80, 400))}>
-                  <SwipeableRow
-                    rightActions={[{
-                      label: 'Remove',
-                      color: '#ef4444',
-                      onPress: () => {
-                        hapticImpact();
-                        removeMemory.mutate(memory.id);
-                      },
-                    }]}
-                  >
-                    <View style={styles.card}>
-                      <Text style={styles.promptText}>"{memory.promptText}"</Text>
+            <MilestoneTimeline
+              milestones={milestones || []}
+              onAdd={() => setShowAddMilestone(true)}
+              onDelete={(id) => {
+                hapticImpact();
+                deleteMilestone.mutate(id);
+              }}
+              isPremium={isPremium}
+              onShowPaywall={() => setShowPaywall(true)}
+            />
+          )}
+        </ScrollView>
+      )}
 
-                      {memory.responses.map((response, idx) => (
-                        <View key={idx} style={styles.responseBlock}>
-                          <Text style={styles.responseLabel}>
-                            {response.userId === user?.id ? 'You' : (response.displayName || partnerName)}
-                          </Text>
-                          <Text style={styles.responseText}>{response.responseText}</Text>
-                          {response.imageUrl ? (
-                            <Image source={{ uri: response.imageUrl }} style={styles.responseImage} resizeMode="cover" />
-                          ) : null}
-                        </View>
-                      ))}
+      <PhotoViewer
+        photo={selectedPhoto}
+        visible={showViewer}
+        onClose={() => {
+          setShowViewer(false);
+          setSelectedPhoto(null);
+        }}
+      />
 
-                      {memory.completedAt && (
-                        <Text style={styles.timestamp}>
-                          {format(memory.completedAt, 'EEEE, MMM d')}
-                        </Text>
-                      )}
-                    </View>
-                  </SwipeableRow>
-                </Animated.View>
-              ))}
-              {!isPremium && memories.length > FREE_MEMORY_LIMIT && (
-                <TouchableOpacity
-                  style={styles.unlockButton}
-                  onPress={() => setShowPaywall(true)}
-                >
-                  <Text style={styles.unlockText}>
-                    {t('memories.unlockMore', { count: memories.length - FREE_MEMORY_LIMIT })}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </>
-          )
-        )}
-      </ScrollView>
+      <AddMilestoneModal
+        visible={showAddMilestone}
+        onClose={() => setShowAddMilestone(false)}
+        onSubmit={(input) => {
+          createMilestone.mutate(input, {
+            onSuccess: () => setShowAddMilestone(false),
+          });
+        }}
+        isSubmitting={createMilestone.isPending}
+      />
 
       <Paywall visible={showPaywall} onClose={() => setShowPaywall(false)} />
     </SafeAreaView>
@@ -254,7 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f4',
   },
   activeTab: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   tabText: {
     fontSize: 14,
@@ -269,9 +322,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
   },
-  centered: {
-    paddingTop: 48,
-    alignItems: 'center',
+  photosContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
   },
   empty: {
     flex: 1,
@@ -351,7 +404,7 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 14,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },
@@ -361,20 +414,22 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     textAlign: 'center',
   },
-  unlockButton: {
-    marginTop: 8,
-    marginBottom: 24,
+  addPhotoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     paddingVertical: 14,
     backgroundColor: '#fef3ee',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#f9a07a',
-    alignItems: 'center',
+    marginBottom: 16,
   },
-  unlockText: {
+  addPhotoBtnText: {
     fontSize: 14,
-    color: '#ef5323',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
+    color: '#c97454',
   },
 });
