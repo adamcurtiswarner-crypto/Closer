@@ -53,6 +53,7 @@ interface TodayPrompt {
   partnerHasResponded: boolean;
   isComplete: boolean;
   nextPromptAt: string | null;
+  reactions: Record<string, string> | null;
 }
 
 const EMPTY_TODAY: TodayPrompt = {
@@ -62,6 +63,7 @@ const EMPTY_TODAY: TodayPrompt = {
   partnerHasResponded: false,
   isComplete: false,
   nextPromptAt: null,
+  reactions: null,
 };
 
 export function useTodayPrompt() {
@@ -107,6 +109,7 @@ export function useTodayPrompt() {
         queryClient.setQueryData(['todayPrompt', coupleId], {
           ...EMPTY_TODAY,
           nextPromptAt: `${today}T${notificationTime || '19:00'}:00`,
+          reactions: null,
         });
         return;
       }
@@ -135,7 +138,7 @@ export function useTodayPrompt() {
       );
 
       // Nested listener for responses — cleaned up when assignment changes
-      const unsubResponses = onSnapshot(responsesQuery, (responsesSnap) => {
+      const unsubResponses = onSnapshot(responsesQuery, async (responsesSnap) => {
         let myResponse: PromptResponse | null = null;
         let partnerResponse: PromptResponse | null = null;
 
@@ -164,6 +167,19 @@ export function useTodayPrompt() {
         // Re-read assignment status from the latest snapshot
         const latestStatus = dailyDocs[0]?.data()?.status || assignment.status;
 
+        // Fetch reactions from completion doc when complete
+        let reactions: Record<string, string> | null = null;
+        if (latestStatus === 'completed') {
+          try {
+            const completionDoc = await getDoc(doc(db, 'prompt_completions', assignment.id));
+            if (completionDoc.exists()) {
+              reactions = completionDoc.data().reactions || null;
+            }
+          } catch {
+            // Reactions are non-critical
+          }
+        }
+
         queryClient.setQueryData(['todayPrompt', coupleId], {
           assignment: { ...assignment, status: latestStatus },
           myResponse,
@@ -171,6 +187,7 @@ export function useTodayPrompt() {
           partnerHasResponded: !!partnerResponse?.submittedAt,
           isComplete: latestStatus === 'completed',
           nextPromptAt: null,
+          reactions,
         } as TodayPrompt);
       });
 

@@ -34,6 +34,7 @@ import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
+import { useReaction, type ReactionType } from '@/hooks/useReaction';
 import { useStreak } from '@/hooks/useStreak';
 import { useCouple } from '@/hooks/useCouple';
 import { useCheckIn } from '@/hooks/useCheckIn';
@@ -95,6 +96,7 @@ export default function TodayScreen() {
   const submitResponse = useSubmitResponse();
   const submitFeedback = useSubmitFeedback();
   const triggerPrompt = useTriggerPrompt();
+  const reaction = useReaction();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
   const { data: couple } = useCouple();
   const { hasPendingCheckIn, submitCheckIn, dismissCheckIn } = useCheckIn();
@@ -536,6 +538,17 @@ export default function TodayScreen() {
               partnerName={partnerName}
               yourImageUrl={myResponse!.imageUrl}
               partnerImageUrl={partnerResponse?.imageUrl}
+              myReaction={todayData?.reactions?.[user!.id] as ReactionType | undefined ?? null}
+              partnerReaction={
+                todayData?.reactions
+                  ? (Object.entries(todayData.reactions).find(([k]) => k !== user!.id)?.[1] as ReactionType | undefined ?? null)
+                  : null
+              }
+              onReact={(r) => reaction.mutate({
+                assignmentId: assignment!.id,
+                reaction: r,
+                promptType: assignment!.promptType,
+              })}
             />
           </Animated.View>
 

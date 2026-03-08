@@ -98,6 +98,9 @@ export { PhotoViewer } from './PhotoViewer';
 export { MilestoneTimeline } from './MilestoneTimeline';
 export { AddMilestoneModal } from './AddMilestoneModal';
 
+// Reactions
+export { ReactionRow } from './ReactionRow';
+
 // Icons
 export { Icon } from './Icon';
 export type { IconName } from './Icon';

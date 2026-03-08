@@ -12,7 +12,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import { hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { ResponseCard } from './ResponseCard';
+import { ReactionRow } from './ReactionRow';
 import { Icon } from './Icon';
+import type { ReactionType } from '@/hooks/useReaction';
 
 const SPARKLE_POSITIONS = [
   { x: 40, delay: 200 },
@@ -68,6 +70,9 @@ interface CompletionMomentProps {
   partnerName?: string;
   yourImageUrl?: string | null;
   partnerImageUrl?: string | null;
+  myReaction?: ReactionType | null;
+  partnerReaction?: ReactionType | null;
+  onReact?: (reaction: ReactionType | null) => void;
 }
 
 export function CompletionMoment({
@@ -77,6 +82,9 @@ export function CompletionMoment({
   partnerName = 'Partner',
   yourImageUrl,
   partnerImageUrl,
+  myReaction = null,
+  partnerReaction = null,
+  onReact,
 }: CompletionMomentProps) {
   const cardScale = useSharedValue(0.95);
 
@@ -131,6 +139,17 @@ export function CompletionMoment({
               isYours={false}
             />
           </Animated.View>
+
+          {/* Reaction row */}
+          {onReact && (
+            <Animated.View entering={FadeInUp.duration(400).delay(800)}>
+              <ReactionRow
+                myReaction={myReaction}
+                partnerReaction={partnerReaction}
+                onReact={onReact}
+              />
+            </Animated.View>
+          )}
         </View>
 
         <Animated.View entering={FadeIn.duration(400).delay(600)}>
