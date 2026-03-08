@@ -1,7 +1,32 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /{allPaths=**} {
+
+    // User profile photos: any authenticated user can read.
+    // Only the owner can write their own avatar (avatars/{userId}.jpg).
+    match /avatars/{userId}.jpg {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId;
+    }
+
+    // Partner photos: any authenticated user can read.
+    // Only the uploading user can write (avatars/{coupleId}_partner_{userId}.jpg).
+    match /avatars/{coupleId}_partner_{userId}.jpg {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId;
+    }
+
+    // Prompt response photos: authenticated users only.
+    // Cannot verify couple membership in storage rules without custom claims.
+    match /responses/{coupleId}/{assignmentId}/{fileName} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Chat images: authenticated users only.
+    // Cannot verify couple membership in storage rules without custom claims.
+    match /chat/{coupleId}/{fileName} {
       allow read, write: if request.auth != null;
     }
   }
