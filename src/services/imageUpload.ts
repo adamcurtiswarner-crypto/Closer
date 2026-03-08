@@ -109,3 +109,35 @@ export async function uploadPartnerPhoto(
   await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
   return getDownloadURL(storageRef);
 }
+
+/**
+ * Upload a standalone photo to the couple's shared album.
+ * Returns the download URL.
+ */
+export async function uploadStandalonePhoto(
+  coupleId: string,
+  photoId: string,
+  uri: string
+): Promise<string> {
+  const storageRef = ref(storage, `photos/${coupleId}/${photoId}.jpg`);
+  const bytes = await readFileAsBytes(uri);
+
+  await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
+  return getDownloadURL(storageRef);
+}
+
+/**
+ * Upload a milestone photo.
+ * Returns the download URL.
+ */
+export async function uploadMilestonePhoto(
+  coupleId: string,
+  milestoneId: string,
+  uri: string
+): Promise<string> {
+  const storageRef = ref(storage, `milestones/${coupleId}/${milestoneId}.jpg`);
+  const bytes = await readFileAsBytes(uri);
+
+  await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
+  return getDownloadURL(storageRef);
+}

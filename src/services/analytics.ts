@@ -61,7 +61,12 @@ type AnalyticsEvent =
   | 'date_night_completed'
   | 'date_night_reflected'
   | 'date_night_skipped'
-  | 'date_night_calendar_added';
+  | 'date_night_calendar_added'
+  | 'photo_grid_viewed'
+  | 'photo_standalone_uploaded'
+  | 'photo_viewed'
+  | 'milestone_created'
+  | 'milestone_viewed';
 
 interface EventContext {
   user_id?: string;

@@ -29,5 +29,15 @@ service firebase.storage {
     match /chat/{coupleId}/{fileName} {
       allow read, write: if request.auth != null;
     }
+
+    // Standalone album photos: authenticated users only.
+    match /photos/{coupleId}/{fileName} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Milestone photos: authenticated users only.
+    match /milestones/{coupleId}/{fileName} {
+      allow read, write: if request.auth != null;
+    }
   }
 }
