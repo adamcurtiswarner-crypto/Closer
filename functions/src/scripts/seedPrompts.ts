@@ -25,7 +25,7 @@ if (process.env.FIRESTORE_EMULATOR_HOST) {
 const db = admin.firestore();
 
 // Load prompts from JSON file
-const promptsPath = path.join(__dirname, '../../../../data/seed-prompts.json');
+const promptsPath = path.join(__dirname, '../../../../data/seed-prompts-v3.json');
 const promptsData = JSON.parse(fs.readFileSync(promptsPath, 'utf-8'));
 
 interface PromptInput {

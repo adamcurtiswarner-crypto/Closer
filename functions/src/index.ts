@@ -2664,7 +2664,7 @@ export const autoGeneratePrompts = functions.pubsub
         .get();
 
       const activeCount = activePromptsSnap.size;
-      const TARGET_POOL_SIZE = 40;
+      const TARGET_POOL_SIZE = 150;
 
       if (activeCount >= TARGET_POOL_SIZE) {
         console.log(`Prompt pool at ${activeCount}, no generation needed`);
