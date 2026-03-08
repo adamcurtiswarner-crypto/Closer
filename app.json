@@ -75,6 +75,12 @@
           "color": "#ffffff"
         }
       ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Stoke uses your calendar to schedule date nights and reminders."
+        }
+      ],
       "expo-localization",
       "@sentry/react-native",
       "expo-apple-authentication",

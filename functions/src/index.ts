@@ -2311,7 +2311,25 @@ export const triggerBigQueryExport = functions.https.onCall(async (data, context
 // AI Prompt Generation — Shared Helper
 // ============================================
 
-const AI_MODEL = 'claude-sonnet-4-5-20250929';
+const DEFAULT_AI_MODEL = 'claude-sonnet-4-5-20250929';
+let cachedAIModel: string | null = null;
+
+async function getAIModel(): Promise<string> {
+  if (cachedAIModel) return cachedAIModel;
+  try {
+    const doc = await db.doc('admin_state/ai_generation').get();
+    const modelId = doc.data()?.model_id;
+    if (modelId && typeof modelId === 'string') {
+      cachedAIModel = modelId;
+      return cachedAIModel;
+    }
+  } catch (err) {
+    functions.logger.warn('Failed to read AI model from Firestore, using default', err);
+  }
+  cachedAIModel = DEFAULT_AI_MODEL;
+  return cachedAIModel;
+}
+
 const AI_MAX_PER_CALL = 10;
 const AI_RATE_LIMIT_HOURS = 1;
 
@@ -2372,6 +2390,7 @@ ${targetDepth ? `Target depth: ${targetDepth}` : 'Mix of depths.'}
 Respond with a JSON array of objects, each with: text, hint, type, emotional_depth, requires_conversation (boolean).`;
 
   // Call Claude API via fetch
+  const aiModel = await getAIModel();
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -2380,7 +2399,7 @@ Respond with a JSON array of objects, each with: text, hint, type, emotional_dep
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: AI_MODEL,
+      model: aiModel,
       max_tokens: 4096,
       system: systemPrompt,
       messages: [
@@ -2437,7 +2456,7 @@ Respond with a JSON array of objects, each with: text, hint, type, emotional_dep
       avg_response_length: 0,
       positive_response_rate: 0,
       ai_generated: true,
-      ai_model: AI_MODEL,
+      ai_model: aiModel,
       created_at: admin.firestore.FieldValue.serverTimestamp(),
       updated_at: admin.firestore.FieldValue.serverTimestamp(),
       created_by: 'ai',
@@ -2816,6 +2835,7 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
       return;
     }
 
+    const coachingModel = await getAIModel();
     const coachingResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -2824,7 +2844,7 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: AI_MODEL,
+        model: coachingModel,
         max_tokens: 300,
         messages: [{ role: 'user', content: coachingPrompt }],
       }),
