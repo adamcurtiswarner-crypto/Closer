@@ -94,6 +94,13 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
   // Get couple info
   const coupleDoc = await db.collection('couples').doc(coupleId).get();
   if (!coupleDoc.exists) return;
+  // Initialize depth progress if not set
+  const coupleInfo = coupleDoc.data()!;
+  if (!coupleInfo.depth_progress) {
+    await db.collection('couples').doc(coupleId).update({
+      depth_progress: initializeDepthProgress(),
+    });
+  }
 
   // Get couple timezone for selection + assignment
   const timezone = await getCoupleTimezone(coupleId);
@@ -196,6 +203,27 @@ function getEffectiveTone(tones: string[]): string {
   return 'solid';
 }
 
+// Depth progression constants
+const PROMPT_TYPES = [
+  'love_map_update',
+  'bid_for_connection',
+  'appreciation_expression',
+  'dream_exploration',
+  'conflict_navigation',
+  'repair_attempt',
+];
+
+function initializeDepthProgress(): Record<string, { level: string; surface_completions: number; medium_completions: number }> {
+  const progress: Record<string, any> = {};
+  for (const type of PROMPT_TYPES) {
+    progress[type] = { level: 'surface', surface_completions: 0, medium_completions: 0 };
+  }
+  return progress;
+}
+
+const DEPTH_THRESHOLD = 3;
+const DEEP_WEEK_FLOOR = 4;
+
 async function selectPromptForCouple(coupleId: string, timezone?: string): Promise<any> {
   // Compute current day of week in the couple's timezone (0=Sunday, 6=Saturday)
   const now = new Date();
@@ -255,6 +283,15 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
       if (data.day_preference && !data.day_preference.includes(currentDayOfWeek)) return false;
       // Apply max per week
       if (data.max_per_week != null && (weeklyTypeCounts[data.type] || 0) >= data.max_per_week) return false;
+      // Apply depth progression
+      const depthProgress = coupleData.depth_progress || initializeDepthProgress();
+      const typeProgress = depthProgress[data.type];
+      if (typeProgress) {
+        const depthOrder = ['surface', 'medium', 'deep'];
+        const currentIdx = depthOrder.indexOf(typeProgress.level);
+        const promptIdx = depthOrder.indexOf(data.emotional_depth || 'surface');
+        if (promptIdx > currentIdx) return false;
+      }
       return true;
     })
     .map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -566,6 +603,44 @@ export const onResponseSubmitted = functions.firestore
         last_streak_date: today,
       });
 
+      // Advance depth progression
+      const promptDoc = await db.collection('prompts').doc(response.prompt_id).get();
+      if (promptDoc.exists) {
+        const promptData = promptDoc.data()!;
+        const promptType = promptData.type;
+        const promptDepth = promptData.emotional_depth || 'surface';
+
+        const depthProgress = streakCoupleData.depth_progress || initializeDepthProgress();
+        const typeProgress = depthProgress[promptType] || {
+          level: 'surface',
+          surface_completions: 0,
+          medium_completions: 0,
+        };
+
+        if (promptDepth === 'surface') {
+          typeProgress.surface_completions += 1;
+        } else if (promptDepth === 'medium') {
+          typeProgress.medium_completions += 1;
+        }
+
+        // Calculate week number for deep floor check
+        const linkedAt = streakCoupleData.linked_at?.toDate() || new Date();
+        const coupleWeekNumber = Math.floor(
+          (Date.now() - linkedAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
+        ) + 1;
+
+        if (typeProgress.level === 'surface' && typeProgress.surface_completions >= DEPTH_THRESHOLD) {
+          typeProgress.level = 'medium';
+        } else if (typeProgress.level === 'medium' && typeProgress.medium_completions >= DEPTH_THRESHOLD && coupleWeekNumber >= DEEP_WEEK_FLOOR) {
+          typeProgress.level = 'deep';
+        }
+
+        depthProgress[promptType] = typeProgress;
+        await db.collection('couples').doc(response.couple_id).update({
+          depth_progress: depthProgress,
+        });
+      }
+
       // Log event
       await logEvent('prompt_completed', response.user_id, response.couple_id, {
         assignment_id: response.assignment_id,
@@ -620,6 +695,62 @@ export const onResponseSubmitted = functions.firestore
       assignment_id: response.assignment_id,
       prompt_id: response.prompt_id,
       response_length: response.response_length || 0,
+    });
+
+    return null;
+  });
+
+// ============================================
+// TRIGGER: Reaction Push Notification
+// ============================================
+
+export const onReactionAdded = functions.firestore
+  .document('prompt_completions/{completionId}')
+  .onUpdate(async (change) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    const beforeReactions = before.reactions || {};
+    const afterReactions = after.reactions || {};
+
+    // Find the user who just reacted
+    let reactorId: string | null = null;
+    let reactionValue: string | null = null;
+    for (const [userId, reaction] of Object.entries(afterReactions)) {
+      if (beforeReactions[userId] !== reaction && reaction !== null) {
+        reactorId = userId;
+        reactionValue = reaction as string;
+        break;
+      }
+    }
+
+    if (!reactorId || !reactionValue) return null;
+
+    const coupleId = after.couple_id;
+    const coupleDoc = await db.collection('couples').doc(coupleId).get();
+    const coupleData = coupleDoc.data()!;
+    const partnerId = coupleData.member_ids.find(
+      (id: string) => id !== reactorId
+    );
+
+    if (!partnerId) return null;
+
+    // Don't notify if partner already reacted (avoid ping-pong)
+    if (afterReactions[partnerId]) return null;
+
+    const reactorDoc = await db.collection('users').doc(reactorId).get();
+    const reactorName = reactorDoc.data()?.display_name || 'Your partner';
+
+    const REACTION_EMOJIS: Record<string, string> = {
+      heart: '\u2764\uFE0F',
+      fire: '\uD83D\uDD25',
+      laughing: '\uD83D\uDE02',
+      teary: '\uD83E\uDD7A',
+    };
+
+    await sendPushNotification(partnerId, {
+      title: reactorName,
+      body: `${REACTION_EMOJIS[reactionValue] || ''} reacted to your response`,
     });
 
     return null;
