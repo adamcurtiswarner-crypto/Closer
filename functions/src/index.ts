@@ -2791,16 +2791,14 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
   console.log(`Pulse for couple ${coupleId}: ${score} (${tier})`);
 
   // === AI Coaching Generation ===
-  // Check if coaching is needed: score < 80 OR dropped 15+ points from last week
+  // Generate coaching insights for all Premium couples weekly
   const prevWeekId = getWeekId(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
   const prevPulseDoc = await db.collection('couples').doc(coupleId)
     .collection('pulse_scores').doc(prevWeekId).get();
   const prevScore = prevPulseDoc.exists ? prevPulseDoc.data()?.score : null;
   const scoreDrop = prevScore !== null ? prevScore - score : 0;
 
-  const needsCoaching = score < 80 || scoreDrop >= 15;
-
-  if (needsCoaching) {
+  {
     // Check for Premium access
     const premiumUntil = coupleData.premium_until?.toDate?.() || coupleData.premium_until;
     if (!premiumUntil || new Date(premiumUntil) < new Date()) {
@@ -2815,7 +2813,7 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
 
     // Build the Claude prompt
     const coachingPrompt = buildCoachingPrompt({
-      score, prevScore, tier,
+      score, prevScore, tier, scoreDrop,
       emotionPositive, emotionNegative, emotionTotal,
       avgResponseLength,
       completedAssignments, totalAssignments,
@@ -2886,7 +2884,7 @@ async function computePulseForCouple(coupleId: string, coupleData: any): Promise
 }
 
 function buildCoachingPrompt(data: {
-  score: number; prevScore: number | null; tier: string;
+  score: number; prevScore: number | null; tier: string; scoreDrop: number;
   emotionPositive: number; emotionNegative: number; emotionTotal: number;
   avgResponseLength: number;
   completedAssignments: number; totalAssignments: number;
@@ -2913,10 +2911,17 @@ function buildCoachingPrompt(data: {
       ? 'This couple has acknowledged feeling distant. Be gently encouraging. Emphasize small reconnection moments. Frame suggestions as easy first steps.'
       : 'Warm, quiet, direct. No exclamation points. No emojis. Never blame either partner. Focus on the relationship, not individuals.';
 
+  const tierContext = data.tier === 'thriving'
+    ? 'This couple is doing well. Celebrate what they are doing right and suggest something to keep the momentum — a fun activity, a deeper conversation, or a new ritual.'
+    : data.tier === 'steady'
+      ? 'This couple is steady. Gently encourage them to go a little deeper this week.'
+      : '';
+
   return `You are a warm, non-judgmental relationship coach. Based on this couple's engagement data from the past week, write a brief (2-3 sentence) personalized insight and one specific, actionable suggestion.
+${tierContext ? `\nContext: ${tierContext}` : ''}
 
 Data:
-- Pulse score: ${data.score}/100 (was ${data.prevScore ?? 'unknown'})
+- Pulse score: ${data.score}/100 (was ${data.prevScore ?? 'unknown'}, change: ${data.scoreDrop > 0 ? '-' : '+'}${Math.abs(data.scoreDrop)})
 - Emotion trend: ${emotionSummary}
 - Days active: ${data.completedAssignments}/${data.totalAssignments} prompts completed
 - One-sided days: ${data.partialAssignments} (one partner responded but not the other)

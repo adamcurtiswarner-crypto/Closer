@@ -95,6 +95,11 @@ export default function CoachingScreen() {
         action_type: actionType,
         pulse_tier: pulseTier,
         pulse_score: pulseScore,
+        week_id: latestInsight?.id,
+      });
+      logEvent('coaching_action_confirmed', {
+        action_type: actionType,
+        insight_id: insightId,
       });
     }
 
@@ -106,8 +111,10 @@ export default function CoachingScreen() {
         router.push('/(app)/date-nights');
         break;
       case 'conversation':
-        setConversationStarterText(actionText);
-        setShowConversationModal(true);
+        if (actionText) {
+          setConversationStarterText(actionText);
+          setShowConversationModal(true);
+        }
         break;
       case 'revisit':
         router.push('/(app)/memories');
@@ -142,6 +149,17 @@ export default function CoachingScreen() {
         {showScoreTooltip && pulseScore != null && (
           <Animated.View entering={FadeIn.duration(200)} style={styles.tooltip}>
             <Text style={styles.tooltipText}>Your pulse score: {pulseScore}</Text>
+          </Animated.View>
+        )}
+
+        {/* Empty state */}
+        {!latestInsight && (
+          <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyState}>
+            <Icon name="lightbulb" size="lg" color="#d6d3d1" weight="light" />
+            <Text style={styles.emptyTitle}>No insights yet</Text>
+            <Text style={styles.emptyBody}>
+              Keep using Stoke together and we will share personalized reflections here each week.
+            </Text>
           </Animated.View>
         )}
 
@@ -478,6 +496,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Medium',
     color: '#ef5323',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 64,
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Alexandria-SemiBold',
+    color: '#78716c',
+    letterSpacing: -0.3,
+  },
+  emptyBody: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#a8a29e',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   disclaimerWrap: {
     marginTop: 32,
