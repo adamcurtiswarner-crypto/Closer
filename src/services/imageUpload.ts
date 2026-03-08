@@ -1,7 +1,24 @@
 import * as ImagePicker from 'expo-image-picker';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import * as FileSystem from 'expo-file-system';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import { logger } from '@/utils/logger';
+
+/**
+ * Read a local file URI as a Uint8Array for Firebase Storage upload.
+ * More reliable than fetch(uri).blob() on React Native / Hermes.
+ */
+async function readFileAsBytes(uri: string): Promise<Uint8Array> {
+  const base64 = await FileSystem.readAsStringAsync(uri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
 
 /**
  * Open the image picker and return the selected image URI.
@@ -36,10 +53,9 @@ export async function uploadProfilePhoto(
   uri: string
 ): Promise<string> {
   const storageRef = ref(storage, `avatars/${userId}.jpg`);
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  const bytes = await readFileAsBytes(uri);
 
-  await uploadBytes(storageRef, blob);
+  await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
   return getDownloadURL(storageRef);
 }
 
@@ -54,10 +70,9 @@ export async function uploadResponsePhoto(
   uri: string
 ): Promise<string> {
   const storageRef = ref(storage, `responses/${coupleId}/${assignmentId}/${userId}.jpg`);
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  const bytes = await readFileAsBytes(uri);
 
-  await uploadBytes(storageRef, blob);
+  await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
   return getDownloadURL(storageRef);
 }
 
@@ -72,10 +87,9 @@ export async function uploadChatImage(
 ): Promise<string> {
   const messageId = Date.now().toString(36);
   const storageRef = ref(storage, `chat/${coupleId}/${messageId}_${userId}.jpg`);
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  const bytes = await readFileAsBytes(uri);
 
-  await uploadBytes(storageRef, blob);
+  await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
   return getDownloadURL(storageRef);
 }
 
@@ -90,9 +104,8 @@ export async function uploadPartnerPhoto(
   uri: string
 ): Promise<string> {
   const storageRef = ref(storage, `avatars/${coupleId}_partner_${userId}.jpg`);
-  const response = await fetch(uri);
-  const blob = await response.blob();
+  const bytes = await readFileAsBytes(uri);
 
-  await uploadBytes(storageRef, blob);
+  await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
   return getDownloadURL(storageRef);
 }
