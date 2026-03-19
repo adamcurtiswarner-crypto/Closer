@@ -1,173 +1,122 @@
 # Stoke Studio Status
-*Last updated: 2026-03-06 — CEO review: sprint health assessment + merge strategy*
+*Last updated: 2026-03-19 — CEO review: 11-day sprint assessment*
 
 ## Current Sprint
-- **Focus**: Figma redesign (merge-ready) + stabilization cleanup
-- **Sprint goal**: Merge both feature branches, close stabilization items, prepare for Feature #5
-- **Status**: IN PROGRESS — YELLOW (accumulating integration risk)
+- **Focus**: Ship accumulated features to TestFlight, complete Feature #5, address operational gaps
+- **Sprint goal**: Get Build 23+ to users with Photo Album, Reactions, expanded content, and coaching polish
+- **Status**: IN PROGRESS — YELLOW (massive feature delivery, but TestFlight still unconfirmed shipped)
 
 ## Active Initiatives
-| Initiative | Department | Status | Owner Agent | Blockers |
-|-----------|-----------|--------|-------------|----------|
-| Figma redesign (14/16 tasks done) | Engineering/Design | MERGE-READY | frontend-developer | Illustration assets deferred |
-| Commit + merge coaching-quick-wins | Engineering | IMMEDIATE | — | — |
-| Rotate hardcoded model ID to config | Engineering | TODO (HIGH) | backend-architect | — |
-| Node 22 upgrade | Engineering | TODO (target March 30) | devops-automator | — |
-| Deploy `cleanupCoachingInsights` function | Operations | READY TO DEPLOY | — | `firebase deploy` (Adam) |
-| EAS preview build | Operations | BLOCKED | mobile-app-builder | Device registration (Adam) |
-| Create Sentry project + DSN | Operations | BLOCKED (CRITICAL) | devops-automator | sentry.io account (Adam) |
-| Enable social auth in Firebase Console | Operations | BLOCKED | infrastructure-maintainer | Firebase Console (Adam) |
-| Set up Cloud Functions error alerting | Operations | TODO | — | GCP Console (Adam) |
-| QA: Social Auth flows | Testing | BLOCKED | — | EAS build + Firebase Console |
-| QA: Weekly Check-ins (Feature #6) | Testing | BLOCKED | — | EAS build |
-| QA: Date Night Planner | Testing | BLOCKED | — | EAS build |
-| QA: Figma Redesign visual pass | Testing | BLOCKED | — | EAS build |
-| Update App Store metadata (Closer to Stoke) | Operations | TODO (LOW) | support-responder | App Store Connect (Adam) |
-| Feature #5 — AI Relationship Coach | All | NEXT (after redesign merge) | ai-engineer | Redesign merge |
-| Feature #7 — Shared Photo Album | Engineering | Backlog | — | Feature #5 |
-| Feature #4 — Relationship Courses | All | Backlog | — | Content strategy |
+| Initiative | Department | Status | Blockers |
+|-----------|-----------|--------|----------|
+| TestFlight Build 23+ | Operations | UNKNOWN | Was blocked on provisioning profile — needs Adam confirmation if shipped |
+| Feature #5 — AI Coach screen | Engineering | DONE (~95%) | Empty state, analytics, all-couples insights shipped. Missing: disclaimer, coaching insight generation function |
+| Feature #7 — Shared Photo Album | Engineering | DONE | Photos grid, milestones timeline, photo upload, analytics — all shipped |
+| Prompt Reactions + Depth Progression | Engineering | DONE | useReaction hook, ReactionRow component, notifications, cloud functions |
+| Prompt library expansion (162 prompts) | Product | DONE | Expanded from 60 to 162 via seed scripts |
+| Conversation starters (70 total) | Product | DONE | Expanded from 20 to 70 — content runway extended |
+| Storage security rules tightened | Operations | DONE | Shipped in commit ba1250b |
+| Accept-invite error handling | Engineering | IN PROGRESS | Uncommitted — improved error messages for edge cases |
+| Deploy `cleanupCoachingInsights` | Operations | UNKNOWN | Was ready to deploy — needs Adam confirmation |
+| Set up Cloud Functions error alerting | Operations | TODO | GCP Console (Adam) |
+| Node 22 upgrade | Engineering | TODO (target March 30) | 41 days to EOL |
+| Update App Store metadata (Closer to Stoke) | Operations | TODO (LOW) | App Store Connect (Adam) |
+| Feature #4 — Relationship Courses | All | Backlog | Content strategy |
 
-## Branch Situation (CRITICAL — Action Needed)
-- `main`: Last commit `a4b7ff3` (2026-03-04)
-- `feat/coaching-quick-wins`: 8 commits + 12 uncommitted files. Same merge base as main.
-- `feat/figma-redesign`: 14 commits (81 files, +2,141/-437 lines). Same merge base as main.
-- **Risk**: 22 combined commits sitting unmerged for 2 days. Uncommitted work is unprotected.
+## What Shipped Since Last Review (2026-03-08)
+**16 commits landed on main. Feature-heavy sprint.**
 
-### Merge Strategy (Decided)
-1. Commit uncommitted work on `feat/coaching-quick-wins` (IMMEDIATE)
-2. Merge `feat/coaching-quick-wins` into main (PR — smaller, lower-conflict)
-3. Rebase `feat/figma-redesign` onto updated main (conflicts in ~6 overlapping files, straightforward)
-4. Merge `feat/figma-redesign` into main (PR — larger, visual-only, overwrites old colors)
+### Features
+- **Shared Photo Album (Feature #7)** — Photos grid tab + Milestones timeline on Memories screen. AddMilestoneModal, PhotoGrid, PhotoViewer, MilestoneTimeline components. useAddPhoto, useMilestones, usePhotoGrid hooks. Photo upload cloud functions + storage rules. Analytics events wired.
+- **Prompt Reactions + Depth Progression** — useReaction hook, ReactionRow component. Reaction notifications and depth progression cloud functions. Wired into CompletionMoment and Today screen.
+- **Coaching screen polish** — Empty state handling, analytics events, all-couples insights view.
 
-## Figma Redesign Progress (14/16 Tasks)
-- Tasks 1-9, 11-13, 15: DONE (fonts, colors, typography, all screens, components, global sweep)
-- Task 10 (Welcome screen full rebuild): PARTIAL — logo updated but no purple hero/illustrations
-- Task 14 (Illustration assets): DEFERRED — no assets exported from Figma
-- Task 16 (Visual QA): BLOCKED on EAS preview build
-- Old accent `#c97454` fully removed from figma-redesign branch
-- New palette: `#ef5323` (bright orange), `#490f5f` (deep purple), Alexandria + Inter fonts
+### Content
+- **Prompt library**: 60 to 162 prompts (2.7x expansion)
+- **Conversation starters**: 20 to 70 (3.5x expansion) — content runway ~10 weeks at daily usage
 
-## Completed This Session (2026-03-06)
-- Comprehensive studio health assessment across Engineering, Operations, PM
-- Merge strategy decided for two divergent feature branches
-- Node 22 migration timeline set (target: March 30, deadline: April 30)
-- Analytics event count corrected: 61 (was 53 in prior status)
-- Identified compliance gaps: Terms of Service needed before Feature #5, App Store privacy URL stale
+### Bug Fixes / Security
+- **Storage rules tightened** — Scoped per-user paths (was: any authenticated user could read/write all)
+- **Photo upload Hermes fix** — expo-file-system base64 approach (confirmed working)
 
-## Previously Completed (2026-03-04)
-- Privacy policy rebranded: Closer to Stoke, updated contact email to privacy@getstoke.io
-- AI-Assisted Features section added to privacy policy (Feature #5 compliance)
-- `cleanupCoachingInsights` Cloud Function written (90-day TTL, daily 3:30 AM PT)
-- Coaching analytics, conversation fix, tone calibration shipped (merged in `feat/coaching-quick-wins`)
+## Resolved Since Last Review
+| Previous Status | Resolution |
+|----------------|------------|
+| HIGH: Storage rules too permissive | RESOLVED — Rules tightened to per-user scope |
+| HIGH: Conversation starters too few (20) | RESOLVED — Expanded to 70 (~10 weeks runway) |
+| Content depth risk: prompts would feel repetitive | MITIGATED — Library at 162 prompts |
+| Feature #7 in backlog | RESOLVED — Fully built and shipped |
+| Coaching screen incomplete (~40%) | RESOLVED — Polished to ~95% |
 
 ## Key Metrics
-- Test suites: 22/22 passing on each branch (worktree cross-contamination causes phantom failures — fix: add `.worktrees/` to testPathIgnorePatterns)
+- Test suites: 25/25 passing (147 tests)
 - TypeScript errors (src/): 0
-- Analytics events: 61 tracked (corrected from 53)
-- Components: 25+ in barrel export
-- Hooks: 30+ custom hooks
-- Cloud Functions: 31 exported
-- i18n keys: ~234
-
-## Feature #5 Readiness Assessment
-
-### What's Already Built
-- `computeRelationshipPulse` (Mon 3AM PT) generates weekly coaching insights via Claude
-- `CoachingCard` + `EngagementCards` render insights on Today tab (premium-gated)
-- `useCoachingInsight` hook fetches, dismisses, and tracks action
-- Pulse score computation uses check-in data, prompt completion, emotional signals
-- Premium gate enforced both server-side and client-side
-- Coaching analytics events: viewed, acted, dismissed (all 3 instrumented)
-- Tone calibration integrated into `buildCoachingPrompt`
-- `ConversationStarterModal` handles conversation action type
-- Privacy policy AI disclosure (done)
-- `cleanupCoachingInsights` 90-day TTL function (written, needs deploy)
-
-### What Needs Building (MVP)
-- Dedicated coaching surface (`/coaching` route) with pulse score context and insight history
-- "I did this" action confirmation UX (visible feedback when user acts)
-- Non-clinical disclaimer in coaching UI (Apple 5.1.1)
-- Add `pulse_score` + `week_id` to `coaching_insight_acted` event
-- New analytics events: `coaching_screen_viewed`, `coaching_action_confirmed`, `pulse_score_viewed`
-
-### What's OUT of MVP
-- Conversational chat interface with the AI
-- Per-dimension coaching (separate insights per relationship dimension)
-- User-initiated "ask the coach" queries
-- Push notifications surfacing pulse score numbers
-
-### Competitive Advantage
-Stoke has behavioral data grounding that no competitor has. Lasting has no data, Paired has no data, Relish had data but burned it on human labor costs (shut down 2022). Stoke's coaching is grounded in observed couple behavior — not self-reported questionnaires.
-
-## Operational Concerns (Updated 2026-03-06)
-- **CRITICAL**: Sentry DSN not configured — zero crash visibility in production
-- **CRITICAL**: Uncommitted work on active branch — unprotected code
-- **HIGH**: Hardcoded model ID `claude-sonnet-4-5-20250929` — silent failure risk if Anthropic deprecates
-- **HIGH**: Two feature branches unmerged for 2 days — integration risk growing
-- **MODERATE**: No `expo-updates` — bug fixes require full EAS build + App Store review
-- **MODERATE**: No Cloud Functions error alerting — silent failures possible
-- **MODERATE**: Social auth requires Firebase Console setup + EAS build
-- **MODERATE**: Node 20 EOL April 30, 2026 — 55 days away (migration target: March 30)
-- **LOW**: App Store metadata still says "Closer"
-- **LOW**: App Store privacy URL points to dead `closer.app` domain
-- **LOW**: No Terms of Service document (recommended before Feature #5)
-- **LOW**: `functions/` package still named `closer-functions`
-
-## Known Bugs
-- Defensive gap: if `actionText` is empty on a coaching insight, the conversation modal opens with blank content. Guard recommended.
+- Components: 34+ in barrel export (was 28)
+- Hooks: 37+ custom hooks (was 33)
+- Cloud Functions: 32 exported (was 31)
+- Conversation starters: 70 (was 20)
+- Seed prompts: 162 (was 60)
+- Production build: 22 (status of Build 23 unknown)
 
 ## Engineering Health
-- **Tests**: All green (22/22 per branch, 117 tests on figma-redesign, 142+ on coaching-quick-wins)
+- **Tests**: All green (25 suites, 147 tests). Jest worker force-exit warning persists (low priority)
 - **Types**: Clean in src/
-- **Active work**: Branch merges needed, then Feature #5
+- **Working tree**: 1 modified file uncommitted (accept-invite.tsx — improved error handling)
 - **Tech debt**:
-  - `functions/src/index.ts` — 3,128 lines. Decomposition into modules recommended before Feature #5.
-  - `ProfileCard.tsx` — 700 lines, decomposition candidate
-  - 21 `as any` casts — modest, 2 in src/, rest in functions/
-  - Worktree test contamination — add `.worktrees/` to `testPathIgnorePatterns`
+  - `functions/src/index.ts` — 3,284 lines (grew from 3,128). Decomposition increasingly urgent.
+  - 4 stale local branches: `feat/coaching-quick-wins`, `feat/figma-redesign`, `feature/explore-prompts`, `feature/games`
+  - Jest teardown leak still present
+
+## Operational Concerns (Updated 2026-03-19)
+- **CRITICAL**: TestFlight Build 23 status unknown — 11 days since flagged as blocked. Production users may still be on Build 22 with photo upload bug.
+- **MEDIUM**: `cleanupCoachingInsights` deployment status unknown — was flagged as ready to deploy 11 days ago
+- **MEDIUM**: No Cloud Functions error alerting — silent failures possible
+- **MODERATE**: No `expo-updates` — bug fixes require full EAS build + App Store review
+- **MODERATE**: Node 20 EOL April 30, 2026 — 41 days away (migration target: March 30)
+- **LOW**: App Store metadata still says "Closer"
+- **LOW**: No Terms of Service document (recommended before Feature #5 ships to public)
+
+## Known Bugs
+- Defensive gap: if `actionText` is empty on a coaching insight, the conversation modal opens with blank content
+- Photo upload failure on Hermes (fixed in main — unknown if shipped to users)
+- Uncommitted: accept-invite error handling improvements (hardcoded strings, should use i18n)
+
+## Product Risks
+- **Feature #5 incomplete backend**: No cloud function to generate coaching insights. Screen handles empty state gracefully but provides no value without backend.
+- **No rollback path**: Only Build 22 confirmed in the wild.
+- **Terms of Service**: Still missing. Recommended before AI coaching ships publicly.
 
 ## Compliance Status (Feature #5)
 - Privacy policy AI disclosure: DONE
-- Non-clinical disclaimer in coaching UI: TODO (engineering task)
-- Data retention policy: DONE (90-day TTL, disclosed in privacy policy, enforced by function)
-- Privacy-preserving architecture: CONFIRMED (only anonymized metrics sent to Anthropic)
-- Terms of Service: MISSING (recommended before shipping AI features)
+- Non-clinical disclaimer in coaching UI: TODO
+- Data retention policy: DONE (90-day TTL)
+- Privacy-preserving architecture: CONFIRMED
+- Terms of Service: MISSING
 
 ## Roadmap
-**Execution order**: #6 Check-ins (DONE) -> Figma Redesign (MERGE-READY) -> #5 AI Coach (NEXT) -> #7 Photo Album -> #4 Courses
-
-## Critical Path to Feature #5
-1. Commit + merge `feat/coaching-quick-wins` to main (TODAY)
-2. Rebase + merge `feat/figma-redesign` to main (TODAY/TOMORROW)
-3. Rotate model ID to configurable value (THIS WEEK)
-4. Feature #5 design doc (coaching screen UX, pulse trend, disclaimer)
-5. Feature #5 implementation sprint (~1 week)
-6. Feature #5 QA + deploy
+**Execution order**: #6 Check-ins (DONE) -> Figma Redesign (DONE) -> Home Screen (DONE) -> #5 AI Coach (95%) -> #7 Photo Album (DONE) -> Prompt Reactions (DONE) -> #4 Courses (Backlog)
 
 ## Adam Actions (Prioritized)
 | Priority | Item | Time | Impact |
 |----------|------|------|--------|
-| TODAY | Create Sentry project + set DSN as EAS secret | 10 min | Unblocks crash visibility |
-| TODAY | `firebase deploy --only functions:cleanupCoachingInsights` | 2 min | Compliance with stated retention policy |
-| THIS WEEK | Register devices + trigger EAS preview build | 15 min | Unblocks QA for 4 features |
-| THIS WEEK | Enable Apple/Google auth in Firebase Console | 20 min | Unblocks social auth testing |
+| NOW | Confirm: Did Build 23 ship to TestFlight? Are users off Build 22? | 2 min | Resolves biggest operational unknown |
+| NOW | Confirm: Was `cleanupCoachingInsights` deployed? | 1 min | Compliance with retention policy |
+| THIS WEEK | Commit accept-invite.tsx changes (or discard) | 5 min | Clean working tree |
 | THIS WEEK | Set up Cloud Functions error alerting in GCP Console | 15 min | Prevents silent failures |
+| THIS WEEK | Decide: Ship Feature #5 coaching backend or defer? | Decision | Unblocks roadmap |
 | THIS MONTH | Update App Store metadata (Closer to Stoke) | 30 min | Brand consistency |
 | BEFORE APR 30 | Node 22 migration deploy | 30 min | Runtime EOL compliance |
 
-## Decisions Made This Session (2026-03-06)
-1. **Merge order decided**: coaching-quick-wins first, then figma-redesign. Rationale: smaller merge first reduces conflict surface; figma-redesign cleanly overwrites old colors.
-2. **Figma redesign declared merge-ready**: 14/16 tasks complete. Remaining illustration assets and visual QA deferred to follow-up. Color migration (the Feature #5 gate) is 100% done.
-3. **Node 22 target date**: March 30 deploy, giving 30-day buffer before April 30 EOL.
-4. **Analytics count corrected**: 61 events (was reporting 53).
-5. **New compliance gaps identified**: TOS needed before Feature #5, App Store privacy URL is dead link.
-6. **Worktree test fix identified**: One-line addition to jest.config.js resolves phantom failures.
+## Decisions Made This Session (2026-03-19)
+1. **Feature #7 shipped ahead of schedule**: Photo Album was backlogged behind Feature #5 but was built and merged. Good velocity, but Feature #5 backend still incomplete.
+2. **Content runway extended significantly**: 3.5x conversation starters, 2.7x prompt library. Daily users won't hit repetition for ~10 weeks.
+3. **Prompt Reactions added**: New engagement mechanic not in original roadmap. Partners can react to each other's responses.
+4. **Storage rules tightened**: Previously flagged security concern resolved.
 
 ## Next Actions (Prioritized)
-1. **IMMEDIATE**: Commit uncommitted work on `feat/coaching-quick-wins`
-2. **TODAY**: Open PR for coaching-quick-wins to main, merge
-3. **TODAY**: Rebase figma-redesign onto main, open PR, merge
-4. **TODAY**: Add `.worktrees/` to testPathIgnorePatterns in jest.config.js
-5. **THIS WEEK**: Rotate model ID to env var / Remote Config
-6. **THIS WEEK**: Adam actions (Sentry, deploy, EAS build, social auth, alerting)
-7. **NEXT SPRINT**: Feature #5 design doc + implementation
+1. **NOW**: Adam answers status questions (Build 23, cleanupCoachingInsights deployment)
+2. **THIS WEEK**: Finish Feature #5 — coaching insight generation cloud function + non-clinical disclaimer
+3. **THIS WEEK**: Commit or discard accept-invite.tsx changes
+4. **THIS WEEK**: Clean up 4 stale local branches
+5. **THIS WEEK**: Set up GCP error alerting
+6. **NEXT SPRINT**: Node 22 migration, Terms of Service, Feature #4 planning
