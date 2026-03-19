@@ -53,10 +53,35 @@ export default function AcceptInviteScreen() {
       router.replace('/(onboarding)/value-prop');
     } catch (error: any) {
       hasAutoSubmitted.current = false; // Allow retry
-      Alert.alert(
-        t('onboarding.acceptInvite.invalidCode'),
-        t('onboarding.acceptInvite.invalidCodeBody')
-      );
+      const message = error?.message || '';
+
+      // Show specific error messages for known cases
+      if (message.includes('Already in a couple')) {
+        Alert.alert(
+          'Already Paired',
+          'Your account is already linked to a partner. Sign out and try again, or contact support.'
+        );
+      } else if (message.includes('expired')) {
+        Alert.alert(
+          'Code Expired',
+          'This invite code has expired. Ask your partner to generate a new one.'
+        );
+      } else if (message.includes('already been used')) {
+        Alert.alert(
+          'Code Already Used',
+          'This invite code has already been accepted.'
+        );
+      } else if (message.includes('your own invite')) {
+        Alert.alert(
+          'Own Code',
+          'You cannot accept your own invite code. Share it with your partner instead.'
+        );
+      } else {
+        Alert.alert(
+          t('onboarding.acceptInvite.invalidCode'),
+          t('onboarding.acceptInvite.invalidCodeBody')
+        );
+      }
     }
   };
 
