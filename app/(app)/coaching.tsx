@@ -53,7 +53,7 @@ function StatusIcon({ actedOn, dismissedAt }: { actedOn: Date | null; dismissedA
 export default function CoachingScreen() {
   const { user, refreshUser } = useAuth();
   const { data: couple } = useCouple();
-  const { latestInsight, markActedOn } = useCoachingInsight();
+  const { latestInsight, markActedOn, requestInsight } = useCoachingInsight();
   const { data: historyData, fetchNextPage, hasNextPage, isFetchingNextPage } = useCoachingHistory();
   const { isPremium } = useSubscription();
   const [showPaywall, setShowPaywall] = useState(false);
@@ -160,6 +160,18 @@ export default function CoachingScreen() {
             <Text style={styles.emptyBody}>
               Keep using Stoke together and we will share personalized reflections here each week.
             </Text>
+            <TouchableOpacity
+              style={styles.generateBtn}
+              onPress={() => requestInsight.mutate()}
+              disabled={requestInsight.isPending}
+              activeOpacity={0.8}
+            >
+              {requestInsight.isPending ? (
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                <Text style={styles.generateBtnText}>Generate your first insight</Text>
+              )}
+            </TouchableOpacity>
           </Animated.View>
         )}
 
@@ -197,7 +209,7 @@ export default function CoachingScreen() {
                     {ACTION_CONFIG[latestInsight.actionType]?.label || 'Take action'}
                   </Text>
                   <Text style={styles.actionDetail} numberOfLines={2}>
-                    {latestInsight.actionText}
+                    {latestInsight.actionText || 'Take a moment to connect today'}
                   </Text>
                 </View>
                 <Icon name="arrow-right" size="sm" color="#ffffff" />
@@ -237,7 +249,7 @@ export default function CoachingScreen() {
                         size="xs"
                         color="#78716c"
                       />
-                      <Text style={styles.pastActionText}>{insight.actionText}</Text>
+                      <Text style={styles.pastActionText}>{insight.actionText || 'Take a moment to connect today'}</Text>
                     </View>
                     {insight.actedOn && (
                       <Text style={styles.pastActedDate}>
@@ -268,7 +280,7 @@ export default function CoachingScreen() {
         {/* Disclaimer */}
         <View style={styles.disclaimerWrap}>
           <Text style={styles.disclaimerText}>
-            Stoke offers reflections, not therapy. For professional support, consult a licensed counselor.
+            Stoke offers reflections based on your activity together, not clinical or therapeutic advice. This is not a substitute for professional counseling. If you need support, please consult a licensed therapist or counselor.
           </Text>
         </View>
       </ScrollView>
@@ -516,6 +528,21 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  generateBtn: {
+    marginTop: 16,
+    backgroundColor: '#ef5323',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 14,
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  generateBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
+    color: '#ffffff',
   },
   disclaimerWrap: {
     marginTop: 32,

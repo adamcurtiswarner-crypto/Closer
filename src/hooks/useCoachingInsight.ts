@@ -9,7 +9,8 @@ import {
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '@/config/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 
 export function useCoachingInsight() {
@@ -72,10 +73,23 @@ export function useCoachingInsight() {
     },
   });
 
+  const requestInsight = useMutation({
+    mutationFn: async () => {
+      const generateCoachingInsight = httpsCallable(functions, 'generateCoachingInsight');
+      const result = await generateCoachingInsight();
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coachingInsight'] });
+      queryClient.invalidateQueries({ queryKey: ['coachingHistory'] });
+    },
+  });
+
   return {
     latestInsight,
     isLoading,
     dismissInsight,
     markActedOn,
+    requestInsight,
   };
 }

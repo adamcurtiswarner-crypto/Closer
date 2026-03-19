@@ -10,7 +10,7 @@
 | Initiative | Department | Status | Blockers |
 |-----------|-----------|--------|----------|
 | TestFlight Build 23+ | Operations | UNKNOWN | Was blocked on provisioning profile — needs Adam confirmation if shipped |
-| Feature #5 — AI Coach screen | Engineering | DONE (~95%) | Empty state, analytics, all-couples insights shipped. Missing: disclaimer, coaching insight generation function |
+| Feature #5 — AI Coach screen | Engineering | DONE (~99%) | `generateCoachingInsight` callable built, disclaimer strengthened, actionText guard added. Missing: deploy to Firebase |
 | Feature #7 — Shared Photo Album | Engineering | DONE | Photos grid, milestones timeline, photo upload, analytics — all shipped |
 | Prompt Reactions + Depth Progression | Engineering | DONE | useReaction hook, ReactionRow component, notifications, cloud functions |
 | Prompt library expansion (162 prompts) | Product | DONE | Expanded from 60 to 162 via seed scripts |
@@ -77,18 +77,18 @@
 - **LOW**: No Terms of Service document (recommended before Feature #5 ships to public)
 
 ## Known Bugs
-- Defensive gap: if `actionText` is empty on a coaching insight, the conversation modal opens with blank content
+- ~~Defensive gap: if `actionText` is empty on a coaching insight, the conversation modal opens with blank content~~ FIXED — fallback text added
 - Photo upload failure on Hermes (fixed in main — unknown if shipped to users)
 - Uncommitted: accept-invite error handling improvements (hardcoded strings, should use i18n)
 
 ## Product Risks
-- **Feature #5 incomplete backend**: No cloud function to generate coaching insights. Screen handles empty state gracefully but provides no value without backend.
+- **Feature #5 backend built, not deployed**: `generateCoachingInsight` callable function exists. Needs Firebase deployment.
 - **No rollback path**: Only Build 22 confirmed in the wild.
 - **Terms of Service**: Still missing. Recommended before AI coaching ships publicly.
 
 ## Compliance Status (Feature #5)
 - Privacy policy AI disclosure: DONE
-- Non-clinical disclaimer in coaching UI: TODO
+- Non-clinical disclaimer in coaching UI: DONE (strengthened 2026-03-19)
 - Data retention policy: DONE (90-day TTL)
 - Privacy-preserving architecture: CONFIRMED
 - Terms of Service: MISSING

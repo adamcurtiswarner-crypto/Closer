@@ -3279,6 +3279,212 @@ export const dateNightReminder = functions.pubsub
   });
 
 // ============================================
+// CALLABLE: Generate Coaching Insight On Demand
+// Lightweight callable for generating a coaching insight without
+// waiting for the weekly scheduled pulse computation. Uses existing
+// pulse score when available, generates insight only if one doesn't
+// already exist for the current week.
+// ============================================
+
+export const generateCoachingInsight = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+  }
+
+  const userId = context.auth.uid;
+  const userDoc = await db.collection('users').doc(userId).get();
+
+  if (!userDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'User not found');
+  }
+
+  const userData = userDoc.data()!;
+  if (!userData.couple_id) {
+    throw new functions.https.HttpsError('failed-precondition', 'Not linked to a partner');
+  }
+
+  const coupleId = userData.couple_id;
+  const coupleDoc = await db.collection('couples').doc(coupleId).get();
+  if (!coupleDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'Couple not found');
+  }
+
+  const coupleData = coupleDoc.data()!;
+
+  // Check Premium access
+  const premiumUntil = coupleData.premium_until?.toDate?.() || coupleData.premium_until;
+  if (!premiumUntil || new Date(premiumUntil) < new Date()) {
+    throw new functions.https.HttpsError('permission-denied', 'Premium subscription required');
+  }
+
+  const weekId = getWeekId(new Date());
+
+  // Return existing insight if one already exists for this week
+  const existingInsight = await db.collection('couples').doc(coupleId)
+    .collection('coaching_insights').doc(weekId).get();
+
+  if (existingInsight.exists) {
+    const d = existingInsight.data()!;
+    return {
+      success: true,
+      existing: true,
+      insight: {
+        weekId,
+        pulseScore: d.pulse_score,
+        insightText: d.insight_text,
+        actionType: d.action_type,
+        actionText: d.action_text,
+      },
+    };
+  }
+
+  // Use existing pulse score from couple doc, or compute fresh
+  let score = coupleData.current_pulse_score;
+  let tier = coupleData.current_pulse_tier;
+
+  if (score == null || !tier) {
+    // No pulse score yet — compute one
+    await computePulseForCouple(coupleId, coupleData);
+    // Re-read the couple doc to get computed score
+    const refreshedCouple = await db.collection('couples').doc(coupleId).get();
+    const refreshedData = refreshedCouple.data()!;
+    score = refreshedData.current_pulse_score ?? 50;
+    tier = refreshedData.current_pulse_tier ?? 'steady';
+  }
+
+  // Gather context for the coaching prompt
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const prevWeekId = getWeekId(weekAgo);
+
+  const [responsesSnap, assignmentsSnap, prevPulseDoc, lastCoaching] = await Promise.all([
+    db.collection('prompt_responses')
+      .where('couple_id', '==', coupleId)
+      .where('submitted_at', '>=', admin.firestore.Timestamp.fromDate(weekAgo))
+      .get(),
+    db.collection('prompt_assignments')
+      .where('couple_id', '==', coupleId)
+      .where('assigned_date', '>=', formatDate(weekAgo))
+      .get(),
+    db.collection('couples').doc(coupleId)
+      .collection('pulse_scores').doc(prevWeekId).get(),
+    db.collection('couples').doc(coupleId)
+      .collection('coaching_insights').doc(prevWeekId).get(),
+  ]);
+
+  const responses = responsesSnap.docs.map((d) => d.data());
+  const totalAssignments = assignmentsSnap.size;
+  const completedAssignments = assignmentsSnap.docs.filter(
+    (d) => d.data().status === 'completed'
+  ).length;
+  const partialAssignments = assignmentsSnap.docs.filter(
+    (d) => d.data().response_count === 1
+  ).length;
+
+  const emotionPositive = responses.filter((r) => r.emotional_response === 'positive').length;
+  const emotionNegative = responses.filter((r) => r.emotional_response === 'negative').length;
+  const emotionTotal = responses.filter((r) => r.emotional_response).length;
+  const avgResponseLength = responses.length > 0
+    ? responses.reduce((sum, r) => sum + (r.response_length || 0), 0) / responses.length
+    : 0;
+
+  // Check-in scores
+  const memberIds: string[] = coupleData.member_ids || [];
+  const allCheckInScores: number[] = [];
+  for (const memberId of memberIds) {
+    const checkInSnap = await db.collection('couples').doc(coupleId)
+      .collection('check_ins')
+      .where('user_id', '==', memberId)
+      .orderBy('created_at', 'desc')
+      .limit(1)
+      .get();
+    if (!checkInSnap.empty) {
+      const checkData = checkInSnap.docs[0].data();
+      allCheckInScores.push(...checkData.responses.map((r: any) => r.score));
+    }
+  }
+
+  // Tone calibration
+  const tones: string[] = [];
+  for (const memberId of memberIds) {
+    const memberDoc = await db.collection('users').doc(memberId).get();
+    if (memberDoc.exists) {
+      tones.push(memberDoc.data()!.tone_calibration || 'solid');
+    }
+  }
+
+  const prevScore = prevPulseDoc.exists ? prevPulseDoc.data()?.score : null;
+  const scoreDrop = prevScore !== null ? prevScore - score : 0;
+  const lastAction = lastCoaching.exists ? lastCoaching.data() : null;
+
+  const coachingPrompt = buildCoachingPrompt({
+    score, prevScore, tier, scoreDrop,
+    emotionPositive, emotionNegative, emotionTotal,
+    avgResponseLength,
+    completedAssignments, totalAssignments,
+    partialAssignments,
+    checkInScores: allCheckInScores,
+    lastAction: lastAction ? {
+      text: lastAction.action_text,
+      actedOn: !!lastAction.acted_on,
+    } : null,
+    toneCalibration: getEffectiveTone(tones),
+  });
+
+  // Call Claude API
+  const apiKey = functions.config().anthropic?.api_key;
+  if (!apiKey) {
+    throw new functions.https.HttpsError('unavailable', 'AI service not configured');
+  }
+
+  const coachingModel = await getAIModel();
+  const coachingResponse = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: coachingModel,
+      max_tokens: 300,
+      messages: [{ role: 'user', content: coachingPrompt }],
+    }),
+  });
+
+  const coachingResult = await coachingResponse.json();
+  const responseText = coachingResult.content?.[0]?.type === 'text'
+    ? coachingResult.content[0].text
+    : '';
+  const { insightText, actionType, actionText } = parseCoachingResponse(responseText);
+
+  // Write coaching insight
+  await db.collection('couples').doc(coupleId)
+    .collection('coaching_insights').doc(weekId).set({
+      pulse_score: score,
+      insight_text: insightText,
+      action_type: actionType,
+      action_text: actionText,
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+      dismissed_at: null,
+      acted_on: null,
+    });
+
+  console.log(`On-demand coaching insight generated for couple ${coupleId}: ${actionType}`);
+
+  return {
+    success: true,
+    existing: false,
+    insight: {
+      weekId,
+      pulseScore: score,
+      insightText,
+      actionType,
+      actionText,
+    },
+  };
+});
+
+// ============================================
 // SCHEDULED: Clean Up Expired Coaching Insights
 // Runs daily at 3:30 AM PT. Deletes coaching_insights documents
 // older than 90 days across all couples.

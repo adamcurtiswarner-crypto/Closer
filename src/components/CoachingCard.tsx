@@ -51,7 +51,7 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
           <Icon name={config.icon} size="sm" color="#ffffff" weight="bold" />
           <View style={styles.actionTextWrap}>
             <Text style={styles.actionLabel}>{config.label}</Text>
-            <Text style={styles.actionDetail} numberOfLines={2}>{actionText}</Text>
+            <Text style={styles.actionDetail} numberOfLines={2}>{actionText || 'Take a moment to connect today'}</Text>
           </View>
           <Icon name="arrow-right" size="sm" color="#ffffff" />
         </TouchableOpacity>
