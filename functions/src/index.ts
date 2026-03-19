@@ -2770,6 +2770,37 @@ export const computeRelationshipPulse = functions.pubsub
     return null;
   });
 
+// ============================================
+// CALLABLE: Trigger Pulse Computation (manual)
+// ============================================
+
+export const triggerPulseComputation = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+  }
+
+  const userId = context.auth.uid;
+  const userDoc = await db.collection('users').doc(userId).get();
+
+  if (!userDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'User not found');
+  }
+
+  const userData = userDoc.data()!;
+  if (!userData.couple_id) {
+    throw new functions.https.HttpsError('failed-precondition', 'Not linked to a partner');
+  }
+
+  const coupleDoc = await db.collection('couples').doc(userData.couple_id).get();
+  if (!coupleDoc.exists) {
+    throw new functions.https.HttpsError('not-found', 'Couple not found');
+  }
+
+  await computePulseForCouple(coupleDoc.id, coupleDoc.data()!);
+
+  return { success: true, coupleId: userData.couple_id };
+});
+
 async function computePulseForCouple(coupleId: string, coupleData: any): Promise<void> {
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const weekId = getWeekId(new Date());
