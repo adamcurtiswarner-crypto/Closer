@@ -19,7 +19,7 @@ interface AnimatedCheckboxProps {
 export function AnimatedCheckbox({
   checked,
   size = 24,
-  color = '#ef5323',
+  color = '#c97454',
   style,
 }: AnimatedCheckboxProps) {
   const scale = useSharedValue(1);

@@ -66,7 +66,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
-        <Icon name="target" size="sm" color="#ef5323" weight="regular" />
+        <Icon name="target" size="sm" color="#c97454" weight="regular" />
         <Text style={styles.headerTitle}>Goals & Challenges</Text>
       </Animated.View>
 
@@ -222,7 +222,7 @@ function ProgressBarRow({
     <View style={styles.progressRow}>
       <AnimatedProgressBar
         progress={progress}
-        color={isComplete ? '#22c55e' : '#ef5323'}
+        color={isComplete ? '#22c55e' : '#c97454'}
         height={6}
         style={{ flex: 1 }}
       />
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     fontFamily: 'Inter-Medium',
-    color: '#ef5323',
+    color: '#c97454',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginBottom: 3,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   startButton: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 10,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
   weeklyBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#ef5323',
+    color: '#c97454',
     letterSpacing: 0.5,
   },
   goalTitle: {
@@ -430,20 +430,20 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 15,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 14,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },

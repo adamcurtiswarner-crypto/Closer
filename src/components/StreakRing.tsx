@@ -19,12 +19,12 @@ interface StreakRingProps {
 
 function getMotivation(streak: number): string {
   if (streak === 0) return 'Start your streak today';
-  if (streak === 1) return 'Great start!';
+  if (streak === 1) return 'A beginning';
   if (streak <= 3) return 'Building momentum';
-  if (streak <= 7) return 'On a roll!';
-  if (streak <= 14) return 'Incredible dedication';
-  if (streak <= 30) return 'Unstoppable together';
-  return 'Legendary connection';
+  if (streak <= 7) return 'A quiet habit forming';
+  if (streak <= 14) return 'Steady together';
+  if (streak <= 30) return 'Something real';
+  return 'A practice that lasts';
 }
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -52,7 +52,7 @@ export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive }:
       <Animated.View style={[styles.circleOuter, ringAnimatedStyle]}>
         <View style={[styles.circleInner, isStreakActive ? styles.circleActive : styles.circleInactive]}>
           {currentStreak > 0
-            ? <Icon name="flame" size={16} color="#ef5323" weight="fill" />
+            ? <Icon name="flame" size={16} color="#c97454" weight="fill" />
             : <Icon name="flame" size={16} color="#d6d3d1" weight="light" />
           }
           <Animated.Text style={[styles.streakNumber, isStreakActive ? styles.numberActive : styles.numberInactive, numberAnimatedStyle]}>
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
   circleActive: {
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   circleInactive: {
     borderColor: '#e7e5e4',
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   numberActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   numberInactive: {
     color: '#a8a29e',
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   weekDotFilled: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   weekDotEmpty: {
     backgroundColor: '#f5f5f4',

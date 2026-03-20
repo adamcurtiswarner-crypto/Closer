@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   frequencyPillActive: {
     backgroundColor: '#fef5f0',
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   frequencyText: {
     fontSize: 13,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     color: '#78716c',
   },
   frequencyTextActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   frequencyHint: {
     fontSize: 10,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
   },
   frequencyHintActive: {
-    color: '#ef5323',
+    color: '#c97454',
     opacity: 0.7,
   },
   errorContainer: {
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   createButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',

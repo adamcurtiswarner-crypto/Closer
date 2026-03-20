@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
   back: {
     fontSize: 16,
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-Medium',
     marginBottom: 12,
   },

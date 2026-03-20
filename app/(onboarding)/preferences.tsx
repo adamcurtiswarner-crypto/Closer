@@ -141,7 +141,7 @@ export default function PreferencesScreen() {
                     {option.label}
                   </Text>
                   {selectedTime === option.value && (
-                    <Icon name="check" size="sm" color="#ef5323" weight="bold" />
+                    <Icon name="check" size="sm" color="#c97454" weight="bold" />
                   )}
                 </View>
               </TouchableOpacity>
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   optionRowSelected: {
     backgroundColor: '#fef5f0',
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
     borderWidth: 2,
   },
   optionRowDefault: {
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   selectedCheck: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
   },
   optionText: {
     fontSize: 16,
@@ -325,8 +325,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dayCircleSelected: {
-    backgroundColor: '#ef5323',
-    borderColor: '#ef5323',
+    backgroundColor: '#c97454',
+    borderColor: '#c97454',
   },
   dayLabel: {
     fontFamily: 'Inter-Medium',

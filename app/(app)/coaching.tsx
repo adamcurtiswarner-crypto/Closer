@@ -24,7 +24,7 @@ import { ConversationStarterModal } from '@/components/ConversationStarterModal'
 
 const TIER_COLORS: Record<string, string> = {
   thriving: '#22c55e',
-  steady: '#ef5323',
+  steady: '#c97454',
   cooling: '#f59e0b',
   needs_attention: '#ef4444',
 };
@@ -180,7 +180,7 @@ export default function CoachingScreen() {
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.currentCard}>
             <View style={styles.accentBar} />
             <View style={styles.cardHeader}>
-              <Icon name="lightbulb" size="sm" color="#ef5323" weight="light" />
+              <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
               <Text style={styles.cardHeaderText}>This week</Text>
             </View>
             <Text style={styles.insightText}>{latestInsight.insightText}</Text>
@@ -268,7 +268,7 @@ export default function CoachingScreen() {
                 disabled={isFetchingNextPage}
               >
                 {isFetchingNextPage ? (
-                  <ActivityIndicator size="small" color="#ef5323" />
+                  <ActivityIndicator size="small" color="#c97454" />
                 ) : (
                   <Text style={styles.loadMoreText}>Load more</Text>
                 )}
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
     padding: 16,
   },
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   loadMoreText: {
     fontSize: 14,
     fontFamily: 'Inter-Medium',
-    color: '#ef5323',
+    color: '#c97454',
   },
   emptyState: {
     alignItems: 'center',
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   },
   generateBtn: {
     marginTop: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 14,

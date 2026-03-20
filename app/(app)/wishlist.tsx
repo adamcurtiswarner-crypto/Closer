@@ -68,7 +68,7 @@ export default function WishlistScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#ef5323" size="large" />
+          <ActivityIndicator color="#c97454" size="large" />
         </View>
       </SafeAreaView>
     );
@@ -102,13 +102,13 @@ export default function WishlistScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />
         }
       >
         {/* Empty state */}
         {isEmpty && (
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyCard}>
-            <Icon name="sparkle" size="xl" color="#ef5323" weight="light" />
+            <Icon name="sparkle" size="xl" color="#c97454" weight="light" />
             <Text style={styles.emptyTitle}>{t('wishlist.startTogether')}</Text>
             <Text style={styles.emptySubtitle}>
               {t('wishlist.addDescription')}
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingVertical: 14,
     paddingHorizontal: 28,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
   },
   emptyButtonText: {
@@ -476,20 +476,20 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 17,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 15,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },

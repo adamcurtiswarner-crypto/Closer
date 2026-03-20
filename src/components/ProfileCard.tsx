@@ -289,7 +289,7 @@ export function ProfileCard() {
               }}
               activeOpacity={0.7}
             >
-              <Icon name="calendar" size="md" color="#ef5323" />
+              <Icon name="calendar" size="md" color="#c97454" />
               <View style={styles.anniversaryInfo}>
                 <Text style={styles.anniversaryLabel}>{t('profile.anniversary')}</Text>
                 <Text style={styles.anniversaryValue}>
@@ -312,7 +312,7 @@ export function ProfileCard() {
           onPress={() => setShowLoveLanguageModal(true)}
           activeOpacity={0.7}
         >
-          <Icon name="heart" size="md" color="#ef5323" weight="fill" />
+          <Icon name="heart" size="md" color="#c97454" weight="fill" />
           <View style={styles.anniversaryInfo}>
             <Text style={styles.anniversaryLabel}>{t('profile.yourLoveLanguage')}</Text>
             <Text style={styles.anniversaryValue}>
@@ -370,7 +370,7 @@ export function ProfileCard() {
                         {lang.description}
                       </Text>
                     </View>
-                    {isActive && <View style={styles.langCheck}><Icon name="check" size="sm" color="#ef5323" weight="bold" /></View>}
+                    {isActive && <View style={styles.langCheck}><Icon name="check" size="sm" color="#c97454" weight="bold" /></View>}
                   </TouchableOpacity>
                 );
               })}
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   profileRow: {
     flexDirection: 'row',
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   avatarPartner: {
     backgroundColor: '#490f5f',
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   modalSaveText: {
     fontSize: 16,
@@ -674,7 +674,7 @@ const styles = StyleSheet.create({
     color: '#1c1917',
   },
   langOptionLabelActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   langOptionDesc: {
     fontSize: 12,
@@ -682,13 +682,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   langOptionDescActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   langCheck: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     justifyContent: 'center',
     alignItems: 'center',
   },

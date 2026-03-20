@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   cardSelected: {
     backgroundColor: '#fef5f0',
     borderWidth: 2,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   cardLabel: {
     fontSize: 16,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     color: '#1c1917',
   },
   cardLabelSelected: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   buttonContainer: {
     marginBottom: 32,

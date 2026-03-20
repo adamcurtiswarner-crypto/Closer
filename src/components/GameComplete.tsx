@@ -24,7 +24,7 @@ export function GameComplete({
   return (
     <View style={styles.container}>
       <Animated.View entering={FadeInUp.duration(500)} style={styles.content}>
-        <Icon name="sparkle" size="xl" color="#ef5323" weight="fill" />
+        <Icon name="sparkle" size="xl" color="#c97454" weight="fill" />
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
 
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#ef5323',
+    color: '#c97454',
   },
   statLabel: {
     fontSize: 12,
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     paddingVertical: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 16,
     alignItems: 'center',
   },

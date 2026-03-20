@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   pickerName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ef5323',
+    color: '#c97454',
   },
   questionLabel: {
     fontSize: 22,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   revealCardMatch: {
     borderWidth: 2,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   revealName: {
     fontSize: 12,
@@ -315,13 +315,13 @@ const styles = StyleSheet.create({
   matchLabel: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
     textAlign: 'center',
     marginBottom: 16,
   },
   nextButton: {
     paddingVertical: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 40,

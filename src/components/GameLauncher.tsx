@@ -33,12 +33,12 @@ const GAMES: { mode: GameMode; title: string; description: string; tint: string 
 
 function GameIcon({ mode }: { mode: GameMode }) {
   if (mode === 'would-you-rather') {
-    return <Icon name="chat-circle" size="lg" color="#ef5323" />;
+    return <Icon name="chat-circle" size="lg" color="#c97454" />;
   }
   if (mode === 'how-well') {
     return <Icon name="target" size="lg" color="#490f5f" />;
   }
-  return <Icon name="flame" size="lg" color="#ef5323" weight="fill" />;
+  return <Icon name="flame" size="lg" color="#c97454" weight="fill" />;
 }
 
 export function GameLauncher({ onSelectMode }: GameLauncherProps) {

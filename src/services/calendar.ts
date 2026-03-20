@@ -38,7 +38,7 @@ export async function getOrCreateStokeCalendar(): Promise<string> {
 
   const calendarId = await Calendar.createCalendarAsync({
     title: 'Stoke',
-    color: '#ef5323',
+    color: '#c97454',
     entityType: Calendar.EntityTypes.EVENT,
     ...(Platform.OS === 'ios' && defaultSource
       ? { sourceId: defaultSource.id }

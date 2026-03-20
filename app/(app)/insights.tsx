@@ -64,7 +64,7 @@ function EmptyState() {
   const { t } = useTranslation();
   return (
     <View style={styles.empty}>
-      <Icon name="binoculars" size="xl" color="#ef5323" weight="light" />
+      <Icon name="binoculars" size="xl" color="#c97454" weight="light" />
       <Text style={styles.emptyTitle}>{t('insights.emptyTitle')}</Text>
       <Text style={styles.emptySubtitle}>
         {t('insights.emptySubtitle')}
@@ -222,7 +222,7 @@ export default function InsightsScreen() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor="#ef5323"
+            tintColor="#c97454"
           />
         }
       >
@@ -251,7 +251,7 @@ export default function InsightsScreen() {
 
             {/* Milestones */}
             {milestones && (
-              <InsightCard icon={<Icon name="trophy" size="md" color="#ef5323" />} title="Milestones" accentColor="#b8860b" delay={50}>
+              <InsightCard icon={<Icon name="trophy" size="md" color="#c97454" />} title="Milestones" accentColor="#b8860b" delay={50}>
                 {/* Achieved badges */}
                 {milestones.achieved.length > 0 && (
                   <ScrollView
@@ -293,7 +293,7 @@ export default function InsightsScreen() {
                     <View style={styles.nextMilestoneBar}>
                       <AnimatedProgressBar
                         progress={milestones.next.current / milestones.next.threshold}
-                        color="#ef5323"
+                        color="#c97454"
                         trackColor="#e7e5e4"
                         height={6}
                         style={{ flex: 1, borderRadius: 3 }}
@@ -310,12 +310,12 @@ export default function InsightsScreen() {
                   <View style={styles.anniversarySection}>
                     {anniversary.isToday ? (
                       <View style={styles.anniversaryRow}>
-                        <Icon name="sparkle" size="sm" color="#ef5323" weight="fill" />
-                        <Text style={styles.anniversaryText}>Happy Anniversary!</Text>
+                        <Icon name="sparkle" size="sm" color="#c97454" weight="fill" />
+                        <Text style={styles.anniversaryText}>Today's your anniversary</Text>
                       </View>
                     ) : (
                       <View style={styles.anniversaryRow}>
-                        <Icon name="calendar" size="sm" color="#ef5323" />
+                        <Icon name="calendar" size="sm" color="#c97454" />
                         <Text style={styles.anniversaryText}>{anniversary.days} {anniversary.days === 1 ? 'day' : 'days'} until your anniversary</Text>
                       </View>
                     )}
@@ -332,7 +332,7 @@ export default function InsightsScreen() {
             )}
 
             {/* Love Languages */}
-            <InsightCard icon={<Icon name="heart" size="md" color="#ef5323" weight="fill" />} title="Love Languages" accentColor="#c97474" delay={75}>
+            <InsightCard icon={<Icon name="heart" size="md" color="#c97454" weight="fill" />} title="Love Languages" accentColor="#c97474" delay={75}>
               <View style={styles.loveLanguageRow}>
                 <AnimatedLoveLanguageCircle delay={0}>
                   <View style={styles.loveLanguageItem}>
@@ -403,7 +403,7 @@ export default function InsightsScreen() {
             </InsightCard>
 
             {/* Communication */}
-            <InsightCard icon={<Icon name="chat-circle" size="md" color="#ef5323" />} title="Communication" accentColor="#490f5f" delay={300}>
+            <InsightCard icon={<Icon name="chat-circle" size="md" color="#c97454" />} title="Communication" accentColor="#490f5f" delay={300}>
               <View style={styles.commStatRow}>
                 <Text style={styles.commStatLabel}>Avg. response length</Text>
                 <AnimatedCounter value={insights.avgResponseWords} style={styles.commStatValue} prefix="~" suffix=" words" />
@@ -434,7 +434,7 @@ export default function InsightsScreen() {
 
             {/* Prompt Categories */}
             {insights.promptCategories.length > 0 && (
-              <InsightCard icon={<Icon name="target" size="md" color="#ef5323" />} title="Prompt Categories" accentColor="#7b6fa0" delay={400}>
+              <InsightCard icon={<Icon name="target" size="md" color="#c97454" />} title="Prompt Categories" accentColor="#7b6fa0" delay={400}>
                 {insights.promptCategories.map((cat) => (
                   <View key={cat.type} style={styles.categoryRow}>
                     <View style={styles.categoryLabel}>
@@ -443,7 +443,7 @@ export default function InsightsScreen() {
                     </View>
                     <AnimatedProgressBar
                       progress={cat.percentage / 100}
-                      color="#ef5323"
+                      color="#c97454"
                       trackColor="#f5f5f4"
                       height={8}
                       style={{ flex: 1, borderRadius: 4 }}
@@ -456,7 +456,7 @@ export default function InsightsScreen() {
 
             {/* Check-In Trends */}
             {insights.checkInTrend.length > 0 && (
-              <InsightCard icon={<Icon name="heartbeat" size="md" color="#ef5323" />} title="Weekly Check-In" accentColor="#c97474" delay={450}>
+              <InsightCard icon={<Icon name="heartbeat" size="md" color="#c97454" />} title="Weekly Check-In" accentColor="#c97474" delay={450}>
                 {(['connection', 'communication', 'satisfaction'] as const).map((dim) => {
                   const scores = insights.checkInTrend
                     .map(w => w[dim])
@@ -497,7 +497,7 @@ export default function InsightsScreen() {
             )}
 
             {/* Streak & Consistency */}
-            <InsightCard icon={<Icon name="flame" size="md" color="#ef5323" weight="fill" />} title="Streak & Consistency" delay={500}>
+            <InsightCard icon={<Icon name="flame" size="md" color="#c97454" weight="fill" />} title="Streak & Consistency" delay={500}>
               <View style={styles.streakRow}>
                 <View style={styles.streakStat}>
                   <AnimatedCounter value={insights.currentStreak} style={styles.streakValue} />
@@ -513,7 +513,7 @@ export default function InsightsScreen() {
                 <Text style={styles.weeklyRateLabel}>This week</Text>
                 <AnimatedProgressBar
                   progress={Math.min(insights.weeklyCompletionRate, 1)}
-                  color="#ef5323"
+                  color="#c97454"
                   trackColor="#f5f5f4"
                   height={8}
                   style={{ flex: 1, borderRadius: 4 }}
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
     fontFamily: 'Inter-SemiBold',
-    color: '#ef5323',
+    color: '#c97454',
   },
   statLabel: {
     fontSize: 12,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
     marginBottom: 6,
   },
   badgeCircleLocked: {
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     fontFamily: 'Inter-Medium',
-    color: '#ef5323',
+    color: '#c97454',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
@@ -702,7 +702,7 @@ const styles = StyleSheet.create({
   },
   nextMilestoneFill: {
     height: 6,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 3,
   },
   nextMilestoneCount: {
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
   },
   loveLanguageCircleSet: {
     backgroundColor: '#fef5f0',
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   loveLanguageCirclePartner: {
     backgroundColor: '#faf8f5',
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
   },
   loveLanguageSetLink: {
     fontSize: 12,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '500',
     marginTop: 4,
   },
@@ -891,7 +891,7 @@ const styles = StyleSheet.create({
   },
   trendBar: {
     width: 24,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 4,
     minHeight: 4,
   },
@@ -932,7 +932,7 @@ const styles = StyleSheet.create({
   },
   categoryBarFill: {
     height: 8,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 4,
   },
   categoryCount: {
@@ -958,7 +958,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '800',
     fontFamily: 'Inter-SemiBold',
-    color: '#ef5323',
+    color: '#c97454',
   },
   streakStatLabel: {
     fontSize: 12,
@@ -993,7 +993,7 @@ const styles = StyleSheet.create({
   },
   weeklyRateFill: {
     height: 8,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 4,
   },
   weeklyRateText: {
@@ -1036,7 +1036,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   checkInDotEmpty: {
     backgroundColor: '#e7e5e4',

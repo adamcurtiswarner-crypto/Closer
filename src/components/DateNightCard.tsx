@@ -40,7 +40,7 @@ export function DateNightCard() {
         <View style={styles.accentBar} />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Icon name="calendar" size="sm" color="#ef5323" weight="regular" />
+            <Icon name="calendar" size="sm" color="#c97454" weight="regular" />
             <Text style={styles.headerTitle}>Date Nights</Text>
           </View>
         </View>
@@ -59,7 +59,7 @@ export function DateNightCard() {
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Icon name="calendar" size="sm" color="#ef5323" weight="regular" />
+          <Icon name="calendar" size="sm" color="#c97454" weight="regular" />
           <Text style={styles.headerTitle}>Date Nights</Text>
         </View>
         {scheduled.length > 0 && (
@@ -72,7 +72,7 @@ export function DateNightCard() {
       {/* Empty state */}
       {isEmpty && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="calendar" size="lg" color="#ef5323" weight="light" />
+          <Icon name="calendar" size="lg" color="#c97454" weight="light" />
           <Text style={styles.emptyTitle}>Plan something together</Text>
           <Text style={styles.emptySubtitle}>
             Browse ideas or plan your own night out (or in).
@@ -83,7 +83,7 @@ export function DateNightCard() {
       {/* No scheduled but have saved ideas */}
       {!isEmpty && !nextUp && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="calendar" size="lg" color="#ef5323" weight="light" />
+          <Icon name="calendar" size="lg" color="#c97454" weight="light" />
           <Text style={styles.emptyTitle}>Nothing scheduled yet</Text>
           <Text style={styles.emptySubtitle}>
             You have saved ideas. Pick one and set a date.
@@ -108,7 +108,7 @@ export function DateNightCard() {
                 Tap to mark it done or reschedule
               </Text>
             </View>
-            <Icon name="arrow-right" size="xs" color="#ef5323" />
+            <Icon name="arrow-right" size="xs" color="#c97454" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -122,7 +122,7 @@ export function DateNightCard() {
             activeOpacity={0.7}
           >
             <View style={styles.upcomingIconWrap}>
-              <Icon name="calendar" size="sm" color="#ef5323" weight="fill" />
+              <Icon name="calendar" size="sm" color="#c97454" weight="fill" />
             </View>
             <View style={styles.upcomingContent}>
               <Text style={styles.upcomingTitle} numberOfLines={1}>
@@ -147,7 +147,7 @@ export function DateNightCard() {
           <Text style={styles.seeAllText}>
             {isEmpty ? 'Browse ideas' : 'See all'}
           </Text>
-          <Icon name="arrow-right" size="xs" color="#ef5323" />
+          <Icon name="arrow-right" size="xs" color="#c97454" />
         </TouchableOpacity>
       </Animated.View>
 
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   // --- Header ---
   header: {
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
   },
   // --- Loading ---
   loadingBody: {
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   nudgeContent: {
     flex: 1,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   upcomingDate: {
     fontSize: 12,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '500',
     marginTop: 1,
   },
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   seeAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ef5323',
+    color: '#c97454',
   },
   // --- Game link ---
   gameLink: {

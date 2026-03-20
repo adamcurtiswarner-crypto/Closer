@@ -11,7 +11,7 @@ export default function ValuePropScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.iconRow}>
-          <Icon name="flame" size="xl" color="#ef5323" weight="fill" />
+          <Icon name="flame" size="xl" color="#c97454" weight="fill" />
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(200)}>
@@ -39,7 +39,7 @@ export default function ValuePropScreen() {
 function FeatureRow({ icon, text }: { icon: IconName; text: string }) {
   return (
     <View style={styles.featureRow}>
-      <Icon name={icon} size="sm" color="#ef5323" weight="bold" />
+      <Icon name={icon} size="sm" color="#c97454" weight="bold" />
       <Text style={styles.featureText}>{text}</Text>
     </View>
   );

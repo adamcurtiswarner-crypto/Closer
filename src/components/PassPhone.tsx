@@ -18,7 +18,7 @@ export function PassPhone({ partnerName, instruction, onReady }: PassPhoneProps)
   return (
     <View style={styles.container}>
       <Animated.View entering={FadeInUp.duration(500)} style={styles.content}>
-        <Icon name="device-mobile" size="xl" color="#ef5323" weight="light" />
+        <Icon name="device-mobile" size="xl" color="#c97454" weight="light" />
         <Text style={styles.title}>Pass to {partnerName}</Text>
         {instruction && (
           <Text style={styles.instruction}>{instruction}</Text>
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 16,
     paddingHorizontal: 36,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 16,
   },
   buttonText: {

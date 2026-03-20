@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   showButton: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   responseLabel: {
-    color: '#ef5323',
+    color: '#c97454',
     fontSize: 12,
     fontWeight: '500',
     fontFamily: 'Inter-Medium',

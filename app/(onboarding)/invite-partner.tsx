@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontFamily: 'monospace',
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
     letterSpacing: 4,
   },
   tapToCopy: {
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontFamily: 'Inter-Medium',
-    color: '#ef5323',
+    color: '#c97454',
     textAlign: 'center',
   },
   skipLink: {

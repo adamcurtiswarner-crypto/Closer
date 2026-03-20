@@ -146,6 +146,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   sendButtonActive: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
 });

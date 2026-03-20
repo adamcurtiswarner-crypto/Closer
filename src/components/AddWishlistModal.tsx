@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   categoryPillActive: {
     backgroundColor: '#fef5f0',
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   categoryIcon: {
     fontSize: 16,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     color: '#78716c',
   },
   categoryTextActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   errorContainer: {
     backgroundColor: '#fef2f2',
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   createButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',

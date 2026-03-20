@@ -64,7 +64,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
                 entering={FadeInUp.duration(400).delay(200 + index * 80)}
                 style={styles.featureRow}
               >
-                <Icon name={feature.icon} size="sm" color="#ef5323" weight="bold" />
+                <Icon name={feature.icon} size="sm" color="#c97454" weight="bold" />
                 <Text style={styles.featureText}>{feature.text}</Text>
               </Animated.View>
             ))}
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   accentBar: {
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   headerArea: {
     backgroundColor: '#fef5f0',
@@ -189,13 +189,13 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   planCardSelected: {
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
     backgroundColor: '#fef5f0',
   },
   planBadge: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#ef5323',
+    color: '#c97454',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
   },
   planTrial: {
     fontSize: 11,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     marginTop: 4,
   },
@@ -223,13 +223,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   ctaButton: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     marginHorizontal: 24,
     marginTop: 16,
-    shadowColor: '#ef5323',
+    shadowColor: '#c97454',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

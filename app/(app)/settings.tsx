@@ -211,7 +211,7 @@ export default function SettingsScreen() {
                 value={remindMe}
                 onValueChange={handleToggleRemind}
                 trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={remindMe ? '#ef5323' : '#fafaf9'}
+                thumbColor={remindMe ? '#c97454' : '#fafaf9'}
               />
             </View>
             <View style={styles.rowToggle}>
@@ -220,7 +220,7 @@ export default function SettingsScreen() {
                 value={partnerNotify}
                 onValueChange={handleTogglePartnerNotify}
                 trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={partnerNotify ? '#ef5323' : '#fafaf9'}
+                thumbColor={partnerNotify ? '#c97454' : '#fafaf9'}
               />
             </View>
             <View style={[styles.rowToggle, styles.lastRow]}>
@@ -235,7 +235,7 @@ export default function SettingsScreen() {
                   }
                 }}
                 trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={calendarSynced ? '#ef5323' : '#fafaf9'}
+                thumbColor={calendarSynced ? '#c97454' : '#fafaf9'}
                 disabled={calendarSync.isPending || calendarRemove.isPending}
               />
             </View>
@@ -280,7 +280,7 @@ export default function SettingsScreen() {
             >
               <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
               {exportData.isPending ? (
-                <ActivityIndicator size="small" color="#ef5323" />
+                <ActivityIndicator size="small" color="#c97454" />
               ) : (
                 <Text style={styles.rowValue}>{'>'}</Text>
               )}
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
   },
   premiumText: {
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
   },
   dangerText: {
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
   },
   safetyLink: {
     fontSize: 14,
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-Medium',
     marginTop: 8,
   },
@@ -691,13 +691,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   radioActive: {
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   radioInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   timeOptionText: {
     fontSize: 16,
@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
   },
   timeOptionTextActive: {
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '500',
   },
   frequencyDescription: {
@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   anonymizeButton: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

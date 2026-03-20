@@ -71,7 +71,7 @@ export function ConnectionHeader({
           <View style={styles.line} />
           {currentStreak > 0 && (
             <View style={[styles.streakPill, isStreakActive ? styles.streakPillActive : styles.streakPillInactive]}>
-              <Icon name="flame" size="xs" color="#ef5323" weight="fill" />
+              <Icon name="flame" size="xs" color="#c97454" weight="fill" />
               <Text style={[styles.streakCount, isStreakActive ? styles.streakCountActive : styles.streakCountInactive]}>
                 {currentStreak}
               </Text>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   avatarPartner: {
     backgroundColor: '#490f5f',
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   dotLeft: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   dotRight: {
     backgroundColor: '#490f5f',
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   streakCountActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   streakCountInactive: {
     color: '#a8a29e',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     color: '#78716c',
   },
   statusTyping: {
-    color: '#ef5323',
+    color: '#c97454',
     fontStyle: 'italic',
   },
 });

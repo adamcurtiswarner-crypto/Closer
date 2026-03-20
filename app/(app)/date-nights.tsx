@@ -154,7 +154,7 @@ export default function DateNightsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#ef5323" size="large" />
+          <ActivityIndicator color="#c97454" size="large" />
         </View>
       </SafeAreaView>
     );
@@ -202,7 +202,7 @@ export default function DateNightsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />
         }
       >
         {/* ── Upcoming Section ── */}
@@ -345,7 +345,7 @@ export default function DateNightsScreen() {
               <Text style={styles.ideaTitle} numberOfLines={2}>{idea.title}</Text>
               <Text style={styles.ideaDescription} numberOfLines={2}>{idea.description}</Text>
               <View style={styles.ideaSaveRow}>
-                <Icon name="arrow-right" size="xs" color="#ef5323" />
+                <Icon name="arrow-right" size="xs" color="#c97454" />
                 <Text style={styles.ideaSaveText}>Save this idea</Text>
               </View>
             </TouchableOpacity>
@@ -388,7 +388,7 @@ export default function DateNightsScreen() {
         {/* Empty state when no data at all */}
         {(dateNights?.length ?? 0) === 0 && filteredIdeas.length === 0 && (
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyCard}>
-            <Icon name="calendar" size="xl" color="#ef5323" weight="light" />
+            <Icon name="calendar" size="xl" color="#c97454" weight="light" />
             <Text style={styles.emptyTitle}>No date nights yet</Text>
             <Text style={styles.emptySubtitle}>
               Browse ideas above or plan something custom.
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
-    color: '#ef5323',
+    color: '#c97454',
   },
   rowDatePastDue: {
     color: '#ef4444',
@@ -680,7 +680,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
-    color: '#ef5323',
+    color: '#c97454',
   },
   reflectionBadge: {
     width: 28,
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
   },
   categoryChipActive: {
     backgroundColor: '#fef5f0',
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   categoryChipIcon: {
     fontSize: 14,
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
     color: '#78716c',
   },
   categoryChipTextActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   // --- Idea Cards ---
   ideaCard: {
@@ -794,7 +794,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
-    color: '#ef5323',
+    color: '#c97454',
   },
   // --- Past Section ---
   pastHeader: {
@@ -855,20 +855,20 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 17,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 15,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },

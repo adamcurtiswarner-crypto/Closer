@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     height: 12,
   },
   inviteLink: {
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-Medium',
     textAlign: 'center',
     marginTop: 24,

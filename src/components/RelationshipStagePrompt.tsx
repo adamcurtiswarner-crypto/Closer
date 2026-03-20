@@ -26,7 +26,7 @@ export function RelationshipStagePrompt({ onSelectStage, onDismiss }: Relationsh
       <View style={styles.stageButtons}>
         {STAGES.map(s => (
           <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => onSelectStage(s.value)}>
-            <Icon name={s.icon} size="sm" color="#ef5323" />
+            <Icon name={s.icon} size="sm" color="#c97454" />
             <Text style={styles.stageChipText}>{s.label}</Text>
           </TouchableOpacity>
         ))}
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
-    color: '#ef5323',
+    color: '#c97454',
   },
   stageSkip: {
     fontSize: 13,

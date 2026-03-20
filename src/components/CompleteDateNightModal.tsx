@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   ratingPillActive: {
     backgroundColor: '#fef5f0',
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   ratingLabel: {
     fontSize: 15,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     color: '#57534e',
   },
   ratingLabelActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   ratingSublabel: {
     fontSize: 11,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     color: '#a8a29e',
   },
   ratingSublabelActive: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   // --- Note Input ---
   noteInput: {
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   doneButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',

@@ -72,7 +72,7 @@ describe('calendar service', () => {
       expect(Calendar.createCalendarAsync).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Stoke',
-          color: '#ef5323',
+          color: '#c97454',
         })
       );
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(

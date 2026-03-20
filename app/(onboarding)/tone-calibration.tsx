@@ -94,7 +94,7 @@ export default function ToneCalibrationScreen() {
                     {option.label}
                   </Text>
                   {selectedTone === option.value && (
-                    <Icon name="check" size="sm" color="#ef5323" weight="bold" />
+                    <Icon name="check" size="sm" color="#c97454" weight="bold" />
                   )}
                 </View>
                 <Text
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   optionCardSelected: {
     backgroundColor: '#fef5f0',
     borderWidth: 1.5,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   optionCardDefault: {
     backgroundColor: '#fff',
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   selectedCheck: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
   },
   optionLabel: {
     fontSize: 16,
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
   },
   optionLabelSelected: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   optionLabelDefault: {
     color: '#1c1917',
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   optionDescriptionSelected: {
-    color: '#ef5323',
+    color: '#c97454',
   },
   optionDescriptionDefault: {
     color: '#a8a29e',

@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'monospace',
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
     letterSpacing: 4,
     borderWidth: 1,
     borderColor: '#e7e5e4',

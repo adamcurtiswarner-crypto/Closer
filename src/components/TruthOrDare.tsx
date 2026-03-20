@@ -150,7 +150,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('truth')}
               activeOpacity={0.8}
             >
-              <Icon name="chat-circle" size="md" color="#ef5323" />
+              <Icon name="chat-circle" size="md" color="#c97454" />
               <Text style={styles.chooseButtonText}>Truth</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -161,7 +161,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('dare')}
               activeOpacity={0.8}
             >
-              <Icon name="flame" size="md" color="#ef5323" weight="fill" />
+              <Icon name="flame" size="md" color="#c97454" weight="fill" />
               <Text style={styles.chooseButtonText}>Dare</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   turnName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ef5323',
+    color: '#c97454',
   },
   chooseTitle: {
     fontSize: 28,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   typeBadgeText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     paddingVertical: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 40,

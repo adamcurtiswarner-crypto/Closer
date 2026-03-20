@@ -24,7 +24,7 @@ export const colors = {
 
   // Accent
   accent: {
-    primary: '#ef5323',
+    primary: '#c97454',
     primaryLight: '#f9a07a',
     secondary: '#490f5f',
     secondaryLight: '#7b3f8d',
@@ -33,7 +33,7 @@ export const colors = {
   // Gradients (start, end)
   gradient: {
     warmGlow: ['#fef5f0', '#fce8dc'] as const,
-    ember: ['#ef5323', '#f5734a'] as const,
+    ember: ['#c97454', '#f5734a'] as const,
     sunrise: ['#fce8dc', '#fef5f0'] as const,
   },
 
@@ -57,7 +57,7 @@ export const colors = {
   border: {
     default: '#e7e5e4',
     subtle: '#f5f5f4',
-    accent: '#ef5323',
+    accent: '#c97454',
   },
 
   // Skeleton

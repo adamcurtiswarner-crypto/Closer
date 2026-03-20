@@ -411,7 +411,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
         >
           <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
 
@@ -420,7 +420,7 @@ export default function TodayScreen() {
           )}
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
-            <Icon name="coffee" size="xl" color="#ef5323" weight="light" />
+            <Icon name="coffee" size="xl" color="#c97454" weight="light" />
             <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
@@ -464,7 +464,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
         >
           <TodayScreenHeader greeting={t('today.niceOne')} {...headerProps} />
 
@@ -480,7 +480,7 @@ export default function TodayScreen() {
             </Text>
 
             <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
-              <Icon name="lock" size="md" color="#ef5323" weight="light" />
+              <Icon name="lock" size="md" color="#c97454" weight="light" />
               <Text style={styles.sealedTitle}>Your answer is saved</Text>
               <Text style={styles.sealedSubtitle}>
                 Waiting for {partnerName ?? 'your partner'}...
@@ -491,7 +491,7 @@ export default function TodayScreen() {
 
             {isPartnerTyping && partnerTypingContext === 'prompt' ? (
               <Animated.View entering={FadeIn.duration(300)} style={styles.typingRow}>
-                <PulsingDots color="#ef5323" size={5} />
+                <PulsingDots color="#c97454" size={5} />
                 <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
               </Animated.View>
             ) : (
@@ -520,15 +520,13 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef5323" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
         >
           <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
 
           {showStagePrompt && (
             <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
           )}
-
-          <EngagementCards {...engagementProps} />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
             <CompletionMoment
@@ -551,6 +549,8 @@ export default function TodayScreen() {
               })}
             />
           </Animated.View>
+
+          <EngagementCards {...engagementProps} />
 
           {/* Emotional Feedback */}
           {myResponse && !feedbackGiven && (
@@ -595,7 +595,7 @@ export default function TodayScreen() {
                 onPress={() => setShowStreakDetail(!showStreakDetail)}
                 activeOpacity={0.8}
               >
-                <Icon name="flame" size="md" color="#ef5323" weight="fill" />
+                <Icon name="flame" size="md" color="#c97454" weight="fill" />
                 <Text style={styles.streakCelebrationText}>
                   {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
                 </Text>
@@ -735,7 +735,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingVertical: 14,
     paddingHorizontal: 28,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
   },
   triggerButtonText: {
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   typingText: {
-    color: '#ef5323',
+    color: '#c97454',
     fontStyle: 'italic',
     fontSize: 14,
     fontFamily: 'Inter-Regular',
@@ -887,7 +887,7 @@ const styles = StyleSheet.create({
   streakCelebrationText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-SemiBold',
   },
   streakDetailSection: {

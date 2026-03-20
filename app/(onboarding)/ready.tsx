@@ -55,7 +55,7 @@ export default function ReadyScreen() {
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
           <View style={styles.checkmark}>
-            <Icon name="check" size="xl" color="#ef5323" weight="bold" />
+            <Icon name="check" size="xl" color="#c97454" weight="bold" />
           </View>
           <Text style={styles.title}>
             {t('onboarding.ready.title')}

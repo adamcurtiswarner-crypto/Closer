@@ -22,7 +22,7 @@ function StatusIndicator({ status }: { status: DeliveryStatus }) {
     return <Icon name="hourglass" size={10} color="#a8a29e" />;
   }
   if (status === 'read') {
-    return <Icon name="checks" size={10} color="#ef5323" weight="bold" />;
+    return <Icon name="checks" size={10} color="#c97454" weight="bold" />;
   }
   // sent
   return <Icon name="check" size={10} color="#a8a29e" weight="bold" />;
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   bubbleOwn: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderBottomRightRadius: 4,
   },
   bubblePartner: {

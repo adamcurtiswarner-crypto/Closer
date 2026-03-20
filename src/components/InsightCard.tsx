@@ -13,7 +13,7 @@ interface InsightCardProps {
 export function InsightCard({
   icon,
   title,
-  accentColor = '#ef5323',
+  accentColor = '#c97454',
   children,
   delay = 0,
 }: InsightCardProps) {

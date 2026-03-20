@@ -15,7 +15,7 @@ const PROMPT_TYPE_CONFIG: Record<string, {
   love_map_update: {
     icon: 'map-pin',
     label: 'Love Map',
-    accent: '#ef5323',
+    accent: '#c97454',
     bgTint: '#fef5f0',
     bgTintDark: '#fce8dc',
   },
@@ -29,7 +29,7 @@ const PROMPT_TYPE_CONFIG: Record<string, {
   bid_for_connection: {
     icon: 'handshake',
     label: 'Connection',
-    accent: '#ef5323',
+    accent: '#c97454',
     bgTint: '#fef5f0',
     bgTintDark: '#fce8dc',
   },
@@ -65,7 +65,7 @@ const DEFAULT_CONFIG: {
 } = {
   icon: 'chat-text',
   label: 'Prompt',
-  accent: '#ef5323',
+  accent: '#c97454',
   bgTint: '#fef5f0',
   bgTintDark: '#fce8dc',
 };

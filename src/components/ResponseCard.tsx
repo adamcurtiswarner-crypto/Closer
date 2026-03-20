@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#a8a29e',
   },
   partnersDot: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   label: {
     fontSize: 12,

@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   pickerName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ef5323',
+    color: '#c97454',
   },
   questionText: {
     fontSize: 22,
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     paddingVertical: 16,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 16,
     alignItems: 'center',
   },
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreButtonYes: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   scoreButtonNo: {
     backgroundColor: '#f5f5f4',

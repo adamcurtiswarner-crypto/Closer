@@ -35,7 +35,7 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
       <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="lightbulb" size="sm" color="#ef5323" weight="light" />
+        <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
         <Text style={styles.headerText}>Weekly insight</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
           <Icon name="x" size="xs" color="#a8a29e" />
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   header: {
     flexDirection: 'row',
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
     padding: 16,
   },

@@ -64,11 +64,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
   },
   buttonText: {
     fontSize: 14,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },

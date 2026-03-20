@@ -52,7 +52,7 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
       <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="heart" size="sm" color="#ef5323" weight="light" />
+        <Icon name="heart" size="sm" color="#c97454" weight="light" />
         <Text style={styles.headerText}>{t('checkIn.title')}</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
           <Icon name="x" size="xs" color="#a8a29e" />
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   header: {
     flexDirection: 'row',
@@ -182,8 +182,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreBtnSelected: {
-    borderColor: '#ef5323',
-    backgroundColor: '#ef5323',
+    borderColor: '#c97454',
+    backgroundColor: '#c97454',
   },
   scoreNum: {
     fontSize: 16,
@@ -195,12 +195,12 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 12,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     marginTop: 4,
   },
   nextBtn: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

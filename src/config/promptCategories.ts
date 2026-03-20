@@ -15,7 +15,7 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Know Each Other',
     description: 'Deepen your understanding',
     icon: 'compass',
-    color: '#ef5323',
+    color: '#c97454',
     bgColor: '#fef7f4',
   },
   {

@@ -249,7 +249,7 @@ export default function ExploreScreen() {
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#ef5323" />
+            <ActivityIndicator size="small" color="#c97454" />
           </View>
         ) : !prompts || prompts.length === 0 ? (
           <Animated.View entering={FadeIn.duration(400)} style={styles.emptyState}>
@@ -266,7 +266,7 @@ export default function ExploreScreen() {
                 entering={FadeInUp.duration(400).delay(index * 80)}
               >
                 <View style={styles.promptCard}>
-                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || '#ef5323' }]} />
+                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || '#c97454' }]} />
                   <View style={styles.promptContent}>
                     <Text style={styles.promptText}>{prompt.text}</Text>
                     {prompt.hint && (
@@ -294,7 +294,7 @@ export default function ExploreScreen() {
                         <TouchableOpacity
                           style={[
                             styles.respondButton,
-                            { backgroundColor: currentCategory?.color || '#ef5323' },
+                            { backgroundColor: currentCategory?.color || '#c97454' },
                           ]}
                           onPress={() => handleStartPrompt(prompt)}
                           disabled={startExplore.isPending}
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   cancelButton: { paddingVertical: 14, paddingHorizontal: 16 },
   cancelText: { fontSize: 16, color: '#78716c', fontWeight: '500' },
   submitButton: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 16,
     paddingVertical: 14,
     flexDirection: 'row',

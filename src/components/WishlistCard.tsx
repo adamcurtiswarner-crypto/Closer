@@ -58,7 +58,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Icon name="sparkle" size="sm" color="#ef5323" weight="regular" />
+          <Icon name="sparkle" size="sm" color="#c97454" weight="regular" />
           <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
         </View>
         {totalCount > 0 && (
@@ -73,7 +73,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {/* Empty state */}
       {totalCount === 0 && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="star" size="lg" color="#ef5323" weight="light" />
+          <Icon name="star" size="lg" color="#c97454" weight="light" />
           <Text style={styles.emptyTitle}>{t('wishlist.dreamTogether')}</Text>
           <Text style={styles.emptySubtitle}>{t('wishlist.emptySubtitle')}</Text>
         </Animated.View>
@@ -103,7 +103,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
         <Animated.View entering={FadeIn.duration(300).delay(400)}>
           <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll} activeOpacity={0.7}>
             <Text style={styles.seeAllText}>{t('wishlist.seeAll')}</Text>
-            <Icon name="arrow-right" size="xs" color="#ef5323" />
+            <Icon name="arrow-right" size="xs" color="#c97454" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   // ─── Header ───
   header: {
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#ef5323',
+    color: '#c97454',
   },
   // ─── Empty State ───
   emptyState: {
@@ -283,11 +283,11 @@ const styles = StyleSheet.create({
   seeAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ef5323',
+    color: '#c97454',
   },
   seeAllArrow: {
     fontSize: 14,
-    color: '#ef5323',
+    color: '#c97454',
   },
   // ─── Add Button ───
   addButton: {
@@ -305,20 +305,20 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#ef5323',
+    borderColor: '#c97454',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 15,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 14,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },

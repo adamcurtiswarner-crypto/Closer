@@ -111,7 +111,7 @@ export function ConversationStarterModal({
         <View style={styles.content}>
           <Animated.View entering={FadeInUp.duration(400).delay(200)} style={styles.card}>
             <View style={styles.accentBar} />
-            <Icon name="chat-circle" size="xl" color="#ef5323" weight="light" />
+            <Icon name="chat-circle" size="xl" color="#c97454" weight="light" />
             <Text style={styles.starterText}>{starterText}</Text>
           </Animated.View>
 
@@ -168,7 +168,7 @@ export function ConversationStarterModal({
               <Icon
                 name={copied ? 'check' : 'chat-text'}
                 size="sm"
-                color={copied ? '#22c55e' : '#ef5323'}
+                color={copied ? '#22c55e' : '#c97454'}
               />
               <Text style={[styles.copyText, copied && styles.copyTextCopied]}>
                 {copied ? 'Copied' : 'Copy to clipboard'}
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   starterText: {
     fontSize: 18,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f4',
   },
   timerOptionSelected: {
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
   },
   timerOptionText: {
     fontSize: 14,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#ef5323',
+    backgroundColor: '#c97454',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -343,13 +343,13 @@ const styles = StyleSheet.create({
   copyText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#ef5323',
+    color: '#c97454',
   },
   copyTextCopied: {
     color: '#22c55e',
   },
   chatLink: {
-    color: '#ef5323',
+    color: '#c97454',
     fontSize: 14,
     fontWeight: '500',
   },

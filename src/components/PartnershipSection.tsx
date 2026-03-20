@@ -110,7 +110,7 @@ export function PartnershipSection({
       <>
         <Text style={sectionTitleStyle}>PARTNERSHIP</Text>
         <View style={[sectionStyle, styles.loadingContainer]}>
-          <ActivityIndicator color="#ef5323" />
+          <ActivityIndicator color="#c97454" />
         </View>
       </>
     );
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 16,
-    color: '#ef5323',
+    color: '#c97454',
     fontWeight: '500',
     fontFamily: 'Inter-Medium',
   },

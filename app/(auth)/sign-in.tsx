@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   forgotText: {
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-Medium',
     fontSize: 14,
   },
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     color: '#57534e',
   },
   footerLink: {
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-Medium',
     fontWeight: '500',
   },

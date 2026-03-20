@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   termsLink: {
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-Medium',
     textDecorationLine: 'underline',
   },
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     color: '#57534e',
   },
   footerLink: {
-    color: '#ef5323',
+    color: '#c97454',
     fontFamily: 'Inter-Medium',
     fontWeight: '500',
   },
