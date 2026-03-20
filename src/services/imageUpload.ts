@@ -52,7 +52,7 @@ export async function uploadProfilePhoto(
   userId: string,
   uri: string
 ): Promise<string> {
-  const storageRef = ref(storage, `avatars/${userId}.jpg`);
+  const storageRef = ref(storage, `avatars/${userId}/profile.jpg`);
   const bytes = await readFileAsBytes(uri);
 
   await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
