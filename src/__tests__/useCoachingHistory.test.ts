@@ -26,10 +26,9 @@ jest.mock('@/hooks/useAuth', () => ({
 const { QueryClient, QueryClientProvider } = jest.requireActual('@tanstack/react-query');
 const React = require('react');
 
+let queryClient: InstanceType<typeof QueryClient>;
+
 function createWrapper() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 }
@@ -37,6 +36,13 @@ function createWrapper() {
 describe('useCoachingHistory', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+  });
+
+  afterEach(() => {
+    queryClient.clear();
   });
 
   it('returns empty items when no insights exist', async () => {
