@@ -644,8 +644,6 @@ export default function TodayScreen() {
           <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
         )}
 
-        <EngagementCards {...engagementProps} />
-
         <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
           <PromptCard
             promptText={assignment!.promptText}
@@ -654,6 +652,8 @@ export default function TodayScreen() {
             onRespond={handleRespond}
           />
         </Animated.View>
+
+        <EngagementCards {...engagementProps} />
       </ScrollView>
       <ConversationStarterModal
         visible={showConversationModal}

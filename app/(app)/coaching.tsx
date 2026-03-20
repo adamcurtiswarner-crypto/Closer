@@ -71,11 +71,58 @@ export default function CoachingScreen() {
     logEvent('coaching_screen_viewed', { pulse_tier: pulseTier });
   }, []);
 
-  // Premium gate
+  // Premium gate — show preview before paywall
   if (!isPremium) {
     return (
       <SafeAreaView style={styles.container}>
-        <Paywall visible={true} onClose={() => router.back()} />
+        {showPaywall ? (
+          <Paywall visible={true} onClose={() => setShowPaywall(false)} />
+        ) : (
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+            <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
+              <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                <Icon name="arrow-left" size="sm" color="#292524" />
+              </TouchableOpacity>
+              <Text style={styles.title}>Coaching</Text>
+              <View style={[styles.tierPill, { backgroundColor: tierColor + '18' }]}>
+                <View style={[styles.tierDot, { backgroundColor: tierColor }]} />
+                <Text style={[styles.tierText, { color: tierColor }]}>{tierLabel}</Text>
+              </View>
+            </Animated.View>
+
+            <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.previewCard}>
+              <View style={styles.accentBar} />
+              <View style={styles.cardHeader}>
+                <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
+                <Text style={styles.cardHeaderText}>Weekly insights</Text>
+              </View>
+              <Text style={styles.previewText}>
+                Personalized reflections based on how you and your partner use Stoke together. Updated each week.
+              </Text>
+              <TouchableOpacity
+                style={styles.unlockBtn}
+                onPress={() => setShowPaywall(true)}
+                activeOpacity={0.8}
+              >
+                <Icon name="lock" size="sm" color="#ffffff" weight="bold" />
+                <Text style={styles.unlockBtnText}>Unlock coaching</Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View entering={FadeInUp.duration(500).delay(300)} style={styles.previewFeatures}>
+              {[
+                { icon: 'sparkle' as const, text: 'Weekly pulse score tracking your connection' },
+                { icon: 'lightbulb' as const, text: 'Personalized insights tailored to your relationship' },
+                { icon: 'target' as const, text: 'Actionable suggestions to grow together' },
+              ].map((item, i) => (
+                <View key={i} style={styles.previewFeatureRow}>
+                  <Icon name={item.icon} size="sm" color="#c97454" weight="light" />
+                  <Text style={styles.previewFeatureText}>{item.text}</Text>
+                </View>
+              ))}
+            </Animated.View>
+          </ScrollView>
+        )}
       </SafeAreaView>
     );
   }
@@ -543,6 +590,57 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     color: '#ffffff',
+  },
+  previewCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    paddingTop: 20,
+    overflow: 'hidden',
+    shadowColor: '#1c1917',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  previewText: {
+    fontSize: 15,
+    fontFamily: 'Inter-Regular',
+    color: '#57534e',
+    lineHeight: 22,
+    marginBottom: 20,
+  },
+  unlockBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: '#c97454',
+    borderRadius: 14,
+    padding: 16,
+  },
+  unlockBtnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
+    color: '#ffffff',
+  },
+  previewFeatures: {
+    gap: 16,
+    paddingHorizontal: 4,
+  },
+  previewFeatureRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  previewFeatureText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#57534e',
+    lineHeight: 20,
   },
   disclaimerWrap: {
     marginTop: 32,
