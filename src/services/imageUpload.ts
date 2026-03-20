@@ -103,7 +103,7 @@ export async function uploadPartnerPhoto(
   userId: string,
   uri: string
 ): Promise<string> {
-  const storageRef = ref(storage, `avatars/${coupleId}_partner_${userId}.jpg`);
+  const storageRef = ref(storage, `partner-photos/${coupleId}/${userId}.jpg`);
   const bytes = await readFileAsBytes(uri);
 
   await uploadBytesResumable(storageRef, bytes, { contentType: 'image/jpeg' });
