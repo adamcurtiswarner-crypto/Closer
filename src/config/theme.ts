@@ -7,7 +7,7 @@ import { TextStyle } from 'react-native';
 export const colors = {
   // Surface
   surface: {
-    background: '#fafaf9',
+    background: '#fef7f4',
     card: '#ffffff',
     warmTint: '#fef5f0',
     warmTintDeep: '#fce8dc',

@@ -176,7 +176,7 @@ export default function InvitePartnerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   contentCentered: {
     flex: 1,

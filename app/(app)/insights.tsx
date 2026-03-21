@@ -538,7 +538,7 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   header: {
     paddingHorizontal: 24,
@@ -658,7 +658,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
   },
   nextMilestone: {
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     borderRadius: 12,
     padding: 14,
   },

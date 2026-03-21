@@ -211,7 +211,7 @@ export default function SettingsScreen() {
                 value={remindMe}
                 onValueChange={handleToggleRemind}
                 trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={remindMe ? '#c97454' : '#fafaf9'}
+                thumbColor={remindMe ? '#c97454' : '#fef7f4'}
               />
             </View>
             <View style={styles.rowToggle}>
@@ -220,7 +220,7 @@ export default function SettingsScreen() {
                 value={partnerNotify}
                 onValueChange={handleTogglePartnerNotify}
                 trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={partnerNotify ? '#c97454' : '#fafaf9'}
+                thumbColor={partnerNotify ? '#c97454' : '#fef7f4'}
               />
             </View>
             <View style={[styles.rowToggle, styles.lastRow]}>
@@ -235,7 +235,7 @@ export default function SettingsScreen() {
                   }
                 }}
                 trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={calendarSynced ? '#c97454' : '#fafaf9'}
+                thumbColor={calendarSynced ? '#c97454' : '#fef7f4'}
                 disabled={calendarSync.isPending || calendarRemove.isPending}
               />
             </View>
@@ -551,7 +551,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   header: {
     paddingHorizontal: 24,
@@ -673,7 +673,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   timeOptionActive: {
     backgroundColor: '#fef3ee',

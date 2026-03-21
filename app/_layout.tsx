@@ -142,7 +142,7 @@ function RootLayout() {
             <Stack
               screenOptions={{
                 headerShown: false,
-                contentStyle: { backgroundColor: '#fafaf9' },
+                contentStyle: { backgroundColor: '#fef7f4' },
               }}
             >
               <Stack.Screen name="(auth)" />

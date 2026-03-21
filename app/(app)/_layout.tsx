@@ -237,7 +237,7 @@ export default function AppLayout() {
 
 const customTabBarStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#e7e5e4',
     paddingTop: 8,

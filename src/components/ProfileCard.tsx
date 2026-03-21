@@ -654,7 +654,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     gap: 12,
   },
   langOptionActive: {

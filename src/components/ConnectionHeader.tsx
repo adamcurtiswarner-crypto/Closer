@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#fafaf9',
+    borderColor: '#fef7f4',
   },
   onlineActive: {
     backgroundColor: '#22c55e',

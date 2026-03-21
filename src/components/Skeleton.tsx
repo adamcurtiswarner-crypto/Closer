@@ -171,7 +171,7 @@ const skeletonStyles = StyleSheet.create({
     marginBottom: 16,
   },
   responseBlock: {
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,

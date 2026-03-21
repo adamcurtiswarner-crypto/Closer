@@ -168,7 +168,7 @@ export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   header: {
     flexDirection: 'row',

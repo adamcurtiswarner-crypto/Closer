@@ -165,7 +165,7 @@ export default function MemoriesScreen() {
           ) : (
             completions.map((completion, index) => (
               <Animated.View key={completion.id} entering={FadeInUp.duration(400).delay(Math.min(index * 80, 400))} style={styles.card}>
-                <Text style={styles.promptText}>"{completion.promptText}"</Text>
+                <Text style={styles.promptText}>{'\u201C'}{completion.promptText}{'\u201D'}</Text>
 
                 {completion.responses.map((response, idx) => (
                   <View key={idx} style={styles.responseBlock}>
@@ -281,7 +281,7 @@ export default function MemoriesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   header: {
     paddingHorizontal: 24,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   responseBlock: {
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,

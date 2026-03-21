@@ -48,7 +48,7 @@ function FeatureRow({ icon, text }: { icon: IconName; text: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     padding: 24,
   },
   content: {

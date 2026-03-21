@@ -108,7 +108,10 @@ export default function TodayScreen() {
   const [responseText, setResponseText] = useState('');
   const [feedbackGiven, setFeedbackGiven] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [showStreakDetail, setShowStreakDetail] = useState(false);
+  const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
+  const [showStreakDetail, setShowStreakDetail] = useState(
+    STREAK_MILESTONES.includes(currentStreak)
+  );
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [showAddWishlistModal, setShowAddWishlistModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -420,6 +423,7 @@ export default function TodayScreen() {
           )}
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
+            <View style={styles.accentBar} />
             <Icon name="coffee" size="xl" color="#c97454" weight="light" />
             <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
             <Text style={styles.emptySubtitle}>
@@ -475,6 +479,7 @@ export default function TodayScreen() {
           <EngagementCards {...engagementProps} />
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
+            <View style={styles.accentBar} />
             <Text style={styles.waitingPrompt}>
               {'\u201C'}{assignment!.promptText}{'\u201D'}
             </Text>
@@ -555,6 +560,7 @@ export default function TodayScreen() {
           {/* Emotional Feedback */}
           {myResponse && !feedbackGiven && (
             <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.feedbackCard}>
+              <View style={styles.accentBar} />
               <Text style={styles.feedbackTitle}>{t('today.howDidThisFeel')}</Text>
               <View style={styles.feedbackRow}>
                 {([
@@ -667,7 +673,15 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
+  },
+  accentBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: '#c97454',
   },
   centered: {
     flex: 1,
@@ -710,9 +724,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 32,
     alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: '#1c1917',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 1,
   },
@@ -756,10 +771,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 24,
+    overflow: 'hidden',
     shadowColor: '#1c1917',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
     elevation: 1,
   },
   waitingPrompt: {
@@ -828,9 +844,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: '#1c1917',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 1,
   },
@@ -848,7 +865,7 @@ const styles = StyleSheet.create({
   feedbackOption: {
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#f5f5f4',

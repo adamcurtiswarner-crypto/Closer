@@ -152,7 +152,7 @@ export function CompletionMoment({
           )}
         </View>
 
-        <Animated.View entering={FadeIn.duration(400).delay(600)}>
+        <Animated.View entering={FadeIn.duration(400).delay(1000)}>
           <View style={styles.footerRow}>
             <View style={styles.footerDot} />
             <Text style={styles.footer}>Another moment saved</Text>

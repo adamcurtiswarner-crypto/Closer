@@ -72,7 +72,7 @@ export function GameComplete({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,

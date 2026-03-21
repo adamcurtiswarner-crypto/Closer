@@ -190,7 +190,7 @@ function ExitButton({ onPress }: { onPress: () => void }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
     paddingHorizontal: 24,
     paddingTop: 16,
   },

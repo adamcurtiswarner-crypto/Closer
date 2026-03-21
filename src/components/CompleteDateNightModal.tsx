@@ -241,7 +241,7 @@ export function CompleteDateNightModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   scrollView: {
     flex: 1,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#e7e5e4',
-    backgroundColor: '#fafaf9',
+    backgroundColor: '#fef7f4',
   },
   buttonRow: {
     flexDirection: 'row',
