@@ -122,7 +122,7 @@ async function generatePromptsBatch(
   targetType?: string,
   targetDepth?: string
 ): Promise<{ generated: number; promptIds: string[] }> {
-  const apiKey = functions.config().anthropic?.api_key;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new functions.https.HttpsError('failed-precondition', 'Anthropic API key not configured');
   }
@@ -444,7 +444,7 @@ export async function computePulseForCouple(coupleId: string, coupleData: admin.
     });
 
     // Call Claude API (match existing Anthropic usage pattern)
-    const apiKey = functions.config().anthropic?.api_key;
+    const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       console.log(`Couple ${coupleId} needs coaching but Anthropic API key not configured — skipping`);
       return;
@@ -795,7 +795,7 @@ export const generateCoachingInsight = functions.https.onCall(async (data, conte
   });
 
   // Call Claude API
-  const apiKey = functions.config().anthropic?.api_key;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new functions.https.HttpsError('unavailable', 'AI service not configured');
   }
