@@ -46,7 +46,7 @@ export default function WelcomeScreen() {
           </Animated.View>
         </View>
 
-        <Link href="/(onboarding)/accept-invite" asChild>
+        <Link href="/(auth)/sign-up?invite=true" asChild>
           <Text style={styles.inviteLink}>{t('auth.welcome.haveInvite')}</Text>
         </Link>
       </View>

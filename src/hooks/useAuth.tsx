@@ -114,6 +114,8 @@ function useAuthInternal(): AuthState & AuthActions {
           locale: data.locale || null,
           relationshipStage: data.relationship_stage || null,
           pendingCheckIn: data.pending_check_in || false,
+          remindToRespond: data.remind_to_respond !== false,
+          notifyPartnerResponse: data.notify_partner_response !== false,
         };
       }
       return null;

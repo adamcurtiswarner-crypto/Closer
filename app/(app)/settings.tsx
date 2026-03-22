@@ -54,8 +54,8 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const { data: couple } = useCouple();
   const updateFrequency = useUpdatePromptFrequency();
-  const [remindMe, setRemindMe] = useState(true);
-  const [partnerNotify, setPartnerNotify] = useState(true);
+  const [remindMe, setRemindMe] = useState(user?.remindToRespond ?? true);
+  const [partnerNotify, setPartnerNotify] = useState(user?.notifyPartnerResponse ?? true);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
   const [isSavingTime, setIsSavingTime] = useState(false);

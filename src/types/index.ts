@@ -27,6 +27,8 @@ export interface User {
   locale: string | null;
   relationshipStage: RelationshipStage | null;
   pendingCheckIn: boolean;
+  remindToRespond: boolean;
+  notifyPartnerResponse: boolean;
 }
 
 export interface Couple {

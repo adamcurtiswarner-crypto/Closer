@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,6 +25,7 @@ type SignUpFormData = { email: string; password: string };
 export default function SignUpScreen() {
   const { t } = useTranslation();
   const { signUp } = useAuth();
+  const { invite } = useLocalSearchParams<{ invite?: string }>();
   const [isLoading, setIsLoading] = useState(false);
 
   const signUpSchema = z.object({
@@ -54,6 +55,9 @@ export default function SignUpScreen() {
           pathname: '/(onboarding)/accept-invite',
           params: { code: pendingCode },
         });
+      } else if (invite === 'true') {
+        // User came from "I have an invite code" on welcome screen
+        router.replace('/(onboarding)/accept-invite');
       } else {
         router.replace('/(onboarding)/verify-email');
       }
