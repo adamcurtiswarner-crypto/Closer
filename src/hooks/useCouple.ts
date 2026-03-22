@@ -137,7 +137,19 @@ export function useCreateInvite() {
   return useMutation({
     mutationFn: async (): Promise<{ code: string; shareUrl: string }> => {
       if (!user?.id) throw new Error('Not authenticated');
-      if (user.coupleId) throw new Error('Already in a couple');
+
+      // Check if existing coupleId points to an active couple
+      if (user.coupleId) {
+        const existingCouple = await getDoc(doc(db, 'couples', user.coupleId));
+        if (existingCouple.exists() && existingCouple.data().status === 'active') {
+          throw new Error('Already in a couple');
+        }
+        // Stale couple — clear it before creating a new one
+        await updateDoc(doc(db, 'users', user.id), {
+          couple_id: null,
+          updated_at: serverTimestamp(),
+        });
+      }
 
       const code = generateInviteCode();
       const expiresAt = new Date();
@@ -205,7 +217,19 @@ export function useAcceptInvite() {
   return useMutation({
     mutationFn: async (inviteCode: string): Promise<{ coupleId: string }> => {
       if (!user?.id) throw new Error('Not authenticated');
-      if (user.coupleId) throw new Error('Already in a couple');
+
+      // Check if existing coupleId points to an active couple
+      if (user.coupleId) {
+        const existingCouple = await getDoc(doc(db, 'couples', user.coupleId));
+        if (existingCouple.exists() && existingCouple.data().status === 'active') {
+          throw new Error('Already in a couple');
+        }
+        // Stale couple — clear it
+        await updateDoc(doc(db, 'users', user.id), {
+          couple_id: null,
+          updated_at: serverTimestamp(),
+        });
+      }
 
       const code = inviteCode.toUpperCase();
       const inviteRef = doc(db, 'couple_invites', code);
