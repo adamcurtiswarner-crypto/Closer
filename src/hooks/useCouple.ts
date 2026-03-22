@@ -126,7 +126,7 @@ export function usePendingInvite() {
         createdAt: data.created_at.toDate(),
       };
     },
-    enabled: !!user?.id && !user?.coupleId,
+    enabled: !!user?.id,
   });
 }
 

@@ -27,6 +27,7 @@ import { Paywall } from '@/components/Paywall';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, ProfileCard } from '@/components';
 import { useTranslation } from 'react-i18next';
+import Constants from 'expo-constants';
 
 const FREQUENCY_OPTIONS = [
   { label: 'Daily', value: 'daily' as const, description: 'Every day' },
@@ -324,7 +325,7 @@ export default function SettingsScreen() {
             </TouchableOpacity>
             <View style={styles.row}>
               <Text style={styles.rowLabel}>{t('settings.version')}</Text>
-              <Text style={styles.rowValue}>1.0.0</Text>
+              <Text style={styles.rowValue}>{Constants.expoConfig?.version || '1.0.0'}</Text>
             </View>
             <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
               <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>

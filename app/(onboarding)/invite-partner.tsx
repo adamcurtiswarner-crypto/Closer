@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,16 +14,23 @@ import { logger } from '@/utils/logger';
 import { router } from 'expo-router';
 import { Button } from '@/components';
 import { useCreateInvite, usePendingInvite } from '@/hooks/useCouple';
+import { getShareUrl } from '@/config/app';
 import { useTranslation } from 'react-i18next';
 
 export default function InvitePartnerScreen() {
   const { data: pendingInvite } = usePendingInvite();
   const createInvite = useCreateInvite();
-  const [inviteCode, setInviteCode] = useState<string | null>(
-    pendingInvite?.code || null
-  );
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const { t } = useTranslation();
+
+  // Sync state when pending invite loads asynchronously
+  useEffect(() => {
+    if (pendingInvite?.code && !inviteCode) {
+      setInviteCode(pendingInvite.code);
+      setShareUrl(getShareUrl(pendingInvite.code));
+    }
+  }, [pendingInvite?.code]);
 
   const handleCreateInvite = async () => {
     try {
