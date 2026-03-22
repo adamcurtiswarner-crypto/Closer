@@ -35,8 +35,11 @@ db = getFirestore(app);
 functions = getFunctions(app);
 storage = getStorage(app);
 
-// Use emulators in development (must be called before any other Firestore operations)
-if (__DEV__) {
+// Use emulators in development when running locally
+// Set USE_EMULATORS=true to connect to local Firebase emulators
+// By default, dev mode connects to production Firebase for testing
+const USE_EMULATORS = process.env.EXPO_PUBLIC_USE_EMULATORS === 'true';
+if (__DEV__ && USE_EMULATORS) {
   try {
     connectAuthEmulator(auth, 'http://localhost:9099');
     connectFirestoreEmulator(db, 'localhost', 8080);

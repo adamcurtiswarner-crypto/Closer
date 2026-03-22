@@ -90,6 +90,7 @@ export function useTodayPrompt() {
     }
 
     const today = new Date().toISOString().split('T')[0];
+    let unsubResponses: (() => void) | null = null;
 
     // Listen for today's assignment
     const assignmentsRef = collection(db, 'prompt_assignments');
@@ -100,6 +101,11 @@ export function useTodayPrompt() {
     );
 
     const unsubAssignment = onSnapshot(assignmentQuery, (assignmentSnap) => {
+      // Clean up previous response listener before setting up a new one
+      if (unsubResponses) {
+        unsubResponses();
+        unsubResponses = null;
+      }
       // Filter out explore assignments — keep daily and legacy (no source field)
       const dailyDocs = assignmentSnap.docs.filter(
         (d) => d.data().source !== 'explore'
@@ -137,8 +143,8 @@ export function useTodayPrompt() {
         where('assignment_id', '==', assignment.id)
       );
 
-      // Nested listener for responses — cleaned up when assignment changes
-      const unsubResponses = onSnapshot(responsesQuery, async (responsesSnap) => {
+      // Nested listener for responses
+      unsubResponses = onSnapshot(responsesQuery, async (responsesSnap) => {
         let myResponse: PromptResponse | null = null;
         let partnerResponse: PromptResponse | null = null;
 
@@ -191,12 +197,11 @@ export function useTodayPrompt() {
         } as TodayPrompt);
       });
 
-      // Store the responses unsubscribe so we can clean it up
-      return () => unsubResponses();
     });
 
     return () => {
       unsubAssignment();
+      if (unsubResponses) unsubResponses();
     };
   }, [coupleId, userId, notificationTime, queryClient]);
 

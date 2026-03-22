@@ -11,6 +11,7 @@ import {
   ScrollView,
   StyleProp,
   ViewStyle,
+  Alert,
 } from 'react-native';
 import Animated, {
   FadeIn,
@@ -81,8 +82,8 @@ export function AddWishlistModal({ visible, onClose }: AddWishlistModalProps) {
       setDescription('');
       setCategory('experiences');
       onClose();
-    } catch {
-      // Error handled by mutation
+    } catch (error: any) {
+      Alert.alert('Unable to save', error?.message || 'Something went wrong. Please try again.');
     }
   };
 

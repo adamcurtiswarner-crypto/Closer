@@ -11,6 +11,7 @@ import {
   Pressable,
   Keyboard,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import Animated, {
@@ -70,8 +71,8 @@ export default function ExploreScreen() {
       setActivePrompt(prompt);
       setActiveAssignmentId(result.assignmentId);
       setMode('responding');
-    } catch {
-      // mutation error handled by React Query
+    } catch (error: any) {
+      Alert.alert('Unable to start', error?.message || 'Something went wrong. Please try again.');
     }
   }
 

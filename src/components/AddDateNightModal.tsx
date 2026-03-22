@@ -11,6 +11,7 @@ import {
   ScrollView,
   StyleProp,
   ViewStyle,
+  Alert,
 } from 'react-native';
 import Animated, {
   FadeIn,
@@ -103,8 +104,8 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
       });
       resetForm();
       onClose();
-    } catch {
-      // Error handled by mutation
+    } catch (error: any) {
+      Alert.alert('Unable to save', error?.message || 'Something went wrong. Please try again.');
     }
   };
 
