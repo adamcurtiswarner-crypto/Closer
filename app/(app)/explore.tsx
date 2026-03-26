@@ -29,9 +29,11 @@ import {
   usePromptsByCategory,
   useExploreAssignments,
   useStartExplorePrompt,
+  useExploreResponses,
   ExplorePrompt,
 } from '@/hooks/useExplorePrompts';
 import { useSubmitResponse } from '@/hooks/usePrompt';
+import { useAuth } from '@/hooks/useAuth';
 import { Icon } from '@/components/Icon';
 import { logEvent } from '@/services/analytics';
 
@@ -46,11 +48,14 @@ export default function ExploreScreen() {
   const [activePrompt, setActivePrompt] = useState<ExplorePrompt | null>(null);
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
   const [responseText, setResponseText] = useState('');
+  const [viewingAssignmentId, setViewingAssignmentId] = useState<string | null>(null);
 
+  const { user } = useAuth();
   const { data: prompts, isLoading } = usePromptsByCategory(selectedCategory);
   const { data: assignments } = useExploreAssignments();
   const startExplore = useStartExplorePrompt();
   const submitResponse = useSubmitResponse();
+  const { data: viewingResponses } = useExploreResponses(viewingAssignmentId);
 
   const submitScale = useSharedValue(1);
   const submitAnimStyle = useAnimatedStyle(() => ({
@@ -278,12 +283,19 @@ export default function ExploreScreen() {
                         <Text style={styles.depthText}>{prompt.emotionalDepth}</Text>
                       </View>
                       {status === 'completed' ? (
-                        <View style={styles.statusBadge}>
+                        <TouchableOpacity
+                          style={styles.statusBadge}
+                          onPress={() => {
+                            const existing = getAssignmentForPrompt(prompt.id);
+                            const aid = existing?.id || null;
+                            setViewingAssignmentId(viewingAssignmentId === aid ? null : aid);
+                          }}
+                        >
                           <Icon name="checks" size={14} color="#22c55e" />
                           <Text style={[styles.statusText, { color: '#22c55e' }]}>
-                            Completed
+                            {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id ? 'Hide' : 'View responses'}
                           </Text>
-                        </View>
+                        </TouchableOpacity>
                       ) : status === 'partial' ? (
                         <View style={styles.statusBadge}>
                           <Icon name="hourglass" size={14} color="#d97706" />
@@ -304,6 +316,19 @@ export default function ExploreScreen() {
                         </TouchableOpacity>
                       )}
                     </View>
+                    {/* Show responses when tapped */}
+                    {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id && viewingResponses && (
+                      <Animated.View entering={FadeIn.duration(300)} style={styles.responsesSection}>
+                        {viewingResponses.map((r) => (
+                          <View key={r.id} style={styles.responseRow}>
+                            <Text style={styles.responseAuthor}>
+                              {r.isCurrentUser ? 'You' : 'Partner'}
+                            </Text>
+                            <Text style={styles.responseText}>{r.text}</Text>
+                          </View>
+                        ))}
+                      </Animated.View>
+                    )}
                   </View>
                 </View>
               </Animated.View>
@@ -413,6 +438,32 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   respondButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600', fontFamily: 'Inter-SemiBold' },
+
+  // Response viewer
+  responsesSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f5f5f4',
+    gap: 12,
+  },
+  responseRow: {
+    gap: 4,
+  },
+  responseAuthor: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: 'Inter-SemiBold',
+    color: '#a8a29e',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  responseText: {
+    fontSize: 15,
+    fontFamily: 'Inter-Regular',
+    color: '#292524',
+    lineHeight: 22,
+  },
 
   // Responding mode
   respondingScroll: { padding: 20, flexGrow: 1 },

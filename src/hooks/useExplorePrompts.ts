@@ -6,7 +6,9 @@ import {
   getDocs,
   addDoc,
   serverTimestamp,
+  orderBy,
 } from 'firebase/firestore';
+import { getCoupleKey, decrypt } from '@/services/encryption';
 import { db } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
@@ -109,5 +111,42 @@ export function useStartExplorePrompt() {
         category: data.prompt.type,
       });
     },
+  });
+}
+
+// Fetch responses for a completed explore assignment
+export function useExploreResponses(assignmentId: string | null) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['exploreResponses', assignmentId],
+    queryFn: async () => {
+      if (!assignmentId || !user?.coupleId) return null;
+
+      const coupleKey = await getCoupleKey(user.coupleId);
+      const ref = collection(db, 'prompt_responses');
+      const q = query(
+        ref,
+        where('assignment_id', '==', assignmentId),
+        orderBy('submitted_at', 'asc')
+      );
+      const snap = await getDocs(q);
+
+      return snap.docs.map((d) => {
+        const data = d.data();
+        let text = data.response_text;
+        if (data.response_text_encrypted && coupleKey) {
+          text = decrypt(data.response_text_encrypted, coupleKey);
+        }
+        return {
+          id: d.id,
+          userId: data.user_id as string,
+          text,
+          isCurrentUser: data.user_id === user.id,
+          submittedAt: data.submitted_at?.toDate() || null,
+        };
+      });
+    },
+    enabled: !!assignmentId && !!user?.coupleId,
   });
 }
