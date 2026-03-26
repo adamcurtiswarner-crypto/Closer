@@ -36,8 +36,9 @@ export async function registerForPushNotifications(userId: string): Promise<stri
       return null;
     }
 
-    // Get the Expo push token
-    const tokenData = await Notifications.getExpoPushTokenAsync();
+    // Get the native device push token (FCM for Android, APNs for iOS)
+    // This is what Firebase Cloud Messaging expects
+    const tokenData = await Notifications.getDevicePushTokenAsync();
     const token = tokenData.data;
 
     // Save token to Firestore user document

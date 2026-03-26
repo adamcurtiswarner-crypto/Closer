@@ -134,14 +134,32 @@ export async function sendPushNotification(
 
   if (tokens.length === 0) return;
 
-  const messages = tokens.map((t: { token: string }) => ({
-    token: t.token,
-    notification,
-    ...(data ? { data } : {}),
-  }));
+  // Tokens are stored as plain strings (FCM/APNs device tokens)
+  const messages = tokens
+    .filter((t: unknown) => typeof t === 'string' && t.length > 0)
+    .map((t: string) => ({
+      token: t,
+      notification,
+      ...(data ? { data } : {}),
+    }));
+
+  if (messages.length === 0) return;
 
   try {
-    await admin.messaging().sendEach(messages);
+    const results = await admin.messaging().sendEach(messages);
+    // Clean up invalid tokens
+    const tokensToRemove: string[] = [];
+    results.responses.forEach((resp, idx) => {
+      if (resp.error?.code === 'messaging/registration-token-not-registered' ||
+          resp.error?.code === 'messaging/invalid-registration-token') {
+        tokensToRemove.push(messages[idx].token);
+      }
+    });
+    if (tokensToRemove.length > 0) {
+      await db.collection('users').doc(userId).update({
+        push_tokens: admin.firestore.FieldValue.arrayRemove(...tokensToRemove),
+      });
+    }
   } catch (error) {
     console.error('Push notification failed:', error);
   }
