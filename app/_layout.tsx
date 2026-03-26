@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Updates from 'expo-updates';
 import * as Sentry from '@sentry/react-native';
 import { useFonts } from 'expo-font';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -76,6 +77,22 @@ function DeepLinkHandler() {
 
 function AppBootstrap() {
   const { user, isAuthenticated, isLoading } = useAuth();
+
+  // Check for OTA updates on app start
+  useEffect(() => {
+    if (__DEV__) return;
+    (async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          await Updates.reloadAsync();
+        }
+      } catch {
+        // Update check failed silently — non-critical
+      }
+    })();
+  }, []);
 
   // Hide splash screen after auth state resolves
   useEffect(() => {
