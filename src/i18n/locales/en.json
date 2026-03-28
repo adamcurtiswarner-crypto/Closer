@@ -48,6 +48,7 @@
       "passwordPlaceholder": "At least 8 characters",
       "submit": "Create Account",
       "terms": "By creating an account, you agree to our ",
+      "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy",
       "hasAccount": "Already have an account? ",
       "signInLink": "Sign in",
@@ -272,10 +273,23 @@
     "deleteFailed": "Failed to delete account. Please try again.",
     "anonymizeFailed": "Failed to anonymize responses. Please try again.",
     "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
     "safetyText": "Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.",
     "safetyLink": "National Domestic Violence Hotline",
     "errorUpdateTime": "Failed to update notification time",
-    "errorUpdateFrequency": "Failed to update prompt frequency"
+    "errorUpdateFrequency": "Failed to update prompt frequency",
+    "subscriptionWarning": "You have an active subscription",
+    "subscriptionWarningBody": "Deleting your account will not cancel your subscription. You will continue to be charged unless you cancel it first.",
+    "manageSubscription": "Manage subscription",
+    "continueDelete": "Continue with deletion",
+    "reauth": {
+      "title": "Confirm your identity",
+      "subtitle": "For your security, please verify your identity before deleting your account.",
+      "password": "Password",
+      "confirm": "Verify",
+      "googleButton": "Verify with Google",
+      "appleButton": "Verify with Apple"
+    }
   },
   "profile": {
     "editName": "Edit name",

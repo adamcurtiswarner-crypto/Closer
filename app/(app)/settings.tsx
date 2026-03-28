@@ -24,9 +24,11 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useDeleteAccount, useExportData, useAnonymizeResponses } from '@/hooks/usePrivacy';
 import { useCalendarSync } from '@/hooks/useCalendar';
 import { Paywall } from '@/components/Paywall';
+import { ReauthModal } from '@/components/ReauthModal';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, ProfileCard } from '@/components';
 import { useTranslation } from 'react-i18next';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import Constants from 'expo-constants';
 
 const FREQUENCY_OPTIONS = [
@@ -74,6 +76,18 @@ export default function SettingsScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [showAnonymizeModal, setShowAnonymizeModal] = useState(false);
+
+  // Biometric
+  const {
+    isBiometricAvailable,
+    isBiometricEnabled,
+    biometricType,
+    enableBiometric,
+    disableBiometric,
+  } = useBiometricAuth();
+
+  // Re-auth for delete flow
+  const [showReauthModal, setShowReauthModal] = useState(false);
 
   // Calendar sync
   const { synced: calendarSynced, sync: calendarSync, remove: calendarRemove } = useCalendarSync();
@@ -301,8 +315,36 @@ export default function SettingsScreen() {
               <Text style={styles.rowValue}>{'>'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              style={styles.row}
+              onPress={() => router.push('/(app)/terms-of-service' as any)}
+            >
+              <Text style={styles.rowLabel}>{t('settings.termsOfService')}</Text>
+              <Text style={styles.rowValue}>{'>'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[styles.row, styles.lastRow]}
-              onPress={() => setShowDeleteModal(true)}
+              onPress={() => {
+                if (isPremium) {
+                  Alert.alert(
+                    t('settings.subscriptionWarning'),
+                    t('settings.subscriptionWarningBody'),
+                    [
+                      {
+                        text: t('settings.manageSubscription'),
+                        onPress: () => Linking.openURL('https://apps.apple.com/account/subscriptions'),
+                      },
+                      {
+                        text: t('settings.continueDelete'),
+                        style: 'destructive',
+                        onPress: () => setShowReauthModal(true),
+                      },
+                      { text: t('common.cancel'), style: 'cancel' },
+                    ],
+                  );
+                } else {
+                  setShowReauthModal(true);
+                }
+              }}
             >
               <Text style={styles.dangerText}>{t('settings.deleteAccount')}</Text>
             </TouchableOpacity>
@@ -323,6 +365,23 @@ export default function SettingsScreen() {
                 {isPremium ? t('settings.premium') : t('settings.free') + ' >'}
               </Text>
             </TouchableOpacity>
+            {isBiometricAvailable && (
+              <View style={styles.rowToggle}>
+                <Text style={styles.rowLabel}>{biometricType}</Text>
+                <Switch
+                  value={isBiometricEnabled}
+                  onValueChange={async (value) => {
+                    if (value) {
+                      await enableBiometric();
+                    } else {
+                      await disableBiometric();
+                    }
+                  }}
+                  trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
+                  thumbColor={isBiometricEnabled ? '#c97454' : '#fef7f4'}
+                />
+              </View>
+            )}
             <View style={styles.row}>
               <Text style={styles.rowLabel}>{t('settings.version')}</Text>
               <Text style={styles.rowValue}>{Constants.expoConfig?.version || '1.0.0'}</Text>
@@ -509,6 +568,16 @@ export default function SettingsScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Re-auth Modal */}
+      <ReauthModal
+        visible={showReauthModal}
+        onSuccess={() => {
+          setShowReauthModal(false);
+          setShowDeleteModal(true);
+        }}
+        onCancel={() => setShowReauthModal(false)}
+      />
 
       {/* Anonymize Responses Modal */}
       <Modal

@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withDelay,
+  withSpring,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { Icon } from './Icon';
 
 interface ConnectionHeaderProps {
@@ -70,12 +78,7 @@ export function ConnectionHeader({
           <View style={[styles.dot, styles.dotLeft]} />
           <View style={styles.line} />
           {currentStreak > 0 && (
-            <View style={[styles.streakPill, isStreakActive ? styles.streakPillActive : styles.streakPillInactive]}>
-              <Icon name="flame" size="xs" color="#c97454" weight="fill" />
-              <Text style={[styles.streakCount, isStreakActive ? styles.streakCountActive : styles.streakCountInactive]}>
-                {currentStreak}
-              </Text>
-            </View>
+            <StreakPill streak={currentStreak} active={isStreakActive} />
           )}
           <View style={styles.line} />
           <View style={[styles.dot, styles.dotRight]} />
@@ -108,6 +111,43 @@ export function ConnectionHeader({
           {statusText}
         </Animated.Text>
       )}
+    </Animated.View>
+  );
+}
+
+function StreakPill({ streak, active }: { streak: number; active: boolean }) {
+  const scale = useSharedValue(0.5);
+  const flameRotate = useSharedValue(0);
+
+  useEffect(() => {
+    scale.value = withSpring(1, { damping: 8, stiffness: 200 });
+    // Subtle flame wiggle on mount
+    flameRotate.value = withDelay(300,
+      withSequence(
+        withTiming(-8, { duration: 80 }),
+        withTiming(8, { duration: 80 }),
+        withTiming(-4, { duration: 60 }),
+        withTiming(0, { duration: 60 }),
+      )
+    );
+  }, [streak]);
+
+  const pillStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const flameStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${flameRotate.value}deg` }],
+  }));
+
+  return (
+    <Animated.View style={[styles.streakPill, active ? styles.streakPillActive : styles.streakPillInactive, pillStyle]}>
+      <Animated.View style={flameStyle}>
+        <Icon name="flame" size="xs" color="#c97454" weight="fill" />
+      </Animated.View>
+      <Text style={[styles.streakCount, active ? styles.streakCountActive : styles.streakCountInactive]}>
+        {streak}
+      </Text>
     </Animated.View>
   );
 }

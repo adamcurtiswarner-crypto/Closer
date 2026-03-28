@@ -223,8 +223,10 @@ export default function MemoriesScreen() {
                   <ActivityIndicator size="small" color="#c97454" />
                 ) : (
                   <>
-                    <Icon name="plus" size="sm" color="#c97454" />
-                    <Text style={styles.addPhotoBtnText}>Add photo</Text>
+                    <Icon name={isPremium ? 'plus' : 'lock'} size="sm" color="#c97454" />
+                    <Text style={styles.addPhotoBtnText}>
+                      {isPremium ? 'Add photo' : 'Add photo — Premium'}
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,64 +9,24 @@ import {
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
-import { hapticImpact, hapticNotification, ImpactFeedbackStyle, NotificationFeedbackType } from '@utils/haptics';
+import { hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { Icon } from './Icon';
 
 interface ConversationStarterModalProps {
   visible: boolean;
   onClose: () => void;
   starterText: string;
-  durationMinutes?: number;
 }
 
 export function ConversationStarterModal({
   visible,
   onClose,
   starterText,
-  durationMinutes,
 }: ConversationStarterModalProps) {
   const [copied, setCopied] = useState(false);
-  const [timerActive, setTimerActive] = useState(false);
-  const [selectedMinutes, setSelectedMinutes] = useState(durationMinutes ?? 5);
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const clearTimer = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!visible) {
-      clearTimer();
-      setTimerActive(false);
-      setCopied(false);
-    }
-  }, [visible, clearTimer]);
-
-  const startTimer = () => {
-    hapticImpact(ImpactFeedbackStyle.Medium);
-    setSecondsLeft(selectedMinutes * 60);
-    setTimerActive(true);
-    clearTimer();
-    intervalRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearTimer();
-          hapticNotification(NotificationFeedbackType.Success);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
 
   const handleClose = () => {
-    clearTimer();
     setCopied(false);
-    setTimerActive(false);
     onClose();
   };
 
@@ -81,14 +41,6 @@ export function ConversationStarterModal({
     handleClose();
     router.push('/(app)/chat');
   };
-
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
-  const TIMER_OPTIONS = [3, 5, 10];
 
   return (
     <Modal
@@ -114,50 +66,6 @@ export function ConversationStarterModal({
             <Icon name="chat-circle" size="xl" color="#c97454" weight="light" />
             <Text style={styles.starterText}>{starterText}</Text>
           </Animated.View>
-
-          {durationMinutes !== undefined && (
-            <Animated.View entering={FadeIn.duration(400).delay(300)} style={styles.timerSection}>
-              {!timerActive ? (
-                <>
-                  <Text style={styles.timerLabel}>Set a timer</Text>
-                  <View style={styles.timerOptions}>
-                    {TIMER_OPTIONS.map((min) => (
-                      <TouchableOpacity
-                        key={min}
-                        style={[
-                          styles.timerOption,
-                          selectedMinutes === min && styles.timerOptionSelected,
-                        ]}
-                        onPress={() => setSelectedMinutes(min)}
-                      >
-                        <Text
-                          style={[
-                            styles.timerOptionText,
-                            selectedMinutes === min && styles.timerOptionTextSelected,
-                          ]}
-                        >
-                          {min} min
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  <TouchableOpacity style={styles.startTimerBtn} onPress={startTimer}>
-                    <Icon name="play" size="sm" color="#ffffff" weight="fill" />
-                    <Text style={styles.startTimerText}>Start</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <View style={styles.timerRunning}>
-                  <Text style={styles.timerCountdown}>
-                    {secondsLeft === 0 ? 'Time is up' : formatTime(secondsLeft)}
-                  </Text>
-                  {secondsLeft === 0 && (
-                    <Text style={styles.timerDoneSubtext}>How did it go?</Text>
-                  )}
-                </View>
-              )}
-            </Animated.View>
-          )}
 
           <Animated.View entering={FadeIn.duration(400).delay(400)} style={styles.actions}>
             <TouchableOpacity
@@ -258,66 +166,6 @@ const styles = StyleSheet.create({
     color: '#1c1917',
     textAlign: 'center',
     lineHeight: 26,
-  },
-  timerSection: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  timerLabel: {
-    fontSize: 13,
-    fontFamily: 'Inter-Medium',
-    color: '#78716c',
-  },
-  timerOptions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  timerOption: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f5f5f4',
-  },
-  timerOptionSelected: {
-    backgroundColor: '#c97454',
-  },
-  timerOptionText: {
-    fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#57534e',
-  },
-  timerOptionTextSelected: {
-    color: '#ffffff',
-  },
-  startTimerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#c97454',
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    marginTop: 4,
-  },
-  startTimerText: {
-    fontSize: 15,
-    fontFamily: 'Inter-SemiBold',
-    color: '#ffffff',
-  },
-  timerRunning: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  timerCountdown: {
-    fontSize: 48,
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
-    letterSpacing: -1,
-  },
-  timerDoneSubtext: {
-    fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
   },
   actions: {
     alignItems: 'center',

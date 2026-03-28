@@ -28,7 +28,8 @@
         "UIBackgroundModes": [
           "remote-notification"
         ],
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFaceIDUsageDescription": "Stoke uses Face ID to unlock the app quickly and securely."
       },
       "associatedDomains": [
         "applinks:stoke.app"

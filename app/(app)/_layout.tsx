@@ -204,6 +204,12 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="terms-of-service"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           href: null,

@@ -82,48 +82,44 @@ export default function SignUpScreen() {
           <SocialAuthButtons animationDelay={100} dividerText="OR SIGN UP WITH EMAIL" />
 
           <View style={styles.form}>
-            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label={t('common.email')}
-                    placeholder={t('common.emailPlaceholder')}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    error={errors.email?.message}
-                    style={{ borderRadius: 38 }}
-                  />
-                )}
-              />
-            </Animated.View>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label={t('common.email')}
+                  placeholder={t('common.emailPlaceholder')}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={errors.email?.message}
+                  style={{ borderRadius: 38 }}
+                />
+              )}
+            />
 
             <View style={styles.spacer} />
 
-            <Animated.View entering={FadeInUp.duration(400).delay(200)}>
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label={t('common.password')}
-                    placeholder={t('auth.signUp.passwordPlaceholder')}
-                    secureTextEntry
-                    autoComplete="password-new"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    error={errors.password?.message}
-                    style={{ borderRadius: 38 }}
-                  />
-                )}
-              />
-            </Animated.View>
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label={t('common.password')}
+                  placeholder={t('auth.signUp.passwordPlaceholder')}
+                  secureTextEntry
+                  autoComplete="password-new"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  error={errors.password?.message}
+                  style={{ borderRadius: 38 }}
+                />
+              )}
+            />
           </View>
 
           <Animated.View entering={FadeInUp.duration(500).delay(300)} style={styles.submit}>
@@ -137,6 +133,10 @@ export default function SignUpScreen() {
           <Animated.View entering={FadeIn.duration(400).delay(400)}>
             <Text style={styles.terms}>
               {t('auth.signUp.terms')}
+              <Text style={styles.termsLink} onPress={() => router.push('/(app)/terms-of-service' as any)}>
+                {t('auth.signUp.termsOfService')}
+              </Text>
+              {' and '}
               <Text style={styles.termsLink} onPress={() => router.push('/(app)/privacy-policy')}>
                 {t('auth.signUp.privacyPolicy')}
               </Text>.

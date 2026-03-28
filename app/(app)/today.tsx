@@ -615,6 +615,7 @@ export default function TodayScreen() {
                 currentStreak={currentStreak}
                 weeklyCompletions={weeklyCompletions}
                 isStreakActive={isStreakActive}
+                celebrate
               />
             </Animated.View>
           )}

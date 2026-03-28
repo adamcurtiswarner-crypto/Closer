@@ -13,6 +13,7 @@ import { useAuth, AuthProvider } from '@/hooks/useAuth';
 import { setAnalyticsContext, logEvent } from '@/services/analytics';
 import { registerForPushNotifications, setupNotificationHandlers } from '@/services/notifications';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { BiometricGate } from '@/components/BiometricGate';
 
 // Initialize Sentry before any rendering
 Sentry.init({
@@ -155,6 +156,7 @@ function RootLayout() {
           <AuthProvider>
             <DeepLinkHandler />
             <AppBootstrap />
+            <BiometricGate />
             <StatusBar style="dark" />
             <Stack
               screenOptions={{

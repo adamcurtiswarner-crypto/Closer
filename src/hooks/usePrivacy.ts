@@ -1,8 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { httpsCallable } from 'firebase/functions';
+import * as SecureStore from 'expo-secure-store';
 import { functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
+import { BIOMETRIC_ENABLED_KEY } from './useBiometricAuth';
+import { logger } from '@/utils/logger';
 
 interface DeleteAccountResult {
   success: boolean;
@@ -24,7 +27,7 @@ interface AnonymizeResult {
 }
 
 export function useDeleteAccount() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
 
   return useMutation({
     mutationFn: async (): Promise<DeleteAccountResult> => {
@@ -34,6 +37,15 @@ export function useDeleteAccount() {
     },
     onSuccess: async () => {
       await logEvent('account_deleted');
+      // Clean up SecureStore keys
+      try {
+        await SecureStore.deleteItemAsync(BIOMETRIC_ENABLED_KEY);
+        if (user?.coupleId) {
+          await SecureStore.deleteItemAsync(`stoke_couple_key_${user.coupleId}`);
+        }
+      } catch (err) {
+        logger.warn('SecureStore cleanup on delete:', err);
+      }
       await signOut();
     },
   });

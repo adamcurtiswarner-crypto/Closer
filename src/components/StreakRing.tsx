@@ -3,18 +3,23 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Icon } from './Icon';
 import Animated, {
   FadeIn,
-  FadeInUp,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withDelay,
   withTiming,
+  withSequence,
+  withRepeat,
+  Easing,
+  interpolate,
 } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 interface StreakRingProps {
   currentStreak: number;
-  weeklyCompletions: number;  // 0-7 completions this week
+  weeklyCompletions: number;
   isStreakActive: boolean;
+  celebrate?: boolean;
 }
 
 function getMotivation(streak: number): string {
@@ -28,15 +33,71 @@ function getMotivation(streak: number): string {
 }
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const PARTICLE_COUNT = 8;
 
-export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive }: StreakRingProps) {
-  const ringScale = useSharedValue(0.6);
+export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive, celebrate = false }: StreakRingProps) {
+  // Main ring animation
+  const ringScale = useSharedValue(celebrate ? 0.3 : 0.8);
+  const numberScale = useSharedValue(celebrate ? 0 : 0.8);
   const numberOpacity = useSharedValue(0);
 
+  // Glow pulse
+  const glowScale = useSharedValue(1);
+  const glowOpacity = useSharedValue(0);
+
+  // Particle burst
+  const particleProgress = useSharedValue(0);
+
+  // Flame bounce
+  const flameScale = useSharedValue(celebrate ? 0 : 1);
+  const flameRotation = useSharedValue(0);
+
   useEffect(() => {
-    ringScale.value = withSpring(1, { damping: 14, stiffness: 160 });
-    numberOpacity.value = withDelay(300, withTiming(1, { duration: 400 }));
-  }, []);
+    if (celebrate) {
+      // Stage 1: Ring scales up with overshoot
+      ringScale.value = withSpring(1, { damping: 8, stiffness: 120, mass: 0.8 });
+
+      // Stage 2: Flame pops in with bounce
+      flameScale.value = withDelay(200, withSpring(1, { damping: 6, stiffness: 200 }));
+      flameRotation.value = withDelay(200,
+        withSequence(
+          withTiming(-12, { duration: 80 }),
+          withTiming(12, { duration: 80 }),
+          withTiming(-6, { duration: 60 }),
+          withTiming(0, { duration: 60 }),
+        )
+      );
+
+      // Stage 3: Number rolls in
+      numberScale.value = withDelay(400, withSpring(1, { damping: 7, stiffness: 180 }));
+      numberOpacity.value = withDelay(350, withTiming(1, { duration: 200 }));
+
+      // Stage 4: Glow pulse
+      glowOpacity.value = withDelay(300,
+        withSequence(
+          withTiming(0.6, { duration: 300, easing: Easing.out(Easing.ease) }),
+          withTiming(0, { duration: 600, easing: Easing.in(Easing.ease) }),
+        )
+      );
+      glowScale.value = withDelay(300,
+        withTiming(1.6, { duration: 900, easing: Easing.out(Easing.ease) })
+      );
+
+      // Stage 5: Particle burst
+      particleProgress.value = withDelay(250,
+        withTiming(1, { duration: 700, easing: Easing.out(Easing.cubic) })
+      );
+
+      // Haptic
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      // Quiet entrance
+      ringScale.value = withSpring(1, { damping: 14, stiffness: 160 });
+      numberOpacity.value = withDelay(300, withTiming(1, { duration: 400 }));
+      numberScale.value = withDelay(300, withSpring(1, { damping: 12, stiffness: 150 }));
+      flameScale.value = withDelay(150, withSpring(1, { damping: 10, stiffness: 140 }));
+    }
+  }, [celebrate]);
 
   const ringAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: ringScale.value }],
@@ -44,50 +105,143 @@ export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive }:
 
   const numberAnimatedStyle = useAnimatedStyle(() => ({
     opacity: numberOpacity.value,
+    transform: [{ scale: numberScale.value }],
+  }));
+
+  const flameAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: flameScale.value },
+      { rotate: `${flameRotation.value}deg` },
+    ],
+  }));
+
+  const glowAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
+    transform: [{ scale: glowScale.value }],
+  }));
+
+  // Create particle animated styles
+  const particleStyles = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
+    const angle = (i / PARTICLE_COUNT) * 2 * Math.PI;
+    return useAnimatedStyle(() => {
+      const distance = interpolate(particleProgress.value, [0, 1], [0, 60]);
+      const opacity = interpolate(particleProgress.value, [0, 0.3, 1], [0, 1, 0]);
+      const scale = interpolate(particleProgress.value, [0, 0.2, 1], [0, 1, 0.3]);
+      return {
+        position: 'absolute' as const,
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: i % 2 === 0 ? '#c97454' : '#f9a07a',
+        opacity,
+        transform: [
+          { translateX: Math.cos(angle) * distance },
+          { translateY: Math.sin(angle) * distance },
+          { scale },
+        ],
+      };
+    });
+  });
+
+  return (
+    <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
+      {/* Streak circle with particles */}
+      <View style={styles.circleContainer}>
+        {/* Glow ring */}
+        {celebrate && (
+          <Animated.View style={[styles.glowRing, glowAnimatedStyle]} />
+        )}
+
+        {/* Particles */}
+        {celebrate && particleStyles.map((style, i) => (
+          <Animated.View key={i} style={style} />
+        ))}
+
+        {/* Main ring */}
+        <Animated.View style={[styles.circleOuter, ringAnimatedStyle]}>
+          <View style={[styles.circleInner, isStreakActive ? styles.circleActive : styles.circleInactive]}>
+            <Animated.View style={flameAnimatedStyle}>
+              {currentStreak > 0
+                ? <Icon name="flame" size={18} color="#c97454" weight="fill" />
+                : <Icon name="flame" size={18} color="#d6d3d1" weight="light" />
+              }
+            </Animated.View>
+            <Animated.Text style={[styles.streakNumber, isStreakActive ? styles.numberActive : styles.numberInactive, numberAnimatedStyle]}>
+              {currentStreak}
+            </Animated.Text>
+            <Text style={styles.dayLabel}>
+              {currentStreak === 1 ? 'day' : 'days'}
+            </Text>
+          </View>
+        </Animated.View>
+      </View>
+
+      <View style={styles.textContainer}>
+        <Animated.Text
+          entering={FadeIn.duration(400).delay(celebrate ? 600 : 200)}
+          style={styles.motivation}
+        >
+          {getMotivation(currentStreak)}
+        </Animated.Text>
+
+        {/* Weekly progress dots with staggered pop-in */}
+        <View style={styles.weekRow}>
+          {DAY_LABELS.map((label, i) => (
+            <WeekDay
+              key={i}
+              label={label}
+              completed={i < weeklyCompletions}
+              delay={celebrate ? 700 + i * 80 : 300 + i * 60}
+            />
+          ))}
+        </View>
+        <Animated.Text
+          entering={FadeIn.duration(300).delay(celebrate ? 1300 : 800)}
+          style={styles.weekLabel}
+        >
+          {weeklyCompletions}/7 this week
+        </Animated.Text>
+      </View>
+    </Animated.View>
+  );
+}
+
+function WeekDay({ label, completed, delay }: { label: string; completed: boolean; delay: number }) {
+  const scale = useSharedValue(0);
+  const checkScale = useSharedValue(0);
+
+  useEffect(() => {
+    scale.value = withDelay(delay, withSpring(1, { damping: 8, stiffness: 200 }));
+    if (completed) {
+      checkScale.value = withDelay(delay + 150, withSpring(1, { damping: 6, stiffness: 220 }));
+    }
+  }, [completed, delay]);
+
+  const dotStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const checkStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: checkScale.value }],
   }));
 
   return (
-    <Animated.View entering={FadeIn.duration(500)} style={styles.container}>
-      {/* Streak circle */}
-      <Animated.View style={[styles.circleOuter, ringAnimatedStyle]}>
-        <View style={[styles.circleInner, isStreakActive ? styles.circleActive : styles.circleInactive]}>
-          {currentStreak > 0
-            ? <Icon name="flame" size={16} color="#c97454" weight="fill" />
-            : <Icon name="flame" size={16} color="#d6d3d1" weight="light" />
-          }
-          <Animated.Text style={[styles.streakNumber, isStreakActive ? styles.numberActive : styles.numberInactive, numberAnimatedStyle]}>
-            {currentStreak}
-          </Animated.Text>
-          <Text style={styles.dayLabel}>
-            {currentStreak === 1 ? 'day' : 'days'}
-          </Text>
-        </View>
+    <View style={styles.dayColumn}>
+      <Animated.View
+        style={[
+          styles.weekDot,
+          completed ? styles.weekDotFilled : styles.weekDotEmpty,
+          dotStyle,
+        ]}
+      >
+        {completed && (
+          <Animated.View style={checkStyle}>
+            <Icon name="check" size="xs" color="#ffffff" weight="bold" />
+          </Animated.View>
+        )}
       </Animated.View>
-
-      <Animated.View entering={FadeInUp.duration(400).delay(200)} style={styles.textContainer}>
-        <Text style={styles.motivation}>{getMotivation(currentStreak)}</Text>
-
-        {/* Weekly progress dots with day labels */}
-        <View style={styles.weekRow}>
-          {DAY_LABELS.map((label, i) => (
-            <View key={i} style={styles.dayColumn}>
-              <View
-                style={[
-                  styles.weekDot,
-                  i < weeklyCompletions ? styles.weekDotFilled : styles.weekDotEmpty,
-                ]}
-              >
-                {i < weeklyCompletions && (
-                  <Icon name="check" size="xs" color="#ffffff" weight="bold" />
-                )}
-              </View>
-              <Text style={styles.dayLabelText}>{label}</Text>
-            </View>
-          ))}
-        </View>
-        <Text style={styles.weekLabel}>{weeklyCompletions}/7 this week</Text>
-      </Animated.View>
-    </Animated.View>
+      <Text style={styles.dayLabelText}>{label}</Text>
+    </View>
   );
 }
 
@@ -103,18 +257,31 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 1,
   },
+  circleContainer: {
+    width: 120,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  glowRing: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#c97454',
+  },
   circleOuter: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     backgroundColor: '#f5f5f4',
     justifyContent: 'center',
     alignItems: 'center',
   },
   circleInner: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -127,7 +294,7 @@ const styles = StyleSheet.create({
     borderColor: '#e7e5e4',
   },
   streakNumber: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
     marginTop: -2,
   },
