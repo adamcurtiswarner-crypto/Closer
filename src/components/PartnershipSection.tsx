@@ -118,6 +118,10 @@ export function PartnershipSection({
 
   // State 1: Connected to partner
   if (couple?.status === 'active' && partner) {
+    // Mask Apple private relay emails for display
+    const isPrivateRelay = partner.email.includes('privaterelay.appleid.com');
+    const emailDisplay = isPrivateRelay ? 'Signed in with Apple' : partner.email;
+
     return (
       <>
         <Text style={sectionTitleStyle}>PARTNERSHIP</Text>
@@ -125,7 +129,13 @@ export function PartnershipSection({
           <View style={rowStyle}>
             <Text style={rowLabelStyle}>Partner</Text>
             <Text style={rowValueStyle}>
-              {partner.displayName || partner.email}
+              {partner.displayName || 'Not set'}
+            </Text>
+          </View>
+          <View style={rowStyle}>
+            <Text style={rowLabelStyle}>Account</Text>
+            <Text style={[rowValueStyle, styles.emailText]} numberOfLines={1}>
+              {emailDisplay}
             </Text>
           </View>
           {couple.linkedAt && (
@@ -213,5 +223,8 @@ const styles = StyleSheet.create({
     color: '#c97454',
     fontWeight: '500',
     fontFamily: 'Inter-Medium',
+  },
+  emailText: {
+    fontSize: 14,
   },
 });

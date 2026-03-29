@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -18,6 +17,7 @@ import { useGoals } from '@/hooks/useGoals';
 import { useTodayPrompt } from '@/hooks/usePrompt';
 import { getAnniversaryCountdown } from '@/config/milestones';
 import { StreakRing } from '@/components/StreakRing';
+import { ProfileCard } from '@/components/ProfileCard';
 import { Icon } from '@/components/Icon';
 import { format, differenceInDays } from 'date-fns';
 
@@ -123,46 +123,9 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. Connection Header */}
-        <Animated.View entering={FadeIn.duration(500)} style={styles.header}>
-          <View style={styles.avatarRow}>
-            {user?.photoUrl ? (
-              <Image source={{ uri: user.photoUrl }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, styles.avatarYou]}>
-                <Text style={styles.avatarInitial}>
-                  {(user?.displayName || '?').charAt(0).toUpperCase()}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.connectionBridge}>
-              <View style={styles.bridgeLine} />
-              {isStreakActive && (
-                <View style={styles.streakBadge}>
-                  <Icon name="flame" size={10} color="#c97454" weight="fill" />
-                  <Text style={styles.streakBadgeText}>{currentStreak}</Text>
-                </View>
-              )}
-              <View style={styles.bridgeLine} />
-            </View>
-
-            {user?.partnerPhotoUrl ? (
-              <Image source={{ uri: user.partnerPhotoUrl }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, styles.avatarPartner]}>
-                <Text style={styles.avatarInitial}>
-                  {partnerName.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {daysAsCouple > 0 && (
-            <Text style={styles.daysTogetherText}>
-              {daysAsCouple} {daysAsCouple === 1 ? 'day' : 'days'} on Stoke together
-            </Text>
-          )}
+        {/* 1. Profile Card */}
+        <Animated.View entering={FadeIn.duration(500)}>
+          <ProfileCard />
         </Animated.View>
 
         {/* 2. Today's Pulse */}
@@ -286,68 +249,6 @@ const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: 20,
     paddingBottom: 24,
-  },
-
-  // 1. Connection Header
-  header: {
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  avatarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarYou: {
-    backgroundColor: '#c97454',
-  },
-  avatarPartner: {
-    backgroundColor: '#490f5f',
-  },
-  avatarInitial: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: '700',
-    fontFamily: 'Inter-SemiBold',
-  },
-  connectionBridge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: 90,
-    marginHorizontal: 6,
-  },
-  bridgeLine: {
-    flex: 1,
-    height: 2,
-    backgroundColor: '#e7e5e4',
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fef3ee',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
-    marginHorizontal: 4,
-    gap: 2,
-  },
-  streakBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#c97454',
-  },
-  daysTogetherText: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
-    marginTop: 8,
   },
 
   // 2. Pulse

@@ -26,7 +26,7 @@ import { useCalendarSync } from '@/hooks/useCalendar';
 import { Paywall } from '@/components/Paywall';
 import { ReauthModal } from '@/components/ReauthModal';
 import { logger } from '@/utils/logger';
-import { PartnershipSection, ProfileCard } from '@/components';
+import { PartnershipSection } from '@/components';
 import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import Constants from 'expo-constants';
@@ -204,10 +204,6 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView style={styles.scrollView}>
-        {/* Profile */}
-        <Text style={styles.sectionTitle}>{t('settings.profile')}</Text>
-        <ProfileCard />
-
         {/* Notifications */}
         <Animated.View entering={FadeInUp.duration(400).delay(100)}>
           <Text style={styles.sectionTitle}>{t('settings.notifications')}</Text>

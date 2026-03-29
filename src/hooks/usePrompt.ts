@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -66,6 +66,15 @@ const EMPTY_TODAY: TodayPrompt = {
   reactions: null,
 };
 
+// Shared counter to force onSnapshot re-subscribe with fresh date
+let promptRefreshCounter = 0;
+const promptRefreshListeners = new Set<() => void>();
+
+function bumpPromptRefresh() {
+  promptRefreshCounter++;
+  promptRefreshListeners.forEach((fn) => fn());
+}
+
 export function useTodayPrompt() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -73,6 +82,14 @@ export function useTodayPrompt() {
   const userId = user?.id;
   const notificationTime = user?.notificationTime;
   const coupleKeyRef = useRef<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(promptRefreshCounter);
+
+  // Listen for external refresh signals (from useTriggerPrompt)
+  useEffect(() => {
+    const listener = () => setRefreshKey(promptRefreshCounter);
+    promptRefreshListeners.add(listener);
+    return () => { promptRefreshListeners.delete(listener); };
+  }, []);
 
   // Pre-fetch couple encryption key
   useEffect(() => {
@@ -203,7 +220,7 @@ export function useTodayPrompt() {
       unsubAssignment();
       if (unsubResponses) unsubResponses();
     };
-  }, [coupleId, userId, notificationTime, queryClient]);
+  }, [coupleId, userId, notificationTime, queryClient, refreshKey]);
 
   // useQuery reads from the cache populated by onSnapshot above
   return useQuery({
@@ -448,6 +465,8 @@ export function useTriggerPrompt() {
       return result.data as { success: boolean; coupleId: string };
     },
     onSuccess: () => {
+      // Force onSnapshot to re-subscribe with a fresh date
+      bumpPromptRefresh();
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });
     },
   });
