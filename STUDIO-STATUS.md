@@ -1,15 +1,15 @@
 # Stoke Studio Status
-*Last updated: 2026-04-18 — CEO session (encryption removal, push audit, git push)*
+*Last updated: 2026-04-18 — CEO session (encryption removal, push fixes, all pushed)*
 
 ## Current Sprint
-- **Focus**: Launch readiness — push notification fixes, App Store submission
+- **Focus**: Launch readiness — App Store metadata, manual push test, then submit
 - **Sprint goal**: App Store submission ready
-- **Status**: IN PROGRESS — GREEN-YELLOW. Encryption removed, commits pushed, push notification code audit complete with 4 issues found.
+- **Status**: IN PROGRESS — GREEN. Encryption removed, push notifications fixed, all pushed. Only metadata and manual validation remain.
 
 ## Active Initiatives
 | Initiative | Department | Status | Blockers |
 |-----------|-----------|--------|----------|
-| Push notification fixes | Engineering | 4 ISSUES FOUND | Missing data.type on 10/14 notifications, no token refresh listener, chat deep link missing, APNs/FCM token format question |
+| Push notification manual validation | Engineering | TODO | Adam needs to test with partner on device |
 | Firestore security rules deploy | Operations | TODO | Firebase Console (Adam) |
 | GCP Cloud Functions error alerting | Operations | TODO | GCP Console (Adam) |
 | App Store metadata update | Operations | TODO | STORE_METADATA.md references "Closer", dead encryption claims |
@@ -37,15 +37,15 @@
 - TypeScript errors: 0 across all codebases
 - Cloud Functions: 34 deployed on Node 22 (7 modules)
 - Analytics events: 66 distinct event types tracked
-- Working tree: 12 modified files (encryption removal — uncommitted)
-- Days since last commit: 0
+- Working tree: CLEAN
+- Days since last commit: 0 (2 commits today: encryption removal + push notification fixes)
 - Production build: 29 (latest)
 
 ## Engineering Health
 - **Tests**: All green
 - **Types**: 0 errors
 - **Design system**: Unified — #c97454 accent, #fef7f4 background
-- **Tech debt**: Expo SDK 52 (current is 55), push notification deep links incomplete
+- **Tech debt**: Expo SDK 52 (current is 55)
 - **Dependencies**: Expo SDK 3 majors behind, Sentry 2 majors behind — not urgent for launch
 
 ## Completed Features (Full Inventory)
@@ -72,7 +72,7 @@
 
 ## Launch Blockers (Prioritized)
 1. ~~Push 2 unpushed commits~~ DONE
-2. **Push notification fixes** — 10/14 server notifications missing `data.type` (breaks tap-to-deep-link), no token refresh listener, chat message tap goes to wrong screen
+2. ~~Push notification fixes~~ DONE (all 14 notifications have data.type, token refresh listener added, chat deep link added)
 3. ~~Encryption compliance~~ DONE (code removed)
 4. **App Store metadata** — STORE_METADATA.md still says "Closer", references disabled encryption
 
