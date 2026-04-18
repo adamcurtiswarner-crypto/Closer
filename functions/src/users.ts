@@ -60,7 +60,7 @@ export const deleteAccount = functions.https.onCall(async (data, context) => {
         await sendPushNotification(partnerId, {
           title: APP_NAME,
           body: 'Your partner has left Stoke.',
-        });
+        }, { type: 'prompt' });
       }
     }
   }

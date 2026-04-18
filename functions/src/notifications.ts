@@ -34,7 +34,7 @@ export const sendWeeklyRecaps = functions.pubsub
           await sendPushNotification(userId, {
             title: APP_NAME,
             body: 'Your week together is ready.',
-          });
+          }, { type: 'weekly_recap' });
         }
       }
     }
@@ -156,7 +156,7 @@ export const sendResponseReminders = functions.pubsub
           await sendPushNotification(userId, {
             title: APP_NAME,
             body,
-          });
+          }, { type: 'prompt' });
 
           // Atomically track the reminder sent for this user
           await assignmentDoc.ref.update({

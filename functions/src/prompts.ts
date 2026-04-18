@@ -204,7 +204,7 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
     await sendPushNotification(userId, {
       title: APP_NAME,
       body: "Today's prompt is ready.",
-    });
+    }, { type: 'prompt' });
   }
 }
 
@@ -389,7 +389,7 @@ export const checkStreakBreaks = functions.pubsub
           await sendPushNotification(userId, {
             title: APP_NAME,
             body: `Your ${endedAt}-day streak ended. Start a new one today!`,
-          });
+          }, { type: 'prompt' });
         }
         brokenStreaks++;
       }

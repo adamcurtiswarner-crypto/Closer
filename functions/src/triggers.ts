@@ -148,7 +148,7 @@ export const onResponseSubmitted = functions.firestore
         await sendPushNotification(firstResponderId, {
           title: secondResponderName,
           body: 'answered too. Tap to reveal both responses.',
-        });
+        }, { type: 'prompt' });
       }
     } else {
       // First response - track first responder and notify partner
@@ -173,7 +173,7 @@ export const onResponseSubmitted = functions.firestore
           await sendPushNotification(partnerId, {
             title: responderName,
             body: "answered today's prompt. Your turn \u2014 takes 2 minutes.",
-          });
+          }, { type: 'partner_responded' });
 
           await logEvent('partner_notified', response.user_id, response.couple_id, {
             notified_user_id: partnerId,
@@ -243,7 +243,7 @@ export const onReactionAdded = functions.firestore
     await sendPushNotification(partnerId, {
       title: reactorName,
       body: `${REACTION_EMOJIS[reactionValue] || ''} reacted to your response`,
-    });
+    }, { type: 'prompt' });
 
     return null;
   });

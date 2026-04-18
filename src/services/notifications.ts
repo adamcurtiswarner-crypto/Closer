@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
-import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { logEvent } from '@/services/analytics';
 import { logger } from '@/utils/logger';
@@ -41,11 +41,29 @@ export async function registerForPushNotifications(userId: string): Promise<stri
     const tokenData = await Notifications.getDevicePushTokenAsync();
     const token = tokenData.data;
 
-    // Save token to Firestore user document
+    // Save token to Firestore user document, replacing any previous token
     const userRef = doc(db, 'users', userId);
     await updateDoc(userRef, {
       push_tokens: arrayUnion(token),
       updated_at: serverTimestamp(),
+    });
+
+    // Listen for token changes (rotation) and update Firestore
+    Notifications.addPushTokenListener(async ({ data: newToken }) => {
+      if (newToken && newToken !== token) {
+        try {
+          await updateDoc(userRef, {
+            push_tokens: arrayUnion(newToken),
+            updated_at: serverTimestamp(),
+          });
+          // Remove the old token
+          await updateDoc(userRef, {
+            push_tokens: arrayRemove(token),
+          });
+        } catch {
+          // Token refresh is best-effort
+        }
+      }
     });
 
     // Set up Android notification channel
@@ -89,6 +107,8 @@ export function setupNotificationHandlers(): () => void {
       router.push('/(app)/memories');
     } else if (type === 'date_night' || type === 'date_night_reminder') {
       router.push('/(app)/date-nights');
+    } else if (type === 'chat_message') {
+      router.push('/(app)/chat');
     } else if (type === 'check_in' || type === 'coaching_insight') {
       router.push('/(app)/today');
     } else {

@@ -571,7 +571,7 @@ export const detectChurnRisk = functions.pubsub
             await sendPushNotification(userId, {
               title: APP_NAME,
               body: "It's been a while. A new prompt is waiting for you.",
-            });
+            }, { type: 'prompt' });
           }
         }
       }
