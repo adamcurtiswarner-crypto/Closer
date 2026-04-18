@@ -1,4 +1,4 @@
-# Closer — App Store Metadata
+# Stoke — App Store Metadata
 
 ## App Store Description
 
@@ -6,7 +6,7 @@
 Daily prompts for couples
 
 **Full Description:**
-Closer helps couples stay connected through daily conversation prompts grounded in relationship research.
+Stoke helps long-term couples stay connected through daily conversation prompts grounded in relationship research.
 
 Each day, you and your partner receive the same prompt — a thoughtful question designed to spark real conversation. Respond at your own pace, then read each other's answers.
 
@@ -15,36 +15,46 @@ Features:
 - Streaks to build a daily connection habit
 - Weekly recaps of your shared moments
 - Save your favorite conversations as memories
+- Couple games: Would You Rather, How Well Do You Know Me, Truth or Dare
+- Date night planner with ideas, calendar integration, and reflections
+- AI relationship coaching with weekly pulse scores and personalized insights
+- Weekly check-ins to reflect on your relationship together
+- Shared wishlist and goal tracking
+- Real-time chat with your partner
+- Explore library with prompts across categories
 - Smart prompt scheduling (daily, weekdays, or weekends)
 - Tone calibration adapts prompts to your relationship needs
-- End-to-end encrypted responses
+- Face ID / Touch ID unlock
 - Push notifications to stay in sync
 
-Closer is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.
+Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.
 
 ## Keywords
-couples, relationship, daily prompts, conversation starters, couples app, gottman, connection, love, communication, marriage
+couples, relationship, daily prompts, conversation starters, couples app, gottman, connection, love, communication, marriage, date night, relationship coach
 
 ## Categories
 - Primary: Lifestyle
 - Secondary: Health & Fitness
 
 ## App Review Notes
-- Test account: (provide demo email/password)
+- Test account: (provide demo email/password for both partners)
 - Both partners must sign up separately and link via invite code
 - Prompts are delivered based on notification time setting
-- Responses are encrypted per-couple
+- AI coaching features require a premium subscription
+- The app uses AI (Claude) to generate personalized coaching insights — disclosed in-app
 
 ## Screenshot Guidance
 1. Today screen — showing a daily prompt
 2. Responding to a prompt
 3. Completion moment — both answers revealed
-4. Memories / weekly recap
-5. Settings with notification preferences
-6. Onboarding — invite partner flow
+4. Couple games — Would You Rather in action
+5. Date night planner — browsing ideas
+6. AI coaching — weekly pulse score and insights
+7. Memories / weekly recap
+8. Settings with biometric unlock and notification preferences
 
 ## Privacy Policy URL
-https://closer.app/privacy
+https://getstoke.io/privacy
 
 ## Support URL
-https://closer.app/support
+https://getstoke.io/support
