@@ -40,9 +40,6 @@ export function useDeleteAccount() {
       // Clean up SecureStore keys
       try {
         await SecureStore.deleteItemAsync(BIOMETRIC_ENABLED_KEY);
-        if (user?.coupleId) {
-          await SecureStore.deleteItemAsync(`stoke_couple_key_${user.coupleId}`);
-        }
       } catch (err) {
         logger.warn('SecureStore cleanup on delete:', err);
       }

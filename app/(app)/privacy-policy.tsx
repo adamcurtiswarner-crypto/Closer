@@ -32,13 +32,6 @@ export default function PrivacyPolicyScreen() {
           advertising.
         </Text>
 
-        <Text style={styles.sectionTitle}>Encryption</Text>
-        <Text style={styles.body}>
-          Your responses are encrypted using AES-256 before being stored. Encryption
-          keys are stored securely on your device and are never sent to our servers
-          in plaintext.
-        </Text>
-
         <Text style={styles.sectionTitle}>Data Storage</Text>
         <Text style={styles.body}>
           Your data is stored on Google Cloud (Firebase) infrastructure located in

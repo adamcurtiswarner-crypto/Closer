@@ -8,7 +8,6 @@ import {
   serverTimestamp,
   orderBy,
 } from 'firebase/firestore';
-import { getCoupleKey, decrypt } from '@/services/encryption';
 import { db } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
@@ -123,7 +122,6 @@ export function useExploreResponses(assignmentId: string | null) {
     queryFn: async () => {
       if (!assignmentId || !user?.coupleId) return null;
 
-      const coupleKey = await getCoupleKey(user.coupleId);
       const ref = collection(db, 'prompt_responses');
       const q = query(
         ref,
@@ -134,14 +132,10 @@ export function useExploreResponses(assignmentId: string | null) {
 
       return snap.docs.map((d) => {
         const data = d.data();
-        let text = data.response_text;
-        if (data.response_text_encrypted && coupleKey) {
-          text = decrypt(data.response_text_encrypted, coupleKey);
-        }
         return {
           id: d.id,
           userId: data.user_id as string,
-          text,
+          text: data.response_text,
           isCurrentUser: data.user_id === user.id,
           submittedAt: data.submitted_at?.toDate() || null,
         };

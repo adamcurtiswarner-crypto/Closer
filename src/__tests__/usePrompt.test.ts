@@ -44,11 +44,6 @@ jest.mock('@/services/analytics', () => ({
   logEvent: jest.fn(),
 }));
 
-jest.mock('@/services/encryption', () => ({
-  getCoupleKey: jest.fn().mockResolvedValue('mock-key'),
-  encrypt: jest.fn((text) => `encrypted_${text}`),
-}));
-
 describe('usePrompt', () => {
   describe('Response submission', () => {
     it('should require minimum response length', () => {

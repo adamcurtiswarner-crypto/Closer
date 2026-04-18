@@ -17,7 +17,6 @@ import { db, functions } from '@/config/firebase';
 import { getShareUrl } from '@/config/app';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
-import { generateCoupleKey, fetchCoupleKey } from '@/services/encryption';
 
 interface Couple {
   id: string;
@@ -193,12 +192,6 @@ export function useCreateInvite() {
         updated_at: serverTimestamp(),
       });
 
-      // Generate encryption key and store on couple doc for partner to retrieve
-      const coupleKey = await generateCoupleKey(coupleDoc.id);
-      await updateDoc(doc(db, 'couples', coupleDoc.id), {
-        couple_key: coupleKey,
-      });
-
       await refreshUser();
 
       return {
@@ -296,8 +289,6 @@ export function useAcceptInvite() {
         return cId;
       });
 
-      // After transaction succeeds — fetch the key created by the inviter
-      await fetchCoupleKey(coupleId);
       await refreshUser();
 
       return { coupleId };

@@ -16,12 +16,10 @@ import { format } from 'date-fns';
 import { db } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
-import { getCoupleKey, decrypt } from '@/services/encryption';
 
 interface CompletionResponse {
   user_id: string;
   response_text: string;
-  response_text_encrypted?: string;
   image_url?: string | null;
   submitted_at: Date | null;
 }
@@ -57,9 +55,6 @@ export function useWeeklyRecap(week?: string) {
     queryFn: async (): Promise<Completion[]> => {
       if (!user?.coupleId) return [];
 
-      // Fetch couple key for decryption
-      const coupleKey = await getCoupleKey(user.coupleId);
-
       const completionsRef = collection(db, 'prompt_completions');
       const completionsQuery = query(
         completionsRef,
@@ -88,19 +83,12 @@ export function useWeeklyRecap(week?: string) {
           coupleId: data.couple_id,
           promptId: data.prompt_id,
           promptText,
-          responses: (data.responses || []).map((r: any) => {
-            let text = r.response_text;
-            if (r.response_text_encrypted && coupleKey) {
-              text = decrypt(r.response_text_encrypted, coupleKey);
-            }
-            return {
-              user_id: r.user_id,
-              response_text: text,
-              response_text_encrypted: r.response_text_encrypted,
-              image_url: r.image_url || null,
-              submitted_at: r.submitted_at?.toDate() || null,
-            };
-          }),
+          responses: (data.responses || []).map((r: any) => ({
+            user_id: r.user_id,
+            response_text: r.response_text,
+            image_url: r.image_url || null,
+            submitted_at: r.submitted_at?.toDate() || null,
+          })),
           week: data.week,
           isMemorySaved: data.is_memory_saved || false,
           completedAt: data.completed_at?.toDate() || null,
@@ -124,9 +112,6 @@ export function useSavedMemories() {
     queryFn: async (): Promise<Memory[]> => {
       if (!user?.coupleId) return [];
 
-      // Fetch couple key for decryption
-      const coupleKey = await getCoupleKey(user.coupleId);
-
       const memoriesRef = collection(db, 'memory_artifacts');
       const memoriesQuery = query(
         memoriesRef,
@@ -142,18 +127,12 @@ export function useSavedMemories() {
             id: docSnap.id,
             completionId: data.completion_id,
             promptText: data.prompt_text,
-            responses: (data.responses || []).map((r: any) => {
-              let text = r.response_text;
-              if (r.response_text_encrypted && coupleKey) {
-                text = decrypt(r.response_text_encrypted, coupleKey);
-              }
-              return {
-                userId: r.user_id,
-                displayName: r.display_name,
-                responseText: text,
-                imageUrl: r.image_url || null,
-              };
-            }),
+            responses: (data.responses || []).map((r: any) => ({
+              userId: r.user_id,
+              displayName: r.display_name,
+              responseText: r.response_text,
+              imageUrl: r.image_url || null,
+            })),
             week: data.week,
             savedAt: data.saved_at?.toDate() || null,
             completedAt: data.completed_at?.toDate() || null,
@@ -187,7 +166,6 @@ export function useSaveMemory() {
           user_id: r.user_id,
           display_name: '',
           response_text: r.response_text,
-          response_text_encrypted: r.response_text_encrypted || null,
           image_url: r.image_url || null,
         })),
         completed_at: completion.completedAt,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -20,7 +20,6 @@ import NetInfo from '@react-native-community/netinfo';
 import { db, functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
-import { getCoupleKey, encrypt, decrypt } from '@/services/encryption';
 import { uploadResponsePhoto } from '@/services/imageUpload';
 
 const OFFLINE_QUEUE_KEY = '@closer_offline_responses';
@@ -81,7 +80,6 @@ export function useTodayPrompt() {
   const coupleId = user?.coupleId;
   const userId = user?.id;
   const notificationTime = user?.notificationTime;
-  const coupleKeyRef = useRef<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(promptRefreshCounter);
 
   // Listen for external refresh signals (from useTriggerPrompt)
@@ -90,14 +88,6 @@ export function useTodayPrompt() {
     promptRefreshListeners.add(listener);
     return () => { promptRefreshListeners.delete(listener); };
   }, []);
-
-  // Pre-fetch couple encryption key
-  useEffect(() => {
-    if (!coupleId) return;
-    getCoupleKey(coupleId).then((key) => {
-      coupleKeyRef.current = key;
-    });
-  }, [coupleId]);
 
   // Set up real-time listeners
   useEffect(() => {
@@ -167,14 +157,9 @@ export function useTodayPrompt() {
 
         for (const responseDoc of responsesSnap.docs) {
           const data = responseDoc.data();
-          // Decrypt: prefer encrypted field, fall back to plaintext for legacy
-          let displayText = data.response_text;
-          if (data.response_text_encrypted && coupleKeyRef.current) {
-            displayText = decrypt(data.response_text_encrypted, coupleKeyRef.current);
-          }
           const response: PromptResponse = {
             id: responseDoc.id,
-            responseText: displayText,
+            responseText: data.response_text,
             imageUrl: data.image_url || null,
             submittedAt: data.submitted_at?.toDate() || null,
             status: data.status,
@@ -249,12 +234,6 @@ async function flushOfflineQueue(userId: string, coupleId: string) {
       if (!assignmentSnap.exists()) continue;
       const assignmentData = assignmentSnap.data();
 
-      let encryptedText = item.responseText;
-      const coupleKey = await getCoupleKey(coupleId);
-      if (coupleKey) {
-        encryptedText = encrypt(item.responseText, coupleKey);
-      }
-
       // Upload queued photo if present
       let imageUrl: string | null = null;
       if (item.imageUri) {
@@ -271,8 +250,7 @@ async function flushOfflineQueue(userId: string, coupleId: string) {
         couple_id: coupleId,
         user_id: userId,
         prompt_id: assignmentData.prompt_id,
-        response_text: '[encrypted]',
-        response_text_encrypted: encryptedText,
+        response_text: item.responseText,
         image_url: imageUrl,
         status: 'submitted',
         submitted_at: serverTimestamp(),
@@ -362,22 +340,14 @@ export function useSubmitResponse() {
 
       const assignmentData = assignmentSnap.data();
 
-      // Encrypt response text if key is available
-      let encryptedText = responseText;
-      const coupleKey = await getCoupleKey(user.coupleId);
-      if (coupleKey) {
-        encryptedText = encrypt(responseText, coupleKey);
-      }
-
-      // Create response — store sentinel in response_text, real content in encrypted field only
+      // Create response
       const responsesRef = collection(db, 'prompt_responses');
       const responseDoc = await addDoc(responsesRef, {
         assignment_id: assignmentId,
         couple_id: user.coupleId,
         user_id: user.id,
         prompt_id: assignmentData.prompt_id,
-        response_text: '[encrypted]',
-        response_text_encrypted: encryptedText,
+        response_text: responseText,
         image_url: imageUrl,
         status: 'submitted',
         submitted_at: serverTimestamp(),

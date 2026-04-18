@@ -35,7 +35,6 @@ export const onResponseSubmitted = functions.firestore
       const responses = responsesSnapshot.docs.map((doc) => ({
         user_id: doc.data().user_id,
         response_text: doc.data().response_text,
-        response_text_encrypted: doc.data().response_text_encrypted || null,
         image_url: doc.data().image_url || null,
         submitted_at: doc.data().submitted_at,
       }));

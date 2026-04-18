@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -17,8 +17,6 @@ import {
   increment,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import { getCoupleKey } from '@/services/encryption';
-import { encrypt, decrypt } from '@/services/encryption';
 import { uploadChatImage } from '@/services/imageUpload';
 import { logEvent } from '@/services/analytics';
 import { logger } from '@/utils/logger';
@@ -38,7 +36,6 @@ export interface ChatMessage {
 interface ChatMessageDoc {
   sender_id: string;
   text: string;
-  text_encrypted: string;
   image_url: string | null;
   type: 'text' | 'image';
   is_deleted: boolean;
@@ -53,17 +50,8 @@ export function useMessages() {
   const { data: couple } = useCouple();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const coupleKeyRef = useRef<string | null>(null);
 
   const coupleId = couple?.id;
-
-  // Pre-fetch couple key
-  useEffect(() => {
-    if (!coupleId) return;
-    getCoupleKey(coupleId).then((key) => {
-      coupleKeyRef.current = key;
-    });
-  }, [coupleId]);
 
   // Real-time listener for recent messages
   useEffect(() => {
@@ -78,20 +66,10 @@ export function useMessages() {
         const msgs: ChatMessage[] = [];
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() as ChatMessageDoc;
-          let text = '';
-
-          if (data.is_deleted) {
-            text = '[message removed]';
-          } else if (data.text_encrypted && coupleKeyRef.current) {
-            text = decrypt(data.text_encrypted, coupleKeyRef.current);
-          } else if (data.text !== '[encrypted]') {
-            text = data.text;
-          }
-
           msgs.push({
             id: docSnap.id,
             senderId: data.sender_id,
-            text,
+            text: data.is_deleted ? '[message removed]' : data.text,
             imageUrl: data.image_url,
             type: data.type,
             isDeleted: data.is_deleted,
@@ -116,16 +94,8 @@ export function useMessages() {
 
 export function useLoadOlderMessages() {
   const { data: couple } = useCouple();
-  const coupleKeyRef = useRef<string | null>(null);
 
   const coupleId = couple?.id;
-
-  useEffect(() => {
-    if (!coupleId) return;
-    getCoupleKey(coupleId).then((key) => {
-      coupleKeyRef.current = key;
-    });
-  }, [coupleId]);
 
   return useMutation({
     mutationFn: async ({
@@ -150,20 +120,11 @@ export function useLoadOlderMessages() {
 
       snapshot.forEach((docSnap) => {
         const data = docSnap.data() as ChatMessageDoc;
-        let text = '';
-
-        if (data.is_deleted) {
-          text = '[message removed]';
-        } else if (data.text_encrypted && coupleKeyRef.current) {
-          text = decrypt(data.text_encrypted, coupleKeyRef.current);
-        } else if (data.text !== '[encrypted]') {
-          text = data.text;
-        }
 
         olderMsgs.push({
           id: docSnap.id,
           senderId: data.sender_id,
-          text,
+          text: data.is_deleted ? '[message removed]' : data.text,
           imageUrl: data.image_url,
           type: data.type,
           isDeleted: data.is_deleted,
@@ -179,17 +140,9 @@ export function useLoadOlderMessages() {
 export function useSendMessage() {
   const { user } = useAuth();
   const { data: couple } = useCouple();
-  const coupleKeyRef = useRef<string | null>(null);
 
   const coupleId = couple?.id;
   const userId = user?.id;
-
-  useEffect(() => {
-    if (!coupleId) return;
-    getCoupleKey(coupleId).then((key) => {
-      coupleKeyRef.current = key;
-    });
-  }, [coupleId]);
 
   return useMutation({
     mutationFn: async ({
@@ -200,7 +153,6 @@ export function useSendMessage() {
       imageUri?: string | null;
     }) => {
       if (!coupleId || !userId) throw new Error('Not authenticated');
-      if (!coupleKeyRef.current) throw new Error('No encryption key');
 
       let imageUrl: string | null = null;
       let messageType: 'text' | 'image' = 'text';
@@ -211,15 +163,10 @@ export function useSendMessage() {
         logEvent('chat_image_sent');
       }
 
-      const encryptedText = text.trim()
-        ? encrypt(text.trim(), coupleKeyRef.current)
-        : '';
-
       const messagesRef = collection(db, 'couples', coupleId, 'messages');
       await addDoc(messagesRef, {
         sender_id: userId,
-        text: text.trim() ? '[encrypted]' : '',
-        text_encrypted: encryptedText,
+        text: text.trim(),
         image_url: imageUrl,
         type: messageType,
         is_deleted: false,
@@ -346,7 +293,6 @@ export function useDeleteMessage() {
       await updateDoc(messageRef, {
         is_deleted: true,
         text: '[removed]',
-        text_encrypted: '',
         image_url: null,
         updated_at: serverTimestamp(),
       });
