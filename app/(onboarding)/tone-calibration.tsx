@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -52,6 +53,7 @@ export default function ToneCalibrationScreen() {
       router.push('/(onboarding)/relationship-stage');
     } catch (error) {
       logger.error('Error saving tone calibration:', error);
+      Alert.alert('Could not save', 'Please check your connection and try again.');
     } finally {
       setIsSaving(false);
     }

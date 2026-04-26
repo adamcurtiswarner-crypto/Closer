@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
@@ -74,6 +74,7 @@ export default function RelationshipStageScreen() {
       router.push('/(onboarding)/first-prompt');
     } catch (error) {
       logger.error('Error saving relationship stage:', error);
+      Alert.alert('Could not save', 'Please check your connection and try again.');
     } finally {
       setSaving(false);
     }

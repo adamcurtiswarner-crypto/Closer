@@ -133,11 +133,11 @@ export default function SignUpScreen() {
           <Animated.View entering={FadeIn.duration(400).delay(400)}>
             <Text style={styles.terms}>
               {t('auth.signUp.terms')}
-              <Text style={styles.termsLink} onPress={() => router.push('/(app)/terms-of-service' as any)}>
+              <Text style={styles.termsLink} onPress={() => router.push('/(auth)/terms-of-service' as any)}>
                 {t('auth.signUp.termsOfService')}
               </Text>
               {' and '}
-              <Text style={styles.termsLink} onPress={() => router.push('/(app)/privacy-policy')}>
+              <Text style={styles.termsLink} onPress={() => router.push('/(auth)/privacy-policy' as any)}>
                 {t('auth.signUp.privacyPolicy')}
               </Text>.
             </Text>

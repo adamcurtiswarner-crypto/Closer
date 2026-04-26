@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -26,28 +27,21 @@ export default function ReadyScreen() {
   const promptTime = TIME_LABELS[user?.notificationTime || '19:00'] || '7:00 PM';
   const { t } = useTranslation();
 
-  const handleStartNow = async () => {
-    await completeOnboarding();
-    router.replace('/(app)/today');
-  };
-
-  const handleWait = async () => {
-    await completeOnboarding();
-    router.replace('/(app)/today');
-  };
-
-  const completeOnboarding = async () => {
+  const handleStart = async () => {
     if (!user?.id) return;
-
-    const userRef = doc(db, 'users', user.id);
-    await updateDoc(userRef, {
-      is_onboarded: true,
-      onboarding_completed_at: serverTimestamp(),
-      updated_at: serverTimestamp(),
-    });
-
-    await refreshUser();
-    logEvent('onboarding_completed');
+    try {
+      const userRef = doc(db, 'users', user.id);
+      await updateDoc(userRef, {
+        is_onboarded: true,
+        onboarding_completed_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
+      await refreshUser();
+      logEvent('onboarding_completed');
+      router.replace('/(app)/today');
+    } catch {
+      Alert.alert('Could not complete setup', 'Please check your connection and try again.');
+    }
   };
 
   return (
@@ -66,17 +60,7 @@ export default function ReadyScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(200)}>
-          <Button title={t('onboarding.ready.startNow')} onPress={handleStartNow} />
-        </Animated.View>
-
-        <View style={styles.spacerSmall} />
-
-        <Animated.View entering={FadeInUp.duration(400).delay(300)}>
-          <Button
-            title={t('onboarding.ready.waitForPrompt')}
-            variant="secondary"
-            onPress={handleWait}
-          />
+          <Button title={t('onboarding.ready.startNow')} onPress={handleStart} />
         </Animated.View>
       </View>
     </SafeAreaView>

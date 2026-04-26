@@ -29,7 +29,9 @@ export function Paywall({ visible, onClose }: PaywallProps) {
   const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
 
-  const mainPackage = offering?.availablePackages?.[0] ?? null;
+  const annualPackage = offering?.annual ?? null;
+  const monthlyPackage = offering?.monthly ?? null;
+  const activePackage = selectedPlan === 'annual' ? annualPackage : monthlyPackage;
 
   return (
     <Modal
@@ -93,9 +95,9 @@ export function Paywall({ visible, onClose }: PaywallProps) {
 
           <Animated.View entering={FadeInUp.duration(400).delay(600)}>
             <TouchableOpacity
-              style={[styles.ctaButton, (!mainPackage || isLoading) && styles.disabled]}
-              onPress={() => mainPackage && purchase(mainPackage)}
-              disabled={!mainPackage || isLoading}
+              style={[styles.ctaButton, (!activePackage || isLoading) && styles.disabled]}
+              onPress={() => activePackage && purchase(activePackage)}
+              disabled={!activePackage || isLoading}
             >
               {isLoading ? (
                 <ActivityIndicator color="#ffffff" />

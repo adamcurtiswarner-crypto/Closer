@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Keyboard,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { pickImage } from '@/services/imageUpload';
@@ -295,17 +296,18 @@ export default function TodayScreen() {
     hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     setTyping(false);
-    setIsResponding(false);
     const imageUri = selectedImage || undefined;
-    setSelectedImage(null);
     try {
       await submitResponse.mutateAsync({
         assignmentId: assignment.id,
         responseText,
         imageUri,
       });
+      setIsResponding(false);
+      setSelectedImage(null);
     } catch (err) {
       logger.error('Error submitting response:', err);
+      Alert.alert('Could not save your response', 'Please check your connection and try again.');
     }
   };
 

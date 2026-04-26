@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -66,6 +67,7 @@ export default function PreferencesScreen() {
       router.push('/(onboarding)/tone-calibration');
     } catch (error) {
       logger.error('Error saving preferences:', error);
+      Alert.alert('Could not save', 'Please check your connection and try again.');
     } finally {
       setIsSaving(false);
     }
