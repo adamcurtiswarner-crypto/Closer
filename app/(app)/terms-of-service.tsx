@@ -2,13 +2,14 @@ import React from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { Icon } from '@/components';
 
 export default function TermsOfServiceScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.back}>{'< Back'}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Icon name="arrow-left" size="md" color="#c97454" />
         </TouchableOpacity>
         <Text style={styles.title}>Terms of Service</Text>
       </View>
@@ -115,15 +116,18 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 16,
   },
-  back: {
-    fontSize: 16,
-    color: '#c97454',
-    fontFamily: 'Inter-Medium',
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fef5f0',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },

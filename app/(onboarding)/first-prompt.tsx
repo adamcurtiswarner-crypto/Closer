@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },

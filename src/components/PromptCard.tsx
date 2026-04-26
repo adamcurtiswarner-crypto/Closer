@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   typeLabel: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     fontFamily: 'Inter-Medium',
     letterSpacing: 0.3,
   },
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#ffffff',
     textAlign: 'center',
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     fontSize: 17,
     letterSpacing: 0.2,

@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     textAlign: 'center',

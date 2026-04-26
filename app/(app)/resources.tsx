@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.3,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
   categoryLabel: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     color: '#292524',
   },

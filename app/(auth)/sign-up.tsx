@@ -79,7 +79,7 @@ export default function SignUpScreen() {
             {t('auth.signUp.title')}
           </Animated.Text>
 
-          <SocialAuthButtons animationDelay={100} dividerText="OR SIGN UP WITH EMAIL" />
+          <SocialAuthButtons animationDelay={100} dividerText="or sign up with email" />
 
           <View style={styles.form}>
             <Controller
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 32,

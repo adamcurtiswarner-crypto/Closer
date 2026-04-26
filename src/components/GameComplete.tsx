@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     textAlign: 'center',
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '500',
     fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     marginTop: 4,
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     color: '#ffffff',
   },

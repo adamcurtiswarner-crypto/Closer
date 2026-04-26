@@ -513,7 +513,7 @@ const styles = StyleSheet.create({
   },
   profileLabel: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '500',
     fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     letterSpacing: 0.8,

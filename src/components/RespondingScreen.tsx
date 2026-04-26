@@ -73,7 +73,7 @@ export function RespondingScreen({
           {selectedImage ? (
             <View style={styles.imagePreview}>
               <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
-              <TouchableOpacity style={styles.removeImage} onPress={onRemovePhoto}>
+              <TouchableOpacity style={styles.removeImage} onPress={onRemovePhoto} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Icon name="x" size="xs" color="#ffffff" weight="bold" />
               </TouchableOpacity>
             </View>
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   submitText: {
     color: '#ffffff',
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
   },

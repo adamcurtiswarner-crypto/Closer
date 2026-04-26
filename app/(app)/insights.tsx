@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
   },
   nextMilestoneLabel: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '500',
     fontFamily: 'Inter-Medium',
     color: '#c97454',
     letterSpacing: 0.5,
@@ -873,7 +873,7 @@ const styles = StyleSheet.create({
   },
   commStatValue: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     color: '#1c1917',
   },

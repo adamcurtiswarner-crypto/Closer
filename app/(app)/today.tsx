@@ -504,7 +504,7 @@ export default function TodayScreen() {
             ) : (
               <View style={styles.waitingMessageRow}>
                 <Icon name="hourglass" size={16} color="#a8a29e" />
-                <Text style={styles.waitingMessage}>{t('today.waitingFor', { name: partnerName.toLowerCase() })}</Text>
+                <Text style={styles.waitingMessage}>{t('today.waitingFor', { name: partnerName })}</Text>
               </View>
             )}
           </Animated.View>
@@ -705,7 +705,7 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#1c1917',
     letterSpacing: -0.5,
     fontFamily: 'Alexandria-SemiBold',
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
   },
   triggerButtonText: {
     color: '#c97454',
-    fontWeight: '700',
+    fontWeight: '600',
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
   },
@@ -908,7 +908,7 @@ const styles = StyleSheet.create({
   },
   streakCelebrationText: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#c97454',
     fontFamily: 'Inter-SemiBold',
   },
@@ -932,7 +932,7 @@ const styles = StyleSheet.create({
   doneText: {
     color: '#a8a29e',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '400',
     fontFamily: 'Inter-Regular',
   },
 });

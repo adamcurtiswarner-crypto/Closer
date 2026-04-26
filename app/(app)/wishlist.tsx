@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.3,
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     marginBottom: 8,
@@ -367,14 +367,14 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     color: '#ffffff',
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
   },
   // ─── Section Label ───
   sectionLabel: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '500',
     fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     letterSpacing: 0.5,

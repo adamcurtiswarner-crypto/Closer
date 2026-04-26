@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   },
   challengeCtaLabel: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '500',
     fontFamily: 'Inter-Medium',
     color: '#c97454',
     letterSpacing: 0.8,

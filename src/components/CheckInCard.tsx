@@ -54,7 +54,7 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
       <View style={styles.header}>
         <Icon name="heart" size="sm" color="#c97454" weight="light" />
         <Text style={styles.headerText}>{t('checkIn.title')}</Text>
-        <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
+        <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Icon name="x" size="xs" color="#a8a29e" />
         </TouchableOpacity>
       </View>
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   stepLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
     fontFamily: 'Inter-Medium',
     color: '#a8a29e',
     textTransform: 'uppercase',

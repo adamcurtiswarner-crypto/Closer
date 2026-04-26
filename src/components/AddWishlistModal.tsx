@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.5,
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
   },
   createText: {
     color: '#ffffff',
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     letterSpacing: 0.2,

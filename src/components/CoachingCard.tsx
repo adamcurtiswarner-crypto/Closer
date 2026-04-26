@@ -37,7 +37,7 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
       <View style={styles.header}>
         <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
         <Text style={styles.headerText}>Weekly insight</Text>
-        <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn}>
+        <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Icon name="x" size="xs" color="#a8a29e" />
         </TouchableOpacity>
       </View>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#292524',
     letterSpacing: -0.3,

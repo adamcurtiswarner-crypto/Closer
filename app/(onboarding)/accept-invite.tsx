@@ -5,6 +5,8 @@ import {
   TextInput,
   Alert,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -87,7 +89,10 @@ export default function AcceptInviteScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.contentCentered}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.contentCentered}
+      >
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
           <Text style={styles.title}>
             {t('onboarding.acceptInvite.title')}
@@ -126,7 +131,7 @@ export default function AcceptInviteScreen() {
             onPress={() => router.back()}
           />
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -147,7 +152,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     textAlign: 'center',

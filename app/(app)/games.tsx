@@ -55,7 +55,7 @@ export default function GamesScreen() {
           <Icon name="arrow-left" size="md" color="#1c1917" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Date Night</Text>
+          <Text style={styles.headerTitle}>Games</Text>
           <Text style={styles.headerSubtitle}>Games for two</Text>
         </View>
         <View style={styles.backButton} />
@@ -88,9 +88,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#f5f5f4',
     justifyContent: 'center',
     alignItems: 'center',
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.3,

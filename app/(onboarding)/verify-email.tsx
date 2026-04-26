@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 12,
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   },
   note: {
     fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    color: '#78716c',
     fontSize: 13,
     textAlign: 'center',
     marginTop: 24,

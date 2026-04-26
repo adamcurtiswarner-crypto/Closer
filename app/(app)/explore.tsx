@@ -95,7 +95,7 @@ export default function ExploreScreen() {
       setActiveAssignmentId(null);
       setResponseText('');
     } catch {
-      // handled by mutation
+      Alert.alert('Could not save your response', 'Please check your connection and try again.');
     }
   }
 
@@ -195,7 +195,7 @@ export default function ExploreScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Icon name="arrow-left" size="md" color="#1c1917" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Explore</Text>
@@ -341,7 +341,7 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#faf9f7' },
+  container: { flex: 1, backgroundColor: '#fef7f4' },
   flex: { flex: 1 },
   scrollView: { flex: 1 },
 

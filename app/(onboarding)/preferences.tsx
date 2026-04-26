@@ -94,7 +94,7 @@ export default function PreferencesScreen() {
           entering={FadeIn.duration(400).delay(50)}
           style={styles.helperText}
         >
-          Any time you can choose but we recommend first thing in the morning
+          Any time works, but we recommend first thing in the morning
         </Animated.Text>
 
         <Animated.View
@@ -156,10 +156,10 @@ export default function PreferencesScreen() {
           style={styles.daySection}
         >
           <Text style={styles.daySectionTitle}>
-            Which day would you like to receive prompts?
+            Which days would you like to receive prompts?
           </Text>
           <Text style={styles.daySectionHelper}>
-            Everyday is best, but we recommend picking at least four
+            Every day is best, but we recommend picking at least four
           </Text>
 
           <View style={styles.dayRow}>
@@ -200,7 +200,7 @@ export default function PreferencesScreen() {
           style={styles.buttonWrapper}
         >
           <Button
-            title={isSaving ? t('common.saving') : 'SAVE'}
+            title={isSaving ? t('common.saving') : t('common.save')}
             onPress={handleContinue}
             disabled={isSaving}
           />
@@ -209,7 +209,7 @@ export default function PreferencesScreen() {
             onPress={handleSkip}
             activeOpacity={0.6}
           >
-            <Text style={styles.skipText}>NO THANKS</Text>
+            <Text style={styles.skipText}>Not now</Text>
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
   },

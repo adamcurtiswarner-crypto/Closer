@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
   },
   stagePromptTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     marginBottom: 4,

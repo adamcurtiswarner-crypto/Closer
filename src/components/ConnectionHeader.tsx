@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
   },
   onlineDot: {

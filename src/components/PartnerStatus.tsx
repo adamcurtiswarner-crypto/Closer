@@ -1,5 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  withDelay,
+} from 'react-native-reanimated';
 import { formatDistanceToNow } from 'date-fns';
 import { PresenceIndicator } from './PresenceIndicator';
 
@@ -10,6 +18,41 @@ interface PartnerStatusProps {
   lastSeen: Date | null;
   partnerName?: string;
   showIndicator?: boolean;
+}
+
+function TypingDots() {
+  const dot1 = useSharedValue(0.3);
+  const dot2 = useSharedValue(0.3);
+  const dot3 = useSharedValue(0.3);
+
+  useEffect(() => {
+    const pulse = (delay: number) =>
+      withDelay(
+        delay,
+        withRepeat(
+          withSequence(
+            withTiming(1, { duration: 300 }),
+            withTiming(0.3, { duration: 300 })
+          ),
+          -1
+        )
+      );
+    dot1.value = pulse(0);
+    dot2.value = pulse(150);
+    dot3.value = pulse(300);
+  }, []);
+
+  const style1 = useAnimatedStyle(() => ({ opacity: dot1.value }));
+  const style2 = useAnimatedStyle(() => ({ opacity: dot2.value }));
+  const style3 = useAnimatedStyle(() => ({ opacity: dot3.value }));
+
+  return (
+    <View style={styles.typingDots}>
+      <Animated.View style={[styles.dot, style1]} />
+      <Animated.View style={[styles.dot, style2]} />
+      <Animated.View style={[styles.dot, style3]} />
+    </View>
+  );
 }
 
 export function PartnerStatus({
@@ -45,13 +88,7 @@ export function PartnerStatus({
       {showIndicator && !isTyping && (
         <PresenceIndicator isOnline={isOnline} size="small" />
       )}
-      {isTyping && (
-        <View style={styles.typingDots}>
-          <View style={[styles.dot, styles.dot1]} />
-          <View style={[styles.dot, styles.dot2]} />
-          <View style={[styles.dot, styles.dot3]} />
-        </View>
-      )}
+      {isTyping && <TypingDots />}
       <Text style={[styles.statusText, isTyping && styles.typingText]}>
         {getStatusText()}
       </Text>
@@ -84,14 +121,5 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: '#c97454',
-  },
-  dot1: {
-    opacity: 0.4,
-  },
-  dot2: {
-    opacity: 0.7,
-  },
-  dot3: {
-    opacity: 1,
   },
 });
