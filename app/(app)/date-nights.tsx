@@ -505,9 +505,13 @@ function DateNightRow({
       {/* Reflection badge if completed */}
       {item.reflectionRating && (
         <View style={styles.reflectionBadge}>
-          <Text style={styles.reflectionEmoji}>
-            {item.reflectionRating === 'warm' ? '🔥' : item.reflectionRating === 'okay' ? '👍' : '🤔'}
-          </Text>
+          {item.reflectionRating === 'warm' ? (
+            <Icon name="flame" size="xs" color="#c97454" />
+          ) : item.reflectionRating === 'okay' ? (
+            <Icon name="check" size="xs" color="#78716c" />
+          ) : (
+            <Icon name="cloud" size="xs" color="#a8a29e" />
+          )}
         </View>
       )}
     </View>
@@ -691,7 +695,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reflectionEmoji: {
-    fontSize: 14,
+    // Retained for potential future use
   },
   // --- Category Chips ---
   categoryScroll: {

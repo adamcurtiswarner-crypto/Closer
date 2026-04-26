@@ -232,7 +232,7 @@ export default function AppLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ focused, color }) => (
-            <Icon name="gear" size="md" color={color} weight={focused ? 'regular' : 'light'} />
+            <Icon name="gear" size="md" color={color} weight={focused ? 'fill' : 'light'} />
           ),
         }}
       />

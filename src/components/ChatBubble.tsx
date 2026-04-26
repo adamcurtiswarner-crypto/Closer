@@ -50,7 +50,7 @@ export function ChatBubble({ message, isOwn, showTimestamp, onLongPress, onDelet
           >
             {message.isDeleted ? (
               <Text style={[styles.text, styles.deletedText]}>
-                [message removed]
+                This message was removed
               </Text>
             ) : (
               <>

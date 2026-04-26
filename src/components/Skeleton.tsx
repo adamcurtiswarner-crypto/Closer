@@ -164,7 +164,7 @@ const wishlistSkeletonStyles = StyleSheet.create({
 const skeletonStyles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     borderWidth: 1,
     borderColor: '#f5f5f4',

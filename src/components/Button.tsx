@@ -80,6 +80,7 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
         style={[buttonStyles, style]}
         disabled={isDisabled}
         activeOpacity={1}
+        accessibilityRole="button"
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         {...props}

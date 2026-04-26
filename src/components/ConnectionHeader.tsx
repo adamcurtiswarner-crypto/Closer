@@ -203,7 +203,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 4,
-    width: 100,
+    flex: 1,
+    minWidth: 40,
+    maxWidth: 120,
     justifyContent: 'center',
   },
   line: {

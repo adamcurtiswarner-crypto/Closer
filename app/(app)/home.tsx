@@ -9,6 +9,7 @@ import {
 import { router } from 'expo-router';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
 import { useStreak } from '@/hooks/useStreak';
@@ -21,11 +22,11 @@ import { ProfileCard } from '@/components/ProfileCard';
 import { Icon } from '@/components/Icon';
 import { format, differenceInDays } from 'date-fns';
 
-function getGreeting(): string {
+function getGreetingKey(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return 'home.greetingMorning';
+  if (hour < 17) return 'home.greetingAfternoon';
+  return 'home.greetingEvening';
 }
 
 function getDaysAsCouple(linkedAt: Date | null): number {
@@ -40,38 +41,40 @@ function getPulseText(opts: {
   partnerHasResponded: boolean;
   partnerName: string;
   daysAsCouple: number;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }): string {
-  const { currentStreak, weeklyCompletions, isComplete, partnerHasResponded, partnerName, daysAsCouple } = opts;
+  const { currentStreak, weeklyCompletions, isComplete, partnerHasResponded, partnerName, daysAsCouple, t } = opts;
 
   if (isComplete && currentStreak >= 3) {
-    return `${currentStreak}-day streak. You two are on fire.`;
+    return t('home.pulseStreakOnFire', { count: currentStreak });
   }
   if (isComplete) {
-    return 'Both responded today. Another moment shared.';
+    return t('home.pulseBothResponded');
   }
   if (partnerHasResponded) {
-    return `${partnerName} already responded. Your turn.`;
+    return t('home.pulsePartnerResponded', { name: partnerName });
   }
   if (weeklyCompletions >= 5) {
-    return `${weeklyCompletions} prompts this week. Quiet consistency.`;
+    return t('home.pulseWeeklyConsistency', { count: weeklyCompletions });
   }
   if (currentStreak > 0) {
-    return `${currentStreak}-day streak. Keep it going.`;
+    return t('home.pulseKeepGoing', { count: currentStreak });
   }
   if (daysAsCouple > 7) {
-    return `${daysAsCouple} days growing together on Stoke.`;
+    return t('home.pulseDaysGrowing', { count: daysAsCouple });
   }
-  return 'A small moment today can mean a lot.';
+  return t('home.pulseDefault');
 }
 
 const QUICK_ACTIONS = [
-  { key: 'chat', icon: 'chat-text' as const, label: 'Chat', route: '/(app)/chat' },
-  { key: 'wishlist', icon: 'heart' as const, label: 'Wishlist', route: '/(app)/wishlist' },
-  { key: 'datenight', icon: 'coffee' as const, label: 'Date Night', route: '/(app)/date-nights' },
-  { key: 'goals', icon: 'target' as const, label: 'Goals', route: '/(app)/games' },
+  { key: 'chat', icon: 'chat-text' as const, labelKey: 'home.quickActionChat', route: '/(app)/chat' },
+  { key: 'wishlist', icon: 'heart' as const, labelKey: 'home.quickActionWishlist', route: '/(app)/wishlist' },
+  { key: 'datenight', icon: 'coffee' as const, labelKey: 'home.quickActionDateNight', route: '/(app)/date-nights' },
+  { key: 'goals', icon: 'target' as const, labelKey: 'home.quickActionGoals', route: '/(app)/games' },
 ];
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: couple } = useCouple();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
@@ -92,7 +95,8 @@ export default function HomeScreen() {
     partnerHasResponded,
     partnerName,
     daysAsCouple,
-  }), [currentStreak, weeklyCompletions, isComplete, partnerHasResponded, partnerName, daysAsCouple]);
+    t,
+  }), [currentStreak, weeklyCompletions, isComplete, partnerHasResponded, partnerName, daysAsCouple, t]);
 
   // Upcoming: next scheduled date night
   const upcomingDateNight = useMemo(() => {
@@ -131,7 +135,7 @@ export default function HomeScreen() {
         {/* 2. Today's Pulse */}
         <Animated.View entering={FadeInUp.duration(400).delay(100)}>
           <View style={styles.pulseCard}>
-            <Text style={styles.greeting}>{getGreeting()}, {firstName}</Text>
+            <Text style={styles.greeting}>{t(getGreetingKey())}, {firstName}</Text>
             <Text style={styles.pulseText}>{pulseText}</Text>
           </View>
         </Animated.View>
@@ -148,14 +152,14 @@ export default function HomeScreen() {
               <View style={styles.quickActionIcon}>
                 <Icon name={action.icon} size="md" color="#c97454" weight="light" />
               </View>
-              <Text style={styles.quickActionLabel}>{action.label}</Text>
+              <Text style={styles.quickActionLabel}>{t(action.labelKey)}</Text>
             </TouchableOpacity>
           ))}
         </Animated.View>
 
         {/* 4. This Week Together */}
         <Animated.View entering={FadeInUp.duration(400).delay(300)}>
-          <Text style={styles.sectionTitle}>This week</Text>
+          <Text style={styles.sectionTitle}>{t('home.sectionThisWeek')}</Text>
           <StreakRing
             currentStreak={currentStreak}
             weeklyCompletions={weeklyCompletions}
@@ -166,7 +170,7 @@ export default function HomeScreen() {
         {/* 7. Upcoming */}
         {showUpcoming && (
           <Animated.View entering={FadeInUp.duration(400).delay(400)}>
-            <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>Coming up</Text>
+            <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>{t('home.sectionComingUp')}</Text>
             <View style={styles.upcomingCard}>
               {/* Anniversary countdown */}
               {anniversary && !anniversary.isToday && anniversary.days <= 30 && (
@@ -176,7 +180,7 @@ export default function HomeScreen() {
                   </View>
                   <View style={styles.upcomingContent}>
                     <Text style={styles.upcomingTitle}>
-                      {anniversary.days === 1 ? 'Anniversary tomorrow' : `Anniversary in ${anniversary.days} days`}
+                      {anniversary.days === 1 ? t('home.anniversaryTomorrow') : t('home.anniversaryInDays', { count: anniversary.days })}
                     </Text>
                   </View>
                 </View>
@@ -188,7 +192,7 @@ export default function HomeScreen() {
                     <Icon name="heart" size="sm" color="#c97454" weight="fill" />
                   </View>
                   <View style={styles.upcomingContent}>
-                    <Text style={styles.upcomingTitle}>Happy Anniversary</Text>
+                    <Text style={styles.upcomingTitle}>{t('home.happyAnniversary')}</Text>
                   </View>
                 </View>
               )}
@@ -225,7 +229,7 @@ export default function HomeScreen() {
                   </View>
                   <View style={styles.upcomingContent}>
                     <Text style={styles.upcomingTitle}>
-                      {activeGoalsCount} active {activeGoalsCount === 1 ? 'goal' : 'goals'}
+                      {t('home.activeGoals', { count: activeGoalsCount })}
                     </Text>
                   </View>
                   <Icon name="caret-right" size="sm" color="#a8a29e" />

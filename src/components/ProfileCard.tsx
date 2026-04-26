@@ -5,15 +5,11 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Modal,
-  ScrollView,
-  Platform,
   StyleSheet,
   ActivityIndicator,
   Alert,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery } from '@tanstack/react-query';
 import { hapticImpact, hapticNotification, ImpactFeedbackStyle, NotificationFeedbackType } from '@utils/haptics';
 import { format } from 'date-fns';
@@ -22,11 +18,13 @@ import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple, useUpdateAnniversaryDate } from '@/hooks/useCouple';
 import { pickImage, uploadProfilePhoto, uploadPartnerPhoto } from '@/services/imageUpload';
-import { LOVE_LANGUAGES, getLoveLanguageDisplay } from '@/config/loveLanguages';
+import { getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/utils/logger';
 import { Icon } from './Icon';
+import { LoveLanguageModal } from './LoveLanguageModal';
+import { AnniversaryPicker } from './AnniversaryPicker';
 
 function getInitials(name: string | null): string {
   if (!name) return '?';
@@ -340,106 +338,30 @@ export function ProfileCard() {
       </Animated.View>
 
       {/* Love Language Modal */}
-      <Modal
+      <LoveLanguageModal
         visible={showLoveLanguageModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowLoveLanguageModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('profile.loveLanguageTitle')}</Text>
-            <Text style={styles.modalSubtitle}>{t('profile.loveLanguageSubtitle')}</Text>
-            <ScrollView style={styles.langList} showsVerticalScrollIndicator={false}>
-              {LOVE_LANGUAGES.map((lang) => {
-                const isActive = user.loveLanguage === lang.value;
-                return (
-                  <TouchableOpacity
-                    key={lang.value}
-                    style={[styles.langOption, isActive && styles.langOptionActive]}
-                    onPress={() => handleSaveLoveLanguage(lang.value)}
-                    disabled={savingLoveLanguage}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.langOptionIcon}>{lang.icon}</Text>
-                    <View style={styles.langOptionInfo}>
-                      <Text style={[styles.langOptionLabel, isActive && styles.langOptionLabelActive]}>
-                        {lang.label}
-                      </Text>
-                      <Text style={[styles.langOptionDesc, isActive && styles.langOptionDescActive]}>
-                        {lang.description}
-                      </Text>
-                    </View>
-                    {isActive && <View style={styles.langCheck}><Icon name="check" size="sm" color="#c97454" weight="bold" /></View>}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-            <TouchableOpacity
-              style={styles.modalCancelFull}
-              onPress={() => setShowLoveLanguageModal(false)}
-            >
-              <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        currentValue={user.loveLanguage}
+        saving={savingLoveLanguage}
+        onSelect={handleSaveLoveLanguage}
+        onClose={() => setShowLoveLanguageModal(false)}
+        title={t('profile.loveLanguageTitle')}
+        subtitle={t('profile.loveLanguageSubtitle')}
+        cancelLabel={t('common.cancel')}
+      />
 
-      {/* Date Picker Modal */}
-      {Platform.OS === 'ios' ? (
-        <Modal
-          visible={showDatePicker}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowDatePicker(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{t('profile.anniversaryTitle')}</Text>
-              <Text style={styles.modalSubtitle}>{t('profile.anniversarySubtitle')}</Text>
-              <DateTimePicker
-                value={selectedDate}
-                mode="date"
-                display="spinner"
-                maximumDate={new Date()}
-                onChange={(_, date) => { if (date) setSelectedDate(date); }}
-                style={styles.datePicker}
-              />
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={styles.modalCancel}
-                  onPress={() => setShowDatePicker(false)}
-                >
-                  <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.modalSave}
-                  onPress={() => handleAnniversarySave(selectedDate)}
-                  disabled={updateAnniversary.isPending}
-                >
-                  {updateAnniversary.isPending ? (
-                    <ActivityIndicator color="#ffffff" size="small" />
-                  ) : (
-                    <Text style={styles.modalSaveText}>{t('common.save')}</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      ) : (
-        showDatePicker && (
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            maximumDate={new Date()}
-            onChange={(_, date) => {
-              setShowDatePicker(false);
-              if (date) handleAnniversarySave(date);
-            }}
-          />
-        )
-      )}
+      {/* Date Picker */}
+      <AnniversaryPicker
+        visible={showDatePicker}
+        selectedDate={selectedDate}
+        onDateChange={setSelectedDate}
+        onSave={handleAnniversarySave}
+        onClose={() => setShowDatePicker(false)}
+        saving={updateAnniversary.isPending}
+        title={t('profile.anniversaryTitle')}
+        subtitle={t('profile.anniversarySubtitle')}
+        cancelLabel={t('common.cancel')}
+        saveLabel={t('common.save')}
+      />
     </View>
   );
 }
@@ -571,63 +493,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#a8a29e',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
-    paddingBottom: 40,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
-    marginBottom: 4,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
-    marginBottom: 16,
-  },
-  datePicker: {
-    height: 200,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-  },
-  modalCancel: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: '#f5f5f4',
-  },
-  modalCancelText: {
-    fontSize: 16,
-    color: '#78716c',
-    fontWeight: '500',
-  },
-  modalSave: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: '#c97454',
-  },
-  modalSaveText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
-  },
+  // Modal styles moved to LoveLanguageModal and AnniversaryPicker
   partnerLangRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -645,61 +511,5 @@ const styles = StyleSheet.create({
     color: '#57534e',
     fontWeight: '500',
   },
-  langList: {
-    maxHeight: 340,
-  },
-  langOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#fef7f4',
-    gap: 12,
-  },
-  langOptionActive: {
-    backgroundColor: '#fef5f0',
-    borderWidth: 1,
-    borderColor: '#f9a07a',
-  },
-  langOptionIcon: {
-    fontSize: 24,
-  },
-  langOptionInfo: {
-    flex: 1,
-  },
-  langOptionLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1c1917',
-  },
-  langOptionLabelActive: {
-    color: '#c97454',
-  },
-  langOptionDesc: {
-    fontSize: 12,
-    color: '#78716c',
-    marginTop: 2,
-  },
-  langOptionDescActive: {
-    color: '#c97454',
-  },
-  langCheck: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#c97454',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  langCheckText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  modalCancelFull: {
-    marginTop: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
+  // Love language modal styles moved to LoveLanguageModal
 });
