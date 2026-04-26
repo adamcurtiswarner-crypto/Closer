@@ -5,7 +5,15 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Button, Icon } from '@/components';
 import { useCouple } from '@/hooks/useCouple';
@@ -32,11 +40,29 @@ export default function WaitingPartnerScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  const pulseOpacity = useSharedValue(1);
+
+  React.useEffect(() => {
+    pulseOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.4, { duration: 1200 }),
+        withTiming(1, { duration: 1200 }),
+      ),
+      -1,
+    );
+  }, []);
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    opacity: pulseOpacity.value,
+  }));
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
-          <Icon name="hourglass" size="xl" color="#c97454" weight="light" />
+          <Animated.View style={pulseStyle}>
+            <Icon name="hourglass" size="xl" color="#c97454" weight="light" />
+          </Animated.View>
           <Text style={styles.title}>
             {t('onboarding.waitingPartner.title')}
           </Text>
@@ -80,10 +106,6 @@ const styles = StyleSheet.create({
   headerCenter: {
     alignItems: 'center',
     marginBottom: 48,
-  },
-  emoji: {
-    fontSize: 32,
-    marginBottom: 16,
   },
   title: {
     fontSize: 24,

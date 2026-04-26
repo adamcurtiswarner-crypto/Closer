@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -75,6 +77,7 @@ const QUICK_ACTIONS = [
 
 export default function HomeScreen() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: couple } = useCouple();
   const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
@@ -121,11 +124,31 @@ export default function HomeScreen() {
 
   const showUpcoming = upcomingDateNight || (anniversary && !anniversary.isToday && anniversary.days <= 30) || activeGoalsCount > 0;
 
+  const [refreshing, setRefreshing] = useState(false);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['couple'] }),
+      queryClient.invalidateQueries({ queryKey: ['todayPrompt'] }),
+      queryClient.invalidateQueries({ queryKey: ['streak'] }),
+      queryClient.invalidateQueries({ queryKey: ['dateNights'] }),
+      queryClient.invalidateQueries({ queryKey: ['goals'] }),
+    ]);
+    setRefreshing(false);
+  }, [queryClient]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#c97454"
+          />
+        }
       >
         {/* 1. Profile Card */}
         <Animated.View entering={FadeIn.duration(500)}>

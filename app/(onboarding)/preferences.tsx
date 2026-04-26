@@ -280,11 +280,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flex: 1,
   },
-  selectedCheck: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#c97454',
-  },
   optionText: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',

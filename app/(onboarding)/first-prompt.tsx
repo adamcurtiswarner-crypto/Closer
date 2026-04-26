@@ -75,12 +75,14 @@ export default function FirstPromptScreen() {
 
         <View style={styles.spacer} />
 
-        <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.buttonContainer}>
-          <Button
-            title={showResponse ? t('onboarding.firstPrompt.iGetIt') : t('onboarding.firstPrompt.showExample')}
-            onPress={showResponse ? handleContinue : () => setShowResponse(true)}
-          />
-        </Animated.View>
+        {showResponse && (
+          <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.buttonContainer}>
+            <Button
+              title={t('onboarding.firstPrompt.iGetIt')}
+              onPress={handleContinue}
+            />
+          </Animated.View>
+        )}
       </View>
     </SafeAreaView>
   );

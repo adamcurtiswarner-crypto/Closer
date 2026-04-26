@@ -130,8 +130,8 @@ export function CompletionMoment({
             />
           </Animated.View>
           <View style={styles.spacer} />
-          {/* Partner response - reveals 200ms later */}
-          <Animated.View entering={FadeInUp.duration(500).delay(600)}>
+          {/* Partner response - reveals 500ms later for dramatic stagger */}
+          <Animated.View entering={FadeInUp.duration(500).delay(900)}>
             <ResponseCard
               label={partnerName}
               responseText={partnerResponse}

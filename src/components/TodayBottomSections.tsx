@@ -25,17 +25,19 @@ export function TodayBottomSections({
 }: TodayBottomSectionsProps) {
   return (
     <>
-      <ExploreCategoryRow />
-
-      <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay)} style={styles.section}>
-        <GoalTracker onAddGoal={onOpenGoalModal} />
+      <Animated.View entering={FadeInUp.duration(400).delay(animationBaseDelay)}>
+        <ExploreCategoryRow />
       </Animated.View>
 
       <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 200)} style={styles.section}>
-        <WishlistCard onAddItem={onOpenWishlistModal} />
+        <GoalTracker onAddGoal={onOpenGoalModal} />
       </Animated.View>
 
       <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 400)} style={styles.section}>
+        <WishlistCard onAddItem={onOpenWishlistModal} />
+      </Animated.View>
+
+      <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 600)} style={styles.section}>
         <DateNightCard />
       </Animated.View>
 

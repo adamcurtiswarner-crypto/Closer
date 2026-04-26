@@ -50,7 +50,7 @@ export default function ForgotPasswordScreen() {
   if (sent) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.content}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>{t('auth.forgotPassword.sentTitle')}</Text>
             <Text style={styles.subtitle}>
@@ -61,7 +61,7 @@ export default function ForgotPasswordScreen() {
             title={t('auth.forgotPassword.backToSignIn')}
             onPress={() => router.replace('/(auth)/sign-in')}
           />
-        </View>
+        </Animated.View>
       </SafeAreaView>
     );
   }

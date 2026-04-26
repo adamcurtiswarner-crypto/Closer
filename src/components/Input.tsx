@@ -8,7 +8,6 @@ import {
   NativeSyntheticEvent,
   TextInputFocusEventData,
 } from 'react-native';
-import { hapticImpact } from '@utils/haptics';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -23,7 +22,6 @@ export const Input = forwardRef<TextInput, InputProps>(
 
     const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
       setIsFocused(true);
-      hapticImpact();
       userOnFocus?.(e);
     };
 

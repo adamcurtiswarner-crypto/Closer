@@ -172,11 +172,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  selectedCheck: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#c97454',
-  },
   optionLabel: {
     fontSize: 16,
     fontWeight: '500',

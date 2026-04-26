@@ -13,7 +13,7 @@ import Animated, {
   Easing,
   interpolate,
 } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 
 interface StreakRingProps {
   currentStreak: number;
@@ -89,7 +89,7 @@ export function StreakRing({ currentStreak, weeklyCompletions, isStreakActive, c
       );
 
       // Haptic
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      hapticNotification(NotificationFeedbackType.Success);
     } else {
       // Quiet entrance
       ringScale.value = withSpring(1, { damping: 14, stiffness: 160 });

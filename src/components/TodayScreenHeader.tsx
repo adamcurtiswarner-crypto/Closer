@@ -74,11 +74,13 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 28,
     fontWeight: '700',
+    fontFamily: 'Alexandria-SemiBold',
     color: '#1c1917',
     letterSpacing: -0.5,
   },
   dateText: {
     fontSize: 15,
+    fontFamily: 'Inter-Regular',
     color: '#78716c',
     marginTop: 2,
   },
