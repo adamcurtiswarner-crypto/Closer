@@ -11,6 +11,7 @@ export function BiometricGate() {
   const [authFailed, setAuthFailed] = useState(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const isPromptingRef = useRef(false);
+  const lastUnlockRef = useRef<number>(0);
 
   const promptBiometric = useCallback(async () => {
     if (isPromptingRef.current) return;
@@ -20,6 +21,7 @@ export function BiometricGate() {
     const success = await authenticate();
     if (success) {
       setIsLocked(false);
+      lastUnlockRef.current = Date.now();
     } else {
       setAuthFailed(true);
     }
@@ -32,6 +34,10 @@ export function BiometricGate() {
       appStateRef.current = nextState;
 
       if (!isAuthenticated || !isBiometricEnabled) return;
+
+      // Ignore state changes within 2s of unlock — Face ID dialog
+      // itself causes inactive->active transitions on iOS
+      if (Date.now() - lastUnlockRef.current < 2000) return;
 
       // Lock when going to background
       if (nextState === 'background' || nextState === 'inactive') {
