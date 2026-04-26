@@ -209,7 +209,7 @@ export default function HomeScreen() {
                       {format(upcomingDateNight.scheduledDate!, 'EEEE, MMM d')}
                     </Text>
                   </View>
-                  <Text style={styles.upcomingChevron}>{'>'}</Text>
+                  <Icon name="caret-right" size="sm" color="#a8a29e" />
                 </TouchableOpacity>
               )}
 
@@ -228,7 +228,7 @@ export default function HomeScreen() {
                       {activeGoalsCount} active {activeGoalsCount === 1 ? 'goal' : 'goals'}
                     </Text>
                   </View>
-                  <Text style={styles.upcomingChevron}>{'>'}</Text>
+                  <Icon name="caret-right" size="sm" color="#a8a29e" />
                 </TouchableOpacity>
               )}
             </View>

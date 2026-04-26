@@ -165,6 +165,7 @@ export default function MemoriesScreen() {
           ) : (
             completions.map((completion, index) => (
               <Animated.View key={completion.id} entering={FadeInUp.duration(400).delay(Math.min(index * 80, 400))} style={styles.card}>
+                <View style={styles.cardAccentBar} />
                 <Text style={styles.promptText}>{'\u201C'}{completion.promptText}{'\u201D'}</Text>
 
                 {completion.responses.map((response, idx) => (
@@ -207,6 +208,7 @@ export default function MemoriesScreen() {
           <PhotoGrid
             photos={allPhotos}
             onPhotoPress={handlePhotoPress}
+            isLoading={photoGrid.isLoading}
             onEndReached={() => {
               if (photoGrid.hasNextPage && !photoGrid.isFetchingNextPage) {
                 photoGrid.fetchNextPage();
@@ -350,11 +352,22 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#f5f5f4',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  cardAccentBar: {
+    height: 3,
+    backgroundColor: '#c97454',
+    marginHorizontal: -20,
+    marginTop: -20,
+    marginBottom: 20,
   },
   promptText: {
     fontSize: 16,

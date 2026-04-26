@@ -26,7 +26,7 @@ import { useCalendarSync } from '@/hooks/useCalendar';
 import { Paywall } from '@/components/Paywall';
 import { ReauthModal } from '@/components/ReauthModal';
 import { logger } from '@/utils/logger';
-import { PartnershipSection } from '@/components';
+import { PartnershipSection, Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import Constants from 'expo-constants';
@@ -210,11 +210,17 @@ export default function SettingsScreen() {
           <View style={styles.section}>
             <TouchableOpacity style={styles.row} onPress={() => setShowTimePicker(true)}>
               <Text style={styles.rowLabel}>{t('settings.dailyPromptTime')}</Text>
-              <Text style={styles.rowValue}>{getTimeDisplay(currentTime)} {'>'}</Text>
+              <View style={styles.rowRight}>
+                <Text style={styles.rowValue}>{getTimeDisplay(currentTime)}</Text>
+                <Icon name="caret-right" size="sm" color="#a8a29e" />
+              </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
               <Text style={styles.rowLabel}>{t('settings.promptFrequency')}</Text>
-              <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)} {'>'}</Text>
+              <View style={styles.rowRight}>
+                <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)}</Text>
+                <Icon name="caret-right" size="sm" color="#a8a29e" />
+              </View>
             </TouchableOpacity>
             <View style={styles.rowToggle}>
               <Text style={styles.rowLabel}>{t('settings.remindMe')}</Text>
@@ -275,7 +281,7 @@ export default function SettingsScreen() {
               onPress={() => router.push('/(app)/resources')}
             >
               <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
-              <Text style={styles.rowValue}>{'>'}</Text>
+              <Icon name="caret-right" size="sm" color="#a8a29e" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -293,7 +299,7 @@ export default function SettingsScreen() {
               {exportData.isPending ? (
                 <ActivityIndicator size="small" color="#c97454" />
               ) : (
-                <Text style={styles.rowValue}>{'>'}</Text>
+                <Icon name="caret-right" size="sm" color="#a8a29e" />
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -301,21 +307,21 @@ export default function SettingsScreen() {
               onPress={() => setShowAnonymizeModal(true)}
             >
               <Text style={styles.rowLabel}>{t('settings.anonymize')}</Text>
-              <Text style={styles.rowValue}>{'>'}</Text>
+              <Icon name="caret-right" size="sm" color="#a8a29e" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.row}
               onPress={() => router.push('/(app)/privacy-policy')}
             >
               <Text style={styles.rowLabel}>{t('settings.privacyPolicy')}</Text>
-              <Text style={styles.rowValue}>{'>'}</Text>
+              <Icon name="caret-right" size="sm" color="#a8a29e" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.row}
               onPress={() => router.push('/(app)/terms-of-service' as any)}
             >
               <Text style={styles.rowLabel}>{t('settings.termsOfService')}</Text>
-              <Text style={styles.rowValue}>{'>'}</Text>
+              <Icon name="caret-right" size="sm" color="#a8a29e" />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.row, styles.lastRow]}
@@ -384,7 +390,7 @@ export default function SettingsScreen() {
             </View>
             <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
               <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>
-              <Text style={styles.rowValue}>{'>'}</Text>
+              <Icon name="caret-right" size="sm" color="#a8a29e" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -679,6 +685,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#78716c',
     fontFamily: 'Inter-Regular',
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   premiumText: {
     color: '#c97454',

@@ -298,7 +298,7 @@ export function ProfileCard() {
                     : t('profile.setYourDate')}
                 </Text>
               </View>
-              <Text style={styles.anniversaryChevron}>{'>'}</Text>
+              <Icon name="caret-right" size="sm" color="#a8a29e" />
             </TouchableOpacity>
           </Animated.View>
         </>
@@ -321,7 +321,7 @@ export function ProfileCard() {
                 : t('common.setYours')}
             </Text>
           </View>
-          <Text style={styles.anniversaryChevron}>{'>'}</Text>
+          <Icon name="caret-right" size="sm" color="#a8a29e" />
         </TouchableOpacity>
 
         {/* Partner's love language (read-only) */}

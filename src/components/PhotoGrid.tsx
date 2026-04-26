@@ -21,11 +21,20 @@ interface PhotoGridProps {
   photos: PhotoItem[];
   onPhotoPress: (photo: PhotoItem) => void;
   onEndReached?: () => void;
+  isLoading?: boolean;
   isLoadingMore?: boolean;
   ListHeaderComponent?: React.ReactElement;
 }
 
-export function PhotoGrid({ photos, onPhotoPress, onEndReached, isLoadingMore, ListHeaderComponent }: PhotoGridProps) {
+export function PhotoGrid({ photos, onPhotoPress, onEndReached, isLoading, isLoadingMore, ListHeaderComponent }: PhotoGridProps) {
+  if (isLoading) {
+    return (
+      <View style={styles.empty}>
+        <ActivityIndicator size="small" color="#c97454" />
+      </View>
+    );
+  }
+
   if (photos.length === 0) {
     return (
       <Animated.View entering={FadeIn.duration(400)} style={styles.empty}>
