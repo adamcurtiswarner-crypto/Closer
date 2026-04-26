@@ -11,7 +11,6 @@ export function BiometricGate() {
   const [authFailed, setAuthFailed] = useState(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const isPromptingRef = useRef(false);
-  const lastUnlockRef = useRef<number>(0);
 
   const promptBiometric = useCallback(async () => {
     if (isPromptingRef.current) return;
@@ -19,13 +18,13 @@ export function BiometricGate() {
     setAuthFailed(false);
 
     const success = await authenticate();
+    isPromptingRef.current = false;
+
     if (success) {
       setIsLocked(false);
-      lastUnlockRef.current = Date.now();
     } else {
       setAuthFailed(true);
     }
-    isPromptingRef.current = false;
   }, [authenticate]);
 
   useEffect(() => {
@@ -35,20 +34,19 @@ export function BiometricGate() {
 
       if (!isAuthenticated || !isBiometricEnabled) return;
 
-      // Ignore state changes within 2s of unlock — Face ID dialog
-      // itself causes inactive->active transitions on iOS
-      if (Date.now() - lastUnlockRef.current < 2000) return;
+      // Never lock while a biometric prompt is active — the Face ID
+      // dialog itself causes active->inactive->active transitions
+      if (isPromptingRef.current) return;
 
-      // Lock when going to background
-      if (nextState === 'background' || nextState === 'inactive') {
-        if (prevState === 'active') {
-          setIsLocked(true);
-          setAuthFailed(false);
-        }
+      // Lock when going to background (not inactive — inactive fires
+      // for system dialogs, control center, notification shade)
+      if (nextState === 'background' && prevState === 'active') {
+        setIsLocked(true);
+        setAuthFailed(false);
       }
 
-      // Prompt when returning to foreground
-      if (nextState === 'active' && (prevState === 'background' || prevState === 'inactive')) {
+      // Prompt when returning from background only
+      if (nextState === 'active' && prevState === 'background') {
         promptBiometric();
       }
     });
@@ -65,11 +63,9 @@ export function BiometricGate() {
       <View style={styles.content}>
         <Text style={styles.appName}>Stoke</Text>
         {authFailed ? (
-          <>
-            <TouchableOpacity style={styles.tryAgainButton} onPress={promptBiometric}>
-              <Text style={styles.tryAgainText}>Try again</Text>
-            </TouchableOpacity>
-          </>
+          <TouchableOpacity style={styles.tryAgainButton} onPress={promptBiometric}>
+            <Text style={styles.tryAgainText}>Try again</Text>
+          </TouchableOpacity>
         ) : (
           <Text style={styles.hint}>Authenticating...</Text>
         )}
