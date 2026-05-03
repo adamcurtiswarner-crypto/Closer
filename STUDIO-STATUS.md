@@ -1,39 +1,67 @@
 # Stoke Studio Status
-*Last updated: 2026-04-25 — CEO review*
+*Last updated: 2026-05-03 — CEO review*
 
 ## Current Sprint
-- **Focus**: App Store submission — validate Build 30 on TestFlight, then submit for review
-- **Sprint goal**: App Store review submission
-- **Status**: IN PROGRESS — YELLOW. Build 30 on TestFlight since Apr 22. No commits in 7 days. Manual push test and ops items still pending.
+- **Focus**: Launch validation — test Build 33 on TestFlight, resolve remaining ops items, submit for App Review
+- **Sprint goal**: App Store submission
+- **Status**: IN PROGRESS — YELLOW. Massive design sprint shipped Apr 25 (53 issues, 90 files). Biometric bug fixed Apr 26. Build 33 on TestFlight. 7 days idle since. Manual push test still not done.
 
 ## Active Initiatives
 | Initiative | Department | Status | Blockers |
 |-----------|-----------|--------|----------|
-| TestFlight submission | Operations | DONE | Build 30 submitted to TestFlight Apr 22 |
-| Push notification manual validation | Engineering | TODO | Adam needs to test with partner on device |
-| Firestore security rules deploy | Operations | TODO | Firebase Console (Adam) |
-| GCP Cloud Functions error alerting | Operations | TODO | GCP Console (Adam) |
+| TestFlight validation | Operations | Build 33 on TF | Adam needs to test on device |
+| Push notification manual test | Engineering | TODO (3 weeks overdue) | Adam needs to test with partner |
+| Firestore security rules deploy | Operations | TODO (5 weeks overdue) | Firebase Console (Adam) |
+| GCP Cloud Functions error alerting | Operations | TODO (5 weeks overdue) | GCP Console (Adam) |
+| Biometric Face ID loop | Engineering | FIXED | Rewritten Apr 26 — needs device verification |
 | iOS Home Screen Widgets | Engineering | BRIDGE DISABLED | Swift widgets built, bridge is no-op stub |
-| Feature #4 — Relationship Courses | All | Backlog | Greenfield — no code exists |
 
-## What Shipped (April 18 Session)
-- Pushed 2 stale commits to origin (biometric, re-auth, ToS, Home redesign — was 3 weeks old)
-- Stripped all AES-256-CBC encryption code (286-line service + all hook integrations, -597 lines)
-- Encryption compliance resolved: `ITSAppUsesNonExemptEncryption: false` is now truthful
-- Privacy policy updated to remove encryption claims
-- Push notification deep links fixed: all 14 notification types now include `data.type`
-- Token refresh listener added for FCM/APNs rotation
-- Chat message tap now routes to `/(app)/chat`
-- Cloud Functions: 33 deployed (removed `migrateEncryptedResponses`)
-- App Store metadata rewritten: Closer -> Stoke, added 9 features, fixed URLs
-- Build 30 compiled (production profile, EAS)
-- Notion build summary page created
+## What Shipped Since Last Status (Apr 25-26)
 
-## Build 30 Status
-- **IPA**: https://expo.dev/artifacts/eas/qNGxhPKKmsP5W6exWZWoyS.ipa
-- **Build page**: https://expo.dev/accounts/adamcurtiswarner/projects/stoke/builds/c8e0864c-772b-4835-b365-7044f162388a
-- **Version**: 1.0.0, build number 30
-- **TestFlight**: SUBMITTED Apr 22. Available for testing.
+### Design Audit Sprint (Apr 25) — 8 commits, ~90 files
+Full screen audit of all 32 screens and 60 components. Three parallel agents reviewed auth/onboarding, core loop, and feature screens.
+
+**P0 Critical (5/5 fixed):**
+- Paywall purchase now uses selected plan (was buying first package regardless)
+- Terms/Privacy accessible to pre-auth users (was crashing)
+- Response submission preserves text on error (was losing user's writing)
+- Onboarding save errors now shown (were silent)
+- Ready screen: removed misleading duplicate "Wait" button
+
+**P1 High (10/10 fixed):**
+- Touch targets fixed to 44px across 12+ components
+- Games header: "Date Night" -> "Games"
+- Typing dots animated (were static)
+- Font weight/family mismatches aligned across 47 files
+- Explore back button, Privacy/Terms back buttons standardized
+- Verify-email contrast fixed (WCAG AA)
+- Home screen fully i18n'd (21 keys)
+- Accept-invite KeyboardAvoidingView added
+
+**P2 Medium (19/19 fixed):**
+- Theme tokens created (spacing, radius, shadow, card presets)
+- Memory cards: accent bars + proper shadow
+- Settings/Home/ProfileCard: chevrons replaced with Icon
+- Brand voice: ALL CAPS removed, grammar fixed
+- ProfileCard decomposed (706 -> 516 lines, extracted LoveLanguageModal + AnniversaryPicker)
+- Photo grid loading state, skeleton borderRadius, explore background color
+
+**P3 Polish (12/14 fixed):**
+- Input haptic removed, forgot-password animation, waiting-partner pulse
+- CompletionMoment stagger improved, home pull-to-refresh added
+- StreakRing haptics abstracted, first-prompt deduped, Button accessibility
+- ChatBubble, QueryError, ConnectionHeader polished
+
+### Biometric Fix (Apr 26) — 2 commits
+Face ID was looping infinitely. Root cause: Face ID dialog causes AppState `active->inactive->active` which re-triggered the lock.
+- First fix (2s timestamp window) didn't work
+- Second fix: rewrote AppState handling — skip transitions while prompting, only lock on `background` (not `inactive`), only prompt on `active←background`
+
+## Latest Build
+- **Build**: 33
+- **Version**: 1.0.0
+- **TestFlight**: Submitted Apr 25
+- **Commit**: `0cc224d` (biometric loop fix)
 - **App Store Connect**: https://appstoreconnect.apple.com/apps/6759679330/testflight/ios
 
 ## Key Metrics
@@ -42,72 +70,48 @@
 - Cloud Functions: 33 deployed on Node 22 (7 modules)
 - Analytics events: 66 distinct event types tracked
 - Working tree: CLEAN
-- Days since last commit: 7 (last: Apr 18)
-- Production build: 30 (on TestFlight since Apr 22)
+- Days since last commit: 7 (last: Apr 26)
+- Production build: 33 (on TestFlight)
+- i18n keys: ~206 (was ~185)
 
 ## Engineering Health
 - **Tests**: All green
 - **Types**: 0 errors
-- **Design system**: Unified — #c97454 accent, #fef7f4 background
+- **Design system**: Unified with theme.ts tokens (colors, spacing, radius, shadow, typography)
 - **Tech debt**: Expo SDK 52 (current is 55)
-
-## Completed Features (Full Inventory)
-- Daily prompts with real-time sync + offline queue
-- Partner response reveal + completion moments
-- Streak tracking with animated StreakRing
-- Prompt reactions
-- AI Coaching (weekly pulse, insights, action items) — premium-gated
-- Couple Games (Would You Rather, How Well Do You Know Me, Truth or Dare)
-- Date Night Planner (ideas library, calendar integration, reflection)
-- Shared Photo Album / Memories
-- Weekly Check-ins
-- Wishlist / Goal tracker
-- Real-time Chat
-- Conversation starters
-- Biometric unlock (Face ID/Touch ID)
-- Account deletion with re-auth
-- Terms of Service + Privacy Policy
-- Data export + response anonymization
-- OTA updates via expo-updates
-- i18n infrastructure (English, ~185 keys)
-- Admin dashboard (Next.js)
-- RevenueCat subscription integration
+- **New components**: LoveLanguageModal, AnniversaryPicker (extracted from ProfileCard)
 
 ## Launch Blockers (Prioritized)
 1. ~~Push unpushed commits~~ DONE
-2. ~~Encryption compliance~~ DONE (code removed)
-3. ~~Push notification deep links~~ DONE (all 14 types)
-4. ~~App Store metadata~~ DONE (Closer -> Stoke)
-5. ~~TestFlight submission~~ DONE (Apr 22)
-6. **Push notification manual test** — untested end-to-end with real partner
+2. ~~Encryption compliance~~ DONE
+3. ~~Push notification deep links~~ DONE
+4. ~~App Store metadata~~ DONE
+5. ~~TestFlight submission~~ DONE
+6. ~~Design audit P0-P2~~ DONE (53 issues fixed)
+7. ~~Biometric Face ID loop~~ FIXED (needs device verification)
+8. **Push notification manual test** — untested end-to-end with real partner
+9. **Firestore security rules deploy** — written but not deployed to production
 
 ## Known Bugs
 - Memories photo add silently fails for non-premium users (paywall UX unclear)
 - Widget bridge disabled (Swift widgets built but data not flowing)
+- Biometric fix needs device verification (Build 33 on TestFlight)
 
 ## Compliance Status
-- Privacy policy: DONE
-- AI disclosure: DONE
-- Non-clinical disclaimer: DONE
-- Data retention policy: DONE
-- Account deletion: DONE (hardened with re-auth)
-- Biometric security: DONE
-- Terms of Service: DONE
-- Encryption declaration: RESOLVED
-- App Store metadata: DONE
+All checks pass. No outstanding compliance issues.
 
-## Roadmap (Updated)
-Check-ins (DONE) -> Redesign (DONE) -> Home (DONE) -> AI Coach (DONE) -> Photo Album (DONE) -> Reactions (DONE) -> Games (DONE) -> Date Nights (DONE) -> Biometric (DONE) -> ToS (DONE) -> Encryption Removal (DONE) -> Push Fixes (DONE) -> Metadata (DONE) -> **TestFlight + Validation (NOW)** -> iOS Widgets (Next) -> #4 Courses (Later)
+## Roadmap
+...Design Audit (DONE) -> Biometric Fix (DONE) -> **Validation + App Review (NOW)** -> iOS Widgets (Next) -> #4 Courses (Later)
 
 ## Adam Actions (Prioritized)
 | Priority | Item | Time |
 |----------|------|------|
-| NOW | Validate push notifications end-to-end with partner (Build 30 on TestFlight) | 15 min |
-| THIS WEEK | Deploy Firestore security rules to production | 5 min |
+| NOW | Install Build 33, verify Face ID no longer loops | 5 min |
+| NOW | Test push notifications end-to-end with partner | 15 min |
+| NOW | Deploy Firestore security rules: `firebase deploy --only firestore:rules --project stoke-5f762` | 5 min |
 | THIS WEEK | Set up GCP error alerting | 15 min |
 | THIS WEEK | Create test account couple for App Review | 15 min |
-| THIS WEEK | Verify getstoke.io/privacy and /support URLs are live | 5 min |
-| NEXT SPRINT | Re-enable widget bridge (Swift widgets already built) | 2-4 hrs |
-| NEXT SPRINT | Add premium gate UX to memories photo upload | 30 min |
-| LATER | Plan Relationship Courses (#4) — needs PRD + data model | Greenfield |
-| LATER | Expo SDK 52 -> 55 upgrade | Medium effort |
+| THIS WEEK | Verify getstoke.io/privacy and /support URLs | 5 min |
+| THIS WEEK | Submit for App Review | 10 min |
+| NEXT SPRINT | Re-enable widget bridge | 2-4 hrs |
+| LATER | Relationship Courses (#4) | Greenfield |
