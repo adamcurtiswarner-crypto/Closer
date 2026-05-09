@@ -1,18 +1,18 @@
 # Stoke Studio Status
-*Last updated: 2026-05-03 — CEO review*
+*Last updated: 2026-05-09 — CEO review*
 
 ## Current Sprint
-- **Focus**: Launch validation — test Build 33 on TestFlight, resolve remaining ops items, submit for App Review
+- **Focus**: Launch validation — manual testing, ops deployment, App Review submission
 - **Sprint goal**: App Store submission
-- **Status**: IN PROGRESS — YELLOW. Massive design sprint shipped Apr 25 (53 issues, 90 files). Biometric bug fixed Apr 26. Build 33 on TestFlight. 7 days idle since. Manual push test still not done.
+- **Status**: RED. 13 days since last code commit. Build 34 compiled May 3 but TestFlight submission blocked by Apple agreement. Same manual validation items pending since April 18 (3 weeks). EAS submit failing — Transporter workaround available.
 
 ## Active Initiatives
 | Initiative | Department | Status | Blockers |
 |-----------|-----------|--------|----------|
-| TestFlight validation | Operations | Build 33 on TF | Adam needs to test on device |
-| Push notification manual test | Engineering | TODO (3 weeks overdue) | Adam needs to test with partner |
-| Firestore security rules deploy | Operations | TODO (5 weeks overdue) | Firebase Console (Adam) |
-| GCP Cloud Functions error alerting | Operations | TODO (5 weeks overdue) | GCP Console (Adam) |
+| TestFlight submission | Operations | BLOCKED | Build 34 IPA ready, `eas submit` failing — use Transporter |
+| Push notification manual test | Engineering | TODO (4+ weeks overdue) | Adam needs to test with partner |
+| Firestore security rules deploy | Operations | TODO (6+ weeks overdue) | Firebase Console (Adam) |
+| GCP Cloud Functions error alerting | Operations | TODO (6+ weeks overdue) | GCP Console (Adam) |
 | Biometric Face ID loop | Engineering | FIXED | Rewritten Apr 26 — needs device verification |
 | iOS Home Screen Widgets | Engineering | BRIDGE DISABLED | Swift widgets built, bridge is no-op stub |
 
@@ -58,10 +58,12 @@ Face ID was looping infinitely. Root cause: Face ID dialog causes AppState `acti
 - Second fix: rewrote AppState handling — skip transitions while prompting, only lock on `background` (not `inactive`), only prompt on `active←background`
 
 ## Latest Build
-- **Build**: 33
+- **Build**: 34
 - **Version**: 1.0.0
-- **TestFlight**: Submitted Apr 25
-- **Commit**: `0cc224d` (biometric loop fix)
+- **Compiled**: May 3
+- **Commit**: `bbac388` (status update)
+- **IPA**: https://expo.dev/artifacts/eas/31DNA1jeufiGfrTEeUqzMv.ipa
+- **TestFlight**: BLOCKED — `eas submit` failing with Apple agreement error. Upload via Transporter as workaround.
 - **App Store Connect**: https://appstoreconnect.apple.com/apps/6759679330/testflight/ios
 
 ## Key Metrics
@@ -70,8 +72,8 @@ Face ID was looping infinitely. Root cause: Face ID dialog causes AppState `acti
 - Cloud Functions: 33 deployed on Node 22 (7 modules)
 - Analytics events: 66 distinct event types tracked
 - Working tree: CLEAN
-- Days since last commit: 7 (last: Apr 26)
-- Production build: 33 (on TestFlight)
+- Days since last commit: 13 (last: May 3 status update, last code: Apr 26)
+- Production build: 34 (compiled, not on TestFlight)
 - i18n keys: ~206 (was ~185)
 
 ## Engineering Health
@@ -106,7 +108,8 @@ All checks pass. No outstanding compliance issues.
 ## Adam Actions (Prioritized)
 | Priority | Item | Time |
 |----------|------|------|
-| NOW | Install Build 33, verify Face ID no longer loops | 5 min |
+| NOW | Upload Build 34 IPA via Transporter (download from artifacts link above) | 5 min |
+| NOW | Install from TestFlight, verify Face ID fix | 5 min |
 | NOW | Test push notifications end-to-end with partner | 15 min |
 | NOW | Deploy Firestore security rules: `firebase deploy --only firestore:rules --project stoke-5f762` | 5 min |
 | THIS WEEK | Set up GCP error alerting | 15 min |
