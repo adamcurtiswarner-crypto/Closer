@@ -10,6 +10,8 @@ import { logger } from '@/utils/logger';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -22,16 +24,16 @@ Notifications.setNotificationHandler({
 export async function registerForPushNotifications(userId: string): Promise<string | null> {
   try {
     // Check existing permissions
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+    const existingPermissions = await Notifications.getPermissionsAsync();
+    let isGranted = existingPermissions.granted;
 
     // Request permissions if not already granted
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+    if (!isGranted) {
+      const newPermissions = await Notifications.requestPermissionsAsync();
+      isGranted = newPermissions.granted;
     }
 
-    if (finalStatus !== 'granted') {
+    if (!isGranted) {
       logger.info('Push notification permission not granted');
       return null;
     }

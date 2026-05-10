@@ -1,8 +1,11 @@
 jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(),
-}));
+const mockOpenURL = jest.fn();
+jest.mock('react-native', () => {
+  const rn = jest.requireActual('react-native');
+  rn.Linking = { openURL: mockOpenURL };
+  return rn;
+});
 
 jest.mock('react-native-reanimated', () => ({
   __esModule: true,

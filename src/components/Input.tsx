@@ -6,7 +6,7 @@ import {
   TextInputProps,
   StyleSheet,
   NativeSyntheticEvent,
-  TextInputFocusEventData,
+  TargetedEvent,
 } from 'react-native';
 
 interface InputProps extends TextInputProps {
@@ -20,12 +20,12 @@ export const Input = forwardRef<TextInput, InputProps>(
     const hasError = !!error;
     const [isFocused, setIsFocused] = useState(false);
 
-    const handleFocus = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleFocus = (e: NativeSyntheticEvent<TargetedEvent>) => {
       setIsFocused(true);
       userOnFocus?.(e);
     };
 
-    const handleBlur = (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+    const handleBlur = (e: NativeSyntheticEvent<TargetedEvent>) => {
       setIsFocused(false);
       userOnBlur?.(e);
     };
