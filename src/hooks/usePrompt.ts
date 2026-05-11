@@ -430,14 +430,19 @@ export function useTriggerPrompt() {
 
   return useMutation({
     mutationFn: async () => {
+      console.log('[triggerPrompt] Calling triggerPromptDelivery...');
       const triggerPrompt = httpsCallable(functions, 'triggerPromptDelivery');
       const result = await triggerPrompt();
+      console.log('[triggerPrompt] Result:', JSON.stringify(result.data));
       return result.data as { success: boolean; coupleId: string };
     },
     onSuccess: () => {
-      // Force onSnapshot to re-subscribe with a fresh date
+      console.log('[triggerPrompt] Success — refreshing...');
       bumpPromptRefresh();
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });
+    },
+    onError: (error) => {
+      console.error('[triggerPrompt] ERROR:', error);
     },
   });
 }

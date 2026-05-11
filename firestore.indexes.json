@@ -44,6 +44,14 @@
       "collectionGroup": "prompt_assignments",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "couple_id", "order": "ASCENDING" },
+        { "fieldPath": "assigned_date", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "prompt_assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "prompt_id", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
