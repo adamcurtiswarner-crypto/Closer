@@ -7,8 +7,9 @@
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "automatic",
     "updates": {
-      "enabled": false
+      "url": "https://u.expo.dev/ed4dbe48-8597-4a51-8580-3402ea568d2f"
     },
+    "runtimeVersion": "2.0.0",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "io.getstoke.app",
@@ -56,7 +57,37 @@
       ]
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./src/assets/logo.png",
+          "backgroundColor": "#fafaf9"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/notification-icon.png",
+          "color": "#ffffff"
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Stoke uses your calendar to schedule date nights and reminders."
+        }
+      ],
+      "expo-localization",
+      "@sentry/react-native",
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.1088752472801-qdv0p454v628s1bq3g7db9n4ik3m0972"
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

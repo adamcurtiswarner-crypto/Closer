@@ -6,7 +6,7 @@ import { getStorage, FirebaseStorage, connectStorageEmulator } from 'firebase/st
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { logger } from '@/utils/logger';
 
-// Firebase configuration — env vars override for local dev, production values hardcoded
+// Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY || 'AIzaSyAaS_Go2ZP7eKwOS-eo-PuJpFIsQHK71YQ',
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN || 'stoke-5f762.firebaseapp.com',
@@ -17,27 +17,20 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID || 'G-GPN2QDMPYX',
 };
 
-// Initialize Firebase (prevent multiple initializations)
+// Initialize Firebase app (safe at module scope)
 let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
-let functions: Functions;
-let storage: FirebaseStorage;
-
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
 } else {
   app = getApps()[0];
 }
 
-auth = getAuth(app);
-db = getFirestore(app);
-functions = getFunctions(app);
-storage = getStorage(app);
+const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
+const functions: Functions = getFunctions(app);
+const storage: FirebaseStorage = getStorage(app);
 
-// Use emulators in development when running locally
-// Set USE_EMULATORS=true to connect to local Firebase emulators
-// By default, dev mode connects to production Firebase for testing
+// Use emulators in development
 const USE_EMULATORS = process.env.EXPO_PUBLIC_USE_EMULATORS === 'true';
 if (__DEV__ && USE_EMULATORS) {
   try {
@@ -50,8 +43,7 @@ if (__DEV__ && USE_EMULATORS) {
   }
 }
 
-
-// Configure Google Sign-In (iOS client ID from GoogleService-Info.plist)
+// Configure Google Sign-In
 try {
   GoogleSignin.configure({
     iosClientId: '1088752472801-qdv0p454v628s1bq3g7db9n4ik3m0972.apps.googleusercontent.com',
