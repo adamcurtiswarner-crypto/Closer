@@ -110,12 +110,12 @@ export type IconName = keyof typeof iconMap;
 interface IconComponentProps {
   name: IconName;
   size?: keyof typeof iconSize | number;
-  color?: string;
+  color?: string | import('react-native').ColorValue;
   weight?: PhosphorIconProps['weight'];
 }
 
 export function Icon({ name, size = 'md', color = '#78716c', weight = 'light' }: IconComponentProps) {
   const IconComponent = iconMap[name];
   const resolvedSize = typeof size === 'number' ? size : iconSize[size];
-  return <IconComponent size={resolvedSize} color={color} weight={weight} />;
+  return <IconComponent size={resolvedSize} color={color as string} weight={weight} />;
 }

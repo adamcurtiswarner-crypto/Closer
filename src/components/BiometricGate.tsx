@@ -76,7 +76,11 @@ export function BiometricGate() {
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#fef7f4',
     zIndex: 9999,
     justifyContent: 'center',

@@ -19,7 +19,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   // Filter to only tabs that have an icon defined (hidden tabs use href:null and have no icon)
   const visibleRoutes = useMemo(
     () =>
-      state.routes.filter((route) => {
+      state.routes.filter((route: any) => {
         const options = descriptors[route.key].options;
         return options.tabBarIcon !== undefined;
       }),
@@ -32,7 +32,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   // Determine the visible tab index for the current active route
   const activeVisibleIndex = useMemo(() => {
     const activeRoute = state.routes[state.index];
-    const idx = visibleRoutes.findIndex((r) => r.key === activeRoute.key);
+    const idx = visibleRoutes.findIndex((r: any) => r.key === activeRoute.key);
     // If active route is a hidden tab, return -1
     return idx;
   }, [state.index, state.routes, visibleRoutes]);
@@ -54,7 +54,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   return (
     <View style={customTabBarStyles.container}>
       <View style={customTabBarStyles.tabRow}>
-        {visibleRoutes.map((route, index) => {
+        {visibleRoutes.map((route: any, index: number) => {
           const { options } = descriptors[route.key];
           const isFocused = activeVisibleIndex === index;
 
