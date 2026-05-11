@@ -13,6 +13,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@expo/config-plugins": "^55.0.8",
     "@expo/metro-runtime": "56.0.0-canary-20260506-1b0052a",
     "@expo/vector-icons": "^15.1.1",
     "@hookform/resolvers": "^3.3.4",
