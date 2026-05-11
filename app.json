@@ -6,20 +6,12 @@
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./src/assets/logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#fafaf9"
-    },
     "updates": {
       "url": "https://u.expo.dev/ed4dbe48-8597-4a51-8580-3402ea568d2f"
     },
     "runtimeVersion": {
       "policy": "fingerprint"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "io.getstoke.app",

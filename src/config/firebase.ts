@@ -52,8 +52,12 @@ if (__DEV__ && USE_EMULATORS) {
 
 
 // Configure Google Sign-In (iOS client ID from GoogleService-Info.plist)
-GoogleSignin.configure({
-  iosClientId: '1088752472801-qdv0p454v628s1bq3g7db9n4ik3m0972.apps.googleusercontent.com',
-});
+try {
+  GoogleSignin.configure({
+    iosClientId: '1088752472801-qdv0p454v628s1bq3g7db9n4ik3m0972.apps.googleusercontent.com',
+  });
+} catch (error) {
+  logger.error('Google Sign-In configuration failed:', error);
+}
 
 export { app, auth, db, functions, storage };

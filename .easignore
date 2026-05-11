@@ -1,0 +1,7 @@
+# Same as .gitignore plus explicit native dir exclusion
+node_modules/
+.expo/
+dist/
+ios/
+android/
+.playwright-cli/
