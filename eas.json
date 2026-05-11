@@ -25,7 +25,7 @@
       "autoIncrement": true,
       "channel": "production",
       "ios": {
-        "image": "macos-sequoia-15.6-xcode-26.2"
+        "image": "macos-sequoia-15.6-xcode-26.0"
       },
       "env": {
         "APP_ENV": "production"
