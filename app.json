@@ -9,9 +9,7 @@
     "updates": {
       "url": "https://u.expo.dev/ed4dbe48-8597-4a51-8580-3402ea568d2f"
     },
-    "runtimeVersion": {
-      "policy": "fingerprint"
-    },
+    "runtimeVersion": "2.0.0",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "io.getstoke.app",
