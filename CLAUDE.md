@@ -12,8 +12,8 @@ npm start                # Expo dev server
 npm test                 # All Jest tests
 npm test -- --testPathPattern="useAuth"  # Single test file by name
 npm test -- --watch      # Watch mode
-npm run typecheck        # TypeScript checking
-npm run lint             # ESLint
+npx tsc --noEmit         # TypeScript checking
+npx expo-doctor          # Check dependency health
 
 # Cloud Functions (from functions/ directory)
 cd functions && npm run build            # Compile TypeScript
@@ -23,48 +23,64 @@ cd functions && npm run seed:emulator:clear  # Clear + reseed
 
 # Firebase
 firebase emulators:start                 # Auth :9099, Firestore :8080, Functions :5001, Storage :9199
-firebase deploy --only functions         # Deploy all functions
-firebase deploy --only functions:deliverDailyPrompts  # Deploy single function
+firebase deploy --only functions --project stoke-5f762
+firebase deploy --only firestore:rules --project stoke-5f762
+firebase deploy --only firestore:indexes --project stoke-5f762
+firebase functions:log --project stoke-5f762 -n 20  # View recent logs
+
+# Local device builds (via Xcode — no EAS credits needed)
+npx expo prebuild --platform ios --clean  # Generate ios/ directory
+open ios/Stoke.xcworkspace                # Open in Xcode, hit Play
+# For simulator: npx expo run:ios
+
+# EAS builds (uses build credits)
+eas build --profile production --platform ios --non-interactive
+eas submit --platform ios --id <build-id> --non-interactive
 
 # Admin dashboard (from admin/ directory)
 cd admin && npm run dev                  # Next.js dev server
-
-# EAS builds
-eas build --profile development --platform ios
-eas build --profile preview --platform ios
 ```
 
 ## Architecture
 
-- **Client**: React Native + Expo SDK 52 + Expo Router v4 (file-based routing)
-- **Backend**: Firebase (Auth, Firestore, Cloud Functions Node.js 20, FCM, Storage)
+- **Client**: React Native 0.83.6 + Expo SDK 55 + Expo Router v4 (file-based routing)
+- **Backend**: Firebase (Auth, Firestore, Cloud Functions Node.js 22, FCM, Storage)
 - **State**: React Query v5 (server) + Zustand v4 (local) + `useAuth()` hook
-- **Styling**: StyleSheet only — NativeWind is installed but DISABLED (see babel.config.js). Do not use `className` in new components.
+- **Styling**: StyleSheet only — NativeWind is DISABLED. Do not use `className`.
 - **Language**: TypeScript (strict mode)
+- **Build**: EAS Build with Xcode 26.0, iOS 26 SDK
 - **Admin**: Next.js dashboard in `admin/` (separate app, own package.json)
+- **Firebase SDK**: firebase@12.13.0 (web SDK, NOT @react-native-firebase)
 
 ## Project Structure
 
 ```
 app/                          # Expo Router file-based routes
-├── (auth)/                   # Login, signup, forgot password
+├── (auth)/                   # Login, signup, forgot password, terms, privacy
 ├── (onboarding)/             # Partner linking, preferences, calibration
-└── (app)/                    # Tab bar: today, memories, insights, settings
+└── (app)/                    # Tab bar: home, today, memories, insights, settings
     ├── chat.tsx              # Hidden tabs (href: null) — accessed via router.push
     ├── wishlist.tsx
+    ├── games.tsx
+    ├── date-nights.tsx
+    ├── coaching.tsx
+    ├── explore.tsx
     └── resources.tsx
 src/
 ├── components/               # UI components (barrel export via index.ts)
+│   ├── LoveLanguageModal.tsx  # Extracted from ProfileCard
+│   └── AnniversaryPicker.tsx  # Extracted from ProfileCard
 ├── hooks/                    # React Query hooks + custom hooks
-├── config/                   # Static config (firebase, milestones, challenges, categories)
-├── services/                 # analytics, calendar, encryption, imageUpload, notifications
+├── config/                   # firebase, theme, milestones, challenges, categories
+│   └── theme.ts              # Design tokens: colors, spacing, radius, shadow, typography
+├── services/                 # analytics, calendar, imageUpload, notifications
 ├── types/                    # App-level TypeScript types
-├── utils/                    # authErrors, logger
-├── i18n/                     # i18next config + locales/en.json (~185 keys)
+├── utils/                    # authErrors, logger, haptics
+├── i18n/                     # i18next config + locales/en.json (~206 keys)
 └── __tests__/                # Jest tests + __mocks__/
-functions/                    # Cloud Functions (Node.js 20, TypeScript)
-├── src/index.ts              # All function exports
-├── src/scripts/              # Seed scripts, BigQuery setup
+functions/                    # Cloud Functions (Node.js 22, TypeScript)
+├── src/                      # 7 domain modules (prompts, triggers, users, coaching, admin, notifications, analytics)
+├── src/index.ts              # Thin re-export barrel (7 lines)
 └── __tests__/                # Function tests
 admin/                        # Next.js admin dashboard
 ```
@@ -90,7 +106,8 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - `useAuth()` → `{ user, firebaseUser, isLoading, isAuthenticated, signIn, signUp, signOut, refreshUser }`
 - Call `refreshUser()` after any Firestore user doc update to sync local state
 - Firebase exports from `src/config/firebase.ts`: `app, auth, db, functions, storage`
-- Emulators auto-connect in `__DEV__` mode
+- **Firebase Auth**: uses `firebase/auth` web SDK (firebase@12). Older versions (v10) crash with "Component auth has not been registered yet" on SDK 55.
+- Emulators connect only when `EXPO_PUBLIC_USE_EMULATORS=true` (not automatic in dev)
 
 ### Data Conventions
 - Firestore fields: `snake_case` (e.g., `couple_id`, `photo_url`)
@@ -98,27 +115,32 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - Canonical type definitions: `../specs/types.ts` (outside app directory)
 - Analytics event names: `snake_case`
 
-### Encryption
-- Response text stored as `[encrypted]` sentinel in `response_text`, real content in `response_text_encrypted`
-- AES-256-CBC, couple key in `expo-secure-store`
-- Hooks (`useMemories`, `useTodayPrompt`) decrypt on read — new code reading responses must handle this
-
 ### Real-time & Offline
 - `useTodayPrompt` uses Firestore `onSnapshot` driving React Query cache (no polling)
 - `useChat` also uses `onSnapshot` for real-time messages
 - Offline: `useSubmitResponse` queues to AsyncStorage, flushes on reconnect via NetInfo listener
 - Presence/typing: `/presence/{coupleId}/members/{userId}` with typing context `'chat' | 'prompt' | null`
+- Today screen auto-triggers prompt delivery if no assignment exists (no button tap needed)
 
 ### Components
 - Barrel export: import from `@components` for common components
 - Cards: borderRadius 20, shadow (opacity 0.06, radius 12), 3px `#c97454` accent bar
 - Animations: FadeIn/FadeInUp from reanimated, 400-600ms, cascading 80-200ms delays
 - Modals: presentationStyle `pageSheet`, warm tint `#fef7f4` on active states
+- Touch targets: minimum 44px (enforced across all components)
+- Button: has `accessibilityRole="button"`
+
+### Design Tokens (src/config/theme.ts)
+- Colors: `colors.accent.primary`, `colors.surface.background`, `colors.text.primary`, etc.
+- Spacing: `spacing.xs(4)` through `spacing.xxl(48)`
+- Radius: `radius.sm(8)`, `radius.md(12)`, `radius.lg(16)`, `radius.xl(20)`
+- Shadows: `shadow.card`, `shadow.cardSubtle`, `shadow.accent`
+- Card presets: `card.container`, `card.accentBar`
 
 ### i18n
 - `i18next` + `react-i18next` initialized in `src/i18n/index.ts`, imported in root layout
-- Keys in `src/i18n/locales/en.json` — auth screens fully converted, others incremental
-- Use `useTranslation()` hook in converted screens
+- Keys in `src/i18n/locales/en.json` — auth + home screens fully converted, others incremental
+- Use `useTranslation()` hook in all screens
 
 ## Design
 
@@ -127,12 +149,21 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - Secondary: `#8b7355` (warm brown)
 - Success: `#22c55e`
 - Warm tint: `#fef7f4`
+- Brand purple: `#490f5f` (goals only)
 
 ### Brand Voice
 - **Warm, Quiet, Direct** — never cute, clinical, or urgent
 - No exclamation points, no emojis in system text
+- No ALL CAPS text — use sentence case
 - Vocabulary: "Prompt" not "exercise", "Memory" not "highlight", "Respond" not "complete"
 - Celebrate quietly: "Another moment saved" not "Great job!"
+
+### Typography
+- Headings: `Alexandria-SemiBold` with `fontWeight: '600'`
+- Body: `Inter-Regular` with `fontWeight: '400'`
+- Labels: `Inter-Medium` with `fontWeight: '500'`
+- Emphasis: `Inter-SemiBold` with `fontWeight: '600'`
+- CRITICAL: fontWeight must match fontFamily (e.g., SemiBold = '600', not '700' or 'bold')
 
 ## Firestore Collections
 
@@ -158,19 +189,20 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 /admin_state/ai_generation
 ```
 
-## Cloud Functions
+## Cloud Functions (33 deployed)
 
-- **Scheduled**: `deliverDailyPrompts` (every 15 min), `weeklyRecap`, `cleanupDeletedAccounts` (daily 3AM PT), `exportEventsToBigQuery` (daily 4AM PT), `autoGeneratePrompts` (Monday 2AM PT)
-- **Callable**: `deleteAccount`, `exportUserData`, `anonymizeMyResponses`, `generateAIPrompts`, `triggerBigQueryExport`, `triggerPromptDelivery`, `migrateEncryptedResponses`
-- **Triggers**: `onResponseSubmitted`, `onChatMessageCreated`
+- **Scheduled**: `deliverDailyPrompts` (every 15 min), `sendWeeklyRecaps` (Sun 6PM PT), `sendResponseReminders` (hourly), `deliverCheckIn` (Sun 10AM PT), `dateNightReminder` (daily 9AM PT), `computeRelationshipPulse` (Mon 3AM PT), `autoGeneratePrompts` (Mon 2AM PT), `checkStreakBreaks` (daily 4:30AM PT), `expireStalePrompts` (daily 4AM PT), `cleanupDeletedAccounts` (daily 3AM PT), `exportEventsToBigQuery` (daily 4AM PT), `detectChurnRisk`, `aggregateWeeklyMetrics`, `cleanupCoachingInsights`, `graduatePrompts`
+- **Callable**: `deleteAccount`, `exportUserData`, `anonymizeMyResponses`, `generateAIPrompts`, `triggerBigQueryExport`, `triggerPromptDelivery`, `generateCoachingInsight`, `triggerPulseComputation`, `managePrompt`, `getPromptPerformance`, `createExperiment`, `assignExperimentVariant`, `getDashboardMetrics`, `revenueCatWebhook`
+- **Triggers**: `onResponseSubmitted`, `onReactionAdded`, `onCheckInSubmitted`, `onChatMessageCreated`
 - AI generation uses `claude-sonnet-4-5-20250929` via Anthropic API
 
 ## Testing
 
 - Framework: Jest + React Native Testing Library
-- Tests: `src/__tests__/` (20 files), `functions/__tests__/`
-- Mocks: `src/__mocks__/` (react-native-purchases, netinfo, async-storage)
-- `babel-jest` transform with `react-native` preset; `ts-jest` for functions
+- Preset: `@react-native/jest-preset` (not `react-native` — changed in RN 0.85)
+- Tests: `src/__tests__/` (24 suites, 140 tests), `functions/__tests__/`
+- Mocks: `src/__mocks__/` (react-native-purchases, netinfo, async-storage, react-native-reanimated, react-native-worklets, sentry, google-signin, expo-apple-authentication)
+- `babel-jest` transform; `ts-jest` for functions
 
 ## Environment
 
@@ -179,51 +211,80 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - `GoogleService-Info.plist` is committed (iOS Firebase config)
 - EAS build profiles: `development` (simulator), `preview` (internal), `production`
 - `babel.config.js`: `react-native-reanimated/plugin` must be last
-
-## Documentation
-
-Full specs in `../docs/`: PRD, UX flows, architecture, data model, API design, analytics, seed prompts, tone guide, validation plan, twenty-week plan.
+- `.easignore` excludes `ios/`, `android/`, `node_modules/`, `.playwright-cli/`
+- `.npmrc` has `legacy-peer-deps=true` for SDK 55 compatibility
 
 ---
 
-## Workflow Orchestration
+## Development Rules
 
-### 1. Plan Mode Default
+### 1. Context Window Discipline
+- Break work into focused modules before generating code
+- One task per subagent for focused execution
+- If output starts contradicting earlier work, stop and re-read the source files
+- Never generate more than one file's worth of changes without verifying
+
+### 2. Error Handling is Mandatory
+- Every Cloud Function callable must have try/catch with user-facing error messages
+- Every Firestore write in client code must have catch with Alert feedback
+- Every API call must handle failure — no naked calls
+- Validate at system boundaries: user input, API responses, deep link params
+
+### 3. No Duplicate Logic
+- Check existing hooks, utils, and services before creating new ones
+- Search the codebase (grep/glob) before writing any utility function
+- Theme tokens exist in `src/config/theme.ts` — use them, don't hardcode
+- One source of truth for types, colors, spacing, shadows
+
+### 4. Types First
+- Write TypeScript interfaces before implementation
+- No `any` types except in test mocks and third-party interop
+- Firestore data always typed at read boundary (snake_case → camelCase)
+- Run `npx tsc --noEmit` after every change
+
+### 5. Verify Dependencies
+- Run `npx expo-doctor` after installing or upgrading packages
+- Check actual installed version: `node -e "console.log(require('pkg/package.json').version)"`
+- Never assume a package API — check the .d.ts or docs
+- Known issue: Firebase web SDK v10 breaks on SDK 55. Must use v12+.
+
+### 6. Security Checklist (Before Every Deploy)
+- [ ] No hardcoded secrets (API keys, passwords, tokens)
+- [ ] All user inputs validated
+- [ ] All Cloud Functions check `context.auth`
+- [ ] Admin functions check `/admins/{uid}` collection
+- [ ] Rate limiting on data export (1/24hr)
+- [ ] Error messages don't leak sensitive data
+- [ ] `ITSAppUsesNonExemptEncryption` is accurate in app.json
+
+---
+
+## Workflow
+
+### Plan First
 - Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
 - If something goes sideways, STOP and re-plan — don't keep pushing
-- Write detailed specs upfront to reduce ambiguity
 
-### 2. Subagent Strategy
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- One task per subagent for focused execution
-
-### 3. Self-Improvement Loop
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Review lessons at session start for relevant project
-
-### 4. Verification Before Done
+### Verify Before Done
 - Never mark a task complete without proving it works
-- Run tests, check logs, demonstrate correctness
+- Run `npx tsc --noEmit` + `npm test` after every change
+- For Cloud Functions: `cd functions && npm run build` to verify
 - Ask yourself: "Would a staff engineer approve this?"
 
-### 5. Demand Elegance (Balanced)
-- For non-trivial changes: pause and ask "Is there a more elegant way?"
-- Skip this for simple, obvious fixes — don't over-engineer
+### Autonomous Bug Fixing
+- When given a bug report: check logs first (`firebase functions:log`), then fix
+- Point at the actual error, not the symptom
+- Test the fix, don't just reason about it
 
-### 6. Autonomous Bug Fixing
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests — then resolve them
-
-## Task Management
-
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Capture Lessons**: Update `tasks/lessons.md` after corrections
-
-## Core Principles
-
+### Core Principles
 - **Simplicity First**: Make every change as simple as possible. Minimal code impact.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary.
+
+## Known Issues / Gotchas
+
+- **iOS 26 + Release builds**: React Native 0.83 TurboModule crash on physical devices. Debug builds work. Tracked at facebook/react-native#54859.
+- **Firebase Auth on SDK 55**: Must use firebase@12+. Older versions throw "Component auth has not been registered yet".
+- **Firestore indexes**: Queries with composite filters need indexes deployed. Check `firebase functions:log` for "FAILED_PRECONDITION" errors and create missing indexes.
+- **expo-updates**: `runtimeVersion` must change when native code changes (SDK upgrades). Use static version string, not `appVersion` policy.
+- **Font weight/family**: Always match — `Alexandria-SemiBold` = `'600'`, `Inter-Medium` = `'500'`. Mismatches cause inconsistent rendering.
