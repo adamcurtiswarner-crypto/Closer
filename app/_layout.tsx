@@ -19,6 +19,10 @@ import { BiometricGate } from '@/components/BiometricGate';
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enabled: !__DEV__,
+  // Performance monitoring
+  tracesSampleRate: 0.2, // 20% of transactions
+  profilesSampleRate: 0.1, // 10% of profiled transactions
+  enableAutoPerformanceTracing: true,
   beforeSend(event) {
     // Strip sensitive relationship data from error payloads
     if (event.breadcrumbs) {
@@ -26,24 +30,15 @@ Sentry.init({
         if (breadcrumb.data) {
           const sanitized = { ...breadcrumb.data };
           delete sanitized.response_text;
-          delete sanitized.response_text_encrypted;
           delete sanitized.partnerName;
           delete sanitized.displayName;
-          // Remove any value containing the encryption sentinel
-          for (const key of Object.keys(sanitized)) {
-            if (typeof sanitized[key] === 'string' && sanitized[key].includes('[encrypted]')) {
-              delete sanitized[key];
-            }
-          }
           breadcrumb.data = sanitized;
         }
         return breadcrumb;
       });
     }
-    // Strip sensitive fields from extra context
     if (event.extra) {
       delete event.extra.response_text;
-      delete event.extra.response_text_encrypted;
       delete event.extra.partnerName;
       delete event.extra.displayName;
     }
