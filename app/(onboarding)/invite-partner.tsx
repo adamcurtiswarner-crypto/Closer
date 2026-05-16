@@ -14,21 +14,21 @@ import { logger } from '@/utils/logger';
 import { router } from 'expo-router';
 import { Button } from '@/components';
 import { useCreateInvite, usePendingInvite } from '@/hooks/useCouple';
-import { getShareUrl } from '@/config/app';
+import { getShareMessage } from '@/config/app';
 import { useTranslation } from 'react-i18next';
 
 export default function InvitePartnerScreen() {
   const { data: pendingInvite } = usePendingInvite();
   const createInvite = useCreateInvite();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
   const { t } = useTranslation();
 
   // Sync state when pending invite loads asynchronously
   useEffect(() => {
     if (pendingInvite?.code && !inviteCode) {
       setInviteCode(pendingInvite.code);
-      setShareUrl(getShareUrl(pendingInvite.code));
+      setShareMessage(getShareMessage(pendingInvite.code));
     }
   }, [pendingInvite?.code]);
 
@@ -36,7 +36,7 @@ export default function InvitePartnerScreen() {
     try {
       const result = await createInvite.mutateAsync();
       setInviteCode(result.code);
-      setShareUrl(result.shareUrl);
+      setShareMessage(result.shareMessage);
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to create invite.');
     }
@@ -50,11 +50,11 @@ export default function InvitePartnerScreen() {
   };
 
   const handleShare = async () => {
-    if (!shareUrl) return;
+    if (!shareMessage) return;
 
     try {
       await Share.share({
-        message: `I'm trying Stoke — an app for us to stay connected. Join me: ${shareUrl}`,
+        message: shareMessage,
       });
     } catch (error) {
       logger.error('Share failed:', error);

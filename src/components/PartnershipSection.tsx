@@ -45,7 +45,7 @@ export function PartnershipSection({
       const result = await createInvite.mutateAsync();
       // Share the invite
       await Share.share({
-        message: `Join me on Stoke! Use code ${result.code} or tap: ${result.shareUrl}`,
+        message: result.shareMessage,
       });
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to create invite');
@@ -56,7 +56,7 @@ export function PartnershipSection({
     if (!pendingInvite) return;
     try {
       await Share.share({
-        message: `Join me on Stoke! Use code ${pendingInvite.code} or tap: https://stoke.app/join/${pendingInvite.code}`,
+        message: `Join me on Stoke — a daily prompt app for couples. Download Stoke from the App Store, then enter this code to link up: ${pendingInvite.code}`,
       });
     } catch (error) {
       // User cancelled share

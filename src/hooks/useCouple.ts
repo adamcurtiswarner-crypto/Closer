@@ -14,7 +14,7 @@ import {
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '@/config/firebase';
-import { getShareUrl } from '@/config/app';
+import { getShareMessage } from '@/config/app';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 
@@ -134,7 +134,7 @@ export function useCreateInvite() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (): Promise<{ code: string; shareUrl: string }> => {
+    mutationFn: async (): Promise<{ code: string; shareMessage: string }> => {
       if (!user?.id) throw new Error('Not authenticated');
 
       // Check if existing coupleId points to an active couple
@@ -196,7 +196,7 @@ export function useCreateInvite() {
 
       return {
         code,
-        shareUrl: getShareUrl(code),
+        shareMessage: getShareMessage(code),
       };
     },
     onSuccess: () => {

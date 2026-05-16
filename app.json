@@ -21,9 +21,6 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSFaceIDUsageDescription": "Stoke uses Face ID to unlock the app quickly and securely."
       },
-      "associatedDomains": [
-        "applinks:stoke.app"
-      ],
       "entitlements": {
         "com.apple.security.application-groups": [
           "group.io.getstoke.app"
