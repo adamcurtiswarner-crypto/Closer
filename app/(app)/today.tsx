@@ -206,6 +206,20 @@ export default function TodayScreen() {
     mode = 'complete';
   }
 
+  // Auto-fetch today's prompt if none exists
+  const hasAutoTriggered = useRef(false);
+  useEffect(() => {
+    if (
+      mode === 'no-prompt' &&
+      user?.coupleId &&
+      !triggerPrompt.isPending &&
+      !hasAutoTriggered.current
+    ) {
+      hasAutoTriggered.current = true;
+      triggerPrompt.mutate();
+    }
+  }, [mode, user?.coupleId, triggerPrompt.isPending]);
+
   // Log prompt_viewed when assignment first loads
   const viewedRef = useRef<string | null>(null);
   useEffect(() => {

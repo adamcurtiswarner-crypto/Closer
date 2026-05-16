@@ -2,6 +2,11 @@
 export { Button } from './Button';
 export { Input } from './Input';
 
+// Together screen (couple-focused)
+export { CoupleHero } from './CoupleHero';
+export { RelationshipStats } from './RelationshipStats';
+export { MilestoneBadges } from './MilestoneBadges';
+
 // Prompt components
 export { PromptCard } from './PromptCard';
 export { ResponseCard } from './ResponseCard';
