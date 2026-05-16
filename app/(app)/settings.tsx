@@ -27,6 +27,7 @@ import { Paywall } from '@/components/Paywall';
 import { ReauthModal } from '@/components/ReauthModal';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, Icon } from '@/components';
+import { ProfileCard } from '@/components/ProfileCard';
 import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import Constants from 'expo-constants';
@@ -204,8 +205,13 @@ export default function SettingsScreen() {
       </View>
 
       <ScrollView style={styles.scrollView}>
+        {/* Profile */}
+        <Animated.View entering={FadeInUp.duration(400).delay(50)}>
+          <ProfileCard />
+        </Animated.View>
+
         {/* Notifications */}
-        <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+        <Animated.View entering={FadeInUp.duration(400).delay(150)}>
           <Text style={styles.sectionTitle}>{t('settings.notifications')}</Text>
           <View style={styles.section}>
             <TouchableOpacity style={styles.row} onPress={() => setShowTimePicker(true)}>
