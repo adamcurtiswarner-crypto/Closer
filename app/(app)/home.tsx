@@ -18,7 +18,7 @@ import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
 import { useStreak } from '@/hooks/useStreak';
-import { useWeeklyActivity } from '@/hooks/useWeeklyActivity';
+import { useMonthlyActivity } from '@/hooks/useMonthlyActivity';
 import { useDateNights } from '@/hooks/useDateNights';
 import { useGoals } from '@/hooks/useGoals';
 import { useTodayPrompt } from '@/hooks/usePrompt';
@@ -63,7 +63,7 @@ export default function TogetherScreen() {
   const { user } = useAuth();
   const { data: couple } = useCouple();
   const { currentStreak, isStreakActive } = useStreak();
-  const { days, completedCount } = useWeeklyActivity();
+  const { days, completedCount, month, year, startDayOffset } = useMonthlyActivity();
   const { data: dateNights } = useDateNights();
   const { data: goals } = useGoals();
 
@@ -191,6 +191,9 @@ export default function TogetherScreen() {
             days={days}
             completedCount={completedCount}
             isStreakActive={isStreakActive}
+            month={month}
+            year={year}
+            startDayOffset={startDayOffset}
           />
         </Animated.View>
 

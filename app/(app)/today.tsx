@@ -37,7 +37,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
 import { useReaction, type ReactionType } from '@/hooks/useReaction';
 import { useStreak } from '@/hooks/useStreak';
-import { useWeeklyActivity } from '@/hooks/useWeeklyActivity';
+import { useMonthlyActivity } from '@/hooks/useMonthlyActivity';
 import { useCouple } from '@/hooks/useCouple';
 import { useCheckIn } from '@/hooks/useCheckIn';
 import { useCoachingInsight } from '@/hooks/useCoachingInsight';
@@ -100,7 +100,7 @@ export default function TodayScreen() {
   const triggerPrompt = useTriggerPrompt();
   const reaction = useReaction();
   const { currentStreak, isStreakActive } = useStreak();
-  const { days: weekDays, completedCount: weekCompletedCount } = useWeeklyActivity();
+  const { days: monthDays, completedCount: monthCompletedCount, month, year, startDayOffset } = useMonthlyActivity();
   const { data: couple } = useCouple();
   const { hasPendingCheckIn, submitCheckIn, dismissCheckIn } = useCheckIn();
   const { latestInsight, dismissInsight, markActedOn } = useCoachingInsight();
@@ -463,13 +463,16 @@ export default function TodayScreen() {
             )}
           </Animated.View>
 
-          {(currentStreak > 0 || weekCompletedCount > 0) && (
+          {(currentStreak > 0 || monthCompletedCount > 0) && (
             <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
               <StreakRing
                 currentStreak={currentStreak}
-                days={weekDays}
-                completedCount={weekCompletedCount}
+                days={monthDays}
+                completedCount={monthCompletedCount}
                 isStreakActive={isStreakActive}
+                month={month}
+                year={year}
+                startDayOffset={startDayOffset}
               />
             </Animated.View>
           )}
@@ -632,9 +635,12 @@ export default function TodayScreen() {
             <Animated.View entering={FadeInDown.duration(400)} style={styles.streakDetailSection}>
               <StreakRing
                 currentStreak={currentStreak}
-                days={weekDays}
-                completedCount={weekCompletedCount}
+                days={monthDays}
+                completedCount={monthCompletedCount}
                 isStreakActive={isStreakActive}
+                month={month}
+                year={year}
+                startDayOffset={startDayOffset}
                 celebrate
               />
             </Animated.View>
