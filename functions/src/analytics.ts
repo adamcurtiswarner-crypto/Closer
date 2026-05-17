@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { BigQuery } from '@google-cloud/bigquery';
 import { format, subDays } from 'date-fns';
-import { db, APP_NAME, sendPushNotification, logEvent } from './shared';
+import { db, APP_NAME, sendPushNotification, logEvent, reportError } from './shared';
 
 // ============================================
 // BigQuery Constants (private)
@@ -463,7 +463,7 @@ export const exportEventsToBigQuery = functions.pubsub
       const result = await exportEventsBatch(cutoffDate);
       console.log(`BigQuery export: ${result.exported} exported, ${result.deleted} deleted`);
     } catch (error) {
-      console.error('BigQuery export failed:', error);
+      await reportError('exportEventsToBigQuery', error);
     }
 
     return null;

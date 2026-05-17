@@ -5,3 +5,4 @@ export * from './coaching';
 export * from './users';
 export * from './triggers';
 export * from './admin';
+export * from './alerting';

@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { db, VALID_PROMPT_TYPES, VALID_PROMPT_DEPTHS } from './shared';
+import { db, VALID_PROMPT_TYPES, VALID_PROMPT_DEPTHS, reportError } from './shared';
 
 // ============================================
 // HELPER: Prompt Recommendation
@@ -402,7 +402,7 @@ export const revenueCatWebhook = functions.https.onRequest(async (req, res) => {
 
     res.status(200).send('OK');
   } catch (error) {
-    console.error('RevenueCat webhook error:', error);
+    await reportError('revenueCatWebhook', error, { extra: { eventType, appUserId } });
     res.status(500).send('Internal Server Error');
   }
 });

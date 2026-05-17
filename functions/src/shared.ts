@@ -195,6 +195,7 @@ export async function sendPushNotification(
       });
     }
   } catch (error) {
+    // Don't use reportError here to avoid circular failure if Firestore is down
     console.error('Push notification failed:', error);
   }
 }
@@ -219,6 +220,42 @@ export async function logEvent(
     date: format(now, 'yyyy-MM-dd'),
     week: format(now, "yyyy-'W'ww"),
   });
+}
+
+// ============================================
+// ERROR REPORTING
+// ============================================
+
+/**
+ * Logs a Cloud Function error to the `error_logs` Firestore collection.
+ * Called from catch blocks across all functions to enable centralized alerting.
+ */
+export async function reportError(
+  functionName: string,
+  error: unknown,
+  context?: { userId?: string; coupleId?: string; extra?: Record<string, unknown> }
+): Promise<void> {
+  const message = error instanceof Error ? error.message : String(error);
+  const stack = error instanceof Error ? error.stack || null : null;
+
+  try {
+    await db.collection('error_logs').add({
+      function_name: functionName,
+      message,
+      stack,
+      user_id: context?.userId || null,
+      couple_id: context?.coupleId || null,
+      extra: context?.extra || null,
+      alerted: false,
+      created_at: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (logError) {
+    // Last resort: at least get it into Cloud Logging
+    console.error(`[reportError] Failed to write error_log for ${functionName}:`, logError);
+  }
+
+  // Always log to Cloud Logging as well
+  console.error(`[${functionName}]`, message);
 }
 
 // Re-export commonly needed items from dependencies

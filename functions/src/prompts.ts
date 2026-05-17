@@ -11,6 +11,7 @@ import {
   initializeDepthProgress,
   sendPushNotification,
   enforceRateLimit,
+  reportError,
 } from './shared';
 
 // ============================================
@@ -269,7 +270,7 @@ export const deliverDailyPrompts = functions.pubsub
           await deliverPromptToCouple(userData.couple_id);
           deliveredCouples.add(userData.couple_id);
         } catch (err) {
-          console.error(`Failed to deliver prompt to couple ${userData.couple_id}:`, err);
+          await reportError('deliverDailyPrompts', err, { coupleId: userData.couple_id });
         }
       }
     }

@@ -9,6 +9,7 @@ import {
   formatDate,
   sendPushNotification,
   enforceRateLimit,
+  reportError,
 } from './shared';
 
 // ============================================
@@ -522,7 +523,7 @@ export const computeRelationshipPulse = functions.pubsub
         await computePulseForCouple(coupleDoc.id, coupleDoc.data());
         processed++;
       } catch (err) {
-        console.error(`Pulse computation failed for couple ${coupleDoc.id}:`, err);
+        await reportError('computeRelationshipPulse', err, { coupleId: coupleDoc.id });
         failed++;
       }
     }
@@ -642,7 +643,7 @@ export const autoGeneratePrompts = functions.pubsub
       const result = await generatePromptsBatch(deficit);
       console.log(`Auto-generated ${result.generated} prompts: ${result.promptIds.join(', ')}`);
     } catch (error) {
-      console.error('Auto-generate prompts failed:', error);
+      await reportError('autoGeneratePrompts', error);
     }
 
     return null;

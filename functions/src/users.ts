@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { db, APP_NAME, sendPushNotification, logEvent } from './shared';
+import { db, APP_NAME, sendPushNotification, logEvent, reportError } from './shared';
 
 // ============================================
 // CALLABLE: Delete Account
@@ -69,7 +69,7 @@ export const deleteAccount = functions.https.onCall(async (data, context) => {
   try {
     await admin.auth().deleteUser(userId);
   } catch (error) {
-    console.error('Failed to delete Firebase Auth user:', error);
+    await reportError('deleteAccount', error, { userId });
   }
 
   await logEvent('account_deleted', userId, userData.couple_id || null, {});
@@ -168,7 +168,7 @@ export const cleanupDeletedAccounts = functions.pubsub
 
         purgedCount++;
       } catch (error) {
-        console.error(`Failed to purge user ${userId}:`, error);
+        await reportError('cleanupDeletedAccounts', error, { userId });
       }
     }
 
