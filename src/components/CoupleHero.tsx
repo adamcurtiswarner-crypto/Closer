@@ -25,18 +25,19 @@ function Avatar({ photoUrl, initials, color }: { photoUrl: string | null; initia
 export function CoupleHero({ userName, partnerName, userPhotoUrl, partnerPhotoUrl, linkedAt }: CoupleHeroProps) {
   const userInitials = (userName || 'Y').charAt(0).toUpperCase();
   const partnerInitials = (partnerName || 'P').charAt(0).toUpperCase();
-  const displayNames = `${userName || 'You'} and ${partnerName || 'Partner'}`;
   const sinceText = linkedAt ? `Together since ${format(linkedAt, 'MMMM d, yyyy')}` : 'Your story is just beginning';
 
   return (
     <Animated.View entering={FadeIn.duration(500)} style={styles.container}>
       <View style={styles.avatarRow}>
         <Avatar photoUrl={userPhotoUrl} initials={userInitials} color="#c97454" />
+        <View style={styles.plusBadge}>
+          <Text style={styles.plusText}>+</Text>
+        </View>
         <View style={styles.avatarOverlap}>
           <Avatar photoUrl={partnerPhotoUrl} initials={partnerInitials} color="#490f5f" />
         </View>
       </View>
-      <Text style={styles.names}>{displayNames}</Text>
       <Text style={styles.since}>{sinceText}</Text>
     </Animated.View>
   );
@@ -60,9 +61,28 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#ffffff',
   },
-  avatarOverlap: {
-    marginLeft: -24,
+  plusBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: -14,
+    zIndex: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
+  plusText: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
+    color: '#c97454',
+  },
+  avatarOverlap: {},
   avatarFallback: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -72,13 +92,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Alexandria-SemiBold',
     fontWeight: '600',
     color: '#ffffff',
-  },
-  names: {
-    fontSize: 22,
-    fontFamily: 'Alexandria-SemiBold',
-    fontWeight: '600',
-    color: '#1c1917',
-    textAlign: 'center',
   },
   since: {
     fontSize: 14,
