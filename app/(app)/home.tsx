@@ -18,6 +18,7 @@ import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
 import { useStreak } from '@/hooks/useStreak';
+import { useWeeklyActivity } from '@/hooks/useWeeklyActivity';
 import { useDateNights } from '@/hooks/useDateNights';
 import { useGoals } from '@/hooks/useGoals';
 import { useTodayPrompt } from '@/hooks/usePrompt';
@@ -61,7 +62,8 @@ export default function TogetherScreen() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: couple } = useCouple();
-  const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
+  const { currentStreak, isStreakActive } = useStreak();
+  const { days, completedCount } = useWeeklyActivity();
   const { data: dateNights } = useDateNights();
   const { data: goals } = useGoals();
 
@@ -186,7 +188,8 @@ export default function TogetherScreen() {
           <Text style={styles.sectionTitle}>This week, together</Text>
           <StreakRing
             currentStreak={currentStreak}
-            weeklyCompletions={weeklyCompletions}
+            days={days}
+            completedCount={completedCount}
             isStreakActive={isStreakActive}
           />
         </Animated.View>

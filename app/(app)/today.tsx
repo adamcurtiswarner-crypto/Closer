@@ -37,6 +37,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
 import { useReaction, type ReactionType } from '@/hooks/useReaction';
 import { useStreak } from '@/hooks/useStreak';
+import { useWeeklyActivity } from '@/hooks/useWeeklyActivity';
 import { useCouple } from '@/hooks/useCouple';
 import { useCheckIn } from '@/hooks/useCheckIn';
 import { useCoachingInsight } from '@/hooks/useCoachingInsight';
@@ -98,7 +99,8 @@ export default function TodayScreen() {
   const submitFeedback = useSubmitFeedback();
   const triggerPrompt = useTriggerPrompt();
   const reaction = useReaction();
-  const { currentStreak, weeklyCompletions, isStreakActive } = useStreak();
+  const { currentStreak, isStreakActive } = useStreak();
+  const { days: weekDays, completedCount: weekCompletedCount } = useWeeklyActivity();
   const { data: couple } = useCouple();
   const { hasPendingCheckIn, submitCheckIn, dismissCheckIn } = useCheckIn();
   const { latestInsight, dismissInsight, markActedOn } = useCoachingInsight();
@@ -461,11 +463,12 @@ export default function TodayScreen() {
             )}
           </Animated.View>
 
-          {(currentStreak > 0 || weeklyCompletions > 0) && (
+          {(currentStreak > 0 || weekCompletedCount > 0) && (
             <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
               <StreakRing
                 currentStreak={currentStreak}
-                weeklyCompletions={weeklyCompletions}
+                days={weekDays}
+                completedCount={weekCompletedCount}
                 isStreakActive={isStreakActive}
               />
             </Animated.View>
@@ -629,7 +632,8 @@ export default function TodayScreen() {
             <Animated.View entering={FadeInDown.duration(400)} style={styles.streakDetailSection}>
               <StreakRing
                 currentStreak={currentStreak}
-                weeklyCompletions={weeklyCompletions}
+                days={weekDays}
+                completedCount={weekCompletedCount}
                 isStreakActive={isStreakActive}
                 celebrate
               />
