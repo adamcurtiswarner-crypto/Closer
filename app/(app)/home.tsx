@@ -132,6 +132,8 @@ export default function TogetherScreen() {
       queryClient.invalidateQueries({ queryKey: ['streak'] }),
       queryClient.invalidateQueries({ queryKey: ['dateNights'] }),
       queryClient.invalidateQueries({ queryKey: ['goals'] }),
+      queryClient.invalidateQueries({ queryKey: ['partnerLoveLanguage'] }),
+      queryClient.invalidateQueries({ queryKey: ['monthlyActivity'] }),
     ]);
     setRefreshing(false);
   }, [queryClient]);
