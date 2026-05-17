@@ -137,6 +137,7 @@ function RootLayout() {
     'Inter-Regular': require('../src/assets/fonts/Inter-Regular.ttf'),
     'Inter-Medium': require('../src/assets/fonts/Inter-Medium.ttf'),
     'Inter-SemiBold': require('../src/assets/fonts/Inter-SemiBold.ttf'),
+    'Pacifico': require('../src/assets/fonts/Pacifico-Regular.ttf'),
   });
 
   // Keep splash screen visible until fonts are loaded

@@ -38,6 +38,11 @@ export function CoupleHero({ userName, partnerName, userPhotoUrl, partnerPhotoUr
           <Avatar photoUrl={partnerPhotoUrl} initials={partnerInitials} color="#490f5f" />
         </View>
       </View>
+      <View style={styles.namesRow}>
+        <Text style={styles.nameScript}>{userName || 'You'}</Text>
+        <Text style={styles.nameAnd}>&</Text>
+        <Text style={styles.nameScript}>{partnerName || 'Partner'}</Text>
+      </View>
       <Text style={styles.since}>{sinceText}</Text>
     </Animated.View>
   );
@@ -93,11 +98,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
   },
+  namesRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 8,
+  },
+  nameScript: {
+    fontSize: 26,
+    fontFamily: 'Pacifico',
+    color: '#c97454',
+  },
+  nameAnd: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    color: '#a8a29e',
+  },
   since: {
     fontSize: 14,
     fontFamily: 'Inter-Regular',
     color: '#78716c',
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 6,
   },
 });
