@@ -167,19 +167,13 @@ export default function TogetherScreen() {
             <View style={styles.loveLanguageCard}>
               <View style={styles.loveLanguageRow}>
                 <View style={styles.loveLanguagePerson}>
-                  <Text style={styles.loveLanguageIcon}>{userLang?.icon || '💬'}</Text>
-                  <View>
-                    <Text style={styles.loveLanguageName}>{user?.displayName?.split(' ')[0] || 'You'}</Text>
-                    <Text style={styles.loveLanguageValue}>{userLang?.label || 'Not set yet'}</Text>
-                  </View>
+                  <Text style={styles.loveLanguageName}>{user?.displayName?.split(' ')[0] || 'You'}</Text>
+                  <Text style={styles.loveLanguageValue}>{userLang?.label || 'Not set yet'}</Text>
                 </View>
                 <View style={styles.loveLanguageDivider} />
                 <View style={styles.loveLanguagePerson}>
-                  <Text style={styles.loveLanguageIcon}>{partnerLang?.icon || '💬'}</Text>
-                  <View>
-                    <Text style={styles.loveLanguageName}>{partnerName}</Text>
-                    <Text style={styles.loveLanguageValue}>{partnerLang?.label || 'Not set yet'}</Text>
-                  </View>
+                  <Text style={styles.loveLanguageName}>{partnerName}</Text>
+                  <Text style={styles.loveLanguageValue}>{partnerLang?.label || 'Not set yet'}</Text>
                 </View>
               </View>
             </View>
@@ -315,12 +309,6 @@ const styles = StyleSheet.create({
   },
   loveLanguagePerson: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  loveLanguageIcon: {
-    fontSize: 24,
   },
   loveLanguageName: {
     fontSize: 12,
