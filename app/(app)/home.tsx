@@ -30,9 +30,10 @@ import { MilestoneBadges } from '@/components/MilestoneBadges';
 import { Icon } from '@/components/Icon';
 import { format, differenceInDays } from 'date-fns';
 
-function getDaysAsCouple(linkedAt: Date | null): number {
-  if (!linkedAt) return 0;
-  return differenceInDays(new Date(), linkedAt) + 1;
+function getDaysAsCouple(anniversaryDate: Date | null, linkedAt: Date | null): number {
+  const startDate = anniversaryDate || linkedAt;
+  if (!startDate) return 0;
+  return differenceInDays(new Date(), startDate) + 1;
 }
 
 function getWarmText(opts: {
@@ -65,7 +66,7 @@ export default function TogetherScreen() {
   const { data: goals } = useGoals();
 
   const partnerName = user?.partnerName || 'Partner';
-  const daysAsCouple = getDaysAsCouple(couple?.linkedAt ?? null);
+  const daysAsCouple = getDaysAsCouple(couple?.anniversaryDate ?? null, couple?.linkedAt ?? null);
 
   // Fetch partner's love language
   const partnerId = couple?.memberIds?.find((id: string) => id !== user?.id) || null;
@@ -148,7 +149,7 @@ export default function TogetherScreen() {
           partnerName={user?.partnerName ?? null}
           userPhotoUrl={user?.photoUrl ?? null}
           partnerPhotoUrl={user?.partnerPhotoUrl ?? null}
-          linkedAt={couple?.linkedAt ?? null}
+          linkedAt={couple?.anniversaryDate ?? couple?.linkedAt ?? null}
         />
 
         {/* 2. Relationship Stats */}
