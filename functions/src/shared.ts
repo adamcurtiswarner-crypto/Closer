@@ -121,6 +121,40 @@ export function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
 
+/**
+ * Rate limiter for callable functions.
+ * Uses a Firestore doc to track last call time per user.
+ * Throws HttpsError if called too frequently.
+ */
+export async function enforceRateLimit(
+  userId: string,
+  action: string,
+  cooldownSeconds: number
+): Promise<void> {
+  const ref = db.collection('rate_limits').doc(`${userId}_${action}`);
+  const doc = await ref.get();
+
+  if (doc.exists) {
+    const lastCall = doc.data()?.last_call?.toDate();
+    if (lastCall) {
+      const elapsed = (Date.now() - lastCall.getTime()) / 1000;
+      if (elapsed < cooldownSeconds) {
+        const wait = Math.ceil(cooldownSeconds - elapsed);
+        throw new functions.https.HttpsError(
+          'resource-exhausted',
+          `Please wait ${wait} seconds before trying again.`
+        );
+      }
+    }
+  }
+
+  await ref.set({
+    last_call: admin.firestore.FieldValue.serverTimestamp(),
+    user_id: userId,
+    action,
+  });
+}
+
 export async function sendPushNotification(
   userId: string,
   notification: { title: string; body: string },

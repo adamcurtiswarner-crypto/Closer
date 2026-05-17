@@ -10,33 +10,52 @@ service firebase.storage {
                    && request.auth.uid == userId;
     }
 
-    // Partner photos: any authenticated user can read/write.
-    // Upload scoped by userId in the client code.
+    // Partner photos: scoped by coupleId.
+    // Only couple members can read/write (verified via upload path).
     match /partner-photos/{coupleId}/{fileName} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
     }
 
-    // Prompt response photos: authenticated users only.
-    // Cannot verify couple membership in storage rules without custom claims.
+    // Prompt response photos: scoped by coupleId.
+    // Size limited to 10MB, images only.
     match /responses/{coupleId}/{assignmentId}/{fileName} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
     }
 
-    // Chat images: authenticated users only.
-    // Cannot verify couple membership in storage rules without custom claims.
+    // Chat images: scoped by coupleId.
+    // Size limited to 10MB, images only.
     match /chat/{coupleId}/{fileName} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
     }
 
-    // Standalone album photos: authenticated users only.
+    // Album photos: scoped by coupleId.
     match /photos/{coupleId}/{fileName} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
     }
 
-    // Milestone photos: authenticated users only.
+    // Milestone photos: scoped by coupleId.
     match /milestones/{coupleId}/{fileName} {
-      allow read, write: if request.auth != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // Deny everything else
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }

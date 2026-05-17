@@ -10,6 +10,7 @@ import {
   getEffectiveTone,
   initializeDepthProgress,
   sendPushNotification,
+  enforceRateLimit,
 } from './shared';
 
 // ============================================
@@ -282,12 +283,12 @@ export const deliverDailyPrompts = functions.pubsub
 // ============================================
 
 export const triggerPromptDelivery = functions.https.onCall(async (data, context) => {
-  // Require authentication
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
 
   const userId = context.auth.uid;
+  await enforceRateLimit(userId, 'triggerPrompt', 30); // 30s cooldown
   const userDoc = await db.collection('users').doc(userId).get();
 
   if (!userDoc.exists) {

@@ -8,6 +8,7 @@ import {
   getWeekId,
   formatDate,
   sendPushNotification,
+  enforceRateLimit,
 } from './shared';
 
 // ============================================
@@ -540,6 +541,8 @@ export const triggerPulseComputation = functions.https.onCall(async (data, conte
   }
 
   const userId = context.auth.uid;
+  await enforceRateLimit(userId, 'pulseComputation', 300); // 5 min cooldown
+
   const userDoc = await db.collection('users').doc(userId).get();
 
   if (!userDoc.exists) {
@@ -655,6 +658,8 @@ export const generateCoachingInsight = functions.https.onCall(async (data, conte
   }
 
   const userId = context.auth.uid;
+  await enforceRateLimit(userId, 'coachingInsight', 3600); // 1 hour cooldown (uses AI credits)
+
   const userDoc = await db.collection('users').doc(userId).get();
 
   if (!userDoc.exists) {
