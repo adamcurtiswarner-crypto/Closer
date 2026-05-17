@@ -12,6 +12,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
 import { useStreak } from '@/hooks/useStreak';
@@ -19,6 +22,7 @@ import { useDateNights } from '@/hooks/useDateNights';
 import { useGoals } from '@/hooks/useGoals';
 import { useTodayPrompt } from '@/hooks/usePrompt';
 import { getAnniversaryCountdown } from '@/config/milestones';
+import { getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { StreakRing } from '@/components/StreakRing';
 import { CoupleHero } from '@/components/CoupleHero';
 import { RelationshipStats } from '@/components/RelationshipStats';
@@ -62,6 +66,22 @@ export default function TogetherScreen() {
 
   const partnerName = user?.partnerName || 'Partner';
   const daysAsCouple = getDaysAsCouple(couple?.linkedAt ?? null);
+
+  // Fetch partner's love language
+  const partnerId = couple?.memberIds?.find((id: string) => id !== user?.id) || null;
+  const { data: partnerLoveLanguage } = useQuery({
+    queryKey: ['partnerLoveLanguage', partnerId],
+    queryFn: async () => {
+      if (!partnerId) return null;
+      const partnerSnap = await getDoc(doc(db, 'users', partnerId));
+      return partnerSnap.exists() ? (partnerSnap.data().love_language || null) : null;
+    },
+    enabled: !!partnerId,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const userLang = getLoveLanguageDisplay(user?.loveLanguage ?? null);
+  const partnerLang = getLoveLanguageDisplay(partnerLoveLanguage ?? null);
 
   const warmText = useMemo(() => getWarmText({
     totalCompletions: couple?.totalCompletions ?? 0,
@@ -140,8 +160,34 @@ export default function TogetherScreen() {
           animationDelay={200}
         />
 
+        {/* Love Languages */}
+        {(userLang || partnerLang) && (
+          <Animated.View entering={FadeInUp.duration(400).delay(300)} style={styles.loveLanguageSection}>
+            <Text style={styles.sectionTitle}>Love languages</Text>
+            <View style={styles.loveLanguageCard}>
+              <View style={styles.loveLanguageRow}>
+                <View style={styles.loveLanguagePerson}>
+                  <Text style={styles.loveLanguageIcon}>{userLang?.icon || '💬'}</Text>
+                  <View>
+                    <Text style={styles.loveLanguageName}>{user?.displayName?.split(' ')[0] || 'You'}</Text>
+                    <Text style={styles.loveLanguageValue}>{userLang?.label || 'Not set yet'}</Text>
+                  </View>
+                </View>
+                <View style={styles.loveLanguageDivider} />
+                <View style={styles.loveLanguagePerson}>
+                  <Text style={styles.loveLanguageIcon}>{partnerLang?.icon || '💬'}</Text>
+                  <View>
+                    <Text style={styles.loveLanguageName}>{partnerName}</Text>
+                    <Text style={styles.loveLanguageValue}>{partnerLang?.label || 'Not set yet'}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        )}
+
         {/* 3. This Week Together */}
-        <Animated.View entering={FadeInUp.duration(400).delay(400)} style={styles.streakSection}>
+        <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.streakSection}>
           <Text style={styles.sectionTitle}>This week, together</Text>
           <StreakRing
             currentStreak={currentStreak}
@@ -151,7 +197,7 @@ export default function TogetherScreen() {
         </Animated.View>
 
         {/* 4. Quick Actions (2x2 grid) */}
-        <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.quickActionsSection}>
+        <Animated.View entering={FadeInUp.duration(400).delay(600)} style={styles.quickActionsSection}>
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map((action) => (
               <TouchableOpacity
@@ -168,11 +214,11 @@ export default function TogetherScreen() {
         </Animated.View>
 
         {/* 5. Milestones */}
-        <MilestoneBadges data={milestoneData} animationDelay={600} />
+        <MilestoneBadges data={milestoneData} animationDelay={700} />
 
         {/* 6. Coming Up */}
         {showUpcoming && (
-          <Animated.View entering={FadeInUp.duration(400).delay(700)} style={styles.upcomingSection}>
+          <Animated.View entering={FadeInUp.duration(400).delay(800)} style={styles.upcomingSection}>
             <Text style={styles.sectionTitle}>Coming up</Text>
             <View style={styles.upcomingCard}>
               {anniversary && !anniversary.isToday && anniversary.days <= 30 && (
@@ -246,6 +292,56 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingBottom: 24,
+  },
+
+  // Love Languages
+  loveLanguageSection: {
+    marginTop: 24,
+    paddingHorizontal: 20,
+  },
+  loveLanguageCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
+  },
+  loveLanguageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  loveLanguagePerson: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  loveLanguageIcon: {
+    fontSize: 24,
+  },
+  loveLanguageName: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    fontWeight: '500',
+    color: '#78716c',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  loveLanguageValue: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
+    color: '#1c1917',
+    marginTop: 2,
+  },
+  loveLanguageDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: '#e7e5e4',
+    marginHorizontal: 12,
   },
 
   // Sections
