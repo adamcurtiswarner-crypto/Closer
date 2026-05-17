@@ -1,54 +1,50 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
-import { Button, SocialAuthButtons } from '@components';
+import { Button } from '@components';
 
 const logo = require('@/assets/logo.png');
+const illustration = require('@/assets/welcome-illustration.png');
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
-  const { t } = useTranslation();
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         {/* Logo */}
-        <Animated.View entering={FadeIn.duration(600)} style={styles.header}>
+        <Animated.View entering={FadeIn.duration(600)} style={styles.logoContainer}>
           <Image source={logo} style={styles.logo} resizeMode="contain" />
         </Animated.View>
 
-        <Animated.View entering={FadeIn.duration(500).delay(200)}>
-          <Text style={styles.tagline}>{t('auth.welcome.tagline')}</Text>
-          <Text style={styles.description}>
-            {t('auth.welcome.description')}
-          </Text>
+        {/* Illustration */}
+        <Animated.View entering={FadeIn.duration(700).delay(200)} style={styles.illustrationContainer}>
+          <Image source={illustration} style={styles.illustration} resizeMode="contain" />
         </Animated.View>
 
-        {/* Social auth */}
-        <SocialAuthButtons animationDelay={400} />
+        {/* Tagline */}
+        <Animated.View entering={FadeIn.duration(500).delay(400)} style={styles.textContainer}>
+          <Text style={styles.tagline}>Tend to the moments,{'\n'}keep the Flame.</Text>
+          <Text style={styles.subtitle}>Stoke curiosity. Keep the spark alive.</Text>
+        </Animated.View>
 
-        {/* Email CTAs */}
-        <View style={styles.buttons}>
+        {/* CTA */}
+        <View style={styles.bottomSection}>
           <Animated.View entering={FadeInUp.duration(500).delay(600)}>
             <Link href="/(auth)/sign-up" asChild>
-              <Button title="Get started with email" />
+              <Button title="Sign up" />
             </Link>
           </Animated.View>
 
-          <View style={styles.spacer} />
-
-          <Animated.View entering={FadeInUp.duration(500).delay(700)}>
+          <Animated.View entering={FadeIn.duration(400).delay(700)} style={styles.loginRow}>
+            <Text style={styles.loginText}>Already have an account? </Text>
             <Link href="/(auth)/sign-in" asChild>
-              <Button title={t('auth.welcome.haveAccount')} variant="secondary" />
+              <Text style={styles.loginLink}>Log in</Text>
             </Link>
           </Animated.View>
         </View>
-
-        <Link href="/(auth)/sign-up?invite=true" asChild>
-          <Text style={styles.inviteLink}>{t('auth.welcome.haveInvite')}</Text>
-        </Link>
       </View>
     </SafeAreaView>
   );
@@ -57,46 +53,67 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#ffffff',
   },
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    justifyContent: 'center',
   },
-  header: {
+  logoContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginTop: 24,
   },
   logo: {
-    width: 200,
-    height: 76,
-    marginBottom: 16,
+    width: 160,
+    height: 60,
+  },
+  illustrationContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  illustration: {
+    width: SCREEN_WIDTH * 0.85,
+    height: SCREEN_WIDTH * 0.85,
+  },
+  textContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
   },
   tagline: {
-    fontSize: 18,
+    fontSize: 28,
     fontFamily: 'Alexandria-SemiBold',
-    color: '#57534e',
+    fontWeight: '600',
+    color: '#1c1917',
     textAlign: 'center',
-    marginTop: 4,
+    lineHeight: 36,
   },
-  description: {
+  subtitle: {
     fontSize: 16,
     fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    color: '#78716c',
     textAlign: 'center',
-    marginBottom: 48,
-    paddingHorizontal: 16,
+    marginTop: 12,
   },
-  buttons: {},
-  spacer: {
-    height: 12,
+  bottomSection: {
+    paddingBottom: 16,
   },
-  inviteLink: {
+  loginRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+    paddingBottom: 8,
+  },
+  loginText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#78716c',
+  },
+  loginLink: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    fontWeight: '600',
     color: '#c97454',
-    fontFamily: 'Inter-Medium',
-    textAlign: 'center',
-    marginTop: 24,
-    fontSize: 16,
   },
 });
