@@ -7,10 +7,11 @@ import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 export function BiometricGate() {
   const { isAuthenticated } = useAuth();
   const { isBiometricEnabled, authenticate } = useBiometricAuth();
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState(true); // Start locked on cold start
   const [authFailed, setAuthFailed] = useState(false);
   const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const isPromptingRef = useRef(false);
+  const hasUnlockedRef = useRef(false);
 
   const promptBiometric = useCallback(async () => {
     if (isPromptingRef.current) return;
@@ -27,32 +28,16 @@ export function BiometricGate() {
     }
   }, [authenticate]);
 
+  // Prompt once on cold start, then stay unlocked for the session
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
-      const prevState = appStateRef.current;
-      appStateRef.current = nextState;
-
-      if (!isAuthenticated || !isBiometricEnabled) return;
-
-      // Never lock while a biometric prompt is active — the Face ID
-      // dialog itself causes active->inactive->active transitions
-      if (isPromptingRef.current) return;
-
-      // Lock when going to background (not inactive — inactive fires
-      // for system dialogs, control center, notification shade)
-      if (nextState === 'background' && prevState === 'active') {
-        setIsLocked(true);
-        setAuthFailed(false);
-      }
-
-      // Prompt when returning from background only
-      if (nextState === 'active' && prevState === 'background') {
-        promptBiometric();
-      }
+    if (!isAuthenticated || !isBiometricEnabled || hasUnlockedRef.current) {
+      setIsLocked(false);
+      return;
+    }
+    promptBiometric().then(() => {
+      hasUnlockedRef.current = true;
     });
-
-    return () => subscription.remove();
-  }, [isAuthenticated, isBiometricEnabled, promptBiometric]);
+  }, [isAuthenticated, isBiometricEnabled]);
 
   if (!isLocked || !isAuthenticated || !isBiometricEnabled) {
     return null;
