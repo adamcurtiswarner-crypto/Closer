@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -10,6 +11,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  onSnapshot,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -50,42 +52,49 @@ export interface GoalCompletion {
 
 const MAX_ACTIVE_GOALS = 5;
 
+function mapGoalDoc(d: any): Goal {
+  const data = d.data();
+  return {
+    id: d.id,
+    title: data.title,
+    description: data.description || '',
+    goalType: data.goal_type,
+    targetFrequency: data.target_frequency,
+    isCompleted: data.is_completed || false,
+    completedCount: data.completed_count || 0,
+    targetCount: data.target_count || 1,
+    challengeId: data.challenge_id || null,
+    challengeWeek: data.challenge_week || null,
+    isArchived: data.is_archived || false,
+    createdAt: data.created_at?.toDate() || null,
+    updatedAt: data.updated_at?.toDate() || null,
+  };
+}
+
 export function useGoals() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const coupleId = user?.coupleId;
+
+  // Real-time listener
+  useEffect(() => {
+    if (!coupleId) return;
+    const ref = collection(db, 'couples', coupleId, 'goals');
+    const q = query(ref, where('is_archived', '==', false), orderBy('created_at', 'desc'));
+    const unsub = onSnapshot(q, (snap) => {
+      const goals = snap.docs.map(mapGoalDoc);
+      queryClient.setQueryData(['goals', coupleId], goals);
+    });
+    return () => unsub();
+  }, [coupleId, queryClient]);
 
   return useQuery({
-    queryKey: ['goals', user?.coupleId],
+    queryKey: ['goals', coupleId],
     queryFn: async (): Promise<Goal[]> => {
-      if (!user?.coupleId) return [];
-
-      const goalsRef = collection(db, 'couples', user.coupleId, 'goals');
-      const goalsQuery = query(
-        goalsRef,
-        where('is_archived', '==', false),
-        orderBy('created_at', 'desc')
-      );
-      const snap = await getDocs(goalsQuery);
-
-      return snap.docs.map((d) => {
-        const data = d.data();
-        return {
-          id: d.id,
-          title: data.title,
-          description: data.description || '',
-          goalType: data.goal_type,
-          targetFrequency: data.target_frequency,
-          isCompleted: data.is_completed || false,
-          completedCount: data.completed_count || 0,
-          targetCount: data.target_count || 1,
-          challengeId: data.challenge_id || null,
-          challengeWeek: data.challenge_week || null,
-          isArchived: data.is_archived || false,
-          createdAt: data.created_at?.toDate() || null,
-          updatedAt: data.updated_at?.toDate() || null,
-        };
-      });
+      return queryClient.getQueryData(['goals', coupleId]) || [];
     },
-    enabled: !!user?.coupleId,
+    enabled: !!coupleId,
+    staleTime: Infinity,
   });
 }
 

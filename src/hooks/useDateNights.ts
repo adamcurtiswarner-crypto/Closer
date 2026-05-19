@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -9,6 +10,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from './useAuth';
@@ -22,54 +24,55 @@ const STATUS_SORT_ORDER: Record<DateNight['status'], number> = {
   skipped: 3,
 };
 
+function mapDateNightDoc(d: any): DateNight {
+  const data = d.data();
+  return {
+    id: d.id,
+    title: data.title,
+    description: data.description || '',
+    category: data.category as DateNightCategory,
+    costTier: data.cost_tier,
+    durationMinutes: data.duration_minutes ?? null,
+    source: data.source,
+    sourceId: data.source_id ?? null,
+    status: data.status,
+    addedBy: data.added_by,
+    scheduledDate: data.scheduled_date?.toDate() ?? null,
+    scheduledTime: data.scheduled_time ?? null,
+    completedAt: data.completed_at?.toDate() ?? null,
+    reflectionRating: data.reflection_rating ?? null,
+    reflectionNote: data.reflection_note ?? null,
+    isArchived: data.is_archived || false,
+    createdAt: data.created_at?.toDate() ?? null,
+    updatedAt: data.updated_at?.toDate() ?? null,
+  } as DateNight;
+}
+
 export function useDateNights() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const coupleId = user?.coupleId;
+
+  // Real-time listener
+  useEffect(() => {
+    if (!coupleId) return;
+    const ref = collection(db, 'couples', coupleId, 'date_nights');
+    const q = query(ref, where('is_archived', '==', false), orderBy('created_at', 'desc'));
+    const unsub = onSnapshot(q, (snap) => {
+      const nights = snap.docs.map(mapDateNightDoc);
+      nights.sort((a, b) => STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status]);
+      queryClient.setQueryData(['dateNights', coupleId], nights);
+    });
+    return () => unsub();
+  }, [coupleId, queryClient]);
 
   return useQuery({
-    queryKey: ['dateNights', user?.coupleId],
+    queryKey: ['dateNights', coupleId],
     queryFn: async (): Promise<DateNight[]> => {
-      if (!user?.coupleId) return [];
-
-      const ref = collection(db, 'couples', user.coupleId, 'date_nights');
-      const q = query(
-        ref,
-        where('is_archived', '==', false),
-        orderBy('created_at', 'desc')
-      );
-      const snap = await getDocs(q);
-
-      const nights = snap.docs.map((d) => {
-        const data = d.data();
-        return {
-          id: d.id,
-          title: data.title,
-          description: data.description || '',
-          category: data.category as DateNightCategory,
-          costTier: data.cost_tier,
-          durationMinutes: data.duration_minutes ?? null,
-          source: data.source,
-          sourceId: data.source_id ?? null,
-          status: data.status,
-          addedBy: data.added_by,
-          scheduledDate: data.scheduled_date?.toDate() ?? null,
-          scheduledTime: data.scheduled_time ?? null,
-          completedAt: data.completed_at?.toDate() ?? null,
-          reflectionRating: data.reflection_rating ?? null,
-          reflectionNote: data.reflection_note ?? null,
-          isArchived: data.is_archived || false,
-          createdAt: data.created_at?.toDate() ?? null,
-          updatedAt: data.updated_at?.toDate() ?? null,
-        } as DateNight;
-      });
-
-      // Sort: scheduled first, then saved, then completed/skipped
-      nights.sort(
-        (a, b) => STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status]
-      );
-
-      return nights;
+      return queryClient.getQueryData(['dateNights', coupleId]) || [];
     },
-    enabled: !!user?.coupleId,
+    enabled: !!coupleId,
+    staleTime: Infinity,
   });
 }
 

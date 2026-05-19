@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
@@ -70,21 +69,22 @@ export default function TogetherScreen() {
   const partnerName = user?.partnerName || 'Partner';
   const daysAsCouple = getDaysAsCouple(couple?.anniversaryDate ?? null, couple?.linkedAt ?? null);
 
-  // Fetch partner's love language
+  // Real-time partner love language listener
   const partnerId = couple?.memberIds?.find((id: string) => id !== user?.id) || null;
-  const { data: partnerLoveLanguage } = useQuery({
-    queryKey: ['partnerLoveLanguage', partnerId, couple?.id],
-    queryFn: async () => {
-      if (!partnerId) return null;
-      const partnerSnap = await getDoc(doc(db, 'users', partnerId));
-      return partnerSnap.exists() ? (partnerSnap.data().love_language || null) : null;
-    },
-    enabled: !!partnerId,
-    staleTime: 60 * 1000, // 1 min — love language changes should show quickly
-  });
+  const [partnerLoveLanguage, setPartnerLoveLanguage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!partnerId) return;
+    const unsub = onSnapshot(doc(db, 'users', partnerId), (snap) => {
+      if (snap.exists()) {
+        setPartnerLoveLanguage(snap.data().love_language || null);
+      }
+    });
+    return () => unsub();
+  }, [partnerId]);
 
   const userLang = getLoveLanguageDisplay(user?.loveLanguage ?? null);
-  const partnerLang = getLoveLanguageDisplay(partnerLoveLanguage ?? null);
+  const partnerLang = getLoveLanguageDisplay(partnerLoveLanguage);
 
   const warmText = useMemo(() => getWarmText({
     totalCompletions: couple?.totalCompletions ?? 0,

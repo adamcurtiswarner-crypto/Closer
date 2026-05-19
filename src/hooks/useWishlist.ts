@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -9,6 +10,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  onSnapshot,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -32,41 +34,48 @@ export interface WishlistItem {
 
 const MAX_ACTIVE_ITEMS = 20;
 
+function mapWishlistDoc(d: any): WishlistItem {
+  const data = d.data();
+  return {
+    id: d.id,
+    title: data.title,
+    description: data.description || '',
+    category: data.category || 'other',
+    addedBy: data.added_by,
+    addedByName: data.added_by_name || '',
+    isCompleted: data.is_completed || false,
+    completedAt: data.completed_at?.toDate() || null,
+    completedBy: data.completed_by || null,
+    isArchived: data.is_archived || false,
+    createdAt: data.created_at?.toDate() || null,
+    updatedAt: data.updated_at?.toDate() || null,
+  };
+}
+
 export function useWishlistItems() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const coupleId = user?.coupleId;
+
+  // Real-time listener
+  useEffect(() => {
+    if (!coupleId) return;
+    const ref = collection(db, 'couples', coupleId, 'wishlist_items');
+    const q = query(ref, where('is_archived', '==', false), orderBy('created_at', 'desc'));
+    const unsub = onSnapshot(q, (snap) => {
+      const items = snap.docs.map(mapWishlistDoc);
+      queryClient.setQueryData(['wishlist', coupleId], items);
+    });
+    return () => unsub();
+  }, [coupleId, queryClient]);
 
   return useQuery({
-    queryKey: ['wishlist', user?.coupleId],
+    queryKey: ['wishlist', coupleId],
     queryFn: async (): Promise<WishlistItem[]> => {
-      if (!user?.coupleId) return [];
-
-      const itemsRef = collection(db, 'couples', user.coupleId, 'wishlist_items');
-      const itemsQuery = query(
-        itemsRef,
-        where('is_archived', '==', false),
-        orderBy('created_at', 'desc')
-      );
-      const snap = await getDocs(itemsQuery);
-
-      return snap.docs.map((d) => {
-        const data = d.data();
-        return {
-          id: d.id,
-          title: data.title,
-          description: data.description || '',
-          category: data.category || 'other',
-          addedBy: data.added_by,
-          addedByName: data.added_by_name || '',
-          isCompleted: data.is_completed || false,
-          completedAt: data.completed_at?.toDate() || null,
-          completedBy: data.completed_by || null,
-          isArchived: data.is_archived || false,
-          createdAt: data.created_at?.toDate() || null,
-          updatedAt: data.updated_at?.toDate() || null,
-        };
-      });
+      return queryClient.getQueryData(['wishlist', coupleId]) || [];
     },
-    enabled: !!user?.coupleId,
+    enabled: !!coupleId,
+    staleTime: Infinity,
   });
 }
 
