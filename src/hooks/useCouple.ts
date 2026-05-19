@@ -33,6 +33,9 @@ interface Couple {
   premiumSource: string | null;
   currentPulseTier: string | null;
   currentPulseScore: number | null;
+  dateNightsCompleted?: number;
+  wishlistItemsFulfilled?: number;
+  checkInsCompleted?: number;
 }
 
 interface Invite {

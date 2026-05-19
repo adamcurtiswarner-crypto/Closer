@@ -64,6 +64,9 @@ export interface InsightsData {
   weeklyCompletionRate: number;
   totalWeeksActive: number;
   checkInTrend: CheckInTrendWeek[];
+  dateNightsCompleted?: number;
+  wishlistItemsFulfilled?: number;
+  checkInsCompleted?: number;
 }
 
 function getISOWeek(date: Date = new Date()): string {

@@ -18,8 +18,8 @@ import { InsightCard } from '@/components/InsightCard';
 import { AnimatedProgressBar, AnimatedCounter, Icon, PulseIndicator } from '@components';
 import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
-import { getMilestoneStatus, getAnniversaryCountdown } from '@/config/milestones';
-import type { MilestoneCheckData } from '@/config/milestones';
+import { getBadgeStatus, getAnniversaryCountdown } from '@/config/milestones';
+import type { BadgeCheckData } from '@/config/milestones';
 import { getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
@@ -185,13 +185,16 @@ export default function InsightsScreen() {
 
   const milestones = useMemo(() => {
     if (!insights) return null;
-    const checkData: MilestoneCheckData = {
+    const checkData: BadgeCheckData = {
       totalCompletions: insights.totalCompletions,
       longestStreak: insights.longestStreak,
       daysAsCouple: insights.daysAsCouple,
       memoriesSaved: insights.memoriesSaved,
+      dateNightsCompleted: insights.dateNightsCompleted ?? 0,
+      wishlistItemsFulfilled: insights.wishlistItemsFulfilled ?? 0,
+      checkInsCompleted: insights.checkInsCompleted ?? 0,
     };
-    return getMilestoneStatus(checkData);
+    return getBadgeStatus(checkData);
   }, [insights]);
 
   const anniversary = useMemo(() => {
@@ -253,14 +256,14 @@ export default function InsightsScreen() {
             {milestones && (
               <InsightCard icon={<Icon name="trophy" size="md" color="#c97454" />} title="Milestones" accentColor="#b8860b" delay={50}>
                 {/* Achieved badges */}
-                {milestones.achieved.length > 0 && (
+                {milestones.earned.length > 0 && (
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={styles.badgeScroll}
                     contentContainerStyle={styles.badgeScrollContent}
                   >
-                    {milestones.achieved.map((m) => (
+                    {milestones.earned.map((m) => (
                       <View key={m.id} style={styles.badge}>
                         <View style={styles.badgeCircle}>
                           <Text style={styles.badgeIcon}>{m.icon}</Text>
@@ -268,7 +271,7 @@ export default function InsightsScreen() {
                         <Text style={styles.badgeTitle} numberOfLines={1}>{m.title}</Text>
                       </View>
                     ))}
-                    {milestones.upcoming.slice(0, 2).map((m) => (
+                    {milestones.locked.slice(0, 2).map((m) => (
                       <View key={m.id} style={styles.badge}>
                         <View style={[styles.badgeCircle, styles.badgeCircleLocked]}>
                           <Text style={styles.badgeIconLocked}>{m.icon}</Text>
@@ -323,7 +326,7 @@ export default function InsightsScreen() {
                 )}
 
                 {/* Empty state for brand new users */}
-                {milestones.achieved.length === 0 && !milestones.next && (
+                {milestones.earned.length === 0 && !milestones.next && (
                   <Text style={styles.cardEmpty}>
                     Complete prompts together to earn milestones.
                   </Text>

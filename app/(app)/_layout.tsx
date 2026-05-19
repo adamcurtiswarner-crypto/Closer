@@ -186,12 +186,6 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="chat"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
         name="games"
         options={{
           href: null,

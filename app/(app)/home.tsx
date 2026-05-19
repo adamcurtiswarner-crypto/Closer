@@ -50,7 +50,6 @@ function getWarmText(opts: {
 }
 
 const QUICK_ACTIONS = [
-  { key: 'chat', icon: 'chat-text' as const, label: 'Chat', route: '/(app)/chat' },
   { key: 'wishlist', icon: 'heart' as const, label: 'Wishlist', route: '/(app)/wishlist' },
   { key: 'datenight', icon: 'coffee' as const, label: 'Date Night', route: '/(app)/date-nights' },
   { key: 'games', icon: 'game-controller' as const, label: 'Games', route: '/(app)/games' },
@@ -121,7 +120,10 @@ export default function TogetherScreen() {
     longestStreak: couple?.longestStreak ?? 0,
     daysAsCouple,
     memoriesSaved: 0, // TODO: add memories count
-  }), [couple?.totalCompletions, couple?.longestStreak, daysAsCouple]);
+    dateNightsCompleted: couple?.dateNightsCompleted ?? 0,
+    wishlistItemsFulfilled: couple?.wishlistItemsFulfilled ?? 0,
+    checkInsCompleted: couple?.checkInsCompleted ?? 0,
+  }), [couple?.totalCompletions, couple?.longestStreak, daysAsCouple, couple?.dateNightsCompleted, couple?.wishlistItemsFulfilled, couple?.checkInsCompleted]);
 
   const [refreshing, setRefreshing] = useState(false);
   const handleRefresh = useCallback(async () => {
@@ -199,7 +201,7 @@ export default function TogetherScreen() {
           />
         </Animated.View>
 
-        {/* 4. Quick Actions (2x2 grid) */}
+        {/* 4. Quick Actions */}
         <Animated.View entering={FadeInUp.duration(400).delay(600)} style={styles.quickActionsSection}>
           <View style={styles.quickActionsGrid}>
             {QUICK_ACTIONS.map((action) => (
@@ -354,20 +356,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  // Quick Actions (2x2 grid)
+  // Quick Actions
   quickActionsSection: {
     marginTop: 24,
     paddingHorizontal: 20,
   },
   quickActionsGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
   },
   quickActionCard: {
-    width: '48%',
-    flexGrow: 1,
-    flexBasis: '46%',
+    flex: 1,
     backgroundColor: '#ffffff',
     borderRadius: 16,
     paddingVertical: 20,

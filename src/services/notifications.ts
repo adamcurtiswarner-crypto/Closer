@@ -109,8 +109,6 @@ export function setupNotificationHandlers(): () => void {
       router.push('/(app)/memories');
     } else if (type === 'date_night' || type === 'date_night_reminder') {
       router.push('/(app)/date-nights');
-    } else if (type === 'chat_message') {
-      router.push('/(app)/chat');
     } else if (type === 'check_in' || type === 'coaching_insight') {
       router.push('/(app)/today');
     } else {

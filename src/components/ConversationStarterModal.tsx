@@ -37,11 +37,6 @@ export function ConversationStarterModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleGoToChat = () => {
-    handleClose();
-    router.push('/(app)/chat');
-  };
-
   return (
     <Modal
       visible={visible}
@@ -83,9 +78,6 @@ export function ConversationStarterModal({
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={handleGoToChat} activeOpacity={0.7}>
-              <Text style={styles.chatLink}>Go to chat</Text>
-            </TouchableOpacity>
           </Animated.View>
         </View>
       </View>

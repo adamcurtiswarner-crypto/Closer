@@ -1,74 +1,97 @@
-export interface MilestoneCheckData {
+import type { IconName } from '@/components/Icon';
+
+export type BadgeTier = 'seed' | 'bloom' | 'flame' | 'keeper';
+export type BadgeCategory = 'conversations' | 'showing_up' | 'time_together' | 'date_nights' | 'wishes' | 'reflections';
+
+export interface BadgeDefinition {
+  id: string;
+  title: string;
+  description: string;
+  category: BadgeCategory;
+  tier: BadgeTier;
+  icon: IconName;
+  iconWeight: 'light' | 'regular' | 'bold' | 'fill';
+  threshold: number;
+  field: keyof BadgeCheckData;
+}
+
+export interface BadgeCheckData {
   totalCompletions: number;
   longestStreak: number;
   daysAsCouple: number;
   memoriesSaved: number;
+  dateNightsCompleted: number;
+  wishlistItemsFulfilled: number;
+  checkInsCompleted: number;
 }
 
-export interface MilestoneDefinition {
-  id: string;
-  icon: string;
-  title: string;
-  description: string;
-  category: 'completions' | 'streak' | 'time' | 'memories';
-  threshold: number;
-  field: keyof MilestoneCheckData;
-}
+export const BADGES: BadgeDefinition[] = [
+  // Conversations (prompts completed)
+  { id: 'first_words', title: 'First Words', description: 'You started talking', category: 'conversations', tier: 'bloom', icon: 'sparkle', iconWeight: 'light', threshold: 1, field: 'totalCompletions' },
+  { id: 'finding_rhythm', title: 'Finding a Rhythm', description: '25 conversations deep', category: 'conversations', tier: 'bloom', icon: 'sparkle', iconWeight: 'regular', threshold: 25, field: 'totalCompletions' },
+  { id: 'open_book', title: 'Open Book', description: 'You keep showing up', category: 'conversations', tier: 'bloom', icon: 'star', iconWeight: 'fill', threshold: 75, field: 'totalCompletions' },
+  { id: 'deeply_known', title: 'Deeply Known', description: '150 moments of honesty', category: 'conversations', tier: 'bloom', icon: 'heart', iconWeight: 'fill', threshold: 150, field: 'totalCompletions' },
+  { id: 'unwritten_language', title: 'Unwritten Language', description: 'You speak fluently now', category: 'conversations', tier: 'bloom', icon: 'heart', iconWeight: 'fill', threshold: 300, field: 'totalCompletions' },
 
-export const MILESTONES: MilestoneDefinition[] = [
-  // Completions
-  { id: 'first_prompt', icon: '\u{2728}', title: 'First Spark', description: 'Complete your first prompt', category: 'completions', threshold: 1, field: 'totalCompletions' },
-  { id: '10_prompts', icon: '\u{1F525}', title: 'Getting Warmer', description: 'Complete 10 prompts', category: 'completions', threshold: 10, field: 'totalCompletions' },
-  { id: '25_prompts', icon: '\u{1F31F}', title: 'Quarter Century', description: 'Complete 25 prompts', category: 'completions', threshold: 25, field: 'totalCompletions' },
-  { id: '50_prompts', icon: '\u{1F4AB}', title: 'Halfway There', description: 'Complete 50 prompts', category: 'completions', threshold: 50, field: 'totalCompletions' },
-  { id: '100_prompts', icon: '\u{1F3C6}', title: 'Century Club', description: 'Complete 100 prompts', category: 'completions', threshold: 100, field: 'totalCompletions' },
-  { id: '250_prompts', icon: '\u{1F48E}', title: 'Deep Connection', description: 'Complete 250 prompts', category: 'completions', threshold: 250, field: 'totalCompletions' },
+  // Showing Up (streak milestones)
+  { id: 'side_by_side', title: 'Side by Side', description: 'Three days running', category: 'showing_up', tier: 'flame', icon: 'flame', iconWeight: 'light', threshold: 3, field: 'longestStreak' },
+  { id: 'week_of_us', title: 'Week of Us', description: 'A full week together', category: 'showing_up', tier: 'flame', icon: 'flame', iconWeight: 'regular', threshold: 7, field: 'longestStreak' },
+  { id: 'steady_ground', title: 'Steady Ground', description: 'Three weeks, no break', category: 'showing_up', tier: 'flame', icon: 'flame', iconWeight: 'bold', threshold: 21, field: 'longestStreak' },
+  { id: 'daily_ritual', title: 'Daily Ritual', description: 'This is who you are now', category: 'showing_up', tier: 'flame', icon: 'flame', iconWeight: 'fill', threshold: 45, field: 'longestStreak' },
+  { id: 'unbroken', title: 'Unbroken', description: 'Ninety days of showing up', category: 'showing_up', tier: 'flame', icon: 'flame', iconWeight: 'fill', threshold: 90, field: 'longestStreak' },
 
-  // Streak
-  { id: '3_day_streak', icon: '\u{26A1}', title: 'On a Roll', description: 'Reach a 3-day streak', category: 'streak', threshold: 3, field: 'longestStreak' },
-  { id: '7_day_streak', icon: '\u{1F4AA}', title: 'Week Strong', description: 'Reach a 7-day streak', category: 'streak', threshold: 7, field: 'longestStreak' },
-  { id: '14_day_streak', icon: '\u{1F3AF}', title: 'Fortnight', description: 'Reach a 14-day streak', category: 'streak', threshold: 14, field: 'longestStreak' },
-  { id: '30_day_streak', icon: '\u{1F320}', title: 'Monthly Magic', description: 'Reach a 30-day streak', category: 'streak', threshold: 30, field: 'longestStreak' },
+  // Time Together (days as couple)
+  { id: 'just_arrived', title: 'Just Arrived', description: 'Your first week', category: 'time_together', tier: 'seed', icon: 'house-simple', iconWeight: 'light', threshold: 7, field: 'daysAsCouple' },
+  { id: 'settling_in', title: 'Settling In', description: 'A month of this', category: 'time_together', tier: 'seed', icon: 'house-simple', iconWeight: 'regular', threshold: 30, field: 'daysAsCouple' },
+  { id: 'taking_root', title: 'Taking Root', description: 'A full season together', category: 'time_together', tier: 'seed', icon: 'house-simple', iconWeight: 'bold', threshold: 90, field: 'daysAsCouple' },
+  { id: 'half_a_year', title: 'Half a Year', description: 'Still here, still growing', category: 'time_together', tier: 'seed', icon: 'heart', iconWeight: 'regular', threshold: 180, field: 'daysAsCouple' },
+  { id: 'one_full_year', title: 'One Full Year', description: 'A year of choosing this', category: 'time_together', tier: 'seed', icon: 'heart', iconWeight: 'fill', threshold: 365, field: 'daysAsCouple' },
 
-  // Time
-  { id: '1_week', icon: '\u{1F331}', title: 'One Week In', description: 'Together on Stoke for 1 week', category: 'time', threshold: 7, field: 'daysAsCouple' },
-  { id: '1_month', icon: '\u{1F33F}', title: 'First Month', description: 'Together on Stoke for 1 month', category: 'time', threshold: 30, field: 'daysAsCouple' },
-  { id: '3_months', icon: '\u{1F333}', title: 'Going Strong', description: 'Together on Stoke for 3 months', category: 'time', threshold: 90, field: 'daysAsCouple' },
-  { id: '6_months', icon: '\u{1F338}', title: 'Half Year', description: 'Together on Stoke for 6 months', category: 'time', threshold: 180, field: 'daysAsCouple' },
-  { id: '1_year', icon: '\u{1F3C5}', title: 'One Year', description: 'Together on Stoke for 1 year', category: 'time', threshold: 365, field: 'daysAsCouple' },
+  // Date Nights
+  { id: 'first_night_out', title: 'First Night Out', description: 'You made it happen', category: 'date_nights', tier: 'bloom', icon: 'coffee', iconWeight: 'light', threshold: 1, field: 'dateNightsCompleted' },
+  { id: 'regular_thing', title: 'Regular Thing', description: 'Five nights, just for you two', category: 'date_nights', tier: 'bloom', icon: 'coffee', iconWeight: 'regular', threshold: 5, field: 'dateNightsCompleted' },
+  { id: 'standing_date', title: 'Standing Date', description: 'This is your thing now', category: 'date_nights', tier: 'bloom', icon: 'coffee', iconWeight: 'fill', threshold: 12, field: 'dateNightsCompleted' },
+  { id: 'night_owls', title: 'Night Owls', description: 'Twenty-five nights and counting', category: 'date_nights', tier: 'bloom', icon: 'coffee', iconWeight: 'fill', threshold: 25, field: 'dateNightsCompleted' },
 
-  // Memories
-  { id: 'first_memory', icon: '\u{1F4F8}', title: 'First Memory', description: 'Save your first memory', category: 'memories', threshold: 1, field: 'memoriesSaved' },
-  { id: '10_memories', icon: '\u{1F4DA}', title: 'Memory Keeper', description: 'Save 10 memories', category: 'memories', threshold: 10, field: 'memoriesSaved' },
-  { id: '25_memories', icon: '\u{1F381}', title: 'Treasure Chest', description: 'Save 25 memories', category: 'memories', threshold: 25, field: 'memoriesSaved' },
+  // Wishes (wishlist items fulfilled)
+  { id: 'first_wish', title: 'First Wish Granted', description: 'You were listening', category: 'wishes', tier: 'keeper', icon: 'gift', iconWeight: 'light', threshold: 1, field: 'wishlistItemsFulfilled' },
+  { id: 'thoughtful', title: 'Thoughtful', description: 'Five wishes, five smiles', category: 'wishes', tier: 'keeper', icon: 'gift', iconWeight: 'regular', threshold: 5, field: 'wishlistItemsFulfilled' },
+  { id: 'wish_keeper', title: 'Wish Keeper', description: 'You pay attention', category: 'wishes', tier: 'keeper', icon: 'gift', iconWeight: 'bold', threshold: 15, field: 'wishlistItemsFulfilled' },
+  { id: 'dream_weaver', title: 'Dream Weaver', description: 'Thirty wishes made real', category: 'wishes', tier: 'keeper', icon: 'gift', iconWeight: 'fill', threshold: 30, field: 'wishlistItemsFulfilled' },
+
+  // Reflections (check-ins)
+  { id: 'first_look_inward', title: 'First Look Inward', description: 'You checked in', category: 'reflections', tier: 'seed', icon: 'note', iconWeight: 'light', threshold: 1, field: 'checkInsCompleted' },
+  { id: 'monthly_mirror', title: 'Monthly Mirror', description: 'A month of reflection', category: 'reflections', tier: 'seed', icon: 'note', iconWeight: 'regular', threshold: 4, field: 'checkInsCompleted' },
+  { id: 'quarterly_view', title: 'Quarterly View', description: 'Three months of honest check-ins', category: 'reflections', tier: 'seed', icon: 'note', iconWeight: 'bold', threshold: 12, field: 'checkInsCompleted' },
+  { id: 'year_in_review', title: 'Year in Review', description: 'A year of paying attention', category: 'reflections', tier: 'seed', icon: 'note', iconWeight: 'fill', threshold: 48, field: 'checkInsCompleted' },
 ];
 
-export interface MilestoneStatus {
-  achieved: (MilestoneDefinition & { progress: number })[];
-  upcoming: (MilestoneDefinition & { progress: number })[];
-  next: (MilestoneDefinition & { current: number }) | null;
+export interface BadgeStatus {
+  earned: (BadgeDefinition & { progress: number })[];
+  locked: (BadgeDefinition & { progress: number })[];
+  next: (BadgeDefinition & { current: number }) | null;
 }
 
-export function getMilestoneStatus(data: MilestoneCheckData): MilestoneStatus {
-  const achieved: (MilestoneDefinition & { progress: number })[] = [];
-  const upcoming: (MilestoneDefinition & { progress: number })[] = [];
-  let next: (MilestoneDefinition & { current: number }) | null = null;
+export function getBadgeStatus(data: BadgeCheckData): BadgeStatus {
+  const earned: (BadgeDefinition & { progress: number })[] = [];
+  const locked: (BadgeDefinition & { progress: number })[] = [];
+  let next: (BadgeDefinition & { current: number }) | null = null;
 
-  for (const milestone of MILESTONES) {
-    const current = data[milestone.field];
-    const progress = Math.min(current / milestone.threshold, 1);
+  for (const badge of BADGES) {
+    const current = data[badge.field];
+    const progress = Math.min(current / badge.threshold, 1);
 
-    if (current >= milestone.threshold) {
-      achieved.push({ ...milestone, progress: 1 });
+    if (current >= badge.threshold) {
+      earned.push({ ...badge, progress: 1 });
     } else {
-      upcoming.push({ ...milestone, progress });
+      locked.push({ ...badge, progress });
       if (!next) {
-        next = { ...milestone, current };
+        next = { ...badge, current };
       }
     }
   }
 
-  return { achieved, upcoming, next };
+  return { earned, locked, next };
 }
 
 export function getAnniversaryCountdown(anniversaryDate: Date): { days: number; isToday: boolean; isThisWeek: boolean } {

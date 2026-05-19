@@ -65,6 +65,14 @@ export const colors = {
     base: '#e7e5e4',
     shimmer: 'rgba(255, 255, 255, 0.3)',
   },
+
+  // Badge tiers
+  badgeTier: {
+    seed: { fill: '#f0ebe6', tint: '#8b7355', border: '#d6ccbc' },
+    bloom: { fill: '#fef3ee', tint: '#c97454', border: '#f5c4a8' },
+    flame: { fill: '#fce8dc', tint: '#e05a2b', border: '#f09060' },
+    keeper: { fill: '#f3ecf6', tint: '#7b3f8d', border: '#c49bd0' },
+  },
 } as const;
 
 // ============================================

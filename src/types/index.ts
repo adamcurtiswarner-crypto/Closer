@@ -42,6 +42,9 @@ export interface Couple {
   promptFrequency: 'daily' | 'weekdays' | 'weekends';
   premiumUntil: Date | null;
   premiumSource: string | null; // user ID of purchaser
+  dateNightsCompleted?: number;
+  wishlistItemsFulfilled?: number;
+  checkInsCompleted?: number;
 }
 
 export type ToneCalibration = 'solid' | 'distant' | 'struggling';
