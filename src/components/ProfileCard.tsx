@@ -50,14 +50,14 @@ export function ProfileCard() {
   // Fetch partner's love language
   const partnerId = couple?.memberIds?.find((id: string) => id !== user?.id) || null;
   const { data: partnerLoveLanguage } = useQuery({
-    queryKey: ['partnerLoveLanguage', partnerId],
+    queryKey: ['partnerLoveLanguage', partnerId, couple?.id],
     queryFn: async () => {
       if (!partnerId) return null;
       const partnerSnap = await getDoc(doc(db, 'users', partnerId));
       return partnerSnap.exists() ? (partnerSnap.data().love_language || null) : null;
     },
     enabled: !!partnerId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 60 * 1000,
   });
 
   if (!user) return null;
