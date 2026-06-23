@@ -24,7 +24,7 @@ export default function ResourcesScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Icon name="arrow-left" size="md" color="#1c1917" />
+          <Icon name="arrow-left" size="md" color="#1E1E2E" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('resources.title')}</Text>
         <View style={styles.backButton} />
@@ -86,7 +86,7 @@ export default function ResourcesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   header: {
     flexDirection: 'row',
@@ -99,19 +99,19 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backArrow: {
     fontSize: 20,
-    color: '#57534e',
+    color: '#6B6B7A',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     letterSpacing: -0.3,
   },
   scrollView: {
@@ -124,8 +124,8 @@ const styles = StyleSheet.create({
   },
   intro: {
     fontSize: 15,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 22,
     marginBottom: 24,
   },
@@ -142,25 +142,25 @@ const styles = StyleSheet.create({
   categoryLabel: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
   },
   categoryDescription: {
     fontSize: 13,
-    color: '#a8a29e',
-    fontFamily: 'Inter-Regular',
+    color: '#B8B8C4',
+    fontFamily: 'Nunito-Regular',
     marginTop: 1,
   },
   safety: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 12,
     padding: 16,
     marginTop: 32,
   },
   safetyText: {
     fontSize: 14,
-    color: '#57534e',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 20,
   },
 });

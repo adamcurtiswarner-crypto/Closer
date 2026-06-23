@@ -66,7 +66,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
-        <Icon name="target" size="sm" color="#c97454" weight="regular" />
+        <Icon name="target" size="sm" color="#D4522A" weight="regular" />
         <Text style={styles.headerTitle}>Goals & Challenges</Text>
       </Animated.View>
 
@@ -100,7 +100,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
           <SwipeableRow
             rightActions={[{
               label: 'Archive',
-              color: '#a8a29e',
+              color: '#B8B8C4',
               onPress: () => handleArchive(activeChallenge.id),
             }]}
           >
@@ -123,7 +123,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
           <SwipeableRow
             rightActions={[{
               label: 'Archive',
-              color: '#a8a29e',
+              color: '#B8B8C4',
               onPress: () => handleArchive(goal.id),
             }]}
           >
@@ -202,7 +202,7 @@ function GoalRow({
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         activeOpacity={0.6}
       >
-        <Icon name="x" size="xs" color="#a8a29e" />
+        <Icon name="x" size="xs" color="#B8B8C4" />
       </TouchableOpacity>
     </View>
   );
@@ -222,7 +222,7 @@ function ProgressBarRow({
     <View style={styles.progressRow}>
       <AnimatedProgressBar
         progress={progress}
-        color={isComplete ? '#22c55e' : '#c97454'}
+        color={isComplete ? '#22c55e' : '#D4522A'}
         height={6}
         style={{ flex: 1 }}
       />
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#490f5f',
+    backgroundColor: '#3D2870',
   },
   header: {
     flexDirection: 'row',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
   },
@@ -275,12 +275,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     borderRadius: 14,
     padding: 14,
     marginBottom: 4,
     borderWidth: 1,
-    borderColor: '#fce8dc',
+    borderColor: '#FDF1ED',
   },
   challengeCtaLeft: {
     flexDirection: 'row',
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
@@ -310,8 +310,8 @@ const styles = StyleSheet.create({
   challengeCtaLabel: {
     fontSize: 10,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#c97454',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#D4522A',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginBottom: 3,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   startButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     paddingVertical: 8,
     paddingHorizontal: 18,
     borderRadius: 10,
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   checkbox: {
     width: 28,
@@ -370,31 +370,31 @@ const styles = StyleSheet.create({
   weeklyBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#c97454',
+    color: '#D4522A',
     letterSpacing: 0.5,
   },
   goalTitle: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
     flex: 1,
   },
   goalTitleDone: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textDecorationLine: 'line-through',
   },
   archiveButton: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     justifyContent: 'center',
     alignItems: 'center',
   },
   archiveIcon: {
     fontSize: 16,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '600',
     marginTop: -1,
   },
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     minWidth: 28,
     textAlign: 'right',
   },
@@ -423,29 +423,29 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   addIconWrap: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 15,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   // ─── Footer ───
   footerDots: {
@@ -458,6 +458,6 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
   },
 });

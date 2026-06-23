@@ -432,7 +432,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}
         >
           <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
 
@@ -442,7 +442,7 @@ export default function TodayScreen() {
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
             <View style={styles.accentBar} />
-            <Icon name="coffee" size="xl" color="#c97454" weight="light" />
+            <Icon name="coffee" size="xl" color="#D4522A" weight="light" />
             <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
@@ -490,7 +490,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}
         >
           <TodayScreenHeader greeting={t('today.niceOne')} {...headerProps} />
 
@@ -507,7 +507,7 @@ export default function TodayScreen() {
             </Text>
 
             <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
-              <Icon name="lock" size="md" color="#c97454" weight="light" />
+              <Icon name="lock" size="md" color="#D4522A" weight="light" />
               <Text style={styles.sealedTitle}>Your answer is saved</Text>
               <Text style={styles.sealedSubtitle}>
                 Waiting for {partnerName ?? 'your partner'}...
@@ -518,12 +518,12 @@ export default function TodayScreen() {
 
             {isPartnerTyping && partnerTypingContext === 'prompt' ? (
               <Animated.View entering={FadeIn.duration(300)} style={styles.typingRow}>
-                <PulsingDots color="#c97454" size={5} />
+                <PulsingDots color="#D4522A" size={5} />
                 <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
               </Animated.View>
             ) : (
               <View style={styles.waitingMessageRow}>
-                <Icon name="hourglass" size={16} color="#a8a29e" />
+                <Icon name="hourglass" size={16} color="#B8B8C4" />
                 <Text style={styles.waitingMessage}>{t('today.waitingFor', { name: partnerName })}</Text>
               </View>
             )}
@@ -547,7 +547,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}
         >
           <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
 
@@ -623,7 +623,7 @@ export default function TodayScreen() {
                 onPress={() => setShowStreakDetail(!showStreakDetail)}
                 activeOpacity={0.8}
               >
-                <Icon name="flame" size="md" color="#c97454" weight="fill" />
+                <Icon name="flame" size="md" color="#D4522A" weight="fill" />
                 <Text style={styles.streakCelebrationText}>
                   {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
                 </Text>
@@ -677,6 +677,24 @@ export default function TodayScreen() {
           <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
         )}
 
+        <Animated.View entering={FadeInUp.duration(500).delay(150)}>
+          <TouchableOpacity
+            style={styles.sparkCard}
+            onPress={() => router.push('/(app)/todays-spark')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.sparkAccent} />
+            <View style={styles.sparkContent}>
+              <Icon name="sparkle" size="sm" color="#D4522A" weight="fill" />
+              <View style={styles.sparkTextWrap}>
+                <Text style={styles.sparkTitle}>Today's Spark</Text>
+                <Text style={styles.sparkSubtitle}>A quick moment to connect</Text>
+              </View>
+              <Icon name="arrow-right" size="sm" color="#B8B8C4" />
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+
         <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
           <PromptCard
             promptText={assignment!.promptText}
@@ -700,7 +718,7 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   accentBar: {
     position: 'absolute',
@@ -708,7 +726,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   centered: {
     flex: 1,
@@ -723,22 +741,60 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 40,
   },
+  // ─── Spark card ───
+  sparkCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 16,
+    shadowColor: '#1E1E2E',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sparkAccent: {
+    height: 3,
+    backgroundColor: '#D4522A',
+  },
+  sparkContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  sparkTextWrap: {
+    flex: 1,
+  },
+  sparkTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
+    letterSpacing: -0.3,
+  },
+  sparkSubtitle: {
+    fontSize: 13,
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
+    marginTop: 2,
+  },
   // ─── Loading greeting (no logo) ───
   greetingRow: {
     marginBottom: 8,
   },
   greeting: {
     fontSize: 28,
-    fontWeight: '600',
-    color: '#1c1917',
+    fontWeight: '900',
+    color: '#1E1E2E',
     letterSpacing: -0.5,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
   },
   dateText: {
     fontSize: 15,
-    color: '#78716c',
+    color: '#6B6B7A',
     marginTop: 2,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   // ─── Prompt ───
   promptSection: {
@@ -752,7 +808,7 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -760,18 +816,18 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: '900',
     color: '#292524',
     marginBottom: 8,
     textAlign: 'center',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
   },
   emptySubtitle: {
     fontSize: 15,
-    color: '#78716c',
+    color: '#6B6B7A',
     textAlign: 'center',
     lineHeight: 22,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   triggerButton: {
     marginTop: 24,
@@ -780,13 +836,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   triggerButtonText: {
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   disabled: {
     opacity: 0.5,
@@ -801,7 +857,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -809,15 +865,15 @@ const styles = StyleSheet.create({
   },
   waitingPrompt: {
     fontSize: 16,
-    color: '#57534e',
+    color: '#6B6B7A',
     fontStyle: 'italic',
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 24,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   sealedCard: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -826,18 +882,18 @@ const styles = StyleSheet.create({
   },
   sealedTitle: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#1c1917',
-    fontFamily: 'Alexandria-SemiBold',
+    fontWeight: '900',
+    color: '#1E1E2E',
+    fontFamily: 'Nunito-Black',
   },
   sealedSubtitle: {
     fontSize: 13,
-    color: '#a8a29e',
-    fontFamily: 'Inter-Regular',
+    color: '#B8B8C4',
+    fontFamily: 'Nunito-Regular',
   },
   waitingDivider: {
     height: 1,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     marginVertical: 20,
   },
   typingRow: {
@@ -847,10 +903,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   typingText: {
-    color: '#c97454',
+    color: '#D4522A',
     fontStyle: 'italic',
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   waitingMessageRow: {
     flexDirection: 'row',
@@ -859,9 +915,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   waitingMessage: {
-    color: '#78716c',
+    color: '#6B6B7A',
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   // ─── Complete ───
   completionSection: {
@@ -874,7 +930,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -883,9 +939,9 @@ const styles = StyleSheet.create({
   feedbackTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#57534e',
+    color: '#6B6B7A',
     marginBottom: 16,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
   },
   feedbackRow: {
     flexDirection: 'row',
@@ -894,10 +950,10 @@ const styles = StyleSheet.create({
   feedbackOption: {
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#f5f5f4',
+    borderColor: '#E2DED8',
     alignItems: 'center',
     gap: 4,
   },
@@ -907,23 +963,23 @@ const styles = StyleSheet.create({
   },
   feedbackOptionText: {
     fontSize: 13,
-    color: '#57534e',
+    color: '#6B6B7A',
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
   },
   feedbackThanks: {
     marginTop: 16,
     fontSize: 14,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textAlign: 'center',
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   streakCelebration: {
     marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 16,
@@ -933,8 +989,8 @@ const styles = StyleSheet.create({
   streakCelebrationText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#c97454',
-    fontFamily: 'Inter-SemiBold',
+    color: '#D4522A',
+    fontFamily: 'Nunito-Bold',
   },
   streakDetailSection: {
     marginTop: 16,
@@ -954,9 +1010,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#d6d3d1',
   },
   doneText: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontSize: 14,
     fontWeight: '400',
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
 });

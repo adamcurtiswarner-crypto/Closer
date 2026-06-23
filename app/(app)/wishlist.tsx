@@ -68,7 +68,7 @@ export default function WishlistScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#c97454" size="large" />
+          <ActivityIndicator color="#D4522A" size="large" />
         </View>
       </SafeAreaView>
     );
@@ -85,7 +85,7 @@ export default function WishlistScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Icon name="arrow-left" size="md" color="#1c1917" />
+          <Icon name="arrow-left" size="md" color="#1E1E2E" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
@@ -102,13 +102,13 @@ export default function WishlistScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />
         }
       >
         {/* Empty state */}
         {isEmpty && (
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyCard}>
-            <Icon name="sparkle" size="xl" color="#c97454" weight="light" />
+            <Icon name="sparkle" size="xl" color="#D4522A" weight="light" />
             <Text style={styles.emptyTitle}>{t('wishlist.startTogether')}</Text>
             <Text style={styles.emptySubtitle}>
               {t('wishlist.addDescription')}
@@ -248,7 +248,7 @@ function WishlistRow({
           {cat?.icon ? (
             <Text style={styles.rowIcon}>{cat.icon}</Text>
           ) : (
-            <Icon name="sparkle" size="sm" color="#490f5f" />
+            <Icon name="sparkle" size="sm" color="#3D2870" />
           )}
           <Text
             style={[styles.rowTitle, item.isCompleted && styles.rowTitleDone]}
@@ -273,7 +273,7 @@ function WishlistRow({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   loadingContainer: {
     flex: 1,
@@ -292,29 +292,29 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backArrow: {
     fontSize: 20,
-    color: '#57534e',
+    color: '#6B6B7A',
   },
   headerCenter: {
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     letterSpacing: -0.3,
   },
   headerCount: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     marginTop: 2,
   },
   // ─── Scroll ───
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     padding: 36,
     alignItems: 'center',
     marginTop: 40,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -345,16 +345,16 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     marginBottom: 8,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 15,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 24,
@@ -362,21 +362,21 @@ const styles = StyleSheet.create({
   emptyButton: {
     paddingVertical: 14,
     paddingHorizontal: 28,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
   },
   emptyButtonText: {
     color: '#ffffff',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 16,
   },
   // ─── Section Label ───
   sectionLabel: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: 12,
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 8,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -419,26 +419,26 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
     flex: 1,
   },
   rowTitleDone: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textDecorationLine: 'line-through',
   },
   rowDescription: {
     fontSize: 13,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 18,
     marginLeft: 24,
   },
   rowMeta: {
     fontSize: 11,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     marginLeft: 24,
     marginTop: 2,
   },
@@ -450,17 +450,17 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   doneHeaderText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.3,
   },
   doneChevron: {
     fontSize: 10,
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   // ─── Add Row ───
   addRow: {
@@ -476,21 +476,21 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 17,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 15,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
 });

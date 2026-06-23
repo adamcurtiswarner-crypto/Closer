@@ -114,7 +114,7 @@ interface IconComponentProps {
   weight?: PhosphorIconProps['weight'];
 }
 
-export function Icon({ name, size = 'md', color = '#78716c', weight = 'light' }: IconComponentProps) {
+export function Icon({ name, size = 'md', color = '#6B6B7A', weight = 'light' }: IconComponentProps) {
   const IconComponent = iconMap[name];
   const resolvedSize = typeof size === 'number' ? size : iconSize[size];
   return <IconComponent size={resolvedSize} color={color as string} weight={weight} />;

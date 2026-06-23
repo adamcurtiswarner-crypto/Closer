@@ -19,13 +19,13 @@ interface ChatBubbleProps {
 
 function StatusIndicator({ status }: { status: DeliveryStatus }) {
   if (status === 'sending') {
-    return <Icon name="hourglass" size={10} color="#a8a29e" />;
+    return <Icon name="hourglass" size={10} color="#B8B8C4" />;
   }
   if (status === 'read') {
-    return <Icon name="checks" size={10} color="#c97454" weight="bold" />;
+    return <Icon name="checks" size={10} color="#D4522A" weight="bold" />;
   }
   // sent
-  return <Icon name="check" size={10} color="#a8a29e" weight="bold" />;
+  return <Icon name="check" size={10} color="#B8B8C4" weight="bold" />;
 }
 
 export function ChatBubble({ message, isOwn, showTimestamp, onLongPress, onDelete, status }: ChatBubbleProps) {
@@ -116,29 +116,29 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   bubbleOwn: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderBottomRightRadius: 4,
   },
   bubblePartner: {
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     borderBottomLeftRadius: 4,
   },
   text: {
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 22,
   },
   textOwn: {
     color: '#ffffff',
   },
   textPartner: {
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   deletedText: {
     fontStyle: 'italic',
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   image: {
     width: 220,
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 11,
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     textAlign: 'center',
     marginVertical: 8,
   },

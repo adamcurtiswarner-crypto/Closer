@@ -154,7 +154,7 @@ export default function DateNightsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color="#c97454" size="large" />
+          <ActivityIndicator color="#D4522A" size="large" />
         </View>
       </SafeAreaView>
     );
@@ -179,7 +179,7 @@ export default function DateNightsScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Icon name="arrow-left" size="md" color="#1c1917" />
+          <Icon name="arrow-left" size="md" color="#1E1E2E" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Date Nights</Text>
@@ -202,7 +202,7 @@ export default function DateNightsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />
         }
       >
         {/* ── Upcoming Section ── */}
@@ -345,7 +345,7 @@ export default function DateNightsScreen() {
               <Text style={styles.ideaTitle} numberOfLines={2}>{idea.title}</Text>
               <Text style={styles.ideaDescription} numberOfLines={2}>{idea.description}</Text>
               <View style={styles.ideaSaveRow}>
-                <Icon name="arrow-right" size="xs" color="#c97454" />
+                <Icon name="arrow-right" size="xs" color="#D4522A" />
                 <Text style={styles.ideaSaveText}>Save this idea</Text>
               </View>
             </TouchableOpacity>
@@ -388,7 +388,7 @@ export default function DateNightsScreen() {
         {/* Empty state when no data at all */}
         {(dateNights?.length ?? 0) === 0 && filteredIdeas.length === 0 && (
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.emptyCard}>
-            <Icon name="calendar" size="xl" color="#c97454" weight="light" />
+            <Icon name="calendar" size="xl" color="#D4522A" weight="light" />
             <Text style={styles.emptyTitle}>No date nights yet</Text>
             <Text style={styles.emptySubtitle}>
               Browse ideas above or plan something custom.
@@ -506,11 +506,11 @@ function DateNightRow({
       {item.reflectionRating && (
         <View style={styles.reflectionBadge}>
           {item.reflectionRating === 'warm' ? (
-            <Icon name="flame" size="xs" color="#c97454" />
+            <Icon name="flame" size="xs" color="#D4522A" />
           ) : item.reflectionRating === 'okay' ? (
-            <Icon name="check" size="xs" color="#78716c" />
+            <Icon name="check" size="xs" color="#6B6B7A" />
           ) : (
-            <Icon name="cloud" size="xs" color="#a8a29e" />
+            <Icon name="cloud" size="xs" color="#B8B8C4" />
           )}
         </View>
       )}
@@ -521,7 +521,7 @@ function DateNightRow({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   loadingContainer: {
     flex: 1,
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -549,23 +549,23 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     letterSpacing: -0.3,
   },
   headerCount: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     marginTop: 2,
   },
   addHeaderButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -588,8 +588,8 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: 12,
@@ -606,7 +606,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 8,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -617,12 +617,12 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     justifyContent: 'center',
     alignItems: 'center',
   },
   rowIconWrapDone: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   rowCategoryIcon: {
     fontSize: 18,
@@ -634,11 +634,11 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
   },
   rowTitleDone: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   rowMetaRow: {
     flexDirection: 'row',
@@ -648,8 +648,8 @@ const styles = StyleSheet.create({
   rowDate: {
     fontSize: 12,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   rowDatePastDue: {
     color: '#ef4444',
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
   rowStatusSaved: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   rowStatusDone: {
     fontSize: 12,
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
   },
   rowTime: {
     fontSize: 12,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '500',
   },
   rowMetaDot: {
@@ -683,14 +683,14 @@ const styles = StyleSheet.create({
   rowActionLink: {
     fontSize: 12,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   reflectionBadge: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -714,11 +714,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#ffffff',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   categoryChipActive: {
-    backgroundColor: '#fef5f0',
-    borderColor: '#c97454',
+    backgroundColor: '#FDF1ED',
+    borderColor: '#D4522A',
   },
   categoryChipIcon: {
     fontSize: 14,
@@ -726,11 +726,11 @@ const styles = StyleSheet.create({
   categoryChipText: {
     fontSize: 13,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#78716c',
+    fontFamily: 'Nunito-Bold',
+    color: '#6B6B7A',
   },
   categoryChipTextActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   // --- Idea Cards ---
   ideaCard: {
@@ -738,7 +738,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 8,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -761,7 +761,7 @@ const styles = StyleSheet.create({
   ideaCost: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.3,
   },
   ideaMetaDot: {
@@ -773,19 +773,19 @@ const styles = StyleSheet.create({
   ideaDuration: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   ideaTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
     marginBottom: 4,
   },
   ideaDescription: {
     fontSize: 13,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 18,
     marginBottom: 10,
   },
@@ -797,8 +797,8 @@ const styles = StyleSheet.create({
   ideaSaveText: {
     fontSize: 13,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   // --- Past Section ---
   pastHeader: {
@@ -808,12 +808,12 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   pastHeaderText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.3,
   },
   // --- Empty State ---
@@ -823,7 +823,7 @@ const styles = StyleSheet.create({
     padding: 36,
     alignItems: 'center',
     marginTop: 40,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -831,8 +831,8 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     marginTop: 16,
     marginBottom: 8,
@@ -840,8 +840,8 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     fontSize: 15,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -859,21 +859,21 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 17,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 15,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
 });

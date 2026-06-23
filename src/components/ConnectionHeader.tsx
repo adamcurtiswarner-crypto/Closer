@@ -143,7 +143,7 @@ function StreakPill({ streak, active }: { streak: number; active: boolean }) {
   return (
     <Animated.View style={[styles.streakPill, active ? styles.streakPillActive : styles.streakPillInactive, pillStyle]}>
       <Animated.View style={flameStyle}>
-        <Icon name="flame" size="xs" color="#c97454" weight="fill" />
+        <Icon name="flame" size="xs" color="#D4522A" weight="fill" />
       </Animated.View>
       <Text style={[styles.streakCount, active ? styles.streakCountActive : styles.streakCountInactive]}>
         {streak}
@@ -172,16 +172,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   avatarPartner: {
-    backgroundColor: '#490f5f',
+    backgroundColor: '#3D2870',
   },
   avatarText: {
     color: '#ffffff',
     fontSize: 18,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   onlineDot: {
     position: 'absolute',
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#fef7f4',
+    borderColor: '#F5F2EE',
   },
   onlineActive: {
     backgroundColor: '#22c55e',
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 2,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
   },
   dot: {
     width: 5,
@@ -219,10 +219,10 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   dotLeft: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   dotRight: {
-    backgroundColor: '#490f5f',
+    backgroundColor: '#3D2870',
   },
   streakPill: {
     flexDirection: 'row',
@@ -237,26 +237,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3ee',
   },
   streakPillInactive: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   streakCount: {
     fontSize: 12,
     fontWeight: '700',
   },
   streakCountActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   streakCountInactive: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   statusText: {
     marginTop: 6,
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
   },
   statusTyping: {
-    color: '#c97454',
+    color: '#D4522A',
     fontStyle: 'italic',
   },
 });

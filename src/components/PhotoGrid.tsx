@@ -30,7 +30,7 @@ export function PhotoGrid({ photos, onPhotoPress, onEndReached, isLoading, isLoa
   if (isLoading) {
     return (
       <View style={styles.empty}>
-        <ActivityIndicator size="small" color="#c97454" />
+        <ActivityIndicator size="small" color="#D4522A" />
       </View>
     );
   }
@@ -68,7 +68,7 @@ export function PhotoGrid({ photos, onPhotoPress, onEndReached, isLoading, isLoa
       ListFooterComponent={
         isLoadingMore ? (
           <View style={styles.loading}>
-            <ActivityIndicator size="small" color="#c97454" />
+            <ActivityIndicator size="small" color="#D4522A" />
           </View>
         ) : null
       }
@@ -101,14 +101,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#57534e',
+    fontFamily: 'Nunito-Bold',
+    color: '#6B6B7A',
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 8,
   },

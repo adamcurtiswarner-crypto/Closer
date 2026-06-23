@@ -218,14 +218,14 @@ export default function SettingsScreen() {
               <Text style={styles.rowLabel}>{t('settings.dailyPromptTime')}</Text>
               <View style={styles.rowRight}>
                 <Text style={styles.rowValue}>{getTimeDisplay(currentTime)}</Text>
-                <Icon name="caret-right" size="sm" color="#a8a29e" />
+                <Icon name="caret-right" size="sm" color="#B8B8C4" />
               </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
               <Text style={styles.rowLabel}>{t('settings.promptFrequency')}</Text>
               <View style={styles.rowRight}>
                 <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)}</Text>
-                <Icon name="caret-right" size="sm" color="#a8a29e" />
+                <Icon name="caret-right" size="sm" color="#B8B8C4" />
               </View>
             </TouchableOpacity>
             <View style={styles.rowToggle}>
@@ -233,8 +233,8 @@ export default function SettingsScreen() {
               <Switch
                 value={remindMe}
                 onValueChange={handleToggleRemind}
-                trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={remindMe ? '#c97454' : '#fef7f4'}
+                trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
+                thumbColor={remindMe ? '#D4522A' : '#F5F2EE'}
               />
             </View>
             <View style={styles.rowToggle}>
@@ -242,8 +242,8 @@ export default function SettingsScreen() {
               <Switch
                 value={partnerNotify}
                 onValueChange={handleTogglePartnerNotify}
-                trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={partnerNotify ? '#c97454' : '#fef7f4'}
+                trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
+                thumbColor={partnerNotify ? '#D4522A' : '#F5F2EE'}
               />
             </View>
             <View style={[styles.rowToggle, styles.lastRow]}>
@@ -257,8 +257,8 @@ export default function SettingsScreen() {
                     calendarRemove.mutate();
                   }
                 }}
-                trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                thumbColor={calendarSynced ? '#c97454' : '#fef7f4'}
+                trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
+                thumbColor={calendarSynced ? '#D4522A' : '#F5F2EE'}
                 disabled={calendarSync.isPending || calendarRemove.isPending}
               />
             </View>
@@ -287,7 +287,7 @@ export default function SettingsScreen() {
               onPress={() => router.push('/(app)/resources')}
             >
               <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
-              <Icon name="caret-right" size="sm" color="#a8a29e" />
+              <Icon name="caret-right" size="sm" color="#B8B8C4" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -303,9 +303,9 @@ export default function SettingsScreen() {
             >
               <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
               {exportData.isPending ? (
-                <ActivityIndicator size="small" color="#c97454" />
+                <ActivityIndicator size="small" color="#D4522A" />
               ) : (
-                <Icon name="caret-right" size="sm" color="#a8a29e" />
+                <Icon name="caret-right" size="sm" color="#B8B8C4" />
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -313,21 +313,21 @@ export default function SettingsScreen() {
               onPress={() => setShowAnonymizeModal(true)}
             >
               <Text style={styles.rowLabel}>{t('settings.anonymize')}</Text>
-              <Icon name="caret-right" size="sm" color="#a8a29e" />
+              <Icon name="caret-right" size="sm" color="#B8B8C4" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.row}
               onPress={() => router.push('/(app)/privacy-policy')}
             >
               <Text style={styles.rowLabel}>{t('settings.privacyPolicy')}</Text>
-              <Icon name="caret-right" size="sm" color="#a8a29e" />
+              <Icon name="caret-right" size="sm" color="#B8B8C4" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.row}
               onPress={() => router.push('/(app)/terms-of-service' as any)}
             >
               <Text style={styles.rowLabel}>{t('settings.termsOfService')}</Text>
-              <Icon name="caret-right" size="sm" color="#a8a29e" />
+              <Icon name="caret-right" size="sm" color="#B8B8C4" />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.row, styles.lastRow]}
@@ -385,8 +385,8 @@ export default function SettingsScreen() {
                       await disableBiometric();
                     }
                   }}
-                  trackColor={{ false: '#e7e5e4', true: '#f9a07a' }}
-                  thumbColor={isBiometricEnabled ? '#c97454' : '#fef7f4'}
+                  trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
+                  thumbColor={isBiometricEnabled ? '#D4522A' : '#F5F2EE'}
                 />
               </View>
             )}
@@ -396,7 +396,7 @@ export default function SettingsScreen() {
             </View>
             <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
               <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>
-              <Icon name="caret-right" size="sm" color="#a8a29e" />
+              <Icon name="caret-right" size="sm" color="#B8B8C4" />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -629,7 +629,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   header: {
     paddingHorizontal: 24,
@@ -638,9 +638,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
   scrollView: {
     flex: 1,
@@ -649,8 +649,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#78716c',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
     marginTop: 24,
     marginBottom: 8,
     marginLeft: 4,
@@ -668,7 +668,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f4',
+    borderBottomColor: '#E2DED8',
   },
   rowToggle: {
     flexDirection: 'row',
@@ -677,20 +677,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f4',
+    borderBottomColor: '#E2DED8',
   },
   lastRow: {
     borderBottomWidth: 0,
   },
   rowLabel: {
     fontSize: 16,
-    color: '#1c1917',
-    fontFamily: 'Inter-Regular',
+    color: '#1E1E2E',
+    fontFamily: 'Nunito-Regular',
   },
   rowValue: {
     fontSize: 16,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
   },
   rowRight: {
     flexDirection: 'row',
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   premiumText: {
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
   },
   dangerText: {
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
     color: '#f87171',
   },
   safety: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 12,
     padding: 16,
     marginTop: 32,
@@ -714,14 +714,14 @@ const styles = StyleSheet.create({
   },
   safetyText: {
     fontSize: 14,
-    color: '#57534e',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 20,
   },
   safetyLink: {
     fontSize: 14,
-    color: '#c97454',
-    fontFamily: 'Inter-Medium',
+    color: '#D4522A',
+    fontFamily: 'Nunito-SemiBold',
     marginTop: 8,
   },
   // Modal styles
@@ -739,15 +739,15 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 14,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     marginBottom: 20,
   },
   timeOption: {
@@ -756,7 +756,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   timeOptionActive: {
     backgroundColor: '#fef3ee',
@@ -774,26 +774,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   radioActive: {
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   radioInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   timeOptionText: {
     fontSize: 16,
-    color: '#57534e',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
   },
   timeOptionTextActive: {
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '500',
   },
   frequencyDescription: {
     fontSize: 13,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     marginTop: 2,
   },
   modalClose: {
@@ -803,28 +803,28 @@ const styles = StyleSheet.create({
   },
   modalCloseText: {
     fontSize: 16,
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   deleteModalBody: {
     fontSize: 15,
-    color: '#57534e',
+    color: '#6B6B7A',
     lineHeight: 22,
     marginBottom: 20,
   },
   deleteModalLabel: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#78716c',
+    color: '#6B6B7A',
     marginBottom: 8,
   },
   deleteInput: {
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1c1917',
+    color: '#1E1E2E',
     marginBottom: 16,
     letterSpacing: 2,
   },
@@ -840,11 +840,11 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
   },
   anonymizeButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

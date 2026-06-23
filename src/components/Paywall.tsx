@@ -66,7 +66,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
                 entering={FadeInUp.duration(400).delay(200 + index * 80)}
                 style={styles.featureRow}
               >
-                <Icon name={feature.icon} size="sm" color="#c97454" weight="bold" />
+                <Icon name={feature.icon} size="sm" color="#D4522A" weight="bold" />
                 <Text style={styles.featureText}>{feature.text}</Text>
               </Animated.View>
             ))}
@@ -135,10 +135,10 @@ const styles = StyleSheet.create({
   },
   accentBar: {
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   headerArea: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     paddingTop: 28,
     paddingBottom: 24,
     paddingHorizontal: 24,
@@ -146,14 +146,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#292524',
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     flex: 1,
   },
   planRow: {
@@ -188,16 +188,16 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   planCardSelected: {
-    borderColor: '#c97454',
-    backgroundColor: '#fef5f0',
+    borderColor: '#D4522A',
+    backgroundColor: '#FDF1ED',
   },
   planBadge: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#c97454',
+    color: '#D4522A',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: 8,
@@ -205,33 +205,33 @@ const styles = StyleSheet.create({
   planPrice: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   planSubprice: {
     fontSize: 12,
-    color: '#78716c',
+    color: '#6B6B7A',
     marginTop: 2,
   },
   planTrial: {
     fontSize: 11,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
     marginTop: 4,
   },
   sharedNote: {
     fontSize: 13,
-    color: '#78716c',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 8,
   },
   ctaButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
     marginHorizontal: 24,
     marginTop: 16,
-    shadowColor: '#c97454',
+    shadowColor: '#D4522A',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   restoreButton: {
     marginTop: 16,
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   },
   restoreText: {
     fontSize: 14,
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   closeButton: {
     marginTop: 12,
@@ -261,6 +261,6 @@ const styles = StyleSheet.create({
   },
   closeText: {
     fontSize: 15,
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
 });

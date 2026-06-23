@@ -13,7 +13,7 @@ interface InsightCardProps {
 export function InsightCard({
   icon,
   title,
-  accentColor = '#c97454',
+  accentColor = '#D4522A',
   children,
   delay = 0,
 }: InsightCardProps) {
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
   },

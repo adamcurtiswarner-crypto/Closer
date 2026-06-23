@@ -15,7 +15,7 @@ export function QueryError({
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
       <View style={styles.icon}>
-        <Icon name="cloud" size="lg" color="#a8a29e" />
+        <Icon name="cloud" size="lg" color="#B8B8C4" />
       </View>
       <Text style={styles.title}>Couldn't load</Text>
       <Text style={styles.message}>{message}</Text>
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: 'center',
     width: '100%',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -47,14 +47,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     marginBottom: 6,
   },
   message: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 20,
@@ -64,12 +64,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   buttonText: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
 });

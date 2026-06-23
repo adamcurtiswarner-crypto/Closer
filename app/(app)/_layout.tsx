@@ -59,7 +59,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           const isFocused = activeVisibleIndex === index;
 
           const label = options.title ?? route.name;
-          const color = isFocused ? '#c97454' : '#a8a29e';
+          const color = isFocused ? '#D4522A' : '#B8B8C4';
 
           const onPress = () => {
             const event = navigation.emit({
@@ -91,7 +91,18 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               onLongPress={onLongPress}
               style={customTabBarStyles.tab}
             >
-              {options.tabBarIcon?.({ focused: isFocused, color, size: 24 })}
+              <View
+                style={{
+                  width: 40,
+                  height: 30,
+                  borderRadius: 9,
+                  backgroundColor: isFocused ? '#FDF1ED' : 'transparent',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {options.tabBarIcon?.({ focused: isFocused, color, size: 24 })}
+              </View>
               <Text
                 style={[
                   customTabBarStyles.label,
@@ -129,14 +140,14 @@ export default function AppLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#c97454',
-        tabBarInactiveTintColor: '#a8a29e',
+        tabBarActiveTintColor: '#D4522A',
+        tabBarInactiveTintColor: '#B8B8C4',
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Together',
+          title: 'Home',
           tabBarIcon: ({ focused, color }) => (
             <Icon name="handshake" size="md" color={color} weight={focused ? 'fill' : 'light'} />
           ),
@@ -222,6 +233,36 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="morning-checkin"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="evening-reflection"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="surprise-mission"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="partner-guess"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="todays-spark"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
@@ -237,9 +278,9 @@ export default function AppLayout() {
 
 const customTabBarStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
     paddingTop: 8,
     height: 85,
   },
@@ -253,9 +294,9 @@ const customTabBarStyles = StyleSheet.create({
     paddingVertical: 4,
   },
   label: {
-    fontSize: 12,
+    fontSize: 9,
     marginTop: 4,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-ExtraBold',
   },
   indicator: {
     position: 'absolute',
@@ -264,7 +305,7 @@ const customTabBarStyles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
 });
 

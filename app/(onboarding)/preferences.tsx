@@ -143,7 +143,7 @@ export default function PreferencesScreen() {
                     {option.label}
                   </Text>
                   {selectedTime === option.value && (
-                    <Icon name="check" size="sm" color="#c97454" weight="bold" />
+                    <Icon name="check" size="sm" color="#D4522A" weight="bold" />
                   )}
                 </View>
               </TouchableOpacity>
@@ -220,7 +220,7 @@ export default function PreferencesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   scrollView: {
     flex: 1,
@@ -233,14 +233,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
   helperText: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginTop: 8,
     lineHeight: 20,
   },
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     color: '#44403c',
     fontSize: 14,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     marginBottom: 12,
   },
   optionRow: {
@@ -266,13 +266,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   optionRowSelected: {
-    backgroundColor: '#fef5f0',
-    borderColor: '#c97454',
+    backgroundColor: '#FDF1ED',
+    borderColor: '#D4522A',
     borderWidth: 2,
   },
   optionRowDefault: {
     backgroundColor: '#fff',
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   optionContent: {
     flexDirection: 'row',
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
   },
   optionTextSelected: {
     color: '#b5370f',
@@ -295,14 +295,14 @@ const styles = StyleSheet.create({
   },
   daySectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
   daySectionHelper: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginTop: 6,
     marginBottom: 16,
     lineHeight: 20,
@@ -317,18 +317,18 @@ const styles = StyleSheet.create({
     height: 41,
     borderRadius: 20.5,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   dayCircleSelected: {
-    backgroundColor: '#c97454',
-    borderColor: '#c97454',
+    backgroundColor: '#D4522A',
+    borderColor: '#D4522A',
   },
   dayLabel: {
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontSize: 13,
-    color: '#57534e',
+    color: '#6B6B7A',
   },
   dayLabelSelected: {
     color: '#ffffff',
@@ -346,9 +346,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   skipText: {
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontSize: 14,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 1,
   },
 });

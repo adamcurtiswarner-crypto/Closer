@@ -87,7 +87,7 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
       >
         {loading ? (
           <ActivityIndicator
-            color={variant === 'primary' ? '#ffffff' : '#c97454'}
+            color={variant === 'primary' ? '#ffffff' : '#D4522A'}
             size="small"
           />
         ) : (
@@ -116,10 +116,10 @@ const styles = StyleSheet.create({
   },
   // Variants
   primaryButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   secondaryButton: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   ghostButton: {
     backgroundColor: 'transparent',
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   // Text
   text: {
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '600',
   },
   primaryText: {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     color: '#292524',
   },
   ghostText: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   smText: {
     fontSize: 14,

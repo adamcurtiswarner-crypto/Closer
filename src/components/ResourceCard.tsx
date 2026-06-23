@@ -46,7 +46,7 @@ export function ResourceCard({ resource, delay = 0 }: ResourceCardProps) {
           </Text>
         </View>
 
-        <Icon name="caret-right" size="sm" color="#a8a29e" />
+        <Icon name="caret-right" size="sm" color="#B8B8C4" />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     marginBottom: 8,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
     flex: 1,
   },
@@ -107,8 +107,8 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 18,
   },
 });

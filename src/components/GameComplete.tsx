@@ -24,7 +24,7 @@ export function GameComplete({
   return (
     <View style={styles.container}>
       <Animated.View entering={FadeInUp.duration(500)} style={styles.content}>
-        <Icon name="sparkle" size="xl" color="#c97454" weight="fill" />
+        <Icon name="sparkle" size="xl" color="#D4522A" weight="fill" />
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
 
@@ -72,7 +72,7 @@ export function GameComplete({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -96,8 +96,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     paddingHorizontal: 28,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#c97454',
+    color: '#D4522A',
   },
   statLabel: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     marginTop: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -138,14 +138,14 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 16,
     alignItems: 'center',
   },
   primaryButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
   },
   secondaryButton: {
@@ -155,6 +155,6 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#78716c',
+    color: '#6B6B7A',
   },
 });

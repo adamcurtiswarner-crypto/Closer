@@ -11,7 +11,7 @@ export default function ValuePropScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.iconRow}>
-          <Icon name="flame" size="xl" color="#c97454" weight="fill" />
+          <Icon name="flame" size="xl" color="#D4522A" weight="fill" />
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(200)}>
@@ -39,7 +39,7 @@ export default function ValuePropScreen() {
 function FeatureRow({ icon, text }: { icon: IconName; text: string }) {
   return (
     <View style={styles.featureRow}>
-      <Icon name={icon} size="sm" color="#c97454" weight="bold" />
+      <Icon name={icon} size="sm" color="#D4522A" weight="bold" />
       <Text style={styles.featureText}>{text}</Text>
     </View>
   );
@@ -48,7 +48,7 @@ function FeatureRow({ icon, text }: { icon: IconName; text: string }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     padding: 24,
   },
   content: {
@@ -61,16 +61,16 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     textAlign: 'center',
     marginBottom: 12,
   },
   subtitle: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 32,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   featureText: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
   },
 });

@@ -52,7 +52,7 @@ export default function GamesScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
         >
-          <Icon name="arrow-left" size="md" color="#1c1917" />
+          <Icon name="arrow-left" size="md" color="#1E1E2E" />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Games</Text>
@@ -74,11 +74,11 @@ export default function GamesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   gameContainer: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   header: {
     flexDirection: 'row',
@@ -91,29 +91,29 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   backArrow: {
     fontSize: 20,
-    color: '#57534e',
+    color: '#6B6B7A',
   },
   headerCenter: {
     alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     letterSpacing: -0.3,
   },
   headerSubtitle: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     marginTop: 2,
   },
   scrollView: {

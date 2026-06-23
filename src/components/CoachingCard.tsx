@@ -35,10 +35,10 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
       <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
+        <Icon name="lightbulb" size="sm" color="#D4522A" weight="light" />
         <Text style={styles.headerText}>Weekly insight</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="x" size="xs" color="#a8a29e" />
+          <Icon name="x" size="xs" color="#B8B8C4" />
         </TouchableOpacity>
       </View>
 
@@ -60,7 +60,7 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
       {onViewCoaching && (
         <TouchableOpacity onPress={onViewCoaching} style={styles.viewCoachingLink}>
           <Text style={styles.viewCoachingText}>View all insights</Text>
-          <Icon name="arrow-right" size="xs" color="#78716c" />
+          <Icon name="arrow-right" size="xs" color="#6B6B7A" />
         </TouchableOpacity>
       )}
     </Animated.View>
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   header: {
     flexDirection: 'row',
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
     flex: 1,
@@ -106,14 +106,14 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     justifyContent: 'center',
     alignItems: 'center',
   },
   insightText: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 22,
     marginBottom: 16,
   },
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
     padding: 16,
   },
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   actionDetail: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
     lineHeight: 19,
   },
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   viewCoachingText: {
     fontSize: 13,
-    fontFamily: 'Inter-Medium',
-    color: '#78716c',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
   },
 });

@@ -26,7 +26,7 @@ export function RelationshipStagePrompt({ onSelectStage, onDismiss }: Relationsh
       <View style={styles.stageButtons}>
         {STAGES.map(s => (
           <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => onSelectStage(s.value)}>
-            <Icon name={s.icon} size="sm" color="#c97454" />
+            <Icon name={s.icon} size="sm" color="#D4522A" />
             <Text style={styles.stageChipText}>{s.label}</Text>
           </TouchableOpacity>
         ))}
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -53,14 +53,14 @@ const styles = StyleSheet.create({
   stagePromptTitle: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     marginBottom: 4,
   },
   stagePromptSubtitle: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginBottom: 16,
   },
   stageButtons: {
@@ -73,23 +73,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#fce8dc',
+    borderColor: '#FDF1ED',
   },
   stageChipText: {
     fontSize: 13,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   stageSkip: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     textAlign: 'center',
   },
 });

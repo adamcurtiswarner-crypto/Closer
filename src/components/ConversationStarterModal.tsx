@@ -51,14 +51,14 @@ export function ConversationStarterModal({
           <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>Start a conversation</Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.8}>
-            <Icon name="x" size="sm" color="#57534e" />
+            <Icon name="x" size="sm" color="#6B6B7A" />
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
           <Animated.View entering={FadeInUp.duration(400).delay(200)} style={styles.card}>
             <View style={styles.accentBar} />
-            <Icon name="chat-circle" size="xl" color="#c97454" weight="light" />
+            <Icon name="chat-circle" size="xl" color="#D4522A" weight="light" />
             <Text style={styles.starterText}>{starterText}</Text>
           </Animated.View>
 
@@ -71,7 +71,7 @@ export function ConversationStarterModal({
               <Icon
                 name={copied ? 'check' : 'chat-text'}
                 size="sm"
-                color={copied ? '#22c55e' : '#c97454'}
+                color={copied ? '#22c55e' : '#D4522A'}
               />
               <Text style={[styles.copyText, copied && styles.copyTextCopied]}>
                 {copied ? 'Copied' : 'Copy to clipboard'}
@@ -88,7 +88,7 @@ export function ConversationStarterModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   handleBar: {
     width: 36,
@@ -113,14 +113,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#1c1917',
+    color: '#1E1E2E',
     letterSpacing: -0.3,
   },
   closeButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'center',
     gap: 20,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -150,12 +150,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   starterText: {
     fontSize: 18,
     fontWeight: '500',
-    color: '#1c1917',
+    color: '#1E1E2E',
     textAlign: 'center',
     lineHeight: 26,
   },
@@ -167,12 +167,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: '#f5f5f4',
+    borderColor: '#E2DED8',
     alignSelf: 'stretch',
     justifyContent: 'center',
   },
@@ -183,13 +183,13 @@ const styles = StyleSheet.create({
   copyText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   copyTextCopied: {
     color: '#22c55e',
   },
   chatLink: {
-    color: '#c97454',
+    color: '#D4522A',
     fontSize: 14,
     fontWeight: '500',
   },

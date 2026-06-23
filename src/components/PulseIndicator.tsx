@@ -12,7 +12,7 @@ interface PulseIndicatorProps {
 
 const TIER_CONFIG: Record<string, { label: string; color: string }> = {
   thriving: { label: 'Thriving', color: '#22c55e' },
-  steady: { label: 'Steady', color: '#c97454' },
+  steady: { label: 'Steady', color: '#D4522A' },
   cooling: { label: 'Cooling', color: '#f59e0b' },
   needs_attention: { label: 'Needs attention', color: '#ef4444' },
 };
@@ -64,7 +64,7 @@ export function PulseIndicator({ score, tier, trend, history }: PulseIndicatorPr
                     : h.score >= 40
                       ? 'cooling'
                       : 'needs_attention';
-              const barColor = TIER_CONFIG[barTier]?.color || '#c97454';
+              const barColor = TIER_CONFIG[barTier]?.color || '#D4522A';
               return (
                 <View key={h.weekId} style={styles.barCol}>
                   <View style={[styles.bar, { height: heightPct * 0.4, backgroundColor: barColor }]} />
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
   },
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     height: 50,
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   barCol: {
     alignItems: 'center',
@@ -159,8 +159,8 @@ const styles = StyleSheet.create({
   },
   barLabel: {
     fontSize: 10,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
   },
 });

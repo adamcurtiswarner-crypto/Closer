@@ -55,7 +55,7 @@ function SparkleParticle({ x, delay }: { x: number; delay: number }) {
           width: 4,
           height: 4,
           borderRadius: 2,
-          backgroundColor: '#c97454',
+          backgroundColor: '#D4522A',
         },
         animatedStyle,
       ]}
@@ -110,7 +110,7 @@ export function CompletionMoment({
 
         <Animated.View entering={FadeIn.duration(400)}>
           <View style={styles.headerRow}>
-            <Icon name="sparkle" size="lg" color="#c97454" weight="fill" />
+            <Icon name="sparkle" size="lg" color="#D4522A" weight="fill" />
             <Text style={styles.header}>You both answered</Text>
           </View>
         </Animated.View>
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     paddingTop: 20,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   headerRow: {
     flexDirection: 'row',
@@ -194,15 +194,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   header: {
-    color: '#57534e',
+    color: '#6B6B7A',
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   promptText: {
-    color: '#57534e',
+    color: '#6B6B7A',
     fontSize: 17,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     textAlign: 'center',
     marginBottom: 24,
     fontStyle: 'italic',
@@ -226,9 +226,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#d6d3d1',
   },
   footer: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontSize: 13,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
   },
 });

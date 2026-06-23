@@ -139,7 +139,7 @@ export default function AcceptInviteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   contentCentered: {
     flex: 1,
@@ -152,14 +152,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -171,10 +171,10 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontFamily: 'monospace',
     fontWeight: '700',
-    color: '#c97454',
+    color: '#D4522A',
     letterSpacing: 4,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   joinButtonContainer: {
     marginTop: 32,

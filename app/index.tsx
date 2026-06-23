@@ -9,7 +9,7 @@ export default function Index() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#c97454" />
+        <ActivityIndicator size="large" color="#D4522A" />
       </View>
     );
   }
@@ -33,6 +33,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
 });

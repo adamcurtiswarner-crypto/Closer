@@ -138,6 +138,12 @@ function RootLayout() {
     'Inter-Medium': require('../src/assets/fonts/Inter-Medium.ttf'),
     'Inter-SemiBold': require('../src/assets/fonts/Inter-SemiBold.ttf'),
     'Pacifico': require('../src/assets/fonts/Pacifico-Regular.ttf'),
+    'Nunito-Regular': require('../src/assets/fonts/Nunito-Regular.ttf'),
+    'Nunito-SemiBold': require('../src/assets/fonts/Nunito-SemiBold.ttf'),
+    'Nunito-Bold': require('../src/assets/fonts/Nunito-Bold.ttf'),
+    'Nunito-BoldItalic': require('../src/assets/fonts/Nunito-BoldItalic.ttf'),
+    'Nunito-ExtraBold': require('../src/assets/fonts/Nunito-ExtraBold.ttf'),
+    'Nunito-Black': require('../src/assets/fonts/Nunito-Black.ttf'),
   });
 
   // Keep splash screen visible until fonts are loaded
@@ -157,7 +163,7 @@ function RootLayout() {
             <Stack
               screenOptions={{
                 headerShown: false,
-                contentStyle: { backgroundColor: '#fef7f4' },
+                contentStyle: { backgroundColor: '#F5F2EE' },
               }}
             >
               <Stack.Screen name="(auth)" />

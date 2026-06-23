@@ -55,13 +55,13 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
           onPress={handlePickImage}
           activeOpacity={0.7}
         >
-          <Icon name="camera" size="md" color="#78716c" />
+          <Icon name="camera" size="md" color="#6B6B7A" />
         </TouchableOpacity>
 
         <TextInput
           style={styles.input}
           placeholder={t('chat.messagePlaceholder')}
-          placeholderTextColor="#a8a29e"
+          placeholderTextColor="#B8B8C4"
           value={text}
           onChangeText={handleTextChange}
           multiline
@@ -74,7 +74,7 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
           disabled={!canSend}
           activeOpacity={0.7}
         >
-          <Icon name="arrow-up" size="sm" color={canSend ? '#ffffff' : '#a8a29e'} weight="bold" />
+          <Icon name="arrow-up" size="sm" color={canSend ? '#ffffff' : '#B8B8C4'} weight="bold" />
         </TouchableOpacity>
       </View>
     </View>
@@ -84,8 +84,8 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
 const styles = StyleSheet.create({
   container: {
     borderTopWidth: 1,
-    borderTopColor: '#e7e5e4',
-    backgroundColor: '#fef7f4',
+    borderTopColor: '#E2DED8',
+    backgroundColor: '#F5F2EE',
     paddingHorizontal: 12,
     paddingTop: 8,
     paddingBottom: 4,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#57534e',
+    backgroundColor: '#6B6B7A',
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-start',
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 2,
@@ -130,22 +130,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Regular',
+    color: '#1E1E2E',
     maxHeight: 100,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   sendButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 2,
   },
   sendButtonActive: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
 });

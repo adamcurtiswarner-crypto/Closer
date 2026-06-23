@@ -126,7 +126,7 @@ export default function ExploreScreen() {
               <TextInput
                 style={styles.textInput}
                 placeholder="Share your thoughts..."
-                placeholderTextColor="#a8a29e"
+                placeholderTextColor="#B8B8C4"
                 multiline
                 textAlignVertical="top"
                 value={responseText}
@@ -196,7 +196,7 @@ export default function ExploreScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="arrow-left" size="md" color="#1c1917" />
+          <Icon name="arrow-left" size="md" color="#1E1E2E" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Explore</Text>
         <View style={{ width: 40 }} />
@@ -255,7 +255,7 @@ export default function ExploreScreen() {
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#c97454" />
+            <ActivityIndicator size="small" color="#D4522A" />
           </View>
         ) : !prompts || prompts.length === 0 ? (
           <Animated.View entering={FadeIn.duration(400)} style={styles.emptyState}>
@@ -272,7 +272,7 @@ export default function ExploreScreen() {
                 entering={FadeInUp.duration(400).delay(index * 80)}
               >
                 <View style={styles.promptCard}>
-                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || '#c97454' }]} />
+                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || '#D4522A' }]} />
                   <View style={styles.promptContent}>
                     <Text style={styles.promptText}>{prompt.text}</Text>
                     {prompt.hint && (
@@ -307,7 +307,7 @@ export default function ExploreScreen() {
                         <TouchableOpacity
                           style={[
                             styles.respondButton,
-                            { backgroundColor: currentCategory?.color || '#c97454' },
+                            { backgroundColor: currentCategory?.color || '#D4522A' },
                           ]}
                           onPress={() => handleStartPrompt(prompt)}
                           disabled={startExplore.isPending}
@@ -341,7 +341,7 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fef7f4' },
+  container: { flex: 1, backgroundColor: '#F5F2EE' },
   flex: { flex: 1 },
   scrollView: { flex: 1 },
 
@@ -356,9 +356,9 @@ const styles = StyleSheet.create({
   backButton: { padding: 8 },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
 
   // Category tabs
@@ -373,23 +373,23 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
   },
-  categoryChipLabel: { fontSize: 13, fontWeight: '500', fontFamily: 'Inter-Medium' },
+  categoryChipLabel: { fontSize: 13, fontWeight: '500', fontFamily: 'Nunito-SemiBold' },
 
   // Category description
   categoryDesc: { paddingHorizontal: 20, paddingBottom: 12 },
-  categoryDescText: { fontSize: 14, color: '#78716c', fontFamily: 'Inter-Regular' },
+  categoryDescText: { fontSize: 14, color: '#6B6B7A', fontFamily: 'Nunito-Regular' },
 
   // Prompt list
   promptList: { paddingHorizontal: 16, paddingBottom: 40, gap: 12 },
   loadingContainer: { paddingTop: 40, alignItems: 'center' },
   emptyState: { paddingTop: 40, alignItems: 'center' },
-  emptyText: { fontSize: 15, color: '#a8a29e' },
+  emptyText: { fontSize: 15, color: '#B8B8C4' },
 
   // Prompt card
   promptCard: {
     backgroundColor: '#ffffff',
     borderRadius: 20,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOpacity: 0.06,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 2 },
@@ -401,15 +401,15 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#1c1917',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#1E1E2E',
     lineHeight: 24,
     marginBottom: 8,
   },
   promptHint: {
     fontSize: 13,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     fontStyle: 'italic',
     marginBottom: 12,
   },
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
   },
-  depthText: { fontSize: 12, color: '#78716c', textTransform: 'capitalize' },
+  depthText: { fontSize: 12, color: '#6B6B7A', textTransform: 'capitalize' },
 
   // Status badges
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -437,14 +437,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  respondButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600', fontFamily: 'Inter-SemiBold' },
+  respondButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600', fontFamily: 'Nunito-Bold' },
 
   // Response viewer
   responsesSection: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#f5f5f4',
+    borderTopColor: '#E2DED8',
     gap: 12,
   },
   responseRow: {
@@ -453,14 +453,14 @@ const styles = StyleSheet.create({
   responseAuthor: {
     fontSize: 11,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Bold',
+    color: '#B8B8C4',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   responseText: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     color: '#292524',
     lineHeight: 22,
   },
@@ -470,15 +470,15 @@ const styles = StyleSheet.create({
   respondingHeader: { marginBottom: 24 },
   respondingPrompt: {
     fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     lineHeight: 30,
     fontStyle: 'italic',
   },
   respondingHint: {
     fontSize: 14,
-    color: '#78716c',
+    color: '#6B6B7A',
     marginTop: 8,
   },
   textInput: {
@@ -486,21 +486,21 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     fontSize: 16,
-    color: '#1c1917',
+    color: '#1E1E2E',
     minHeight: 160,
     textAlignVertical: 'top',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOpacity: 0.04,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 1 },
   },
   respondingFooter: { marginTop: 16 },
-  charHint: { fontSize: 13, color: '#a8a29e', marginBottom: 12 },
+  charHint: { fontSize: 13, color: '#B8B8C4', marginBottom: 12 },
   buttonRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   cancelButton: { paddingVertical: 14, paddingHorizontal: 16 },
-  cancelText: { fontSize: 16, color: '#78716c', fontWeight: '500' },
+  cancelText: { fontSize: 16, color: '#6B6B7A', fontWeight: '500' },
   submitButton: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 16,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -508,6 +508,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
-  submitText: { color: '#ffffff', fontSize: 16, fontWeight: '600', fontFamily: 'Inter-SemiBold' },
+  submitText: { color: '#ffffff', fontSize: 16, fontWeight: '600', fontFamily: 'Nunito-Bold' },
   disabled: { opacity: 0.5 },
 });

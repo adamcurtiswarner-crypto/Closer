@@ -144,7 +144,7 @@ export default function MemoriesScreen() {
       </Animated.View>
 
       {activeTab === 'recap' ? (
-        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
+        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}>
           {recapLoading ? (
             <View>
               <MemoryCardSkeleton />
@@ -222,10 +222,10 @@ export default function MemoriesScreen() {
                 activeOpacity={0.8}
               >
                 {addPhoto.isPending ? (
-                  <ActivityIndicator size="small" color="#c97454" />
+                  <ActivityIndicator size="small" color="#D4522A" />
                 ) : (
                   <>
-                    <Icon name={isPremium ? 'plus' : 'lock'} size="sm" color="#c97454" />
+                    <Icon name={isPremium ? 'plus' : 'lock'} size="sm" color="#D4522A" />
                     <Text style={styles.addPhotoBtnText}>
                       {isPremium ? 'Add photo' : 'Add photo — Premium'}
                     </Text>
@@ -236,7 +236,7 @@ export default function MemoriesScreen() {
           />
         </View>
       ) : (
-        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#c97454" />}>
+        <ScrollView style={styles.scrollView} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}>
           {milestonesLoading ? (
             <View>
               <MemoryCardSkeleton />
@@ -285,7 +285,7 @@ export default function MemoriesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   header: {
     paddingHorizontal: 24,
@@ -294,9 +294,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
   tabs: {
     flexDirection: 'row',
@@ -308,16 +308,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   activeTab: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   tabText: {
     fontSize: 14,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#78716c',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
   },
   activeTabText: {
     color: '#ffffff',
@@ -339,14 +339,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    color: '#57534e',
-    fontFamily: 'Inter-SemiBold',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Bold',
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -364,36 +364,36 @@ const styles = StyleSheet.create({
   },
   cardAccentBar: {
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     marginHorizontal: -20,
     marginTop: -20,
     marginBottom: 20,
   },
   promptText: {
     fontSize: 16,
-    color: '#57534e',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     fontStyle: 'italic',
     textAlign: 'center',
     marginBottom: 16,
   },
   responseBlock: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
   },
   responseLabel: {
     fontSize: 12,
-    color: '#78716c',
+    color: '#6B6B7A',
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     marginBottom: 4,
   },
   responseText: {
     fontSize: 15,
     color: '#292524',
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 22,
   },
   responseImage: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 12,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -419,14 +419,14 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   savedLabel: {
     marginTop: 12,
     fontSize: 13,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textAlign: 'center',
   },
   addPhotoBtn: {
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   addPhotoBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
 });

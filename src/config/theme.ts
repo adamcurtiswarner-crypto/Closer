@@ -7,40 +7,41 @@ import { TextStyle } from 'react-native';
 export const colors = {
   // Surface
   surface: {
-    background: '#fef7f4',
-    card: '#ffffff',
-    warmTint: '#fef5f0',
-    warmTintDeep: '#fce8dc',
+    background: '#F5F2EE',
+    card: '#FFFFFF',
+    warmTint: '#FDF1ED',
+    warmTintDeep: '#FDF1ED',
   },
 
   // Text
   text: {
-    primary: '#1c1917',
-    secondary: '#57534e',
-    tertiary: '#78716c',
-    muted: '#a8a29e',
-    inverse: '#ffffff',
+    primary: '#1E1E2E',
+    secondary: '#6B6B7A',
+    tertiary: '#6B6B7A',
+    muted: '#B8B8C4',
+    inverse: '#FFFFFF',
   },
 
   // Accent
   accent: {
-    primary: '#c97454',
-    primaryLight: '#f9a07a',
-    secondary: '#490f5f',
-    secondaryLight: '#7b3f8d',
+    primary: '#D4522A',
+    primaryLight: '#FDF1ED',
+    secondary: '#3D2870',
+    secondaryLight: '#3D2870',
   },
 
   // Gradients (start, end)
   gradient: {
-    warmGlow: ['#fef5f0', '#fce8dc'] as const,
-    ember: ['#c97454', '#f5734a'] as const,
-    sunrise: ['#fce8dc', '#fef5f0'] as const,
+    warmGlow: ['#F5F2EE', '#FDF1ED'] as const,
+    ember: ['#D4522A', '#D4522A'] as const,
+    sunrise: ['#FDF1ED', '#F5F2EE'] as const,
   },
 
   // Brand
   brand: {
-    purple: '#490f5f',
-    purpleLight: '#6b2d7b',
+    purple: '#3D2870',
+    purpleLight: '#3D2870',
+    green: '#7BAE7F',
   },
 
   // Semantic
@@ -55,23 +56,23 @@ export const colors = {
 
   // Border
   border: {
-    default: '#e7e5e4',
-    subtle: '#f5f5f4',
-    accent: '#c97454',
+    default: '#E2DED8',
+    subtle: '#E2DED8',
+    accent: '#D4522A',
   },
 
   // Skeleton
   skeleton: {
-    base: '#e7e5e4',
+    base: '#E2DED8',
     shimmer: 'rgba(255, 255, 255, 0.3)',
   },
 
   // Badge tiers
   badgeTier: {
     seed: { fill: '#f0ebe6', tint: '#8b7355', border: '#d6ccbc' },
-    bloom: { fill: '#fef3ee', tint: '#c97454', border: '#f5c4a8' },
-    flame: { fill: '#fce8dc', tint: '#e05a2b', border: '#f09060' },
-    keeper: { fill: '#f3ecf6', tint: '#7b3f8d', border: '#c49bd0' },
+    bloom: { fill: '#FDF1ED', tint: '#D4522A', border: '#f5c4a8' },
+    flame: { fill: '#FDF1ED', tint: '#D4522A', border: '#f09060' },
+    keeper: { fill: '#f3ecf6', tint: '#3D2870', border: '#c49bd0' },
   },
 } as const;
 
@@ -80,6 +81,13 @@ export const colors = {
 // ============================================
 
 export const spacing = {
+  // Named semantic spacing
+  screen: 20,
+  section: 16,
+  cardPad: 20,
+  itemGap: 8,
+
+  // Backward-compatible numeric scale
   xs: 4,
   sm: 8,
   md: 16,
@@ -93,6 +101,15 @@ export const spacing = {
 // ============================================
 
 export const radius = {
+  // Named semantic radii
+  hero: 20,
+  card: 16,
+  choice: 14,
+  input: 12,
+  pill: 50,
+  nav: 9,
+
+  // Backward-compatible scale
   sm: 8,
   md: 12,
   lg: 16,
@@ -120,7 +137,7 @@ export const shadow = {
     elevation: 1,
   },
   accent: {
-    shadowColor: '#c97454',
+    shadowColor: '#D4522A',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -134,13 +151,18 @@ export const shadow = {
 
 export const card = {
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
+    ...shadow.card,
+  },
+  standard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     ...shadow.card,
   },
   accentBar: {
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -152,52 +174,58 @@ export const card = {
 
 export const typography = {
   hero: {
-    fontSize: 38,
-    fontFamily: 'Alexandria-SemiBold',
-    lineHeight: 46,
+    fontSize: 32,
+    fontFamily: 'Nunito-Black',
+    fontWeight: '900',
     letterSpacing: -0.5,
   } as TextStyle,
 
   display: {
-    fontSize: 32,
-    fontFamily: 'Alexandria-SemiBold',
-    lineHeight: 38,
-    letterSpacing: -0.5,
+    fontSize: 28,
+    fontFamily: 'Nunito-Black',
+    fontWeight: '900',
+    letterSpacing: -0.3,
   } as TextStyle,
 
   heading: {
-    fontSize: 28,
-    fontFamily: 'Alexandria-SemiBold',
-    lineHeight: 34,
-    letterSpacing: -0.3,
+    fontSize: 20,
+    fontFamily: 'Nunito-Black',
+    fontWeight: '900',
   } as TextStyle,
 
-  title: {
-    fontSize: 17,
-    fontFamily: 'Inter-SemiBold',
-    lineHeight: 22,
-    letterSpacing: -0.3,
+  h3: {
+    fontSize: 16,
+    fontFamily: 'Nunito-ExtraBold',
+    fontWeight: '800',
   } as TextStyle,
 
   body: {
-    fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    lineHeight: 24,
-    letterSpacing: 0,
+    fontSize: 13,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+    lineHeight: 20,
   } as TextStyle,
 
   caption: {
-    fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    lineHeight: 18,
-    letterSpacing: 0,
+    fontSize: 11,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+    lineHeight: 17,
   } as TextStyle,
 
-  overline: {
+  eyebrow: {
+    fontSize: 9,
+    fontFamily: 'Nunito-ExtraBold',
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  } as TextStyle,
+
+  btn: {
     fontSize: 12,
-    fontFamily: 'Inter-Medium',
-    lineHeight: 14,
-    letterSpacing: 0.7,
+    fontFamily: 'Nunito-Black',
+    fontWeight: '900',
+    letterSpacing: 2,
     textTransform: 'uppercase',
   } as TextStyle,
 } as const;

@@ -112,14 +112,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginBottom: 16,
   },
   datePicker: {
@@ -135,11 +135,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   modalCancelText: {
     fontSize: 16,
-    color: '#78716c',
+    color: '#6B6B7A',
     fontWeight: '500',
   },
   modalSave: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   modalSaveText: {
     fontSize: 16,

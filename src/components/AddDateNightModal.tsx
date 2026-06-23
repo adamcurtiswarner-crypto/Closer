@@ -195,7 +195,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
             <TextInput
               style={styles.input}
               placeholder="e.g., Cook a new recipe together"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#B8B8C4"
               value={title}
               onChangeText={setTitle}
               maxLength={80}
@@ -212,7 +212,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
             <TextInput
               style={[styles.input, styles.descriptionInput]}
               placeholder="Add any notes or plans"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#B8B8C4"
               value={description}
               onChangeText={setDescription}
               maxLength={300}
@@ -257,7 +257,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                 onPress={() => setShowDatePicker(!showDatePicker)}
                 activeOpacity={0.7}
               >
-                <Icon name="calendar" size="sm" color={scheduledDate ? '#c97454' : '#a8a29e'} />
+                <Icon name="calendar" size="sm" color={scheduledDate ? '#D4522A' : '#B8B8C4'} />
                 <Text style={[styles.dateButtonText, scheduledDate && styles.dateButtonTextActive]}>
                   {scheduledDate ? formatDateLabel(scheduledDate) : 'Pick a date'}
                 </Text>
@@ -269,7 +269,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                   onPress={() => setShowTimePicker(!showTimePicker)}
                   activeOpacity={0.7}
                 >
-                  <Icon name="hourglass" size="sm" color={scheduledTime ? '#c97454' : '#a8a29e'} />
+                  <Icon name="hourglass" size="sm" color={scheduledTime ? '#D4522A' : '#B8B8C4'} />
                   <Text style={[styles.dateButtonText, scheduledTime && styles.dateButtonTextActive]}>
                     {scheduledTime ? formatTimeLabel(scheduledTime) : 'Set time'}
                   </Text>
@@ -287,7 +287,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                   }}
                   activeOpacity={0.7}
                 >
-                  <Icon name="x" size="xs" color="#a8a29e" />
+                  <Icon name="x" size="xs" color="#B8B8C4" />
                 </TouchableOpacity>
               )}
             </View>
@@ -300,7 +300,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   minimumDate={new Date()}
                   onChange={handleDateChange}
-                  accentColor="#c97454"
+                  accentColor="#D4522A"
                 />
                 {Platform.OS === 'ios' && (
                   <TouchableOpacity
@@ -321,7 +321,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
                   mode="time"
                   display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                   onChange={handleTimeChange}
-                  accentColor="#c97454"
+                  accentColor="#D4522A"
                 />
                 {Platform.OS === 'ios' && (
                   <TouchableOpacity
@@ -381,7 +381,7 @@ export function AddDateNightModal({ visible, onClose, idea }: AddDateNightModalP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   scrollView: {
     flex: 1,
@@ -402,14 +402,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     letterSpacing: -0.5,
   },
   modalSubtitle: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginTop: 4,
     marginBottom: 32,
     lineHeight: 20,
@@ -417,14 +417,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#57534e',
+    color: '#6B6B7A',
     letterSpacing: 0.3,
     textTransform: 'uppercase',
     marginBottom: 8,
   },
   labelHint: {
     fontWeight: '500',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textTransform: 'none',
     letterSpacing: 0,
   },
@@ -433,9 +433,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
     fontSize: 16,
-    color: '#1c1917',
+    color: '#1E1E2E',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     marginBottom: 24,
     lineHeight: 22,
   },
@@ -458,11 +458,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#ffffff',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   categoryPillActive: {
-    backgroundColor: '#fef5f0',
-    borderColor: '#c97454',
+    backgroundColor: '#FDF1ED',
+    borderColor: '#D4522A',
   },
   categoryIcon: {
     fontSize: 16,
@@ -470,10 +470,10 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   categoryTextActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   // --- Date & Time ---
   dateTimeRow: {
@@ -491,25 +491,25 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#ffffff',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   dateButtonActive: {
-    backgroundColor: '#fef5f0',
-    borderColor: '#c97454',
+    backgroundColor: '#FDF1ED',
+    borderColor: '#D4522A',
   },
   dateButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   dateButtonTextActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   clearDateButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     overflow: 'hidden',
     marginBottom: 16,
   },
@@ -529,7 +529,7 @@ const styles = StyleSheet.create({
   pickerDoneText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   // --- Error ---
   errorContainer: {
@@ -550,8 +550,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
-    backgroundColor: '#fef7f4',
+    borderTopColor: '#E2DED8',
+    backgroundColor: '#F5F2EE',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -560,19 +560,19 @@ const styles = StyleSheet.create({
   cancelButton: {
     paddingVertical: 16,
     paddingHorizontal: 24,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 14,
     justifyContent: 'center',
   },
   cancelText: {
-    color: '#57534e',
+    color: '#6B6B7A',
     fontWeight: '600',
     fontSize: 16,
   },
   createButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -582,7 +582,7 @@ const styles = StyleSheet.create({
   createText: {
     color: '#ffffff',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 16,
     letterSpacing: 0.2,
   },

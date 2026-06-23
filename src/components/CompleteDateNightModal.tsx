@@ -178,7 +178,7 @@ export function CompleteDateNightModal({
             <TextInput
               style={styles.noteInput}
               placeholder="Any thoughts to remember?"
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#B8B8C4"
               value={note}
               onChangeText={setNote}
               maxLength={200}
@@ -241,7 +241,7 @@ export function CompleteDateNightModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   scrollView: {
     flex: 1,
@@ -262,16 +262,16 @@ const styles = StyleSheet.create({
   dateNightTitle: {
     fontSize: 24,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     letterSpacing: -0.5,
     marginBottom: 32,
   },
   sectionHeader: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#57534e',
+    fontFamily: 'Nunito-Bold',
+    color: '#6B6B7A',
     marginBottom: 16,
   },
   // --- Rating Pills ---
@@ -287,29 +287,29 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: '#ffffff',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     alignItems: 'center',
     gap: 4,
   },
   ratingPillActive: {
-    backgroundColor: '#fef5f0',
-    borderColor: '#c97454',
+    backgroundColor: '#FDF1ED',
+    borderColor: '#D4522A',
   },
   ratingLabel: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#57534e',
+    color: '#6B6B7A',
   },
   ratingLabelActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   ratingSublabel: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   ratingSublabelActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   // --- Note Input ---
   noteInput: {
@@ -317,9 +317,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
     fontSize: 16,
-    color: '#1c1917',
+    color: '#1E1E2E',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     marginBottom: 24,
     lineHeight: 22,
   },
@@ -342,8 +342,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingTop: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
-    backgroundColor: '#fef7f4',
+    borderTopColor: '#E2DED8',
+    backgroundColor: '#F5F2EE',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -352,19 +352,19 @@ const styles = StyleSheet.create({
   cancelButton: {
     paddingVertical: 16,
     paddingHorizontal: 24,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 14,
     justifyContent: 'center',
   },
   cancelText: {
-    color: '#57534e',
+    color: '#6B6B7A',
     fontWeight: '600',
     fontSize: 16,
   },
   doneButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   doneText: {
     color: '#ffffff',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 16,
     letterSpacing: 0.2,
   },

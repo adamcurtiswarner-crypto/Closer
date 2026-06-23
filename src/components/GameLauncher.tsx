@@ -15,7 +15,7 @@ const GAMES: { mode: GameMode; title: string; description: string; tint: string 
     mode: 'would-you-rather',
     title: 'Would You Rather',
     description: 'Pick between two options and see if you match',
-    tint: '#fef5f0',
+    tint: '#FDF1ED',
   },
   {
     mode: 'how-well',
@@ -33,12 +33,12 @@ const GAMES: { mode: GameMode; title: string; description: string; tint: string 
 
 function GameIcon({ mode }: { mode: GameMode }) {
   if (mode === 'would-you-rather') {
-    return <Icon name="chat-circle" size="lg" color="#c97454" />;
+    return <Icon name="chat-circle" size="lg" color="#D4522A" />;
   }
   if (mode === 'how-well') {
-    return <Icon name="target" size="lg" color="#490f5f" />;
+    return <Icon name="target" size="lg" color="#3D2870" />;
   }
-  return <Icon name="flame" size="lg" color="#c97454" weight="fill" />;
+  return <Icon name="flame" size="lg" color="#D4522A" weight="fill" />;
 }
 
 export function GameLauncher({ onSelectMode }: GameLauncherProps) {
@@ -62,7 +62,7 @@ export function GameLauncher({ onSelectMode }: GameLauncherProps) {
               <Text style={styles.title}>{game.title}</Text>
               <Text style={styles.description}>{game.description}</Text>
             </View>
-            <Icon name="caret-right" size="sm" color="#a8a29e" />
+            <Icon name="caret-right" size="sm" color="#B8B8C4" />
           </TouchableOpacity>
         </Animated.View>
       ))}
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     gap: 16,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -96,19 +96,19 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
   },
   description: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 18,
   },
   arrow: {
     fontSize: 24,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '300',
   },
 });

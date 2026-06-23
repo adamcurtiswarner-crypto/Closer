@@ -9,7 +9,7 @@ export default function PrivacyPolicyScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="arrow-left" size="md" color="#c97454" />
+          <Icon name="arrow-left" size="md" color="#D4522A" />
         </TouchableOpacity>
         <Text style={styles.title}>Privacy Policy</Text>
       </View>
@@ -84,7 +84,7 @@ export default function PrivacyPolicyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   header: {
     paddingHorizontal: 24,
@@ -95,16 +95,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
   scrollView: {
     flex: 1,
@@ -114,22 +114,22 @@ const styles = StyleSheet.create({
   },
   updated: {
     fontSize: 13,
-    color: '#a8a29e',
-    fontFamily: 'Inter-Regular',
+    color: '#B8B8C4',
+    fontFamily: 'Nunito-Regular',
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
     marginTop: 20,
     marginBottom: 8,
   },
   body: {
     fontSize: 15,
-    color: '#57534e',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 22,
   },
   bottomSpacer: {

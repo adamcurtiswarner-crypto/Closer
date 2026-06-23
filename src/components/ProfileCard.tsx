@@ -218,7 +218,7 @@ export function ProfileCard() {
             onChangeText={setDisplayName}
             onBlur={handleSaveDisplayName}
             placeholder={t('profile.yourNamePlaceholder')}
-            placeholderTextColor="#a8a29e"
+            placeholderTextColor="#B8B8C4"
             maxLength={30}
             returnKeyType="done"
           />
@@ -263,7 +263,7 @@ export function ProfileCard() {
             onChangeText={setPartnerName}
             onBlur={handleSavePartnerName}
             placeholder={t('profile.partnerPlaceholder')}
-            placeholderTextColor="#a8a29e"
+            placeholderTextColor="#B8B8C4"
             maxLength={30}
             returnKeyType="done"
             editable={!!user.coupleId}
@@ -287,7 +287,7 @@ export function ProfileCard() {
               }}
               activeOpacity={0.7}
             >
-              <Icon name="calendar" size="md" color="#c97454" />
+              <Icon name="calendar" size="md" color="#D4522A" />
               <View style={styles.anniversaryInfo}>
                 <Text style={styles.anniversaryLabel}>{t('profile.anniversary')}</Text>
                 <Text style={styles.anniversaryValue}>
@@ -296,7 +296,7 @@ export function ProfileCard() {
                     : t('profile.setYourDate')}
                 </Text>
               </View>
-              <Icon name="caret-right" size="sm" color="#a8a29e" />
+              <Icon name="caret-right" size="sm" color="#B8B8C4" />
             </TouchableOpacity>
           </Animated.View>
         </>
@@ -310,7 +310,7 @@ export function ProfileCard() {
           onPress={() => setShowLoveLanguageModal(true)}
           activeOpacity={0.7}
         >
-          <Icon name="heart" size="md" color="#c97454" weight="fill" />
+          <Icon name="heart" size="md" color="#D4522A" weight="fill" />
           <View style={styles.anniversaryInfo}>
             <Text style={styles.anniversaryLabel}>{t('profile.yourLoveLanguage')}</Text>
             <Text style={styles.anniversaryValue}>
@@ -319,7 +319,7 @@ export function ProfileCard() {
                 : t('common.setYours')}
             </Text>
           </View>
-          <Icon name="caret-right" size="sm" color="#a8a29e" />
+          <Icon name="caret-right" size="sm" color="#B8B8C4" />
         </TouchableOpacity>
 
         {/* Partner's love language (read-only) */}
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   profileRow: {
     flexDirection: 'row',
@@ -404,10 +404,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   avatarPartner: {
-    backgroundColor: '#490f5f',
+    backgroundColor: '#3D2870',
   },
   avatarText: {
     color: '#ffffff',
@@ -436,34 +436,34 @@ const styles = StyleSheet.create({
   profileLabel: {
     fontSize: 10,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     letterSpacing: 0.8,
     marginBottom: 4,
   },
   nameInput: {
     fontSize: 18,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
     padding: 0,
     marginBottom: 2,
   },
   emailText: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     marginTop: 2,
   },
   hintText: {
     fontSize: 13,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontStyle: 'italic',
     marginTop: 2,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
     marginVertical: 18,
   },
   anniversaryRow: {
@@ -480,18 +480,18 @@ const styles = StyleSheet.create({
   anniversaryLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.8,
     marginBottom: 2,
   },
   anniversaryValue: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   anniversaryChevron: {
     fontSize: 16,
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   // Modal styles moved to LoveLanguageModal and AnniversaryPicker
   partnerLangRow: {
@@ -503,12 +503,12 @@ const styles = StyleSheet.create({
   },
   partnerLangLabel: {
     fontSize: 12,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '500',
   },
   partnerLangValue: {
     fontSize: 13,
-    color: '#57534e',
+    color: '#6B6B7A',
     fontWeight: '500',
   },
   // Love language modal styles moved to LoveLanguageModal

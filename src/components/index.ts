@@ -106,6 +106,23 @@ export { AddMilestoneModal } from './AddMilestoneModal';
 // Reactions
 export { ReactionRow } from './ReactionRow';
 
+// Engine 2 — Partner Guess
+export { PartnerGuess } from './PartnerGuess';
+
+// Decorative
+export { ToneShapes } from './ToneShapes';
+
+// Spark
+export { TodaySpark } from './TodaySpark';
+
+// Morning Check-in
+export { MorningCheckin } from './MorningCheckin';
+
+// Engine screens
+export { EveningReflection } from './EveningReflection';
+export { SurpriseMission } from './SurpriseMission';
+export { CoachInsights } from './CoachInsights';
+
 // Icons
 export { Icon } from './Icon';
 export type { IconName } from './Icon';

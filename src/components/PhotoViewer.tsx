@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   source: {
     fontSize: 11,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: 'rgba(255,255,255,0.5)',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -110,13 +110,13 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
     marginBottom: 6,
   },
   context: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     color: 'rgba(255,255,255,0.7)',
     lineHeight: 20,
   },

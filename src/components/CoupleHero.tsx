@@ -30,12 +30,12 @@ export function CoupleHero({ userName, partnerName, userPhotoUrl, partnerPhotoUr
   return (
     <Animated.View entering={FadeIn.duration(500)} style={styles.container}>
       <View style={styles.avatarRow}>
-        <Avatar photoUrl={userPhotoUrl} initials={userInitials} color="#c97454" />
+        <Avatar photoUrl={userPhotoUrl} initials={userInitials} color="#D4522A" />
         <View style={styles.plusBadge}>
           <Text style={styles.plusText}>+</Text>
         </View>
         <View style={styles.avatarOverlap}>
-          <Avatar photoUrl={partnerPhotoUrl} initials={partnerInitials} color="#490f5f" />
+          <Avatar photoUrl={partnerPhotoUrl} initials={partnerInitials} color="#3D2870" />
         </View>
       </View>
       <View style={styles.namesRow}>
@@ -83,9 +83,9 @@ const styles = StyleSheet.create({
   },
   plusText: {
     fontSize: 18,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   avatarOverlap: {},
   avatarFallback: {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   },
   avatarInitials: {
     fontSize: 32,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     fontWeight: '600',
     color: '#ffffff',
   },
@@ -106,17 +106,17 @@ const styles = StyleSheet.create({
   nameScript: {
     fontSize: 26,
     fontFamily: 'Pacifico',
-    color: '#c97454',
+    color: '#D4522A',
   },
   nameAnd: {
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
   },
   since: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 6,
   },

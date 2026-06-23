@@ -59,7 +59,7 @@ function AnimatedFlame({ size = 22 }: { size?: number }) {
 
   return (
     <Animated.View style={animatedStyle}>
-      <Icon name="flame" size={size} color="#c97454" weight="fill" />
+      <Icon name="flame" size={size} color="#D4522A" weight="fill" />
     </Animated.View>
   );
 }
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -227,21 +227,21 @@ const styles = StyleSheet.create({
   },
   streakCount: {
     fontSize: 28,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     fontWeight: '600',
   },
-  streakActive: { color: '#c97454' },
-  streakInactive: { color: '#a8a29e' },
+  streakActive: { color: '#D4522A' },
+  streakInactive: { color: '#B8B8C4' },
   streakLabel: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
   },
   monthTitle: {
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -251,9 +251,9 @@ const styles = StyleSheet.create({
   },
   dayHeaderText: {
     fontSize: 11,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textAlign: 'center',
   },
   calendarRow: {
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dayCellCompleted: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderWidth: 2,
     borderColor: '#f59e0b',
   },
@@ -286,16 +286,16 @@ const styles = StyleSheet.create({
   dayCellToday: {
     backgroundColor: '#ffffff',
     borderWidth: 2,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   dayCellUpcoming: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   dayNumber: {
     fontSize: 12,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   dayNumberLight: {
     color: '#ffffff',
@@ -305,11 +305,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   dayNumberToday: {
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
   },
   dayNumberUpcoming: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   checkOverlay: {
     position: 'absolute',
@@ -323,9 +323,9 @@ const styles = StyleSheet.create({
   },
   motivation: {
     fontSize: 14,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#57534e',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 14,
   },

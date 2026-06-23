@@ -203,7 +203,7 @@ export function HowWellDoYouKnowMe({ userName, partnerName, onExit }: HowWellDoY
         <TextInput
           style={styles.textInput}
           placeholder={placeholder}
-          placeholderTextColor="#a8a29e"
+          placeholderTextColor="#B8B8C4"
           value={inputValue}
           onChangeText={setInputValue}
           multiline
@@ -234,7 +234,7 @@ function RoundCounter({ round, total }: { round: number; total: number }) {
 function ExitButton({ onPress }: { onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.exitButton} onPress={onPress} activeOpacity={0.7}>
-      <Icon name="x" size="md" color="#78716c" />
+      <Icon name="x" size="md" color="#6B6B7A" />
     </TouchableOpacity>
   );
 }
@@ -242,7 +242,7 @@ function ExitButton({ onPress }: { onPress: () => void }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     paddingHorizontal: 24,
     paddingTop: 16,
   },
@@ -253,14 +253,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   exitText: {
     fontSize: 16,
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   roundCounter: {
     alignItems: 'center',
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.3,
   },
   pickerLabel: {
@@ -280,12 +280,12 @@ const styles = StyleSheet.create({
   pickerName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   questionText: {
     fontSize: 22,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     color: '#292524',
     minHeight: 80,
     textAlignVertical: 'top',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 16,
     alignItems: 'center',
   },
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -354,8 +354,8 @@ const styles = StyleSheet.create({
   revealLabel: {
     fontSize: 12,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   revealText: {
     fontSize: 16,
     fontWeight: '400',
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     color: '#292524',
     lineHeight: 22,
   },
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   scoreQuestion: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#78716c',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -388,10 +388,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scoreButtonYes: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   scoreButtonNo: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   scoreButtonText: {
     fontSize: 16,
@@ -399,6 +399,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   scoreButtonNoText: {
-    color: '#78716c',
+    color: '#6B6B7A',
   },
 });

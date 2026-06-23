@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   accentBar: {
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   statsRow: {
     flexDirection: 'row',
@@ -69,25 +69,25 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 28,
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   statLabel: {
     fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginTop: 4,
   },
   divider: {
     width: 1,
     height: 36,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
   },
   warmText: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     paddingHorizontal: 24,
     paddingBottom: 20,

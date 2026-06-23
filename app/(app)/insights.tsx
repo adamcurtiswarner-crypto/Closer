@@ -64,7 +64,7 @@ function EmptyState() {
   const { t } = useTranslation();
   return (
     <View style={styles.empty}>
-      <Icon name="binoculars" size="xl" color="#c97454" weight="light" />
+      <Icon name="binoculars" size="xl" color="#D4522A" weight="light" />
       <Text style={styles.emptyTitle}>{t('insights.emptyTitle')}</Text>
       <Text style={styles.emptySubtitle}>
         {t('insights.emptySubtitle')}
@@ -225,7 +225,7 @@ export default function InsightsScreen() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor="#c97454"
+            tintColor="#D4522A"
           />
         }
       >
@@ -254,7 +254,7 @@ export default function InsightsScreen() {
 
             {/* Milestones */}
             {milestones && (
-              <InsightCard icon={<Icon name="trophy" size="md" color="#c97454" />} title="Milestones" accentColor="#b8860b" delay={50}>
+              <InsightCard icon={<Icon name="trophy" size="md" color="#D4522A" />} title="Milestones" accentColor="#b8860b" delay={50}>
                 {/* Achieved badges */}
                 {milestones.earned.length > 0 && (
                   <ScrollView
@@ -276,7 +276,7 @@ export default function InsightsScreen() {
                         <View style={[styles.badgeCircle, styles.badgeCircleLocked]}>
                           <Text style={styles.badgeIconLocked}>{m.icon}</Text>
                           <View style={styles.lockOverlay}>
-                            <Icon name="lock" size={10} color="#a8a29e" weight="fill" />
+                            <Icon name="lock" size={10} color="#B8B8C4" weight="fill" />
                           </View>
                         </View>
                         <Text style={[styles.badgeTitle, styles.badgeTitleLocked]} numberOfLines={1}>{m.title}</Text>
@@ -296,8 +296,8 @@ export default function InsightsScreen() {
                     <View style={styles.nextMilestoneBar}>
                       <AnimatedProgressBar
                         progress={milestones.next.current / milestones.next.threshold}
-                        color="#c97454"
-                        trackColor="#e7e5e4"
+                        color="#D4522A"
+                        trackColor="#E2DED8"
                         height={6}
                         style={{ flex: 1, borderRadius: 3 }}
                       />
@@ -313,12 +313,12 @@ export default function InsightsScreen() {
                   <View style={styles.anniversarySection}>
                     {anniversary.isToday ? (
                       <View style={styles.anniversaryRow}>
-                        <Icon name="sparkle" size="sm" color="#c97454" weight="fill" />
+                        <Icon name="sparkle" size="sm" color="#D4522A" weight="fill" />
                         <Text style={styles.anniversaryText}>Today's your anniversary</Text>
                       </View>
                     ) : (
                       <View style={styles.anniversaryRow}>
-                        <Icon name="calendar" size="sm" color="#c97454" />
+                        <Icon name="calendar" size="sm" color="#D4522A" />
                         <Text style={styles.anniversaryText}>{anniversary.days} {anniversary.days === 1 ? 'day' : 'days'} until your anniversary</Text>
                       </View>
                     )}
@@ -335,7 +335,7 @@ export default function InsightsScreen() {
             )}
 
             {/* Love Languages */}
-            <InsightCard icon={<Icon name="heart" size="md" color="#c97454" weight="fill" />} title="Love Languages" accentColor="#c97474" delay={75}>
+            <InsightCard icon={<Icon name="heart" size="md" color="#D4522A" weight="fill" />} title="Love Languages" accentColor="#c97474" delay={75}>
               <View style={styles.loveLanguageRow}>
                 <AnimatedLoveLanguageCircle delay={0}>
                   <View style={styles.loveLanguageItem}>
@@ -406,7 +406,7 @@ export default function InsightsScreen() {
             </InsightCard>
 
             {/* Communication */}
-            <InsightCard icon={<Icon name="chat-circle" size="md" color="#c97454" />} title="Communication" accentColor="#490f5f" delay={300}>
+            <InsightCard icon={<Icon name="chat-circle" size="md" color="#D4522A" />} title="Communication" accentColor="#3D2870" delay={300}>
               <View style={styles.commStatRow}>
                 <Text style={styles.commStatLabel}>Avg. response length</Text>
                 <AnimatedCounter value={insights.avgResponseWords} style={styles.commStatValue} prefix="~" suffix=" words" />
@@ -437,7 +437,7 @@ export default function InsightsScreen() {
 
             {/* Prompt Categories */}
             {insights.promptCategories.length > 0 && (
-              <InsightCard icon={<Icon name="target" size="md" color="#c97454" />} title="Prompt Categories" accentColor="#7b6fa0" delay={400}>
+              <InsightCard icon={<Icon name="target" size="md" color="#D4522A" />} title="Prompt Categories" accentColor="#7b6fa0" delay={400}>
                 {insights.promptCategories.map((cat) => (
                   <View key={cat.type} style={styles.categoryRow}>
                     <View style={styles.categoryLabel}>
@@ -446,8 +446,8 @@ export default function InsightsScreen() {
                     </View>
                     <AnimatedProgressBar
                       progress={cat.percentage / 100}
-                      color="#c97454"
-                      trackColor="#f5f5f4"
+                      color="#D4522A"
+                      trackColor="#E2DED8"
                       height={8}
                       style={{ flex: 1, borderRadius: 4 }}
                     />
@@ -459,7 +459,7 @@ export default function InsightsScreen() {
 
             {/* Check-In Trends */}
             {insights.checkInTrend.length > 0 && (
-              <InsightCard icon={<Icon name="heartbeat" size="md" color="#c97454" />} title="Weekly Check-In" accentColor="#c97474" delay={450}>
+              <InsightCard icon={<Icon name="heartbeat" size="md" color="#D4522A" />} title="Weekly Check-In" accentColor="#c97474" delay={450}>
                 {(['connection', 'communication', 'satisfaction'] as const).map((dim) => {
                   const scores = insights.checkInTrend
                     .map(w => w[dim])
@@ -500,7 +500,7 @@ export default function InsightsScreen() {
             )}
 
             {/* Streak & Consistency */}
-            <InsightCard icon={<Icon name="flame" size="md" color="#c97454" weight="fill" />} title="Streak & Consistency" delay={500}>
+            <InsightCard icon={<Icon name="flame" size="md" color="#D4522A" weight="fill" />} title="Streak & Consistency" delay={500}>
               <View style={styles.streakRow}>
                 <View style={styles.streakStat}>
                   <AnimatedCounter value={insights.currentStreak} style={styles.streakValue} />
@@ -516,8 +516,8 @@ export default function InsightsScreen() {
                 <Text style={styles.weeklyRateLabel}>This week</Text>
                 <AnimatedProgressBar
                   progress={Math.min(insights.weeklyCompletionRate, 1)}
-                  color="#c97454"
-                  trackColor="#f5f5f4"
+                  color="#D4522A"
+                  trackColor="#E2DED8"
                   height={8}
                   style={{ flex: 1, borderRadius: 4 }}
                 />
@@ -541,7 +541,7 @@ export default function InsightsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   header: {
     paddingHorizontal: 24,
@@ -550,9 +550,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
   scrollView: {
     flex: 1,
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 16,
     paddingVertical: 20,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -584,15 +584,15 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '800',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   statLabel: {
     fontSize: 12,
-    color: '#78716c',
+    color: '#6B6B7A',
     marginTop: 4,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -614,15 +614,15 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
     marginBottom: 6,
   },
   badgeCircleLocked: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderColor: '#d6d3d1',
     borderStyle: 'dashed',
   },
@@ -636,11 +636,11 @@ const styles = StyleSheet.create({
   badgeTitle: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#57534e',
+    color: '#6B6B7A',
     textAlign: 'center',
   },
   badgeTitleLocked: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   lockOverlay: {
     position: 'absolute',
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
   },
   nextMilestone: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     borderRadius: 12,
     padding: 14,
   },
@@ -674,21 +674,21 @@ const styles = StyleSheet.create({
   nextMilestoneLabel: {
     fontSize: 10,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#c97454',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#D4522A',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   nextMilestoneTitle: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
   },
   nextMilestoneDesc: {
     fontSize: 12,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     marginBottom: 10,
   },
   nextMilestoneBar: {
@@ -699,25 +699,25 @@ const styles = StyleSheet.create({
   nextMilestoneTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
     borderRadius: 3,
     overflow: 'hidden',
   },
   nextMilestoneFill: {
     height: 6,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 3,
   },
   nextMilestoneCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   anniversarySection: {
     marginTop: 14,
     paddingTop: 14,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   anniversaryRow: {
     flexDirection: 'row',
@@ -728,7 +728,7 @@ const styles = StyleSheet.create({
   anniversaryText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#57534e',
+    color: '#6B6B7A',
     textAlign: 'center',
   },
 
@@ -746,20 +746,20 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   loveLanguageCircleSet: {
-    backgroundColor: '#fef5f0',
-    borderColor: '#c97454',
+    backgroundColor: '#FDF1ED',
+    borderColor: '#D4522A',
   },
   loveLanguageCirclePartner: {
     backgroundColor: '#faf8f5',
-    borderColor: '#490f5f',
+    borderColor: '#3D2870',
   },
   loveLanguageEmoji: {
     fontSize: 24,
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
   loveLanguageWho: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
     marginBottom: 4,
@@ -775,12 +775,12 @@ const styles = StyleSheet.create({
   loveLanguageName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#57534e',
+    color: '#6B6B7A',
     textAlign: 'center',
   },
   loveLanguageSetLink: {
     fontSize: 12,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '500',
     marginTop: 4,
   },
@@ -795,9 +795,9 @@ const styles = StyleSheet.create({
   weekLabel: {
     width: 32,
     fontSize: 12,
-    color: '#78716c',
+    color: '#6B6B7A',
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
   },
   barContainer: {
     flex: 1,
@@ -820,7 +820,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ef4444',
   },
   barEmpty: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   legend: {
     flexDirection: 'row',
@@ -840,19 +840,19 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 12,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
   },
   sentimentSummary: {
     textAlign: 'center',
     fontSize: 13,
-    color: '#57534e',
+    color: '#6B6B7A',
     marginTop: 12,
     fontStyle: 'italic',
   },
   cardEmpty: {
     fontSize: 14,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textAlign: 'center',
     paddingVertical: 8,
   },
@@ -864,21 +864,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e7e5e4',
+    borderBottomColor: '#E2DED8',
   },
   commStatRowLast: {
     borderBottomWidth: 0,
   },
   commStatLabel: {
     fontSize: 14,
-    color: '#57534e',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
   },
   commStatValue: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
   },
   trendRow: {
     flexDirection: 'row',
@@ -894,13 +894,13 @@ const styles = StyleSheet.create({
   },
   trendBar: {
     width: 24,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 4,
     minHeight: 4,
   },
   trendWeekLabel: {
     fontSize: 10,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     marginTop: 6,
   },
 
@@ -922,27 +922,27 @@ const styles = StyleSheet.create({
   },
   categoryName: {
     fontSize: 12,
-    color: '#57534e',
+    color: '#6B6B7A',
     fontWeight: '500',
     flex: 1,
   },
   categoryBarTrack: {
     flex: 1,
     height: 8,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 4,
     overflow: 'hidden',
   },
   categoryBarFill: {
     height: 8,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 4,
   },
   categoryCount: {
     width: 24,
     fontSize: 12,
     fontWeight: '600',
-    color: '#78716c',
+    color: '#6B6B7A',
     textAlign: 'right',
   },
 
@@ -960,14 +960,14 @@ const styles = StyleSheet.create({
   streakValue: {
     fontSize: 32,
     fontWeight: '800',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   streakStatLabel: {
     fontSize: 12,
-    color: '#78716c',
+    color: '#6B6B7A',
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     marginTop: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -975,7 +975,7 @@ const styles = StyleSheet.create({
   streakDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
   },
   weeklyRateRow: {
     flexDirection: 'row',
@@ -984,32 +984,32 @@ const styles = StyleSheet.create({
   },
   weeklyRateLabel: {
     fontSize: 13,
-    color: '#57534e',
+    color: '#6B6B7A',
     width: 70,
   },
   weeklyRateTrack: {
     flex: 1,
     height: 8,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 4,
     overflow: 'hidden',
   },
   weeklyRateFill: {
     height: 8,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 4,
   },
   weeklyRateText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#78716c',
+    color: '#6B6B7A',
     width: 36,
     textAlign: 'right',
   },
   weeksActiveText: {
     textAlign: 'center',
     fontSize: 13,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     marginTop: 16,
     fontStyle: 'italic',
   },
@@ -1021,7 +1021,7 @@ const styles = StyleSheet.create({
   checkInDimLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#57534e',
+    color: '#6B6B7A',
     marginBottom: 6,
   },
   checkInScoreRow: {
@@ -1039,22 +1039,22 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   checkInDotEmpty: {
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
     opacity: 1,
   },
   checkInAvgText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#78716c',
+    color: '#6B6B7A',
     marginLeft: 4,
   },
   checkInFooter: {
     textAlign: 'center',
     fontSize: 12,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     marginTop: 8,
     fontStyle: 'italic',
   },
@@ -1071,15 +1071,15 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 15,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -1092,7 +1092,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,

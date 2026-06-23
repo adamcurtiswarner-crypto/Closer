@@ -150,7 +150,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('truth')}
               activeOpacity={0.8}
             >
-              <Icon name="chat-circle" size="md" color="#c97454" />
+              <Icon name="chat-circle" size="md" color="#D4522A" />
               <Text style={styles.chooseButtonText}>Truth</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -161,7 +161,7 @@ export function TruthOrDare({ userName, partnerName, onExit }: TruthOrDareProps)
               onPress={() => handleChoose('dare')}
               activeOpacity={0.8}
             >
-              <Icon name="flame" size="md" color="#c97454" weight="fill" />
+              <Icon name="flame" size="md" color="#D4522A" weight="fill" />
               <Text style={styles.chooseButtonText}>Dare</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -182,7 +182,7 @@ function RoundCounter({ round, total }: { round: number; total: number }) {
 function ExitButton({ onPress }: { onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.exitButton} onPress={onPress} activeOpacity={0.7}>
-      <Icon name="x" size="md" color="#78716c" />
+      <Icon name="x" size="md" color="#6B6B7A" />
     </TouchableOpacity>
   );
 }
@@ -190,7 +190,7 @@ function ExitButton({ onPress }: { onPress: () => void }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     paddingHorizontal: 24,
     paddingTop: 16,
   },
@@ -201,14 +201,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   exitText: {
     fontSize: 16,
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   roundCounter: {
     alignItems: 'center',
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.3,
   },
   // ─── Choose Phase ───
@@ -234,12 +234,12 @@ const styles = StyleSheet.create({
   turnName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   chooseTitle: {
     fontSize: 28,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -257,14 +257,14 @@ const styles = StyleSheet.create({
     padding: 28,
     alignItems: 'center',
     gap: 12,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
   },
   chooseButtonTruth: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
   },
   chooseButtonDare: {
     backgroundColor: '#fff7ed',
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   chooseButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
   },
   // ─── Prompt Phase ───
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   typeBadge: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   typeBadgeText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#D4522A',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 22,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     textAlign: 'center',
     lineHeight: 30,
@@ -318,11 +318,11 @@ const styles = StyleSheet.create({
   forLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   doneButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 40,

@@ -47,7 +47,7 @@ function Dot({ delay, color, size }: { delay: number; color: string; size: numbe
   );
 }
 
-export function PulsingDots({ color = '#c97454', size = 5, style }: PulsingDotsProps) {
+export function PulsingDots({ color = '#D4522A', size = 5, style }: PulsingDotsProps) {
   return (
     <Animated.View style={[styles.container, style]}>
       <Dot delay={0} color={color} size={size} />

@@ -174,7 +174,7 @@ export function ReauthModal({ visible, onSuccess, onCancel }: ReauthModalProps) 
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator size="small" color="#c97454" />
+                <ActivityIndicator size="small" color="#D4522A" />
               ) : (
                 <Text style={styles.socialButtonText}>{t('settings.reauth.googleButton')}</Text>
               )}
@@ -222,40 +222,40 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     marginBottom: 20,
   },
   error: {
     fontSize: 14,
     color: '#ef4444',
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     marginBottom: 12,
   },
   emailLabel: {
     fontSize: 14,
-    color: '#78716c',
-    fontFamily: 'Inter-Regular',
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
     marginBottom: 12,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1c1917',
+    color: '#1E1E2E',
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -266,12 +266,12 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
   },
   socialButton: {
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
@@ -279,8 +279,8 @@ const styles = StyleSheet.create({
   socialButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
   },
   appleButton: {
     backgroundColor: '#000000',
@@ -296,6 +296,6 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     fontSize: 16,
-    color: '#78716c',
+    color: '#6B6B7A',
   },
 });

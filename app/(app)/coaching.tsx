@@ -24,7 +24,7 @@ import { ConversationStarterModal } from '@/components/ConversationStarterModal'
 
 const TIER_COLORS: Record<string, string> = {
   thriving: '#22c55e',
-  steady: '#c97454',
+  steady: '#D4522A',
   cooling: '#f59e0b',
   needs_attention: '#ef4444',
 };
@@ -46,7 +46,7 @@ const ACTION_CONFIG: Record<string, { icon: IconName; label: string }> = {
 
 function StatusIcon({ actedOn, dismissedAt }: { actedOn: Date | null; dismissedAt: Date | null }) {
   if (actedOn) return <Icon name="check" size="xs" color="#22c55e" />;
-  if (dismissedAt) return <Icon name="x" size="xs" color="#a8a29e" />;
+  if (dismissedAt) return <Icon name="x" size="xs" color="#B8B8C4" />;
   return <Icon name="minus" size="xs" color="#d6d3d1" />;
 }
 
@@ -93,7 +93,7 @@ export default function CoachingScreen() {
             <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.previewCard}>
               <View style={styles.accentBar} />
               <View style={styles.cardHeader}>
-                <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
+                <Icon name="lightbulb" size="sm" color="#D4522A" weight="light" />
                 <Text style={styles.cardHeaderText}>Weekly insights</Text>
               </View>
               <Text style={styles.previewText}>
@@ -116,7 +116,7 @@ export default function CoachingScreen() {
                 { icon: 'target' as const, text: 'Actionable suggestions to grow together' },
               ].map((item, i) => (
                 <View key={i} style={styles.previewFeatureRow}>
-                  <Icon name={item.icon} size="sm" color="#c97454" weight="light" />
+                  <Icon name={item.icon} size="sm" color="#D4522A" weight="light" />
                   <Text style={styles.previewFeatureText}>{item.text}</Text>
                 </View>
               ))}
@@ -227,7 +227,7 @@ export default function CoachingScreen() {
           <Animated.View entering={FadeInUp.duration(500).delay(100)} style={styles.currentCard}>
             <View style={styles.accentBar} />
             <View style={styles.cardHeader}>
-              <Icon name="lightbulb" size="sm" color="#c97454" weight="light" />
+              <Icon name="lightbulb" size="sm" color="#D4522A" weight="light" />
               <Text style={styles.cardHeaderText}>This week</Text>
             </View>
             <Text style={styles.insightText}>{latestInsight.insightText}</Text>
@@ -294,7 +294,7 @@ export default function CoachingScreen() {
                       <Icon
                         name={ACTION_CONFIG[insight.actionType]?.icon || 'chat-circle'}
                         size="xs"
-                        color="#78716c"
+                        color="#6B6B7A"
                       />
                       <Text style={styles.pastActionText}>{insight.actionText || 'Take a moment to connect today'}</Text>
                     </View>
@@ -315,7 +315,7 @@ export default function CoachingScreen() {
                 disabled={isFetchingNextPage}
               >
                 {isFetchingNextPage ? (
-                  <ActivityIndicator size="small" color="#c97454" />
+                  <ActivityIndicator size="small" color="#D4522A" />
                 ) : (
                   <Text style={styles.loadMoreText}>Load more</Text>
                 )}
@@ -344,7 +344,7 @@ export default function CoachingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   scrollView: {
     flex: 1,
@@ -364,15 +364,15 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     letterSpacing: -0.5,
     flex: 1,
   },
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
   tierText: {
     fontSize: 13,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   tooltip: {
     alignSelf: 'flex-end',
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   tooltipText: {
     color: '#ffffff',
     fontSize: 12,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
   },
   currentCard: {
     backgroundColor: '#ffffff',
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -437,15 +437,15 @@ const styles = StyleSheet.create({
   },
   cardHeaderText: {
     fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
   },
   insightText: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 22,
     marginBottom: 16,
   },
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
     padding: 16,
   },
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   actionDetail: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
     lineHeight: 19,
   },
@@ -483,14 +483,14 @@ const styles = StyleSheet.create({
   },
   actedText: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
   },
   sectionHeader: {
     fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#78716c',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#6B6B7A',
     letterSpacing: -0.3,
     marginBottom: 12,
   },
@@ -507,27 +507,27 @@ const styles = StyleSheet.create({
   },
   pastDate: {
     fontSize: 13,
-    fontFamily: 'Inter-Medium',
-    color: '#78716c',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
     width: 48,
   },
   pastPreview: {
     flex: 1,
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 19,
   },
   pastExpanded: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f5f5f4',
+    borderTopColor: '#E2DED8',
   },
   pastFullText: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -538,13 +538,13 @@ const styles = StyleSheet.create({
   },
   pastActionText: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
   },
   pastActedDate: {
     fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     marginTop: 4,
   },
   loadMoreBtn: {
@@ -553,8 +553,8 @@ const styles = StyleSheet.create({
   },
   loadMoreText: {
     fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#c97454',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#D4522A',
   },
   emptyState: {
     alignItems: 'center',
@@ -564,21 +564,21 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#78716c',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#6B6B7A',
     letterSpacing: -0.3,
   },
   emptyBody: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     textAlign: 'center',
     lineHeight: 20,
   },
   generateBtn: {
     marginTop: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 14,
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   generateBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
   },
   previewCard: {
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -606,8 +606,8 @@ const styles = StyleSheet.create({
   },
   previewText: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 22,
     marginBottom: 20,
   },
@@ -616,14 +616,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
     padding: 16,
   },
   unlockBtnText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#ffffff',
   },
   previewFeatures: {
@@ -638,20 +638,20 @@ const styles = StyleSheet.create({
   previewFeatureText: {
     flex: 1,
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 20,
   },
   disclaimerWrap: {
     marginTop: 32,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#f5f5f4',
+    borderTopColor: '#E2DED8',
   },
   disclaimerText: {
     fontSize: 11,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     textAlign: 'center',
     lineHeight: 16,
   },

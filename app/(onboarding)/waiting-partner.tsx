@@ -61,7 +61,7 @@ export default function WaitingPartnerScreen() {
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
           <Animated.View style={pulseStyle}>
-            <Icon name="hourglass" size="xl" color="#c97454" weight="light" />
+            <Icon name="hourglass" size="xl" color="#D4522A" weight="light" />
           </Animated.View>
           <Text style={styles.title}>
             {t('onboarding.waitingPartner.title')}
@@ -96,7 +96,7 @@ export default function WaitingPartnerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   contentCentered: {
     flex: 1,
@@ -109,14 +109,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 8,
   },

@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   divider: {
     flexDirection: 'row',
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: 12,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '500',
     textTransform: 'uppercase',
     letterSpacing: 0.5,

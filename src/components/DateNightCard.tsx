@@ -40,7 +40,7 @@ export function DateNightCard() {
         <View style={styles.accentBar} />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Icon name="calendar" size="sm" color="#c97454" weight="regular" />
+            <Icon name="calendar" size="sm" color="#D4522A" weight="regular" />
             <Text style={styles.headerTitle}>Date Nights</Text>
           </View>
         </View>
@@ -59,7 +59,7 @@ export function DateNightCard() {
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Icon name="calendar" size="sm" color="#c97454" weight="regular" />
+          <Icon name="calendar" size="sm" color="#D4522A" weight="regular" />
           <Text style={styles.headerTitle}>Date Nights</Text>
         </View>
         {scheduled.length > 0 && (
@@ -72,7 +72,7 @@ export function DateNightCard() {
       {/* Empty state */}
       {isEmpty && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="calendar" size="lg" color="#c97454" weight="light" />
+          <Icon name="calendar" size="lg" color="#D4522A" weight="light" />
           <Text style={styles.emptyTitle}>Plan something together</Text>
           <Text style={styles.emptySubtitle}>
             Browse ideas or plan your own night out (or in).
@@ -83,7 +83,7 @@ export function DateNightCard() {
       {/* No scheduled but have saved ideas */}
       {!isEmpty && !nextUp && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="calendar" size="lg" color="#c97454" weight="light" />
+          <Icon name="calendar" size="lg" color="#D4522A" weight="light" />
           <Text style={styles.emptyTitle}>Nothing scheduled yet</Text>
           <Text style={styles.emptySubtitle}>
             You have saved ideas. Pick one and set a date.
@@ -108,7 +108,7 @@ export function DateNightCard() {
                 Tap to mark it done or reschedule
               </Text>
             </View>
-            <Icon name="arrow-right" size="xs" color="#c97454" />
+            <Icon name="arrow-right" size="xs" color="#D4522A" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -122,7 +122,7 @@ export function DateNightCard() {
             activeOpacity={0.7}
           >
             <View style={styles.upcomingIconWrap}>
-              <Icon name="calendar" size="sm" color="#c97454" weight="fill" />
+              <Icon name="calendar" size="sm" color="#D4522A" weight="fill" />
             </View>
             <View style={styles.upcomingContent}>
               <Text style={styles.upcomingTitle} numberOfLines={1}>
@@ -136,7 +136,7 @@ export function DateNightCard() {
                 </Text>
               )}
             </View>
-            <Icon name="arrow-right" size="xs" color="#a8a29e" />
+            <Icon name="arrow-right" size="xs" color="#B8B8C4" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -147,14 +147,14 @@ export function DateNightCard() {
           <Text style={styles.seeAllText}>
             {isEmpty ? 'Browse ideas' : 'See all'}
           </Text>
-          <Icon name="arrow-right" size="xs" color="#c97454" />
+          <Icon name="arrow-right" size="xs" color="#D4522A" />
         </TouchableOpacity>
       </Animated.View>
 
       {/* Play a game secondary link */}
       <Animated.View entering={FadeIn.duration(300).delay(400)}>
         <TouchableOpacity style={styles.gameLink} onPress={handlePlayGames} activeOpacity={0.7}>
-          <Icon name="game-controller" size="xs" color="#490f5f" weight="regular" />
+          <Icon name="game-controller" size="xs" color="#3D2870" weight="regular" />
           <Text style={styles.gameLinkText}>Play a game</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   // --- Header ---
   header: {
@@ -205,12 +205,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
   },
   countBadge: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     paddingVertical: 3,
     paddingHorizontal: 10,
     borderRadius: 20,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#D4522A',
   },
   // --- Loading ---
   loadingBody: {
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     height: 12,
     width: '60%',
     borderRadius: 6,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   loadingLineShort: {
     width: '40%',
@@ -243,15 +243,15 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
     marginTop: 8,
     marginBottom: 4,
   },
   emptySubtitle: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -262,13 +262,13 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   nudgeDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   nudgeContent: {
     flex: 1,
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   nudgeSubtitle: {
     fontSize: 12,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     marginTop: 1,
   },
   // --- Upcoming ---
@@ -290,13 +290,13 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   upcomingIconWrap: {
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   },
   upcomingDate: {
     fontSize: 12,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '500',
     marginTop: 1,
   },
@@ -322,12 +322,12 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   seeAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   // --- Game link ---
   gameLink: {
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   gameLinkText: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#490f5f',
+    color: '#3D2870',
   },
   // --- Footer ---
   footerDots: {
@@ -353,6 +353,6 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
   },
 });

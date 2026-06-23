@@ -96,7 +96,7 @@ export default function ToneCalibrationScreen() {
                     {option.label}
                   </Text>
                   {selectedTone === option.value && (
-                    <Icon name="check" size="sm" color="#c97454" weight="bold" />
+                    <Icon name="check" size="sm" color="#D4522A" weight="bold" />
                   )}
                 </View>
                 <Text
@@ -131,7 +131,7 @@ export default function ToneCalibrationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   content: {
     flex: 1,
@@ -140,13 +140,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
   },
   subtitle: {
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginTop: 8,
   },
   optionsContainer: {
@@ -158,14 +158,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   optionCardSelected: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   optionCardDefault: {
     backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   optionHeader: {
     flexDirection: 'row',
@@ -175,24 +175,24 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
   },
   optionLabelSelected: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   optionLabelDefault: {
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   optionDescription: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     marginTop: 4,
   },
   optionDescriptionSelected: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   optionDescriptionDefault: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   spacer: {
     flex: 1,

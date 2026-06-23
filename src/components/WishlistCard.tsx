@@ -58,7 +58,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Icon name="sparkle" size="sm" color="#c97454" weight="regular" />
+          <Icon name="sparkle" size="sm" color="#D4522A" weight="regular" />
           <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
         </View>
         {totalCount > 0 && (
@@ -73,7 +73,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {/* Empty state */}
       {totalCount === 0 && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="star" size="lg" color="#c97454" weight="light" />
+          <Icon name="star" size="lg" color="#D4522A" weight="light" />
           <Text style={styles.emptyTitle}>{t('wishlist.dreamTogether')}</Text>
           <Text style={styles.emptySubtitle}>{t('wishlist.emptySubtitle')}</Text>
         </Animated.View>
@@ -103,7 +103,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
         <Animated.View entering={FadeIn.duration(300).delay(400)}>
           <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll} activeOpacity={0.7}>
             <Text style={styles.seeAllText}>{t('wishlist.seeAll')}</Text>
-            <Icon name="arrow-right" size="xs" color="#c97454" />
+            <Icon name="arrow-right" size="xs" color="#D4522A" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -147,7 +147,7 @@ function WishlistRow({
       </TouchableOpacity>
       {cat?.icon
         ? <Text style={styles.itemIcon}>{cat.icon}</Text>
-        : <Icon name="sparkle" size="sm" color="#490f5f" />
+        : <Icon name="sparkle" size="sm" color="#3D2870" />
       }
       <Text
         style={[styles.itemTitle, item.isCompleted && styles.itemTitleDone]}
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   // ─── Header ───
   header: {
@@ -198,12 +198,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
   },
   countBadge: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     paddingVertical: 3,
     paddingHorizontal: 10,
     borderRadius: 20,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#D4522A',
   },
   // ─── Empty State ───
   emptyState: {
@@ -225,14 +225,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
     marginBottom: 4,
   },
   emptySubtitle: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     textAlign: 'center',
   },
   // ─── Item Rows ───
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   checkbox: {
     width: 24,
@@ -260,12 +260,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemTitleDone: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textDecorationLine: 'line-through',
   },
   moreHint: {
     fontSize: 12,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontWeight: '500',
     textAlign: 'center',
     paddingVertical: 6,
@@ -278,16 +278,16 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingVertical: 10,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   seeAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   seeAllArrow: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#D4522A',
   },
   // ─── Add Button ───
   addButton: {
@@ -298,29 +298,29 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     marginTop: 4,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e7e5e4',
+    borderTopColor: '#E2DED8',
   },
   addIconWrap: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
     fontSize: 15,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
     marginTop: -1,
   },
   addText: {
     fontSize: 14,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
   },
   // ─── Footer ───
   footerDots: {
@@ -333,6 +333,6 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
   },
 });

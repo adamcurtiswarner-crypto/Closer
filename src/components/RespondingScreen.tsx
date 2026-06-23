@@ -61,7 +61,7 @@ export function RespondingScreen({
             <TextInput
               style={styles.textInput}
               placeholder={t('today.sharePlaceholder')}
-              placeholderTextColor="#a8a29e"
+              placeholderTextColor="#B8B8C4"
               multiline
               textAlignVertical="top"
               value={responseText}
@@ -79,7 +79,7 @@ export function RespondingScreen({
             </View>
           ) : (
             <TouchableOpacity style={styles.attachPhotoButton} onPress={onAddPhoto}>
-              <Icon name="camera" size="md" color="#78716c" />
+              <Icon name="camera" size="md" color="#6B6B7A" />
               <Text style={styles.attachPhotoText}>{t('today.addPhoto')}</Text>
             </TouchableOpacity>
           )}
@@ -121,7 +121,7 @@ export function RespondingScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   flex: {
     flex: 1,
@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
   },
   respondingPrompt: {
     fontSize: 18,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: 26,
@@ -151,9 +151,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     fontSize: 17,
-    color: '#1c1917',
+    color: '#1E1E2E',
     borderWidth: 1.5,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     minHeight: 140,
     maxHeight: 240,
     lineHeight: 24,
@@ -166,12 +166,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignSelf: 'flex-start',
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 10,
   },
   attachPhotoText: {
     fontSize: 14,
-    color: '#78716c',
+    color: '#6B6B7A',
     fontWeight: '500',
   },
   imagePreview: {
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#57534e',
+    backgroundColor: '#6B6B7A',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   charHint: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
     fontSize: 13,
     textAlign: 'center',
     marginBottom: 16,
@@ -211,18 +211,18 @@ const styles = StyleSheet.create({
   cancelButton: {
     paddingVertical: 16,
     paddingHorizontal: 24,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     borderRadius: 14,
   },
   cancelText: {
-    color: '#57534e',
+    color: '#6B6B7A',
     fontWeight: '600',
     fontSize: 16,
   },
   submitButton: {
     flex: 1,
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   submitText: {
     color: '#ffffff',
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 16,
   },
   disabled: {

@@ -92,14 +92,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   reactionBtnSelected: {
     backgroundColor: '#fef3ee',
     borderWidth: 1.5,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   reactionEmoji: {
     fontSize: 18,

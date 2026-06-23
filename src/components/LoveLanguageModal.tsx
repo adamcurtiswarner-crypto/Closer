@@ -64,7 +64,7 @@ export function LoveLanguageModal({
                   </View>
                   {isActive && (
                     <View style={styles.langCheck}>
-                      <Icon name="check" size="sm" color="#c97454" weight="bold" />
+                      <Icon name="check" size="sm" color="#D4522A" weight="bold" />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -99,14 +99,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginBottom: 16,
   },
   langList: {
@@ -118,11 +118,11 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     gap: 12,
   },
   langOptionActive: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     borderWidth: 1,
     borderColor: '#f9a07a',
   },
@@ -135,24 +135,24 @@ const styles = StyleSheet.create({
   langOptionLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   langOptionLabelActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   langOptionDesc: {
     fontSize: 12,
-    color: '#78716c',
+    color: '#6B6B7A',
     marginTop: 2,
   },
   langOptionDescActive: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   langCheck: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   modalCancelText: {
     fontSize: 16,
-    color: '#78716c',
+    color: '#6B6B7A',
     fontWeight: '500',
   },
 });

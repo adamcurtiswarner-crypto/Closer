@@ -190,7 +190,7 @@ function RoundCounter({ round, total }: { round: number; total: number }) {
 function ExitButton({ onPress }: { onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.exitButton} onPress={onPress} activeOpacity={0.7}>
-      <Icon name="x" size="md" color="#78716c" />
+      <Icon name="x" size="md" color="#6B6B7A" />
     </TouchableOpacity>
   );
 }
@@ -198,7 +198,7 @@ function ExitButton({ onPress }: { onPress: () => void }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     paddingHorizontal: 24,
     paddingTop: 16,
   },
@@ -209,14 +209,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   exitText: {
     fontSize: 16,
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   roundCounter: {
     alignItems: 'center',
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   roundText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     letterSpacing: 0.3,
   },
   pickerLabel: {
@@ -236,12 +236,12 @@ const styles = StyleSheet.create({
   pickerName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#c97454',
+    color: '#D4522A',
   },
   questionLabel: {
     fontSize: 22,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     textAlign: 'center',
     letterSpacing: -0.5,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     color: '#292524',
     textAlign: 'center',
     lineHeight: 24,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   orText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textAlign: 'center',
   },
   // ─── Reveal ───
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -296,12 +296,12 @@ const styles = StyleSheet.create({
   },
   revealCardMatch: {
     borderWidth: 2,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   revealName: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#a8a29e',
+    color: '#B8B8C4',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
@@ -315,13 +315,13 @@ const styles = StyleSheet.create({
   matchLabel: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#c97454',
+    color: '#D4522A',
     textAlign: 'center',
     marginBottom: 16,
   },
   nextButton: {
     paddingVertical: 16,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 40,

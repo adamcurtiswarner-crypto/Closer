@@ -146,7 +146,7 @@ export default function TogetherScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#c97454" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#D4522A" />
         }
       >
         {/* 1. Couple Hero */}
@@ -211,7 +211,7 @@ export default function TogetherScreen() {
                 onPress={() => router.push(action.route as any)}
                 activeOpacity={0.7}
               >
-                <Icon name={action.icon} size="md" color="#c97454" weight="light" />
+                <Icon name={action.icon} size="md" color="#D4522A" weight="light" />
                 <Text style={styles.quickActionLabel}>{action.label}</Text>
               </TouchableOpacity>
             ))}
@@ -229,7 +229,7 @@ export default function TogetherScreen() {
               {anniversary && !anniversary.isToday && anniversary.days <= 30 && (
                 <View style={styles.upcomingRow}>
                   <View style={[styles.upcomingIcon, { backgroundColor: '#fef3ee' }]}>
-                    <Icon name="heart" size="sm" color="#c97454" weight="fill" />
+                    <Icon name="heart" size="sm" color="#D4522A" weight="fill" />
                   </View>
                   <Text style={styles.upcomingTitle}>
                     {anniversary.days === 1 ? t('home.anniversaryTomorrow') : t('home.anniversaryInDays', { count: anniversary.days })}
@@ -240,7 +240,7 @@ export default function TogetherScreen() {
               {anniversary?.isToday && (
                 <View style={styles.upcomingRow}>
                   <View style={[styles.upcomingIcon, { backgroundColor: '#fef3ee' }]}>
-                    <Icon name="heart" size="sm" color="#c97454" weight="fill" />
+                    <Icon name="heart" size="sm" color="#D4522A" weight="fill" />
                   </View>
                   <Text style={styles.upcomingTitle}>{t('home.happyAnniversary')}</Text>
                 </View>
@@ -261,7 +261,7 @@ export default function TogetherScreen() {
                       {format(upcomingDateNight.scheduledDate!, 'EEEE, MMM d')}
                     </Text>
                   </View>
-                  <Icon name="caret-right" size="sm" color="#a8a29e" />
+                  <Icon name="caret-right" size="sm" color="#B8B8C4" />
                 </TouchableOpacity>
               )}
 
@@ -277,7 +277,7 @@ export default function TogetherScreen() {
                   <Text style={styles.upcomingTitle}>
                     {t('home.activeGoals', { count: activeGoalsCount })}
                   </Text>
-                  <Icon name="caret-right" size="sm" color="#a8a29e" />
+                  <Icon name="caret-right" size="sm" color="#B8B8C4" />
                 </TouchableOpacity>
               )}
             </View>
@@ -293,7 +293,7 @@ export default function TogetherScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   scroll: {
     paddingBottom: 24,
@@ -323,23 +323,23 @@ const styles = StyleSheet.create({
   },
   loveLanguageName: {
     fontSize: 12,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#78716c',
+    color: '#6B6B7A',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   loveLanguageValue: {
     fontSize: 14,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
     marginTop: 2,
   },
   loveLanguageDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#e7e5e4',
+    backgroundColor: '#E2DED8',
     marginHorizontal: 12,
   },
 
@@ -350,9 +350,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
     marginBottom: 12,
   },
 
@@ -381,9 +381,9 @@ const styles = StyleSheet.create({
   },
   quickActionLabel: {
     fontSize: 14,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#57534e',
+    color: '#6B6B7A',
   },
 
   // Upcoming
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f4',
+    borderBottomColor: '#E2DED8',
   },
   upcomingIcon: {
     width: 36,
@@ -421,15 +421,15 @@ const styles = StyleSheet.create({
   },
   upcomingTitle: {
     fontSize: 15,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#1c1917',
+    color: '#1E1E2E',
     flex: 1,
   },
   upcomingSubtitle: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginTop: 2,
   },
 

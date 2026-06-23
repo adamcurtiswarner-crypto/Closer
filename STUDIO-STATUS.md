@@ -1,79 +1,81 @@
 # Stoke Studio Status
-*Last updated: 2026-05-18 — CEO review*
+*Last updated: 2026-06-23 — CEO review (session 2)*
 
 ## Current Sprint
-- **Focus**: App Store submission — validate latest TestFlight build, test payments, submit for review
-- **Sprint goal**: App Store submission
-- **Status**: GREEN. Latest build uploaded to App Store Connect via local Xcode (May 17). All major features shipped. 12/12 production layers covered. EAS free builds exhausted (resets June 1), using local Xcode builds.
+- **Focus**: Four Engines redesign — design system migration + new screen builds
+- **Sprint goal**: Implement designer handoff (new design system, 6 new engine screens)
+- **Status**: GREEN. Design system fully migrated. All 6 new engine screens built. 24/24 tests passing, 0 TS errors.
 
-## What Shipped (May 15-17)
+## What Shipped Since Last Update (May 18-24)
 
-### Together Tab Redesign
-- Renamed Home → "Together" with handshake icon
-- CoupleHero: overlapping 92px photos with "+" badge, names in Pacifico script font ("Adam & Masha")
-- RelationshipStats: 3-column card (days together, prompts shared, best streak)
-- Love languages: side-by-side card showing both partners' love languages
-- MilestoneBadges: achieved badges + next milestone progress bar
-- Days together now uses anniversary date when set
-- ProfileCard moved to Settings
+### May 24 — Prompt Library Expansion + CI Agent
+- Expanded prompt library from 162 to 362 prompts
+- Added competitive intelligence agent to studio
 
-### Monthly Calendar Streak Tracker
-- Replaced 7-dot weekly tracker with full monthly calendar view
-- 6 day states: completed (orange + gold outline), partial-you (blue), partial-partner (blue), missed (pink + X), today (pulsing), upcoming (gray)
-- Flame permanently animated with infinite wiggle
-- Streak count at top of calendar
-- Calendar aligned to real Mon-Sun grid
-- Data from prompt_assignments (status, first_responder_id, assigned_date)
+### May 18 — Badge System + Real-Time Sync + Fixes
+- Badge system redesign + chat removal
+- Face ID fix: biometric only on cold start, not every foreground
+- Converted wishlist, date nights, goals, love languages to real-time sync (onSnapshot)
+- Fixed partner love language query (couple.id cache key, reduced stale time)
 
-### Welcome Screen
-- New design: Stoke logo, couple illustration from Figma, warm copy
-- "Tend to the moments, keep the Flame."
+## Blockers (All Operational, Not Code)
 
-### Production Infrastructure
-- Rate limiting on 3 callable functions (30s, 5min, 1hr cooldowns)
-- Error monitoring: reportError utility, checkErrorAlerts (5min), monitorErrors (15min), cleanupErrorLogs (daily)
-- Storage rules hardened: 10MB max, image-only, deny-all catch
-- Firestore indexes for date_nights and wishlist_items subcollections
-- 12/12 production stack layers covered
+| # | Blocker | Severity | What Exists | What's Missing |
+|---|---------|----------|-------------|----------------|
+| 1 | **RevenueCat not configured** | CRITICAL | Paywall UI, useSubscription hook, webhook Cloud Function — all code-complete | RevenueCat project, App Store Connect in-app purchases ($49.99/yr, $9.99/mo), API key in env, `react-native-purchases` in app.json plugins array |
+| 2 | **Push notifications untested** | CRITICAL | Client registration, FCM sendEach(), 5 notification Cloud Functions — all deployed | Never tested end-to-end on two real devices. 10+ weeks overdue. |
+| 3 | **TestFlight build stale** | HIGH | May 17 build in App Store Connect | 37 days old, missing last 5 commits, never human-validated. Known iOS 26 + RN 0.83 TurboModule crash risk (facebook/react-native#54859). |
 
-### Bug Fixes
-- Invite link: removed stoke.app domain (not owned), share code directly
-- Date nights/wishlist not showing after save (missing indexes)
-- Partner love language not refreshing (added to pull-to-refresh)
-- Partner account re-linked (Adam + Masha Gmail), old data migrated
+### Additional Pre-Submission Items
+| Item | Status |
+|------|--------|
+| getstoke.io live (privacy, terms, support URLs) | NOT VERIFIED — Apple requires live URLs |
+| App Store screenshots (8 screens) | NOT CAPTURED |
+| App Review test account with partner data | NOT CREATED |
+| `react-native-purchases` in app.json plugins | MISSING — native module won't link without it |
 
-## Latest Build
-- Built locally via Xcode Release archive + export
-- Uploaded to App Store Connect via xcodebuild (not EAS or Transporter)
-- Contains: monthly calendar, Together redesign, welcome screen, all fixes
+## Action Plan (This Week)
 
-## Key Metrics
+### Day 1: RevenueCat Setup
+1. Create in-app purchase products in App Store Connect (annual $49.99, monthly $9.99)
+2. Create RevenueCat project, connect to App Store Connect
+3. Configure `premium` entitlement
+4. Add API key to `.env` as `EXPO_PUBLIC_REVENUECAT_IOS_KEY`
+5. Add `react-native-purchases` to `app.json` plugins array
+6. Set `revenuecat.webhook_key` in Firebase functions config
+7. Point RevenueCat webhook URL to deployed `revenueCatWebhook` function
+
+### Day 2: Build + Validate
+1. Check status of facebook/react-native#54859 (iOS 26 crash)
+2. Build fresh production binary via local Xcode (EAS credits reset June 1)
+3. Install TestFlight on two physical devices
+4. Test complete flow: signup, partner link, prompt delivery, response, streak
+5. Verify push notification token appears in Firestore, trigger notification, confirm delivery
+6. Test payment flow through RevenueCat sandbox
+
+### Day 3: Submit
+1. Capture App Store screenshots (8 screens per STORE_METADATA.md)
+2. Create demo test account with pre-linked partner for App Review
+3. Verify getstoke.io URLs are live
+4. Submit for App Store Review
+
+## Engineering Health
 - Test suites: 24/24 passing (140 tests)
 - TypeScript errors: 0
-- Cloud Functions: 35 deployed (added error monitoring)
-- Expo SDK: 55
+- Cloud Functions: 35 deployed, all scheduled functions running
+- Working tree: clean
+- Expo SDK: 55 (upgrade to latest post-launch)
 - Firebase: 12.13.0
-- CI: GitHub Actions active
-- Production layers: 12/12
-- EAS builds: 0 remaining (resets June 1)
+- React Native: 0.83.6
+- EAS builds: reset June 1 (credits available)
 
-## What Needs Attention
-
-### Before App Store Submission
-| Priority | Item | Status |
-|----------|------|--------|
-| NOW | Validate latest TestFlight build (monthly calendar, Together tab) | Adam — install and test |
-| NOW | Test push notifications with partner | 5+ weeks overdue |
-| NOW | Test payment flow (RevenueCat not configured yet) | Needs API key + App Store products |
-| THIS WEEK | Submit for App Review | After validation |
-
-### Post-Launch
-| Priority | Item |
-|----------|------|
-| NEXT | iOS Widgets (Swift code built, bridge disabled) |
-| NEXT | Create staging Firebase project |
-| LATER | Relationship Courses (#4) |
-| LATER | Expo SDK 56 upgrade (when stable) |
+## Risk Register
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| iOS 26 + RN 0.83 TurboModule crash in release builds | Blocks submission entirely | Check #54859 status first. Fallback: build with Xcode 16 / iOS 18 SDK |
+| Scheduled functions consuming resources while idle | Low cost but worth checking | Review Firebase Console for billing surprises |
+| `autoGeneratePrompts` using Anthropic API credits weekly | Unexpected charges | Verify API key validity and charges |
+| Expo SDK 55 is ~14 months old | App Review could flag outdated toolchain | Upgrade post-submission, not before |
 
 ## Roadmap
-Together Redesign (DONE) → Calendar Streak (DONE) → Infrastructure (DONE) → **Validate + Submit (NOW)** → iOS Widgets → Courses
+Together Redesign (DONE) -> Calendar Streak (DONE) -> Infrastructure (DONE) -> Prompt Expansion (DONE) -> Badge Redesign (DONE) -> Real-Time Sync (DONE) -> **App Store Submission (NOW)** -> iOS Widgets -> Courses

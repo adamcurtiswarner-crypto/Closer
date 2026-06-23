@@ -78,7 +78,7 @@ export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: 
           <Text style={styles.headerTitle}>New Milestone</Text>
           <TouchableOpacity onPress={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? (
-              <ActivityIndicator size="small" color="#c97454" />
+              <ActivityIndicator size="small" color="#D4522A" />
             ) : (
               <Text style={styles.saveText}>Save</Text>
             )}
@@ -112,14 +112,14 @@ export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: 
                 value={customTitle}
                 onChangeText={setCustomTitle}
                 placeholder="What happened?"
-                placeholderTextColor="#a8a29e"
+                placeholderTextColor="#B8B8C4"
               />
             </Animated.View>
           )}
 
           <Text style={styles.label}>Date</Text>
           <TouchableOpacity style={styles.dateBtn} onPress={() => setShowDatePicker(true)}>
-            <Icon name="calendar" size="sm" color="#78716c" />
+            <Icon name="calendar" size="sm" color="#6B6B7A" />
             <Text style={styles.dateBtnText}>
               {date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </Text>
@@ -142,7 +142,7 @@ export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: 
             value={description}
             onChangeText={setDescription}
             placeholder="A few words about this moment..."
-            placeholderTextColor="#a8a29e"
+            placeholderTextColor="#B8B8C4"
             multiline
             numberOfLines={3}
           />
@@ -155,7 +155,7 @@ export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: 
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.photoBtn} onPress={handlePickImage}>
-              <Icon name="camera" size="sm" color="#78716c" />
+              <Icon name="camera" size="sm" color="#6B6B7A" />
               <Text style={styles.photoBtnText}>Add a photo</Text>
             </TouchableOpacity>
           )}
@@ -168,7 +168,7 @@ export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   header: {
     flexDirection: 'row',
@@ -178,24 +178,24 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f5f5f4',
+    borderBottomColor: '#E2DED8',
   },
   cancelText: {
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
   },
   headerTitle: {
     fontSize: 17,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
   },
   saveText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   form: {
     flex: 1,
@@ -207,8 +207,8 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#78716c',
+    fontFamily: 'Nunito-Bold',
+    color: '#6B6B7A',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 8,
@@ -223,15 +223,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
   },
   categoryPillActive: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   categoryPillText: {
     fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#57534e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
   },
   categoryPillTextActive: {
     color: '#ffffff',
@@ -240,11 +240,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     padding: 14,
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Regular',
+    color: '#1E1E2E',
   },
   textArea: {
     minHeight: 80,
@@ -257,13 +257,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     padding: 14,
   },
   dateBtnText: {
     fontSize: 15,
-    fontFamily: 'Inter-Regular',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Regular',
+    color: '#1E1E2E',
   },
   photoBtn: {
     flexDirection: 'row',
@@ -274,13 +274,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     borderStyle: 'dashed',
   },
   photoBtnText: {
     fontSize: 14,
-    fontFamily: 'Inter-Medium',
-    color: '#78716c',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
   },
   previewImage: {
     width: '100%',
@@ -289,8 +289,8 @@ const styles = StyleSheet.create({
   },
   changePhotoText: {
     fontSize: 12,
-    fontFamily: 'Inter-Regular',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-Regular',
+    color: '#B8B8C4',
     textAlign: 'center',
     marginTop: 6,
   },

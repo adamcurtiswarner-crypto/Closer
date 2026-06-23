@@ -140,7 +140,7 @@ export default function RelationshipStageScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   content: {
     flex: 1,
@@ -149,9 +149,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     lineHeight: 36,
     marginBottom: 8,
   },
@@ -178,21 +178,21 @@ const styles = StyleSheet.create({
   cardDefault: {
     backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   cardSelected: {
-    backgroundColor: '#fef5f0',
+    backgroundColor: '#FDF1ED',
     borderWidth: 2,
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   cardLabel: {
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#1c1917',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#1E1E2E',
   },
   cardLabelSelected: {
-    color: '#c97454',
+    color: '#D4522A',
   },
   buttonContainer: {
     marginBottom: 32,

@@ -104,11 +104,11 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
   },
   typingText: {
-    color: '#c97454',
+    color: '#D4522A',
     fontStyle: 'italic',
   },
   typingDots: {
@@ -120,6 +120,6 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
 });

@@ -52,10 +52,10 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
       <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="heart" size="sm" color="#c97454" weight="light" />
+        <Icon name="heart" size="sm" color="#D4522A" weight="light" />
         <Text style={styles.headerText}>{t('checkIn.title')}</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="x" size="xs" color="#a8a29e" />
+          <Icon name="x" size="xs" color="#B8B8C4" />
         </TouchableOpacity>
       </View>
 
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 20,
     overflow: 'hidden',
-    shadowColor: '#1c1917',
+    shadowColor: '#1E1E2E',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   header: {
     flexDirection: 'row',
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 15,
     fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
+    fontFamily: 'Nunito-Black',
     color: '#292524',
     letterSpacing: -0.3,
     flex: 1,
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
     justifyContent: 'center',
     alignItems: 'center',
   },
   privacy: {
     fontSize: 11,
-    color: '#a8a29e',
+    color: '#B8B8C4',
     marginBottom: 16,
   },
   questionArea: {
@@ -152,8 +152,8 @@ const styles = StyleSheet.create({
   stepLabel: {
     fontSize: 11,
     fontWeight: '500',
-    fontFamily: 'Inter-Medium',
-    color: '#a8a29e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#B8B8C4',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 12,
@@ -161,8 +161,8 @@ const styles = StyleSheet.create({
   questionText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 20,
@@ -177,30 +177,30 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
     justifyContent: 'center',
     alignItems: 'center',
   },
   scoreBtnSelected: {
-    borderColor: '#c97454',
-    backgroundColor: '#c97454',
+    borderColor: '#D4522A',
+    backgroundColor: '#D4522A',
   },
   scoreNum: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   scoreNumSelected: {
     color: '#ffffff',
   },
   scoreLabel: {
     fontSize: 12,
-    color: '#c97454',
+    color: '#D4522A',
     fontWeight: '600',
     marginTop: 4,
   },
   nextBtn: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

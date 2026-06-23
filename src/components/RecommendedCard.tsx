@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 15,
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
     marginTop: 8,
   },
   subtitle: {
     fontSize: 11,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     color: 'rgba(28, 25, 23, 0.5)',
     letterSpacing: 0.3,
     textTransform: 'uppercase',

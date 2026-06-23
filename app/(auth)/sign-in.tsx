@@ -151,7 +151,7 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   keyboardView: {
     flex: 1,
@@ -163,9 +163,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Alexandria-SemiBold',
-    color: '#1c1917',
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
     marginBottom: 32,
   },
   form: {},
@@ -176,8 +176,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   forgotText: {
-    color: '#c97454',
-    fontFamily: 'Inter-Medium',
+    color: '#D4522A',
+    fontFamily: 'Nunito-SemiBold',
     fontSize: 14,
   },
   submit: {
@@ -189,12 +189,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   footerText: {
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
   },
   footerLink: {
-    color: '#c97454',
-    fontFamily: 'Inter-Medium',
+    color: '#D4522A',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
   },
 });

@@ -41,7 +41,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             hasError && styles.inputError,
             style,
           ]}
-          placeholderTextColor="#a8a29e"
+          placeholderTextColor="#B8B8C4"
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...props}
@@ -60,33 +60,33 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    fontFamily: 'Inter-Medium',
-    color: '#57534e',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 6,
   },
   input: {
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     width: '100%',
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#fef7f4',
-    color: '#1c1917',
+    backgroundColor: '#F5F2EE',
+    color: '#1E1E2E',
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#e7e5e4',
+    borderColor: '#E2DED8',
   },
   inputFocused: {
-    borderColor: '#c97454',
+    borderColor: '#D4522A',
   },
   inputError: {
     borderColor: '#f87171',
     backgroundColor: '#fefbfb',
   },
   hint: {
-    color: '#78716c',
+    color: '#6B6B7A',
     fontSize: 12,
     marginTop: 4,
   },

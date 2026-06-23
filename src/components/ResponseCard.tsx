@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   yoursCard: {
-    backgroundColor: '#fef7f4',
+    backgroundColor: '#F5F2EE',
   },
   partnersCard: {
     backgroundColor: '#fdf8f6',
@@ -53,20 +53,20 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   yoursDot: {
-    backgroundColor: '#a8a29e',
+    backgroundColor: '#B8B8C4',
   },
   partnersDot: {
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
   },
   label: {
     fontSize: 12,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   yoursLabel: {
-    color: '#78716c',
+    color: '#6B6B7A',
   },
   partnersLabel: {
     color: '#b85d3f',
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   responseText: {
     color: '#292524',
     fontSize: 16,
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Nunito-Regular',
     lineHeight: 24,
   },
   responseImage: {

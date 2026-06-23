@@ -29,7 +29,7 @@ export function MilestoneTimeline({ milestones, onAdd, onDelete, isPremium, onSh
           onPress={isPremium ? onAdd : onShowPaywall}
           activeOpacity={0.8}
         >
-          <Icon name="plus" size="sm" color="#c97454" />
+          <Icon name="plus" size="sm" color="#D4522A" />
           <Text style={styles.addBtnText}>Add milestone</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
   addBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#c97454',
+    fontFamily: 'Nunito-Bold',
+    color: '#D4522A',
   },
   empty: {
     alignItems: 'center',
@@ -111,14 +111,14 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
-    color: '#57534e',
+    fontFamily: 'Nunito-Bold',
+    color: '#6B6B7A',
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 8,
   },
@@ -134,13 +134,13 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#c97454',
+    backgroundColor: '#D4522A',
     marginTop: 4,
   },
   line: {
     width: 2,
     flex: 1,
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     marginTop: 4,
   },
   cardContent: {
@@ -151,25 +151,25 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#f5f5f4',
+    borderColor: '#E2DED8',
   },
   dateText: {
     fontSize: 12,
-    fontFamily: 'Inter-Medium',
-    color: '#78716c',
+    fontFamily: 'Nunito-SemiBold',
+    color: '#6B6B7A',
     marginBottom: 4,
   },
   titleText: {
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#1c1917',
+    fontFamily: 'Nunito-Bold',
+    color: '#1E1E2E',
     marginBottom: 4,
   },
   descText: {
     fontSize: 14,
-    fontFamily: 'Inter-Regular',
-    color: '#57534e',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     lineHeight: 20,
     marginBottom: 8,
   },

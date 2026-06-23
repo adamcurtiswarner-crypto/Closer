@@ -130,7 +130,7 @@ export function MilestoneBadges({ data, animationDelay = 600 }: MilestoneBadgesP
           <AnimatedProgressBar
             progress={next.current / next.threshold}
             color={TIER_COLORS[next.tier].tint}
-            trackColor="#f5f5f4"
+            trackColor="#E2DED8"
             height={4}
           />
         </View>
@@ -152,15 +152,15 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   countLabel: {
     fontSize: 12,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#78716c',
+    color: '#6B6B7A',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -181,20 +181,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   squircleLocked: {
-    backgroundColor: '#f5f5f4',
+    backgroundColor: '#E2DED8',
     opacity: 0.6,
   },
   badgeLabel: {
     fontSize: 10,
-    fontFamily: 'Inter-Medium',
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '500',
-    color: '#57534e',
+    color: '#6B6B7A',
     textAlign: 'center',
     marginTop: 4,
     maxWidth: 64,
   },
   badgeLabelMuted: {
-    color: '#a8a29e',
+    color: '#B8B8C4',
   },
   squircleSmall: {
     width: 44,
@@ -225,14 +225,14 @@ const styles = StyleSheet.create({
   },
   nextTitle: {
     fontSize: 15,
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '600',
-    color: '#1c1917',
+    color: '#1E1E2E',
   },
   nextDescription: {
     fontSize: 13,
-    fontFamily: 'Inter-Regular',
-    color: '#78716c',
+    fontFamily: 'Nunito-Regular',
+    color: '#6B6B7A',
     marginTop: 2,
   },
 });
