@@ -8,7 +8,9 @@ import {
   initializeDepthProgress,
   sendPushNotification,
   logEvent,
+  reportError,
 } from './shared';
+import { evaluateFollowUpOnCompletion } from './followUps';
 
 // ============================================
 // FIRESTORE TRIGGER: On Response Submitted
@@ -149,6 +151,26 @@ export const onResponseSubmitted = functions.firestore
           title: secondResponderName,
           body: 'answered too. Tap to reveal both responses.',
         }, { type: 'prompt' });
+      }
+
+      // Follow-up branch evaluation (v1 scored prompts).
+      // Only scale-format daily assignments can score-trigger; repair step-1
+      // completions chain step 2. Guards live in evaluateFollowUpOnCompletion.
+      try {
+        await evaluateFollowUpOnCompletion(
+          response.assignment_id,
+          assignment,
+          responsesSnapshot.docs.map((doc) => ({
+            response_score: doc.data().response_score,
+          })),
+          response.user_id
+        );
+      } catch (err) {
+        await reportError('onResponseSubmitted.followUp', err, {
+          userId: response.user_id,
+          coupleId: response.couple_id,
+          extra: { assignmentId: response.assignment_id },
+        });
       }
     } else {
       // First response - track first responder and notify partner

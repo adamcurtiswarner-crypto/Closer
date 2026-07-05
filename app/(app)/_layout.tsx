@@ -10,10 +10,16 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Icon } from '@/components';
+import { FEATURES } from '@/config/features';
 
 const logo = require('@/assets/logo.png');
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
+
+// Today is the v1 landing tab (home is feature-flagged off)
+export const unstable_settings = {
+  initialRouteName: 'today',
+};
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   // Filter to only tabs that have an icon defined (hidden tabs use href:null and have no icon)
@@ -137,6 +143,7 @@ export default function AppLayout() {
     <View style={{ flex: 1 }}>
     <OfflineBanner />
     <Tabs
+      initialRouteName="today"
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
@@ -146,12 +153,16 @@ export default function AppLayout() {
     >
       <Tabs.Screen
         name="home"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ focused, color }) => (
-            <Icon name="handshake" size="md" color={color} weight={focused ? 'fill' : 'light'} />
-          ),
-        }}
+        options={
+          FEATURES.home
+            ? {
+                title: 'Home',
+                tabBarIcon: ({ focused, color }) => (
+                  <Icon name="handshake" size="md" color={color} weight={focused ? 'fill' : 'light'} />
+                ),
+              }
+            : { href: null }
+        }
       />
       <Tabs.Screen
         name="today"
@@ -168,21 +179,29 @@ export default function AppLayout() {
       />
       <Tabs.Screen
         name="memories"
-        options={{
-          title: 'Memories',
-          tabBarIcon: ({ focused, color }) => (
-            <Icon name="heart" size="md" color={color} weight={focused ? 'fill' : 'light'} />
-          ),
-        }}
+        options={
+          FEATURES.memories
+            ? {
+                title: 'Memories',
+                tabBarIcon: ({ focused, color }) => (
+                  <Icon name="heart" size="md" color={color} weight={focused ? 'fill' : 'light'} />
+                ),
+              }
+            : { href: null }
+        }
       />
       <Tabs.Screen
         name="insights"
-        options={{
-          title: 'Insights',
-          tabBarIcon: ({ focused, color }) => (
-            <Icon name="sparkle" size="md" color={color} weight={focused ? 'fill' : 'light'} />
-          ),
-        }}
+        options={
+          FEATURES.insights
+            ? {
+                title: 'Insights',
+                tabBarIcon: ({ focused, color }) => (
+                  <Icon name="sparkle" size="md" color={color} weight={focused ? 'fill' : 'light'} />
+                ),
+              }
+            : { href: null }
+        }
       />
       <Tabs.Screen
         name="wishlist"
@@ -216,9 +235,16 @@ export default function AppLayout() {
       />
       <Tabs.Screen
         name="explore"
-        options={{
-          href: null,
-        }}
+        options={
+          FEATURES.explore
+            ? {
+                title: 'Categories',
+                tabBarIcon: ({ focused, color }) => (
+                  <Icon name="compass" size="md" color={color} weight={focused ? 'fill' : 'light'} />
+                ),
+              }
+            : { href: null }
+        }
       />
       <Tabs.Screen
         name="date-nights"

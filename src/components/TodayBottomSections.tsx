@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, ExploreCategoryRow } from '@components';
 import { DateNightCard } from '@/components/DateNightCard';
+import { FEATURES } from '@/config/features';
 
 interface TodayBottomSectionsProps {
   showAddGoalModal: boolean;
@@ -25,30 +26,42 @@ export function TodayBottomSections({
 }: TodayBottomSectionsProps) {
   return (
     <>
-      <Animated.View entering={FadeInUp.duration(400).delay(animationBaseDelay)}>
-        <ExploreCategoryRow />
-      </Animated.View>
+      {FEATURES.explore && (
+        <Animated.View entering={FadeInUp.duration(400).delay(animationBaseDelay)}>
+          <ExploreCategoryRow />
+        </Animated.View>
+      )}
 
-      <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 200)} style={styles.section}>
-        <GoalTracker onAddGoal={onOpenGoalModal} />
-      </Animated.View>
+      {FEATURES.goals && (
+        <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 200)} style={styles.section}>
+          <GoalTracker onAddGoal={onOpenGoalModal} />
+        </Animated.View>
+      )}
 
-      <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 400)} style={styles.section}>
-        <WishlistCard onAddItem={onOpenWishlistModal} />
-      </Animated.View>
+      {FEATURES.wishlist && (
+        <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 400)} style={styles.section}>
+          <WishlistCard onAddItem={onOpenWishlistModal} />
+        </Animated.View>
+      )}
 
-      <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 600)} style={styles.section}>
-        <DateNightCard />
-      </Animated.View>
+      {FEATURES.dateNights && (
+        <Animated.View entering={FadeInUp.duration(500).delay(animationBaseDelay + 600)} style={styles.section}>
+          <DateNightCard />
+        </Animated.View>
+      )}
 
-      <AddGoalModal
-        visible={showAddGoalModal}
-        onClose={onCloseGoalModal}
-      />
-      <AddWishlistModal
-        visible={showAddWishlistModal}
-        onClose={onCloseWishlistModal}
-      />
+      {FEATURES.goals && (
+        <AddGoalModal
+          visible={showAddGoalModal}
+          onClose={onCloseGoalModal}
+        />
+      )}
+      {FEATURES.wishlist && (
+        <AddWishlistModal
+          visible={showAddWishlistModal}
+          onClose={onCloseWishlistModal}
+        />
+      )}
     </>
   );
 }

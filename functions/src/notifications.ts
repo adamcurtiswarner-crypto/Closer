@@ -148,7 +148,10 @@ export const sendResponseReminders = functions.pubsub
           );
           if (localHour >= 8 && localHour < 10) {
             shouldSend = true;
-            body = "Yesterday's prompt is still open.";
+            // Follow-up assignments get neutral follow-up copy
+            body = assignment.assignment_kind === 'follow_up'
+              ? "Yesterday's follow-up is still open."
+              : "Yesterday's prompt is still open.";
           }
         }
 

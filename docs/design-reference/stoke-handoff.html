@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stoke — Developer Handoff</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --coral:   #D4522A;
+    --black:   #1E1E2E;
+    --white:   #FFFFFF;
+    --warm:    #F5F2EE;
+    --purple:  #3D2870;
+    --green:   #7BAE7F;
+    --mid:     #6B6B7A;
+    --border:  #E2DED8;
+    --ink:     #1E1E2E;
+  }
+
+  body {
+    font-family: 'Nunito', -apple-system, sans-serif;
+    background: var(--warm);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    background: var(--coral);
+    min-height: 280px;
+    padding: 64px 60px 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-shapes {
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  }
+  .cover h1 {
+    font-size: 56px; font-weight: 900; color: #fff;
+    letter-spacing: -1.5px; line-height: 1.05; margin-bottom: 12px;
+    position: relative;
+  }
+  .cover p {
+    font-size: 16px; font-weight: 600;
+    color: rgba(255,255,255,.65); position: relative;
+  }
+  .cover-meta {
+    margin-top: 32px; display: flex; gap: 24px; position: relative;
+  }
+  .cover-badge {
+    background: rgba(255,255,255,.15); border-radius: 50px;
+    padding: 6px 16px; font-size: 12px; font-weight: 800;
+    color: #fff; letter-spacing: .08em; text-transform: uppercase;
+  }
+
+  /* ── Layout ── */
+  .page { max-width: 960px; margin: 0 auto; padding: 0 40px 80px; }
+
+  /* ── Section headers ── */
+  .section {
+    padding-top: 60px;
+  }
+  .section-eyebrow {
+    font-size: 10px; font-weight: 800; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--coral); margin-bottom: 6px;
+  }
+  .section-title {
+    font-size: 28px; font-weight: 900; color: var(--black);
+    margin-bottom: 6px; letter-spacing: -.3px;
+  }
+  .section-sub {
+    font-size: 14px; font-weight: 600; color: var(--mid); margin-bottom: 32px;
+  }
+  .divider {
+    height: 1px; background: var(--border); margin: 0 0 40px;
+  }
+
+  /* ── Color swatches ── */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .swatch {
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  .swatch-color { height: 80px; }
+  .swatch-info {
+    background: #fff; padding: 10px 12px;
+  }
+  .swatch-name {
+    font-size: 11px; font-weight: 800; color: var(--black); margin-bottom: 2px;
+  }
+  .swatch-hex {
+    font-size: 10px; font-weight: 700; color: var(--mid);
+    font-family: 'Courier New', monospace;
+  }
+  .swatch-role {
+    font-size: 9px; font-weight: 700; color: var(--mid);
+    letter-spacing: .06em; text-transform: uppercase; margin-top: 3px;
+  }
+  .color-note {
+    background: #fff; border-radius: 12px; padding: 14px 18px;
+    border-left: 3px solid var(--coral);
+    font-size: 12px; font-weight: 600; color: var(--mid);
+    margin-bottom: 0;
+  }
+
+  /* ── Type specimens ── */
+  .type-table {
+    width: 100%; border-collapse: collapse; margin-bottom: 8px;
+  }
+  .type-table th {
+    text-align: left; font-size: 9px; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--mid);
+    padding: 0 16px 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .type-table td {
+    padding: 16px 16px 16px 0; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .type-table tr:last-child td { border-bottom: none; }
+  .type-label { font-size: 10px; font-weight: 800; color: var(--mid); }
+  .type-spec  { font-size: 10px; font-weight: 600; color: var(--mid);
+    font-family: 'Courier New', monospace; }
+  .type-use   { font-size: 10px; font-weight: 600; color: var(--mid); }
+
+  .specimen-h1   { font-size: 36px; font-weight: 900; color: var(--black); line-height: 1.1; }
+  .specimen-h2   { font-size: 24px; font-weight: 900; color: var(--black); }
+  .specimen-h3   { font-size: 18px; font-weight: 800; color: var(--black); }
+  .specimen-body { font-size: 14px; font-weight: 600; color: var(--mid); }
+  .specimen-cap  { font-size: 10px; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--mid); }
+  .specimen-btn  { font-size: 12px; font-weight: 900; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--coral); }
+
+  /* ── Spacing / radius ── */
+  .token-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  }
+  .token-card {
+    background: #fff; border-radius: 12px; padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .token-name {
+    font-size: 9px; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--mid); margin-bottom: 6px;
+  }
+  .token-value {
+    font-size: 15px; font-weight: 900; color: var(--black);
+    font-family: 'Courier New', monospace;
+  }
+  .token-use {
+    font-size: 10px; font-weight: 600; color: var(--mid); margin-top: 4px;
+  }
+  .space-demo {
+    background: var(--coral); border-radius: 3px; height: 6px; margin-top: 8px;
+  }
+
+  /* ── Component pills ── */
+  .component-section {
+    display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;
+  }
+  .component-row {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .component-label {
+    font-size: 10px; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--mid); width: 120px; flex-shrink: 0;
+  }
+
+  /* Actual UI components rendered */
+  .ui-btn-primary {
+    display: inline-block; background: var(--coral); color: #fff;
+    border: none; border-radius: 50px; padding: 13px 40px;
+    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 900;
+    letter-spacing: .14em; text-transform: uppercase; cursor: default;
+  }
+  .ui-btn-ghost {
+    display: inline-block; background: transparent; color: var(--coral);
+    border: none; border-radius: 50px; padding: 11px 40px;
+    font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 800;
+    letter-spacing: .12em; text-transform: uppercase; cursor: default;
+  }
+  .ui-chip-on {
+    display: inline-block; background: var(--coral); color: #fff;
+    border-radius: 50px; padding: 7px 16px;
+    font-size: 10px; font-weight: 800; cursor: default;
+  }
+  .ui-chip-off {
+    display: inline-block; background: var(--warm); color: var(--mid);
+    border-radius: 50px; padding: 7px 16px;
+    font-size: 10px; font-weight: 700; cursor: default;
+  }
+  .ui-choice-on {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 11px 16px; border-radius: 14px;
+    border: 1.5px solid var(--coral); background: #FDF1ED;
+    font-size: 12px; font-weight: 700; color: var(--coral); cursor: default;
+  }
+  .ui-choice-off {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 11px 16px; border-radius: 14px;
+    border: 1.5px solid var(--border); background: #fff;
+    font-size: 12px; font-weight: 700; color: var(--black); cursor: default;
+  }
+  .radio-on  { width: 14px; height: 14px; border-radius: 50%; background: var(--coral); flex-shrink: 0; }
+  .radio-ring { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #ccc; flex-shrink: 0; }
+  .ui-field {
+    background: var(--warm); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 11px 16px;
+    font-family: 'Nunito', sans-serif; font-size: 12px;
+    font-weight: 600; color: #B8B8C4; width: 260px;
+  }
+  .ui-eyebrow {
+    font-size: 9px; font-weight: 800; letter-spacing: .12em;
+    text-transform: uppercase; color: #B8B8C4;
+  }
+
+  /* ── Nav bar demo ── */
+  .nav-demo {
+    background: #fff; border-radius: 16px; padding: 10px 20px 16px;
+    border: 1px solid var(--border); display: flex;
+    justify-content: space-around; align-items: flex-end;
+    max-width: 420px;
+  }
+  .nav-item-d {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 9px; font-weight: 800; color: #B8B8C4;
+  }
+  .nav-item-d.on { color: var(--coral); }
+  .nav-bg {
+    width: 40px; height: 30px; border-radius: 9px;
+    background: #FCEEE9; display: flex; align-items: center; justify-content: center;
+  }
+  .nav-item-d svg { width: 20px; height: 20px; }
+
+  /* ── Screen flow ── */
+  .flow-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .flow-card {
+    background: #fff; border-radius: 16px; padding: 20px;
+    border: 1px solid var(--border);
+  }
+  .flow-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--coral); color: #fff;
+    font-size: 12px; font-weight: 900; display: flex;
+    align-items: center; justify-content: center; margin-bottom: 12px;
+  }
+  .flow-engine {
+    font-size: 8px; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--coral); margin-bottom: 4px;
+  }
+  .flow-title {
+    font-size: 14px; font-weight: 900; color: var(--black);
+    margin-bottom: 6px;
+  }
+  .flow-desc {
+    font-size: 11px; font-weight: 600; color: var(--mid); line-height: 1.5;
+  }
+  .flow-tag {
+    display: inline-block; margin-top: 10px;
+    background: var(--warm); border-radius: 50px;
+    padding: 4px 10px; font-size: 9px; font-weight: 800;
+    color: var(--mid); letter-spacing: .06em; text-transform: uppercase;
+  }
+
+  /* ── Code blocks ── */
+  .code-block {
+    background: var(--black); border-radius: 14px;
+    padding: 24px 28px; margin-bottom: 16px; overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'Courier New', 'Fira Code', monospace;
+    font-size: 12px; line-height: 1.7; color: #E8E8F0;
+    white-space: pre; overflow-x: auto;
+  }
+  .code-block .cm  { color: #7C8FA8; } /* comment */
+  .code-block .kw  { color: #C792EA; } /* keyword */
+  .code-block .st  { color: #C3E88D; } /* string */
+  .code-block .nm  { color: #FFCB6B; } /* name/var */
+  .code-block .pu  { color: #89DDFF; } /* punctuation */
+  .code-block .co  { color: #D4522A; } /* coral highlight */
+  .code-label {
+    font-size: 10px; font-weight: 800; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--mid); margin-bottom: 8px;
+  }
+
+  /* ── Tone-on-tone shape reference ── */
+  .shape-ref-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .shape-card {
+    border-radius: 16px; padding: 0; overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+  }
+  .shape-canvas {
+    height: 140px; position: relative; overflow: hidden;
+  }
+  .shape-card-info {
+    background: #fff; padding: 12px 14px;
+  }
+  .shape-card-title {
+    font-size: 11px; font-weight: 800; color: var(--black); margin-bottom: 3px;
+  }
+  .shape-card-desc {
+    font-size: 10px; font-weight: 600; color: var(--mid); line-height: 1.4;
+  }
+
+  /* ── Setup checklist ── */
+  .checklist { display: flex; flex-direction: column; gap: 10px; }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: #fff; border-radius: 12px; padding: 14px 16px;
+    border: 1px solid var(--border);
+  }
+  .check-dot {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--coral); color: #fff; font-size: 11px;
+    font-weight: 900; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .check-title { font-size: 13px; font-weight: 800; color: var(--black); margin-bottom: 3px; }
+  .check-desc  { font-size: 11px; font-weight: 600; color: var(--mid); }
+  code {
+    background: var(--warm); border-radius: 6px; padding: 2px 7px;
+    font-size: 11px; font-family: 'Courier New', monospace;
+    color: var(--coral); font-weight: 700;
+  }
+
+  /* ── Asset table ── */
+  .asset-table { width: 100%; border-collapse: collapse; }
+  .asset-table th {
+    text-align: left; font-size: 9px; font-weight: 800;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--mid);
+    padding: 0 0 10px; border-bottom: 1px solid var(--border);
+  }
+  .asset-table td {
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+    font-size: 12px; font-weight: 600; color: var(--black);
+  }
+  .asset-table tr:last-child td { border-bottom: none; }
+  .asset-badge {
+    display: inline-block; border-radius: 50px; padding: 3px 10px;
+    font-size: 9px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .badge-jsx  { background: #E8F4FD; color: #1A6FA8; }
+  .badge-font { background: #EEF8F0; color: #2E7A3A; }
+  .badge-web  { background: #FDF1ED; color: var(--coral); }
+
+  /* ── Footer ── */
+  .footer {
+    background: var(--black); padding: 40px 60px;
+    margin-top: 60px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .footer-logo { font-size: 28px; font-weight: 900; color: var(--coral); }
+  .footer-text { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.4); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ COVER ══════════════ -->
+<div class="cover">
+  <div class="cover-shapes">
+    <svg width="100%" height="100%" viewBox="0 0 960 280" fill="none" preserveAspectRatio="xMidYMid slice">
+      <ellipse cx="820" cy="-30" rx="200" ry="200" fill="rgba(255,255,255,.07)"/>
+      <ellipse cx="900" cy="280" rx="160" ry="160" fill="rgba(255,255,255,.05)"/>
+      <rect x="600" y="-60" width="500" height="100" rx="50" fill="rgba(255,255,255,.06)" transform="rotate(-18 600 -60)"/>
+      <rect x="500" y="100" width="600" height="70" rx="35" fill="rgba(255,255,255,.05)" transform="rotate(-18 500 100)"/>
+    </svg>
+  </div>
+  <h1>Stoke</h1>
+  <p>Developer Handoff — Design System &amp; Implementation Guide</p>
+  <div class="cover-meta">
+    <div class="cover-badge">v1.0</div>
+    <div class="cover-badge">React · iOS</div>
+    <div class="cover-badge">June 2026</div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- ══════════════ 1. OVERVIEW ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">01</div>
+  <div class="section-title">What is Stoke?</div>
+  <div class="section-sub">A relationship operating system built around four daily engines.</div>
+  <div class="divider"></div>
+
+  <div class="flow-grid">
+    <div class="flow-card">
+      <div class="flow-num">1</div>
+      <div class="flow-engine">Engine 1</div>
+      <div class="flow-title">Learn</div>
+      <div class="flow-desc">One morning question. Five seconds. The partner never sees the raw answer — they receive a translated forecast instead. Privacy creates honesty.</div>
+      <div class="flow-tag">Morning check-in</div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-num">2</div>
+      <div class="flow-engine">Engine 2</div>
+      <div class="flow-title">Action</div>
+      <div class="flow-desc">The tennis match. Send one word. Partner guesses why. Reveal. AI turns the exchange into a conversation naturally. Zero therapy.</div>
+      <div class="flow-tag">Today's Spark</div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-num">3</div>
+      <div class="flow-engine">Engine 3</div>
+      <div class="flow-title">Reflect</div>
+      <div class="flow-desc">An evening micro-scorecard. Heart rating + one chip selection. Stoke learns what actually increases connection over time.</div>
+      <div class="flow-tag">Evening Reflection</div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-num">4</div>
+      <div class="flow-engine">Engine 4</div>
+      <div class="flow-title">Coach</div>
+      <div class="flow-desc">AI surface personal pattern insights. Not generic advice. "When you share dinner twice a week your score rises 34%." Warm, never preachy.</div>
+      <div class="flow-tag">Insights tab</div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-num">5</div>
+      <div class="flow-engine">Surprise</div>
+      <div class="flow-title">Mission</div>
+      <div class="flow-desc">Random, unexpected nudges. Not daily. A full-screen moment that asks for one small act. No explanation why. Just the ask.</div>
+      <div class="flow-tag">Push notification</div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-num">6</div>
+      <div class="flow-engine">Bonus</div>
+      <div class="flow-title">Curiosity Loop</div>
+      <div class="flow-desc">Guess Jordan's preference. Coffee in Paris or beach in Greece? Quick binary choice game that builds partner knowledge score over time.</div>
+      <div class="flow-tag">Today tab · sub-screen</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 2. COLORS ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">02</div>
+  <div class="section-title">Color System</div>
+  <div class="section-sub">Three primaries. Two accents. Never deviate.</div>
+  <div class="divider"></div>
+
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#D4522A"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Coral</div>
+        <div class="swatch-hex">#D4522A</div>
+        <div class="swatch-role">Primary · CTAs · Heroes</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#1E1E2E"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Black</div>
+        <div class="swatch-hex">#1E1E2E</div>
+        <div class="swatch-role">Primary · Text · Cards</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#FFFFFF; border: 1px solid #E2DED8"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">White</div>
+        <div class="swatch-hex">#FFFFFF</div>
+        <div class="swatch-role">Primary · Surfaces · Nav</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#3D2870"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Purple</div>
+        <div class="swatch-hex">#3D2870</div>
+        <div class="swatch-role">Accent only · Insight cards</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#7BAE7F"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Green</div>
+        <div class="swatch-hex">#7BAE7F</div>
+        <div class="swatch-role">Accent only · Use sparingly</div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="swatch-grid" style="grid-template-columns: repeat(4,1fr)">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#F5F2EE"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Warm White</div>
+        <div class="swatch-hex">#F5F2EE</div>
+        <div class="swatch-role">App background</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#FDF1ED"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Coral Tint</div>
+        <div class="swatch-hex">#FDF1ED</div>
+        <div class="swatch-role">Selected state bg</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#6B6B7A"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Mid</div>
+        <div class="swatch-hex">#6B6B7A</div>
+        <div class="swatch-role">Body text · sub-labels</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#B8B8C4"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Hint</div>
+        <div class="swatch-hex">#B8B8C4</div>
+        <div class="swatch-role">Placeholder · nav inactive</div>
+      </div>
+    </div>
+  </div>
+
+  <br>
+  <div class="color-note">
+    <strong>Usage rule:</strong> Coral + Black + White should cover 90% of the UI. Purple appears only on Stoke Noticed / insight cards. Green appears only on the Daily Thought activity banner. Never use purple or green as a background for an entire screen.
+  </div>
+</div>
+
+<!-- ══════════════ 3. TYPOGRAPHY ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">03</div>
+  <div class="section-title">Typography</div>
+  <div class="section-sub">One typeface. Five weights. Strict hierarchy.</div>
+  <div class="divider"></div>
+
+  <div class="code-label">Google Fonts import (add to index.html &lt;head&gt;)</div>
+  <div class="code-block">
+    <pre><span class="st">&lt;link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&amp;display=swap" rel="stylesheet"&gt;</span></pre>
+  </div>
+
+  <table class="type-table">
+    <tr>
+      <th style="width:140px">Role</th>
+      <th style="width:180px">Specimen</th>
+      <th style="width:180px">Spec</th>
+      <th>Use</th>
+    </tr>
+    <tr>
+      <td><div class="type-label">Display / Hero</div></td>
+      <td><div class="specimen-h1">Good Morning.</div></td>
+      <td><div class="type-spec">Nunito 900 · 28–36px<br>tracking: -0.3px</div></td>
+      <td><div class="type-use">Screen headlines, hero cards</div></td>
+    </tr>
+    <tr>
+      <td><div class="type-label">Heading 2</div></td>
+      <td><div class="specimen-h2">Today's Spark</div></td>
+      <td><div class="type-spec">Nunito 900 · 20–24px</div></td>
+      <td><div class="type-use">Section titles, card headers</div></td>
+    </tr>
+    <tr>
+      <td><div class="type-label">Heading 3</div></td>
+      <td><div class="specimen-h3">Five Minute Connection</div></td>
+      <td><div class="type-spec">Nunito 800 · 16–18px</div></td>
+      <td><div class="type-use">Card titles, sub-sections</div></td>
+    </tr>
+    <tr>
+      <td><div class="type-label">Body</div></td>
+      <td><div class="specimen-body">Send one word for how today feels.</div></td>
+      <td><div class="type-spec">Nunito 600 · 13–14px<br>line-height: 1.5</div></td>
+      <td><div class="type-use">Descriptions, explanations</div></td>
+    </tr>
+    <tr>
+      <td><div class="type-label">Eyebrow / Cap</div></td>
+      <td><div class="specimen-cap">Activity · 3–5 min</div></td>
+      <td><div class="type-spec">Nunito 800 · 8–9px<br>tracking: 0.10–0.14em<br>ALL CAPS</div></td>
+      <td><div class="type-use">Section labels, metadata, nav</div></td>
+    </tr>
+    <tr>
+      <td><div class="type-label">Button</div></td>
+      <td><div class="specimen-btn">Sign Up</div></td>
+      <td><div class="type-spec">Nunito 900 · 11–12px<br>tracking: 0.14em · ALL CAPS</div></td>
+      <td><div class="type-use">All CTA buttons</div></td>
+    </tr>
+    <tr>
+      <td><div class="type-label">Large Display</div></td>
+      <td><div style="font-size:48px;font-weight:900;color:#D4522A;line-height:1;letter-spacing:-2px">Heavy</div></td>
+      <td><div class="type-spec">Nunito 900 · 48–56px<br>tracking: -2px · coral</div></td>
+      <td><div class="type-use">Word reveal in tennis match</div></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════════ 4. SPACING & RADIUS ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">04</div>
+  <div class="section-title">Spacing &amp; Radius</div>
+  <div class="section-sub">8pt grid. Generous padding. Rounded everything.</div>
+  <div class="divider"></div>
+
+  <div class="token-grid">
+    <div class="token-card">
+      <div class="token-name">Screen padding</div>
+      <div class="token-value">20px</div>
+      <div class="token-use">Left/right margin on all screens</div>
+      <div class="space-demo" style="width:100%"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Section gap</div>
+      <div class="token-value">16px</div>
+      <div class="token-use">Between cards / sections</div>
+      <div class="space-demo" style="width:80%"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Card padding</div>
+      <div class="token-value">20–24px</div>
+      <div class="token-use">Inside hero + colored cards</div>
+      <div class="space-demo" style="width:60%"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Item gap</div>
+      <div class="token-value">8–12px</div>
+      <div class="token-use">Between list rows / chips</div>
+      <div class="space-demo" style="width:40%"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Hero card</div>
+      <div class="token-value">radius: 20px</div>
+      <div class="token-use">Colored large cards</div>
+      <div style="height:24px;background:var(--coral);border-radius:20px;margin-top:8px"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Standard card</div>
+      <div class="token-value">radius: 16px</div>
+      <div class="token-use">White border cards, insight</div>
+      <div style="height:24px;background:var(--warm);border:1px solid var(--border);border-radius:16px;margin-top:8px"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Choice row</div>
+      <div class="token-value">radius: 14px</div>
+      <div class="token-use">Selection option rows</div>
+      <div style="height:24px;background:var(--warm);border:1.5px solid var(--border);border-radius:14px;margin-top:8px"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Button / chip</div>
+      <div class="token-value">radius: 50px</div>
+      <div class="token-use">Pills — fully rounded</div>
+      <div style="height:24px;background:var(--coral);border-radius:50px;margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 5. COMPONENTS ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">05</div>
+  <div class="section-title">Components</div>
+  <div class="section-sub">Every reusable UI element rendered at true size.</div>
+  <div class="divider"></div>
+
+  <div class="component-section">
+
+    <div class="component-row">
+      <div class="component-label">Button · Primary</div>
+      <div class="ui-btn-primary">Sign Up</div>
+      <div class="ui-btn-primary" style="padding:13px 24px">Send to Jordan</div>
+      <div class="ui-btn-primary" style="padding:13px 24px">Done</div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Button · Ghost</div>
+      <div class="ui-btn-ghost">Already have an account? Log in</div>
+      <div class="ui-btn-ghost">Skip for now</div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Button · White<br><span style="font-size:9px;text-transform:none;letter-spacing:0">(on coral bg)</span></div>
+      <div style="background:var(--coral);border-radius:12px;padding:12px 16px;display:inline-block">
+        <div class="ui-btn-primary" style="background:#fff;color:var(--coral)">I'm in</div>
+      </div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Word chips</div>
+      <div class="ui-chip-on">Heavy</div>
+      <div class="ui-chip-off">Bright</div>
+      <div class="ui-chip-off">Tired</div>
+      <div class="ui-chip-off">Cozy</div>
+      <div class="ui-chip-on">Soft</div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Choice row</div>
+      <div>
+        <div class="ui-choice-on" style="margin-bottom:8px;width:280px">
+          <div class="radio-on"></div>
+          I need encouragement
+        </div>
+        <div class="ui-choice-off" style="width:280px">
+          <div class="radio-ring"></div>
+          I need space
+        </div>
+      </div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Text input</div>
+      <div class="ui-field">Or type your own word…</div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Eyebrow label</div>
+      <div>
+        <div class="ui-eyebrow">Activity · 3–5 min</div>
+        <div class="ui-eyebrow" style="color:var(--coral);margin-top:6px">Engine 2 · Action</div>
+        <div class="ui-eyebrow" style="color:rgba(255,255,255,.55);background:var(--coral);padding:4px 10px;border-radius:6px;display:inline-block;margin-top:6px">Tonight's mission</div>
+      </div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Heart score</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#D4522A"><path d="M12 21C12 21 3 14.5 3 9A5 5 0 0112 5.7 5 5 0 0121 9c0 5.5-9 12-9 12z"/></svg>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#D4522A"><path d="M12 21C12 21 3 14.5 3 9A5 5 0 0112 5.7 5 5 0 0121 9c0 5.5-9 12-9 12z"/></svg>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#D4522A"><path d="M12 21C12 21 3 14.5 3 9A5 5 0 0112 5.7 5 5 0 0121 9c0 5.5-9 12-9 12z"/></svg>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#D4522A"><path d="M12 21C12 21 3 14.5 3 9A5 5 0 0112 5.7 5 5 0 0121 9c0 5.5-9 12-9 12z"/></svg>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E2DED8" stroke-width="1.5"><path d="M12 21C12 21 3 14.5 3 9A5 5 0 0112 5.7 5 5 0 0121 9c0 5.5-9 12-9 12z"/></svg>
+      </div>
+    </div>
+
+    <div class="component-row">
+      <div class="component-label">Nav bar</div>
+      <div class="nav-demo">
+        <div class="nav-item-d on">
+          <div class="nav-bg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#D4522A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 21V12h6v9"/></svg>
+          </div>
+          Home
+        </div>
+        <div class="nav-item-d">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B8B8C4" stroke-width="2" stroke-linecap="round"><path d="M12 22c3-5 7-8 7-13A7 7 0 005 9c0 5 4 8 7 13z"/></svg>
+          Today
+        </div>
+        <div class="nav-item-d">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B8B8C4" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          Memories
+        </div>
+        <div class="nav-item-d">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B8B8C4" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l7.78-7.78a5.5 5.5 0 000-7.78z"/></svg>
+          Insights
+        </div>
+        <div class="nav-item-d">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B8B8C4" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Settings
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ 6. TONE-ON-TONE SHAPES ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">06</div>
+  <div class="section-title">Tone-on-Tone Shapes</div>
+  <div class="section-sub">Organic, whimsical background texture. Referenced directly from the audio player screen.</div>
+  <div class="divider"></div>
+
+  <div class="shape-ref-grid">
+
+    <div class="shape-card">
+      <div class="shape-canvas" style="background:#D4522A">
+        <svg width="100%" height="100%" viewBox="0 0 300 140" fill="none" preserveAspectRatio="xMidYMid slice">
+          <ellipse cx="260" cy="-20" rx="120" ry="120" fill="rgba(255,255,255,.1)"/>
+          <rect x="-40" y="60" width="400" height="70" rx="35" fill="rgba(255,255,255,.08)" transform="rotate(-18 -40 60)"/>
+          <ellipse cx="30" cy="140" rx="80" ry="80" fill="rgba(255,255,255,.06)"/>
+        </svg>
+      </div>
+      <div class="shape-card-info">
+        <div class="shape-card-title">Coral bg — ellipses + band</div>
+        <div class="shape-card-desc">Large ellipse top-right, rotated band mid, small ellipse bottom-left. All rgba(255,255,255,.06–.10)</div>
+      </div>
+    </div>
+
+    <div class="shape-card">
+      <div class="shape-canvas" style="background:#1E1E2E">
+        <svg width="100%" height="100%" viewBox="0 0 300 140" fill="none" preserveAspectRatio="xMidYMid slice">
+          <ellipse cx="270" cy="20" rx="100" ry="100" fill="rgba(255,255,255,.05)"/>
+          <rect x="-30" y="80" width="400" height="60" rx="30" fill="rgba(255,255,255,.04)" transform="rotate(-12 -30 80)"/>
+          <ellipse cx="20" cy="130" rx="70" ry="70" fill="rgba(255,255,255,.04)"/>
+        </svg>
+      </div>
+      <div class="shape-card-info">
+        <div class="shape-card-title">Black bg — subtle ellipses</div>
+        <div class="shape-card-desc">Same pattern but opacity much lower (.04–.05). Barely visible — just enough texture.</div>
+      </div>
+    </div>
+
+    <div class="shape-card">
+      <div class="shape-canvas" style="background:#3D2870">
+        <svg width="100%" height="100%" viewBox="0 0 300 140" fill="none" preserveAspectRatio="xMidYMid slice">
+          <ellipse cx="260" cy="10" rx="90" ry="90" fill="rgba(255,255,255,.07)"/>
+          <ellipse cx="240" cy="140" rx="70" ry="70" fill="rgba(255,255,255,.05)"/>
+        </svg>
+      </div>
+      <div class="shape-card-info">
+        <div class="shape-card-title">Purple bg — accent only</div>
+        <div class="shape-card-desc">Just two ellipses. Used only on Stoke Noticed insight cards — never full screens.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <br>
+  <div class="color-note">
+    <strong>Key rule:</strong> Shapes are always ellipses and/or one gently rotated wide rectangle band. Never spokes. Never geometric lines. Never hard angles. The shapes should feel like they grew there — not like a pattern was applied. Keep opacity between .04 and .12 maximum.
+  </div>
+</div>
+
+<!-- ══════════════ 7. SCREEN FLOW ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">07</div>
+  <div class="section-title">Screen Architecture</div>
+  <div class="section-sub">The app cycles through four engines daily. This is the navigation map.</div>
+  <div class="divider"></div>
+
+  <div class="code-label">Navigation structure</div>
+  <div class="code-block"><pre><span class="cm">// Tab bar (5 tabs)</span>
+<span class="nm">Home</span>         <span class="cm">→ Good Morning greeting + Daily Thought card + Recommended cards</span>
+<span class="nm">Today</span>        <span class="cm">→ Engine 2 spark + partner guess game + curiosity loop</span>
+<span class="nm">Memories</span>     <span class="cm">→ Past sparks, shared moments, connection history</span>
+<span class="nm">Insights</span>     <span class="cm">→ Engine 4 coach — personal pattern data</span>
+<span class="nm">Settings</span>     <span class="cm">→ Profile, partner, notification prefs</span>
+
+<span class="cm">// Modal / full-screen overlays</span>
+<span class="nm">MorningCheckin</span>    <span class="cm">→ Push at 8am. One question. Dismiss after answering.</span>
+<span class="nm">EveningReflection</span> <span class="cm">→ Push at 9pm. Heart score + chips. ~30 seconds.</span>
+<span class="nm">SurpriseMission</span>   <span class="cm">→ Random push. Full coral screen. "I'm in" or skip.</span>
+<span class="nm">AudioPlayer</span>       <span class="cm">→ Full coral screen. Existing design. Keep exactly.</span></pre></div>
+
+  <div class="code-label">Daily user journey</div>
+  <div class="code-block"><pre><span class="nm">8:00am</span>   Push notification → <span class="co">MorningCheckin</span> modal (Engine 1)
+           ↓ answer → dismissed → partner receives forecast
+<span class="nm">Anytime</span>  Home tab → tap Today's Spark card
+           ↓ <span class="co">TodaySpark</span> screen — pick/type a word, send
+           ↓ partner gets notification → opens <span class="co">PartnerGuess</span> screen
+           ↓ submits guess → both reveal → AI sends conversation nudge
+<span class="nm">Random</span>   Push → <span class="co">SurpriseMission</span> full-screen (Engine 2 bonus)
+<span class="nm">9:00pm</span>   Push → <span class="co">EveningReflection</span> modal (Engine 3)
+           ↓ heart score + chips → Stoke calculates insight
+<span class="nm">Insights</span> Tab → <span class="co">CoachInsights</span> screen (Engine 4)
+           ↓ personal stats, highlighted recommendation, momentum bars</pre></div>
+</div>
+
+<!-- ══════════════ 8. CODE TOKENS ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">08</div>
+  <div class="section-title">Code — Design Tokens</div>
+  <div class="section-sub">Copy this directly into your project constants file.</div>
+  <div class="divider"></div>
+
+  <div class="code-label">constants/theme.js</div>
+  <div class="code-block"><pre><span class="cm">// ── Stoke design tokens ──────────────────────────────────</span>
+
+<span class="kw">export const</span> <span class="nm">Colors</span> <span class="pu">= {</span>
+  <span class="cm">// Primaries — use freely</span>
+  coral:     <span class="st">'#D4522A'</span>,
+  coralLt:   <span class="st">'#FDF1ED'</span>,   <span class="cm">// selected state bg</span>
+  black:     <span class="st">'#1E1E2E'</span>,
+  white:     <span class="st">'#FFFFFF'</span>,
+
+  <span class="cm">// Accents — use sparingly</span>
+  purple:    <span class="st">'#3D2870'</span>,   <span class="cm">// insight cards only</span>
+  green:     <span class="st">'#7BAE7F'</span>,   <span class="cm">// Daily Thought banner only</span>
+
+  <span class="cm">// Neutral scale</span>
+  warm:      <span class="st">'#F5F2EE'</span>,   <span class="cm">// app background</span>
+  mid:       <span class="st">'#6B6B7A'</span>,   <span class="cm">// body text</span>
+  hint:      <span class="st">'#B8B8C4'</span>,   <span class="cm">// placeholders, inactive nav</span>
+  border:    <span class="st">'#E2DED8'</span>,   <span class="cm">// card borders</span>
+<span class="pu">}</span>
+
+<span class="kw">export const</span> <span class="nm">Typography</span> <span class="pu">= {</span>
+  font:      <span class="st">'Nunito'</span>,
+
+  display:   <span class="pu">{ fontSize:</span> <span class="co">32</span><span class="pu">, fontWeight:</span> <span class="co">'900'</span><span class="pu">, letterSpacing:</span> <span class="co">-0.5</span> <span class="pu">},</span>
+  h1:        <span class="pu">{ fontSize:</span> <span class="co">26</span><span class="pu">, fontWeight:</span> <span class="co">'900'</span><span class="pu">, letterSpacing:</span> <span class="co">-0.3</span> <span class="pu">},</span>
+  h2:        <span class="pu">{ fontSize:</span> <span class="co">20</span><span class="pu">, fontWeight:</span> <span class="co">'900'</span> <span class="pu">},</span>
+  h3:        <span class="pu">{ fontSize:</span> <span class="co">16</span><span class="pu">, fontWeight:</span> <span class="co">'800'</span> <span class="pu">},</span>
+  body:      <span class="pu">{ fontSize:</span> <span class="co">13</span><span class="pu">, fontWeight:</span> <span class="co">'600'</span><span class="pu">, lineHeight:</span> <span class="co">1.5</span> <span class="pu">},</span>
+  eyebrow:   <span class="pu">{ fontSize:</span>  <span class="co">9</span><span class="pu">, fontWeight:</span> <span class="co">'800'</span><span class="pu">, letterSpacing:</span> <span class="co">1.2</span><span class="pu">, textTransform:</span> <span class="st">'uppercase'</span> <span class="pu">},</span>
+  btn:       <span class="pu">{ fontSize:</span> <span class="co">12</span><span class="pu">, fontWeight:</span> <span class="co">'900'</span><span class="pu">, letterSpacing:</span> <span class="co">2</span><span class="pu">,  textTransform:</span> <span class="st">'uppercase'</span> <span class="pu">},</span>
+<span class="pu">}</span>
+
+<span class="kw">export const</span> <span class="nm">Radius</span> <span class="pu">= {</span>
+  hero:    <span class="co">20</span><span class="pu">,</span>  <span class="cm">// large colored cards</span>
+  card:    <span class="co">16</span><span class="pu">,</span>  <span class="cm">// standard white cards</span>
+  choice:  <span class="co">14</span><span class="pu">,</span>  <span class="cm">// selection rows</span>
+  input:   <span class="co">12</span><span class="pu">,</span>  <span class="cm">// text fields</span>
+  pill:    <span class="co">50</span><span class="pu">,</span>  <span class="cm">// buttons + chips</span>
+  nav:      <span class="co">9</span><span class="pu">,</span>  <span class="cm">// active nav bg</span>
+<span class="pu">}</span>
+
+<span class="kw">export const</span> <span class="nm">Spacing</span> <span class="pu">= {</span>
+  screen:   <span class="co">20</span><span class="pu">,</span>  <span class="cm">// horizontal padding</span>
+  section:  <span class="co">16</span><span class="pu">,</span>  <span class="cm">// between cards</span>
+  cardPad:  <span class="co">20</span><span class="pu">,</span>  <span class="cm">// inside hero cards</span>
+  itemGap:   <span class="co">8</span><span class="pu">,</span>  <span class="cm">// between rows / chips</span>
+<span class="pu">}</span></pre></div>
+</div>
+
+<!-- ══════════════ 9. FILES ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">09</div>
+  <div class="section-title">Files Included</div>
+  <div class="section-sub">Everything the developer needs to get started.</div>
+  <div class="divider"></div>
+
+  <table class="asset-table">
+    <tr>
+      <th style="width:220px">File</th>
+      <th style="width:100px">Type</th>
+      <th>Contents</th>
+    </tr>
+    <tr>
+      <td><strong>StokeScreens.jsx</strong></td>
+      <td><span class="asset-badge badge-jsx">JSX</span></td>
+      <td>All 6 new screens as named exports + root picker component. Drop into <code>src/screens/</code></td>
+    </tr>
+    <tr>
+      <td><strong>stoke-handoff.html</strong></td>
+      <td><span class="asset-badge badge-web">HTML</span></td>
+      <td>This document. Open in any browser — no tools needed.</td>
+    </tr>
+    <tr>
+      <td><strong>Nunito (Google Fonts)</strong></td>
+      <td><span class="asset-badge badge-font">Font</span></td>
+      <td>Weights needed: 600, 700, 800, 900. Italic 700 for coach insight copy.</td>
+    </tr>
+    <tr>
+      <td><strong>Stoke Figma</strong></td>
+      <td><span class="asset-badge badge-web">Figma</span></td>
+      <td>figma.com/design/gwzFqU5XPl6X8sTyV8tsQS/Stoke — source of truth for splash, home, audio player screens already built.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════════ 10. SETUP ══════════════ -->
+<div class="section">
+  <div class="section-eyebrow">10</div>
+  <div class="section-title">Dev Setup Checklist</div>
+  <div class="section-sub">Five steps from zero to running.</div>
+  <div class="divider"></div>
+
+  <div class="checklist">
+    <div class="check-item">
+      <div class="check-dot">1</div>
+      <div>
+        <div class="check-title">Add the font to index.html</div>
+        <div class="check-desc">Paste the Google Fonts <code>&lt;link&gt;</code> tag from Section 03 into the <code>&lt;head&gt;</code> of your <code>index.html</code>. Weights: 600, 700, 800, 900 + italic 700.</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-dot">2</div>
+      <div>
+        <div class="check-title">Copy the design tokens</div>
+        <div class="check-desc">Create <code>src/constants/theme.js</code> and paste the Colors, Typography, Radius, and Spacing objects from Section 08. Import from here everywhere — no hardcoded hex values in components.</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-dot">3</div>
+      <div>
+        <div class="check-title">Place the screens file</div>
+        <div class="check-desc">Copy <code>StokeScreens.jsx</code> into <code>src/screens/</code>. Each screen is a named export: <code>TodaySpark</code>, <code>PartnerGuess</code>, <code>MorningCheckin</code>, <code>SurpriseMission</code>, <code>EveningReflection</code>, <code>CoachInsights</code>.</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-dot">4</div>
+      <div>
+        <div class="check-title">Wire into your navigator</div>
+        <div class="check-desc">Using React Navigation? Register each screen in your stack. The <code>SurpriseMission</code> screen is designed as a modal — set <code>presentation: 'modal'</code> in your stack config.</div>
+      </div>
+    </div>
+    <div class="check-item">
+      <div class="check-dot">5</div>
+      <div>
+        <div class="check-title">Questions?</div>
+        <div class="check-desc">All design decisions in this document have a reason behind them. If something isn't clear — spacing, a color choice, when to use purple vs coral — refer back to Sections 02–06 first, then reach out.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page -->
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<div class="footer">
+  <div class="footer-logo">Stoke</div>
+  <div class="footer-text">Developer Handoff · v1.0 · June 2026<br>Confidential — do not distribute</div>
+</div>
+
+</body>
+</html>

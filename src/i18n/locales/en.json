@@ -368,10 +368,10 @@
     "title": "Stoke Premium",
     "subtitle": "Deepen your connection with premium features.",
     "features": {
-      "coaching": "AI-powered relationship coaching",
-      "insights": "Personalized weekly insights",
-      "prompts": "Adaptive prompts that grow with you",
-      "checkins": "Private relationship check-ins"
+      "daily": "A new question for the two of you, every day",
+      "followUps": "Follow-ups that go deeper when it matters",
+      "categories": "Twelve areas of your relationship, covered",
+      "privacy": "Private between you two, always"
     },
     "plans": {
       "bestValue": "Best Value",

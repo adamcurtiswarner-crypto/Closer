@@ -27,6 +27,7 @@ import { Paywall } from '@/components/Paywall';
 import { ReauthModal } from '@/components/ReauthModal';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, Icon } from '@/components';
+import { FEATURES } from '@/config/features';
 import { ProfileCard } from '@/components/ProfileCard';
 import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
@@ -279,18 +280,20 @@ export default function SettingsScreen() {
         </Animated.View>
 
         {/* Resources */}
-        <Animated.View entering={FadeInUp.duration(400).delay(220)}>
-          <Text style={styles.sectionTitle}>{t('settings.resources')}</Text>
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={[styles.row, styles.lastRow]}
-              onPress={() => router.push('/(app)/resources')}
-            >
-              <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
-              <Icon name="caret-right" size="sm" color="#B8B8C4" />
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+        {FEATURES.resources && (
+          <Animated.View entering={FadeInUp.duration(400).delay(220)}>
+            <Text style={styles.sectionTitle}>{t('settings.resources')}</Text>
+            <View style={styles.section}>
+              <TouchableOpacity
+                style={[styles.row, styles.lastRow]}
+                onPress={() => router.push('/(app)/resources')}
+              >
+                <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
+                <Icon name="caret-right" size="sm" color="#B8B8C4" />
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        )}
 
         {/* Privacy & Data */}
         <Animated.View entering={FadeInUp.duration(400).delay(280)}>

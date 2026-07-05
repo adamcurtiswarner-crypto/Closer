@@ -17,11 +17,12 @@ interface PaywallProps {
   onClose: () => void;
 }
 
+// v1 scope: benefits describe only visible features (see src/config/features.ts)
 const PREMIUM_FEATURES = [
-  { icon: 'lightbulb' as const, text: 'AI-powered relationship coaching' },
-  { icon: 'target' as const, text: 'Personalized weekly insights' },
-  { icon: 'flame' as const, text: 'Adaptive prompts that grow with you' },
-  { icon: 'heart' as const, text: 'Private relationship check-ins' },
+  { icon: 'flame' as const, text: 'A new question for the two of you, every day' },
+  { icon: 'lightbulb' as const, text: 'Follow-ups that go deeper when it matters' },
+  { icon: 'target' as const, text: 'Twelve areas of your relationship, covered' },
+  { icon: 'heart' as const, text: 'Private between you two, always' },
 ];
 
 export function Paywall({ visible, onClose }: PaywallProps) {

@@ -58,13 +58,14 @@ cd admin && npm run dev                  # Next.js dev server
 app/                          # Expo Router file-based routes
 ├── (auth)/                   # Login, signup, forgot password, terms, privacy
 ├── (onboarding)/             # Partner linking, preferences, calibration
-└── (app)/                    # Tab bar: home, today, memories, insights, settings
-    ├── chat.tsx              # Hidden tabs (href: null) — accessed via router.push
+└── (app)/                    # v1 tab bar: today (landing), explore ("Categories"), settings
+    ├── home.tsx              # Hidden for v1 via src/config/features.ts flags (href: null).
+    ├── memories.tsx          # All hidden features are flagged off, not deleted —
+    ├── insights.tsx          # flip the flag in features.ts to restore post-launch.
     ├── wishlist.tsx
     ├── games.tsx
     ├── date-nights.tsx
     ├── coaching.tsx
-    ├── explore.tsx
     └── resources.tsx
 src/
 ├── components/               # UI components (barrel export via index.ts)
@@ -175,6 +176,7 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 /prompt_assignments/{assignmentId}
 /prompt_responses/{responseId}
 /prompt_completions/{completionId}
+/follow_up_templates/{templateId}   # category-level follow-up questions (deepener/repair/divergence)
 /memory_artifacts/{artifactId}
 /events/{eventId}
 /experiments/{experimentId}
@@ -189,7 +191,9 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 /admin_state/ai_generation
 ```
 
-## Cloud Functions (33 deployed)
+## Cloud Functions
+
+v1 scope: several scheduled push functions are disabled in the export barrel (`functions/src/index.ts`) because their features are hidden — see `functions/V1-SCOPE.md` for the list and the deploy-time `functions:delete` commands. The follow-up trigger system lives in `functions/src/followUps.ts` (branch logic: divergence > repair > deepener) wired into `onResponseSubmitted`.
 
 - **Scheduled**: `deliverDailyPrompts` (every 15 min), `sendWeeklyRecaps` (Sun 6PM PT), `sendResponseReminders` (hourly), `deliverCheckIn` (Sun 10AM PT), `dateNightReminder` (daily 9AM PT), `computeRelationshipPulse` (Mon 3AM PT), `autoGeneratePrompts` (Mon 2AM PT), `checkStreakBreaks` (daily 4:30AM PT), `expireStalePrompts` (daily 4AM PT), `cleanupDeletedAccounts` (daily 3AM PT), `exportEventsToBigQuery` (daily 4AM PT), `detectChurnRisk`, `aggregateWeeklyMetrics`, `cleanupCoachingInsights`, `graduatePrompts`
 - **Callable**: `deleteAccount`, `exportUserData`, `anonymizeMyResponses`, `generateAIPrompts`, `triggerBigQueryExport`, `triggerPromptDelivery`, `generateCoachingInsight`, `triggerPulseComputation`, `managePrompt`, `getPromptPerformance`, `createExperiment`, `assignExperimentVariant`, `getDashboardMetrics`, `revenueCatWebhook`

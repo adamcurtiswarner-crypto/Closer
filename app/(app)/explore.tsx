@@ -195,10 +195,14 @@ export default function ExploreScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="arrow-left" size="md" color="#1E1E2E" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Explore</Text>
+        {router.canGoBack() ? (
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Icon name="arrow-left" size="md" color="#1E1E2E" />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 40 }} />
+        )}
+        <Text style={styles.headerTitle}>Categories</Text>
         <View style={{ width: 40 }} />
       </View>
 

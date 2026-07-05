@@ -7,12 +7,14 @@ import {
   APP_NAME,
   TONE_WEIGHTS,
   PULSE_WEIGHTS,
+  DEFAULT_SCALE_CONFIG,
   getEffectiveTone,
   initializeDepthProgress,
   sendPushNotification,
   enforceRateLimit,
   reportError,
 } from './shared';
+import { activateDueFollowUp } from './followUps';
 
 // ============================================
 // PRIVATE: Select Prompt for Couple
@@ -65,8 +67,15 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
 
   const promptsSnapshot = await promptsQuery.get();
 
+  // v1: scored prompts only — when any scale-format prompts exist in the
+  // active pool, restrict selection to them (text prompts are legacy content).
+  const scaleDocs = promptsSnapshot.docs.filter(
+    (doc) => doc.data().response_format === 'scale'
+  );
+  const poolDocs = scaleDocs.length > 0 ? scaleDocs : promptsSnapshot.docs;
+
   // Filter and weight prompts
-  const eligiblePrompts = promptsSnapshot.docs
+  const eligiblePrompts = poolDocs
     .filter((doc) => {
       const data = doc.data();
       // Exclude recently used
@@ -91,8 +100,8 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
     .map((doc) => ({ id: doc.id, ...doc.data() }));
 
   if (eligiblePrompts.length === 0) {
-    // Fallback: use any active prompt
-    const fallback = promptsSnapshot.docs[0];
+    // Fallback: use any active prompt from the pool
+    const fallback = poolDocs[0];
     return fallback ? { id: fallback.id, ...fallback.data() } : null;
   }
 
@@ -151,6 +160,11 @@ async function getCoupleTimezone(coupleId: string): Promise<string> {
 async function deliverPromptToCouple(coupleId: string): Promise<void> {
   const today = format(new Date(), 'yyyy-MM-dd');
 
+  // v1 follow-ups: a scheduled follow-up due today replaces the daily prompt
+  // (one prompt per day rhythm). Must run before the already-delivered check.
+  const activatedFollowUp = await activateDueFollowUp(coupleId, today);
+  if (activatedFollowUp) return;
+
   // Check if already delivered today
   const existingAssignment = await db
     .collection('prompt_assignments')
@@ -180,6 +194,9 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
   if (!prompt) return;
 
   // Create assignment
+  // v1: response_format/scale_config/category are denormalized here because
+  // the client renders from the assignment doc, never the prompt doc.
+  const responseFormat = prompt.response_format || 'text';
   await db.collection('prompt_assignments').add({
     couple_id: coupleId,
     prompt_id: prompt.id,
@@ -187,6 +204,13 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
     prompt_hint: prompt.hint,
     prompt_type: prompt.type,
     requires_conversation: prompt.requires_conversation,
+    category: prompt.category || null,
+    response_format: responseFormat,
+    scale_config:
+      responseFormat === 'scale'
+        ? prompt.scale_config || DEFAULT_SCALE_CONFIG
+        : null,
+    assignment_kind: 'daily',
     assigned_date: today,
     source: 'daily',
     delivered_at: admin.firestore.FieldValue.serverTimestamp(),

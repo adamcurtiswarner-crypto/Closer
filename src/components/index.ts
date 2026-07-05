@@ -12,6 +12,11 @@ export { PromptCard } from './PromptCard';
 export { ResponseCard } from './ResponseCard';
 export { CompletionMoment } from './CompletionMoment';
 
+// Scored prompts & follow-ups
+export { ScaleSlider } from './ScaleSlider';
+export { ScalePromptCard } from './ScalePromptCard';
+export { FollowUpContextLine, FollowUpSkip, getFollowUpContextLine } from './FollowUpContext';
+
 // Partnership components
 export { PartnershipSection } from './PartnershipSection';
 

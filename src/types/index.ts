@@ -101,6 +101,39 @@ export interface PromptResponseFormData {
   responseText: string;
 }
 
+// Scored prompt & follow-up types (Firestore snake_case → camelCase at read boundary)
+export type ResponseFormat = 'text' | 'scale';
+export type FollowUpBranch = 'deepener' | 'repair' | 'divergence';
+export type AssignmentKind = 'daily' | 'follow_up';
+
+export interface ScaleConfig {
+  min: number; // 1
+  max: number; // 10
+  lowThreshold: number; // 4 — min score <= this triggers repair
+  highThreshold: number; // 9 — both scores >= this triggers deepener
+  divergenceGap: number; // 4 — |scoreA - scoreB| >= this triggers divergence
+  minLabel: string; // "Struggling"
+  maxLabel: string; // "Thriving"
+}
+
+export interface FollowUpAssignmentInfo {
+  branch: FollowUpBranch;
+  step: 1 | 2; // repair has steps 1 and 2; deepener/divergence always 1
+  parentAssignmentId: string; // the scored assignment that triggered this
+  templateId: string;
+}
+
+export interface FollowUpTemplate {
+  id: string;
+  category: string; // one of the 12 v1 categories (snake_case id)
+  branch: FollowUpBranch;
+  step: 1 | 2;
+  text: string; // question shown to both partners
+  closingText: string | null; // shown at reveal of the final step
+  variant: number;
+  active: boolean;
+}
+
 // Check-in types
 export interface CheckIn {
   id: string;

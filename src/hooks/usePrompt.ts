@@ -21,8 +21,17 @@ import { db, functions } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import { uploadResponsePhoto } from '@/services/imageUpload';
+import { DEFAULT_SCALE_CONFIG, isValidScore } from '@/utils/scale';
+import type {
+  AssignmentKind,
+  ResponseFormat,
+  ScaleConfig,
+  FollowUpAssignmentInfo,
+} from '@/types';
 
 const OFFLINE_QUEUE_KEY = '@closer_offline_responses';
+const SKIPPED_FOLLOW_UPS_KEY = '@closer_skipped_follow_ups';
+const SKIPPED_RETENTION_DAYS = 14;
 
 interface PromptAssignment {
   id: string;
@@ -35,6 +44,11 @@ interface PromptAssignment {
   assignedDate: string;
   source?: 'daily' | 'explore';
   status: 'delivered' | 'partial' | 'completed' | 'expired';
+  assignmentKind: AssignmentKind;
+  responseFormat: ResponseFormat;
+  scaleConfig: ScaleConfig | null;
+  followUp: FollowUpAssignmentInfo | null;
+  closingText: string | null;
 }
 
 interface PromptResponse {
@@ -43,6 +57,134 @@ interface PromptResponse {
   imageUrl: string | null;
   submittedAt: Date | null;
   status: 'draft' | 'submitted';
+  responseScore: number | null;
+}
+
+// ─── Read-boundary mapping (Firestore snake_case → app camelCase) ───
+
+export function mapScaleConfig(raw: Record<string, any> | null | undefined): ScaleConfig | null {
+  if (!raw) return null;
+  return {
+    min: typeof raw.min === 'number' ? raw.min : DEFAULT_SCALE_CONFIG.min,
+    max: typeof raw.max === 'number' ? raw.max : DEFAULT_SCALE_CONFIG.max,
+    lowThreshold: typeof raw.low_threshold === 'number' ? raw.low_threshold : DEFAULT_SCALE_CONFIG.lowThreshold,
+    highThreshold: typeof raw.high_threshold === 'number' ? raw.high_threshold : DEFAULT_SCALE_CONFIG.highThreshold,
+    divergenceGap: typeof raw.divergence_gap === 'number' ? raw.divergence_gap : DEFAULT_SCALE_CONFIG.divergenceGap,
+    minLabel: raw.min_label || DEFAULT_SCALE_CONFIG.minLabel,
+    maxLabel: raw.max_label || DEFAULT_SCALE_CONFIG.maxLabel,
+  };
+}
+
+export function mapFollowUpInfo(raw: Record<string, any> | null | undefined): FollowUpAssignmentInfo | null {
+  if (!raw || !raw.branch) return null;
+  return {
+    branch: raw.branch,
+    step: raw.step === 2 ? 2 : 1,
+    parentAssignmentId: raw.parent_assignment_id ?? '',
+    templateId: raw.template_id ?? '',
+  };
+}
+
+export function mapAssignment(id: string, data: Record<string, any>): PromptAssignment {
+  const assignmentKind: AssignmentKind = data.assignment_kind === 'follow_up' ? 'follow_up' : 'daily';
+  return {
+    id,
+    coupleId: data.couple_id,
+    promptId: data.prompt_id,
+    promptText: data.prompt_text,
+    promptHint: data.prompt_hint ?? null,
+    // Follow-up assignments carry prompt_type: null (template-based, no /prompts doc)
+    promptType: data.prompt_type ?? '',
+    requiresConversation: data.requires_conversation,
+    assignedDate: data.assigned_date,
+    status: data.status,
+    assignmentKind,
+    responseFormat: data.response_format === 'scale' ? 'scale' : 'text',
+    scaleConfig: mapScaleConfig(data.scale_config),
+    followUp: assignmentKind === 'follow_up' ? mapFollowUpInfo(data.follow_up) : null,
+    closingText: data.closing_text ?? null,
+  };
+}
+
+interface AssignmentDocLike {
+  id: string;
+  data: () => Record<string, any>;
+}
+
+/**
+ * Pick which of today's assignment docs to surface. Explore assignments,
+ * not-yet-activated ('scheduled') follow-ups, and locally-skipped follow-ups
+ * are excluded. Preference order:
+ * 1. An active (delivered/partial) follow-up — so a same-session deepener or
+ *    a next-day repair surfaces first (skipping it falls back to the daily).
+ * 2. An active daily assignment.
+ * 3. A completed follow-up (its reveal carries the closing text).
+ * 4. A completed daily, then anything left (expired).
+ *
+ * Deepener day means TWO docs share today's assigned_date (the completed daily
+ * scale prompt + the immediately-delivered deepener): the daily reveal shows
+ * while the daily is the only doc, then the deepener surfaces same-session
+ * when it arrives via onSnapshot.
+ */
+export function selectAssignmentDoc(
+  docs: AssignmentDocLike[],
+  skippedIds: string[]
+): AssignmentDocLike | null {
+  const candidates = docs.filter((d) => {
+    const data = d.data();
+    if (data.source === 'explore') return false;
+    // Next-day follow-ups (repair/divergence) are 'scheduled' until the
+    // delivery run activates them — never surface those early
+    if (data.status === 'scheduled') return false;
+    if (data.assignment_kind === 'follow_up' && skippedIds.includes(d.id)) return false;
+    return true;
+  });
+  if (candidates.length === 0) return null;
+
+  const isActive = (d: AssignmentDocLike) =>
+    d.data().status === 'delivered' || d.data().status === 'partial';
+  const isFollowUp = (d: AssignmentDocLike) => d.data().assignment_kind === 'follow_up';
+
+  return (
+    candidates.find((d) => isActive(d) && isFollowUp(d)) ??
+    candidates.find(isActive) ??
+    candidates.find((d) => d.data().status === 'completed' && isFollowUp(d)) ??
+    candidates.find((d) => d.data().status === 'completed') ??
+    candidates[0]
+  );
+}
+
+// ─── Local follow-up skip list (dismiss for the day; assignment expires server-side) ───
+
+async function getSkippedFollowUpIds(): Promise<string[]> {
+  try {
+    const raw = await AsyncStorage.getItem(SKIPPED_FOLLOW_UPS_KEY);
+    if (!raw) return [];
+    const entries: { id: string; date: string }[] = JSON.parse(raw);
+    if (!Array.isArray(entries)) return [];
+    return entries.map((e) => e?.id).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function addSkippedFollowUpId(assignmentId: string): Promise<void> {
+  const raw = await AsyncStorage.getItem(SKIPPED_FOLLOW_UPS_KEY);
+  let entries: { id: string; date: string }[] = [];
+  try {
+    entries = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(entries)) entries = [];
+  } catch {
+    entries = [];
+  }
+  // Prune stale entries — skipped assignments expire server-side anyway
+  const cutoff = new Date(Date.now() - SKIPPED_RETENTION_DAYS * 86400000)
+    .toISOString()
+    .split('T')[0];
+  const pruned = entries.filter((e) => e?.date && e.date >= cutoff);
+  const today = new Date().toISOString().split('T')[0];
+  const next = [...pruned, { id: assignmentId, date: today }];
+  await AsyncStorage.setItem(SKIPPED_FOLLOW_UPS_KEY, JSON.stringify(next));
 }
 
 interface TodayPrompt {
@@ -107,18 +249,18 @@ export function useTodayPrompt() {
       where('assigned_date', '==', today)
     );
 
-    const unsubAssignment = onSnapshot(assignmentQuery, (assignmentSnap) => {
+    const unsubAssignment = onSnapshot(assignmentQuery, async (assignmentSnap) => {
       // Clean up previous response listener before setting up a new one
       if (unsubResponses) {
         unsubResponses();
         unsubResponses = null;
       }
-      // Filter out explore assignments — keep daily and legacy (no source field)
-      const dailyDocs = assignmentSnap.docs.filter(
-        (d) => d.data().source !== 'explore'
-      );
+      // Exclude explore assignments and locally-skipped follow-ups, then pick
+      // the assignment to surface (active follow-up > active daily > completed)
+      const skippedIds = await getSkippedFollowUpIds();
+      const assignmentDoc = selectAssignmentDoc(assignmentSnap.docs, skippedIds);
 
-      if (dailyDocs.length === 0) {
+      if (!assignmentDoc) {
         queryClient.setQueryData(['todayPrompt', coupleId], {
           ...EMPTY_TODAY,
           nextPromptAt: `${today}T${notificationTime || '19:00'}:00`,
@@ -127,20 +269,7 @@ export function useTodayPrompt() {
         return;
       }
 
-      const assignmentDoc = dailyDocs[0];
-      const assignmentData = assignmentDoc.data();
-
-      const assignment: PromptAssignment = {
-        id: assignmentDoc.id,
-        coupleId: assignmentData.couple_id,
-        promptId: assignmentData.prompt_id,
-        promptText: assignmentData.prompt_text,
-        promptHint: assignmentData.prompt_hint,
-        promptType: assignmentData.prompt_type,
-        requiresConversation: assignmentData.requires_conversation,
-        assignedDate: assignmentData.assigned_date,
-        status: assignmentData.status,
-      };
+      const assignment = mapAssignment(assignmentDoc.id, assignmentDoc.data());
 
       // Listen for responses on this assignment
       const responsesRef = collection(db, 'prompt_responses');
@@ -163,6 +292,7 @@ export function useTodayPrompt() {
             imageUrl: data.image_url || null,
             submittedAt: data.submitted_at?.toDate() || null,
             status: data.status,
+            responseScore: typeof data.response_score === 'number' ? data.response_score : null,
           };
 
           if (data.user_id === userId) {
@@ -173,7 +303,7 @@ export function useTodayPrompt() {
         }
 
         // Re-read assignment status from the latest snapshot
-        const latestStatus = dailyDocs[0]?.data()?.status || assignment.status;
+        const latestStatus = assignmentDoc.data()?.status || assignment.status;
 
         // Fetch reactions from completion doc when complete
         let reactions: Record<string, string> | null = null;
@@ -225,7 +355,12 @@ async function flushOfflineQueue(userId: string, coupleId: string) {
   try {
     const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
     if (!raw) return;
-    const queue: { assignmentId: string; responseText: string; imageUri?: string }[] = JSON.parse(raw);
+    const queue: {
+      assignmentId: string;
+      responseText: string;
+      imageUri?: string;
+      responseScore?: number;
+    }[] = JSON.parse(raw);
     if (queue.length === 0) return;
 
     for (const item of queue) {
@@ -251,6 +386,7 @@ async function flushOfflineQueue(userId: string, coupleId: string) {
         user_id: userId,
         prompt_id: assignmentData.prompt_id,
         response_text: item.responseText,
+        response_score: typeof item.responseScore === 'number' ? item.responseScore : null,
         image_url: imageUrl,
         status: 'submitted',
         submitted_at: serverTimestamp(),
@@ -307,19 +443,26 @@ export function useSubmitResponse() {
       assignmentId,
       responseText,
       imageUri,
+      responseScore,
     }: {
       assignmentId: string;
       responseText: string;
       imageUri?: string;
+      responseScore?: number;
     }) => {
       if (!user?.coupleId) throw new Error('No couple linked');
+
+      // Validate score at the boundary — whole number 1–10
+      if (responseScore !== undefined && !isValidScore(responseScore)) {
+        throw new Error('Score must be a whole number between 1 and 10');
+      }
 
       // Check if offline — queue the response
       const netState = await NetInfo.fetch();
       if (!netState.isConnected) {
         const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
         const queue = raw ? JSON.parse(raw) : [];
-        queue.push({ assignmentId, responseText, imageUri });
+        queue.push({ assignmentId, responseText, imageUri, responseScore });
         await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
         return { responseId: 'offline-queued', isComplete: false, isOffline: true };
       }
@@ -348,6 +491,7 @@ export function useSubmitResponse() {
         user_id: user.id,
         prompt_id: assignmentData.prompt_id,
         response_text: responseText,
+        response_score: responseScore ?? null,
         image_url: imageUrl,
         status: 'submitted',
         submitted_at: serverTimestamp(),
@@ -389,6 +533,25 @@ export function useSubmitResponse() {
       if (data.isComplete) {
         logEvent('prompt_completed', { response_id: data.responseId });
       }
+    },
+  });
+}
+
+/**
+ * Skip a follow-up assignment for the day. Least-invasive path: mark it
+ * locally dismissed (AsyncStorage) and let the existing expireStalePrompts
+ * machinery expire it server-side — no writes, no nagging, no penalty.
+ */
+export function useSkipFollowUp() {
+  return useMutation({
+    mutationFn: async ({ assignmentId }: { assignmentId: string }) => {
+      await addSkippedFollowUpId(assignmentId);
+      return { assignmentId };
+    },
+    onSuccess: (data) => {
+      logEvent('follow_up_skipped', { assignment_id: data.assignmentId });
+      // Re-run listeners so the skipped follow-up is filtered out
+      bumpPromptRefresh();
     },
   });
 }

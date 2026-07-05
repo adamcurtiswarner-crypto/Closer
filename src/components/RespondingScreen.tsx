@@ -17,6 +17,8 @@ import { useTranslation } from 'react-i18next';
 
 interface RespondingScreenProps {
   promptText: string;
+  /** Quiet follow-up context line rendered above the prompt text */
+  contextText?: string | null;
   responseText: string;
   onChangeText: (text: string) => void;
   onSubmit: () => void;
@@ -29,6 +31,7 @@ interface RespondingScreenProps {
 
 export function RespondingScreen({
   promptText,
+  contextText = null,
   responseText,
   onChangeText,
   onSubmit,
@@ -52,6 +55,9 @@ export function RespondingScreen({
       >
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.respondingScroll} keyboardShouldPersistTaps="handled">
           <Animated.View entering={FadeIn.duration(300)} style={styles.respondingHeader}>
+            {contextText ? (
+              <Text style={styles.contextText}>{contextText}</Text>
+            ) : null}
             <Text style={styles.respondingPrompt}>
               {'\u201C'}{promptText}{'\u201D'}
             </Text>
@@ -137,6 +143,14 @@ const styles = StyleSheet.create({
   },
   respondingHeader: {
     marginBottom: 24,
+  },
+  contextText: {
+    fontSize: 14,
+    color: '#B8B8C4',
+    fontFamily: 'Nunito-Regular',
+    textAlign: 'center',
+    marginBottom: 8,
+    lineHeight: 20,
   },
   respondingPrompt: {
     fontSize: 18,

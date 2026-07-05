@@ -29,12 +29,17 @@ import {
   RespondingScreen,
   TodayBottomSections,
   ConversationStarterModal,
+  ScalePromptCard,
+  FollowUpContextLine,
+  FollowUpSkip,
+  getFollowUpContextLine,
 } from '@components';
 import type { RelationshipStage } from '@components';
 import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
-import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt } from '@/hooks/usePrompt';
+import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt, useSkipFollowUp } from '@/hooks/usePrompt';
+import { isMiddleScaleOutcome } from '@/utils/scale';
 import { useReaction, type ReactionType } from '@/hooks/useReaction';
 import { useStreak } from '@/hooks/useStreak';
 import { useMonthlyActivity } from '@/hooks/useMonthlyActivity';
@@ -48,6 +53,7 @@ import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
 import { logger } from '@/utils/logger';
+import { FEATURES } from '@/config/features';
 import { useTranslation } from 'react-i18next';
 
 // Greeting based on time of day
@@ -107,8 +113,12 @@ export default function TodayScreen() {
   const { isPremium } = useSubscription();
   const { t } = useTranslation();
 
+  const skipFollowUp = useSkipFollowUp();
+
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
+  const [scaleValue, setScaleValue] = useState<number | null>(null);
+  const [scaleNote, setScaleNote] = useState('');
   const [feedbackGiven, setFeedbackGiven] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const STREAK_MILESTONES = [3, 7, 14, 30, 50, 100];
@@ -158,17 +168,17 @@ export default function TodayScreen() {
 
     switch (actionType) {
       case 'goal':
-        setShowAddGoalModal(true);
+        if (FEATURES.goals) setShowAddGoalModal(true);
         break;
       case 'date_night':
-        router.push('/(app)/wishlist');
+        if (FEATURES.wishlist) router.push('/(app)/wishlist');
         break;
       case 'conversation':
         setConversationStarterText(actionText);
         setShowConversationModal(true);
         break;
       case 'revisit':
-        router.push('/(app)/memories');
+        if (FEATURES.memories) router.push('/(app)/memories');
         break;
       case 'check_in':
         refreshUser();
@@ -188,6 +198,13 @@ export default function TodayScreen() {
   const partnerResponse = todayData?.partnerResponse ?? null;
   const isComplete = todayData?.isComplete ?? false;
   const nextPromptAt = todayData?.nextPromptAt ?? null;
+
+  // Scored prompts & follow-ups
+  const isScalePrompt = assignment?.responseFormat === 'scale';
+  const isFollowUp = assignment?.assignmentKind === 'follow_up';
+  const followUpContextText = isFollowUp && assignment?.followUp
+    ? getFollowUpContextLine(assignment.followUp.branch)
+    : null;
 
   type Mode = 'loading' | 'no-prompt' | 'prompt' | 'responding' | 'waiting' | 'complete';
 
@@ -227,6 +244,9 @@ export default function TodayScreen() {
   useEffect(() => {
     if (assignment && assignment.id !== viewedRef.current) {
       viewedRef.current = assignment.id;
+      // New assignment (e.g. a same-session follow-up) — reset scale inputs
+      setScaleValue(null);
+      setScaleNote('');
       logEvent('prompt_viewed', {
         assignment_id: assignment.id,
         prompt_type: assignment.promptType,
@@ -286,7 +306,7 @@ export default function TodayScreen() {
     }
 
     const widgetData = buildWidgetData({
-      currentStreak,
+      currentStreak: FEATURES.streaks ? currentStreak : 0,
       daysAsCouple,
       userName: user.displayName || '',
       partnerName: user.partnerName || 'Partner',
@@ -332,6 +352,30 @@ export default function TodayScreen() {
     if (uri) setSelectedImage(uri);
   };
 
+  // Scale prompts: score is required, the note is optional
+  const handleScaleSubmit = async () => {
+    if (scaleValue === null || !assignment) return;
+    hapticNotification(NotificationFeedbackType.Success);
+    Keyboard.dismiss();
+    try {
+      await submitResponse.mutateAsync({
+        assignmentId: assignment.id,
+        responseText: scaleNote.trim(),
+        responseScore: scaleValue,
+      });
+    } catch (err) {
+      logger.error('Error submitting score:', err);
+      Alert.alert('Could not save your response', 'Please check your connection and try again.');
+    }
+  };
+
+  // Skipping a follow-up dismisses it locally for the day — no nagging, no penalty
+  const handleSkipFollowUp = () => {
+    if (!assignment) return;
+    hapticImpact();
+    skipFollowUp.mutate({ assignmentId: assignment.id });
+  };
+
   const partnerName = user?.partnerName || 'Partner';
   const userName = user?.displayName || null;
 
@@ -345,20 +389,20 @@ export default function TodayScreen() {
     isPartnerTyping,
     typingContext: partnerTypingContext,
     lastSeen: partnerLastSeen,
-    currentStreak,
+    currentStreak: FEATURES.streaks ? currentStreak : 0,
     isStreakActive,
     userPhotoUrl: user?.photoUrl,
     partnerPhotoUrl: user?.partnerPhotoUrl,
   };
 
-  // Shared props for engagement cards
+  // Shared props for engagement cards (check-in and coaching are feature-flagged for v1)
   const engagementProps = {
-    hasPendingCheckIn,
+    hasPendingCheckIn: FEATURES.checkIns && hasPendingCheckIn,
     partnerName: user?.partnerName ?? 'your partner',
     onCheckInSubmit: (responses: any) => submitCheckIn.mutate(responses),
     onCheckInDismiss: () => dismissCheckIn.mutate(),
     isPremium,
-    latestInsight,
+    latestInsight: FEATURES.coaching ? latestInsight : null,
     onCoachingAction: () => latestInsight && handleCoachingAction(latestInsight.actionType, latestInsight.actionText),
     onCoachingDismiss: () => {
       if (latestInsight?.id) {
@@ -368,7 +412,9 @@ export default function TodayScreen() {
         });
       }
     },
-    onViewCoaching: () => router.push('/(app)/coaching'),
+    onViewCoaching: () => {
+      if (FEATURES.coaching) router.push('/(app)/coaching');
+    },
     pulseTier: couple?.currentPulseTier ?? undefined,
   };
 
@@ -413,6 +459,7 @@ export default function TodayScreen() {
     return (
       <RespondingScreen
         promptText={assignment!.promptText}
+        contextText={followUpContextText}
         responseText={responseText}
         onChangeText={handleTextChange}
         onSubmit={handleSubmit}
@@ -463,7 +510,7 @@ export default function TodayScreen() {
             )}
           </Animated.View>
 
-          {(currentStreak > 0 || monthCompletedCount > 0) && (
+          {FEATURES.streaks && (currentStreak > 0 || monthCompletedCount > 0) && (
             <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
               <StreakRing
                 currentStreak={currentStreak}
@@ -574,6 +621,17 @@ export default function TodayScreen() {
                 reaction: r,
                 promptType: assignment!.promptType,
               })}
+              yourScore={isScalePrompt ? myResponse!.responseScore : null}
+              partnerScore={isScalePrompt ? partnerResponse?.responseScore ?? null : null}
+              showMidScaleLine={
+                isScalePrompt &&
+                isMiddleScaleOutcome(
+                  myResponse!.responseScore,
+                  partnerResponse?.responseScore,
+                  assignment!.scaleConfig
+                )
+              }
+              closingText={isFollowUp ? assignment!.closingText : null}
             />
           </Animated.View>
 
@@ -616,7 +674,7 @@ export default function TodayScreen() {
           )}
 
           {/* Streak celebration */}
-          {currentStreak > 0 && (
+          {FEATURES.streaks && currentStreak > 0 && (
             <Animated.View entering={FadeInUp.duration(500).delay(700)}>
               <TouchableOpacity
                 style={styles.streakCelebration}
@@ -631,7 +689,7 @@ export default function TodayScreen() {
             </Animated.View>
           )}
 
-          {showStreakDetail && (
+          {FEATURES.streaks && showStreakDetail && (
             <Animated.View entering={FadeInDown.duration(400)} style={styles.streakDetailSection}>
               <StreakRing
                 currentStreak={currentStreak}
@@ -677,31 +735,52 @@ export default function TodayScreen() {
           <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
         )}
 
-        <Animated.View entering={FadeInUp.duration(500).delay(150)}>
-          <TouchableOpacity
-            style={styles.sparkCard}
-            onPress={() => router.push('/(app)/todays-spark')}
-            activeOpacity={0.8}
-          >
-            <View style={styles.sparkAccent} />
-            <View style={styles.sparkContent}>
-              <Icon name="sparkle" size="sm" color="#D4522A" weight="fill" />
-              <View style={styles.sparkTextWrap}>
-                <Text style={styles.sparkTitle}>Today's Spark</Text>
-                <Text style={styles.sparkSubtitle}>A quick moment to connect</Text>
+        {FEATURES.engines && (
+          <Animated.View entering={FadeInUp.duration(500).delay(150)}>
+            <TouchableOpacity
+              style={styles.sparkCard}
+              onPress={() => router.push('/(app)/todays-spark')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.sparkAccent} />
+              <View style={styles.sparkContent}>
+                <Icon name="sparkle" size="sm" color="#D4522A" weight="fill" />
+                <View style={styles.sparkTextWrap}>
+                  <Text style={styles.sparkTitle}>Today's Spark</Text>
+                  <Text style={styles.sparkSubtitle}>A quick moment to connect</Text>
+                </View>
+                <Icon name="arrow-right" size="sm" color="#B8B8C4" />
               </View>
-              <Icon name="arrow-right" size="sm" color="#B8B8C4" />
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
 
         <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
-          <PromptCard
-            promptText={assignment!.promptText}
-            promptHint={assignment!.promptHint}
-            promptType={assignment!.promptType}
-            onRespond={handleRespond}
-          />
+          {isFollowUp && assignment!.followUp && (
+            <FollowUpContextLine branch={assignment!.followUp.branch} />
+          )}
+          {isScalePrompt ? (
+            <ScalePromptCard
+              promptText={assignment!.promptText}
+              scaleConfig={assignment!.scaleConfig}
+              value={scaleValue}
+              onChangeValue={setScaleValue}
+              note={scaleNote}
+              onChangeNote={setScaleNote}
+              onSubmit={handleScaleSubmit}
+              isPending={submitResponse.isPending}
+            />
+          ) : (
+            <PromptCard
+              promptText={assignment!.promptText}
+              promptHint={assignment!.promptHint}
+              promptType={assignment!.promptType}
+              onRespond={handleRespond}
+            />
+          )}
+          {isFollowUp && (
+            <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
+          )}
         </Animated.View>
 
         <EngagementCards {...engagementProps} />

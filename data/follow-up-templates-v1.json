@@ -1,0 +1,1322 @@
+[
+  {
+    "id": "fu_communication_deepener_1",
+    "category": "communication",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What's one conversation from this week that earned this number? Name it — where you were, what made it easy.",
+    "closing_text": "Good talk isn't luck. You know what it looks like now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_communication_deepener_2",
+    "category": "communication",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What did your partner do lately that made them easy to talk to? Name the thing, so they know to do it again.",
+    "closing_text": "Now it has a name. Easier to repeat.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_communication_deepener_3",
+    "category": "communication",
+    "branch": "deepener",
+    "step": 1,
+    "text": "When talking works this well between you, there's usually an ingredient — timing, place, no phones. What's yours?",
+    "closing_text": "Worth keeping within reach for a harder week.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_communication_repair_1_step1",
+    "category": "communication",
+    "branch": "repair",
+    "step": 1,
+    "text": "Talking has felt harder than usual. From where you sit, what does the hard part look like? Just describe it — no fixing yet. You can skip this one. It'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_communication_repair_1_step2",
+    "category": "communication",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one small thing that might make talking easier this week — under ten minutes? Offer it, don't assign it.",
+    "closing_text": "That's enough for now. This topic will come back around.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_communication_repair_2_step1",
+    "category": "communication",
+    "branch": "repair",
+    "step": 1,
+    "text": "Somewhere along the way, words between you got heavier. When did you first notice? Just the moment, from your side. If today isn't the day, skip it — it'll keep.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_communication_repair_2_step2",
+    "category": "communication",
+    "branch": "repair",
+    "step": 2,
+    "text": "Pick one ten-minute window this week to talk about something that isn't logistics. When would yours be?",
+    "closing_text": "Small windows count. That's enough for today.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_communication_repair_3_step1",
+    "category": "communication",
+    "branch": "repair",
+    "step": 1,
+    "text": "When talking stalls, each person is usually protecting something. What might you be protecting? Describe it, don't solve it. Skipping is allowed.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_communication_repair_3_step2",
+    "category": "communication",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one sentence you've been sitting on? Write it here — saying it out loud can come later.",
+    "closing_text": "Writing it down is already a step. The rest can wait.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_communication_divergence_1",
+    "category": "communication",
+    "branch": "divergence",
+    "step": 1,
+    "text": "Your numbers landed far apart. What might your partner be seeing about how you two talk that you might be missing?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_communication_divergence_2",
+    "category": "communication",
+    "branch": "divergence",
+    "step": 1,
+    "text": "Think of a recent conversation your partner might be carrying differently than you. What might it have felt like from their side?",
+    "closing_text": "Two people can leave the same conversation with two different weights. Both are real.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_deepener_1",
+    "category": "intimacy",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What made this number high — a moment, a stretch of days, a feeling? Name it plainly.",
+    "closing_text": "You know what close looks like for you two. Worth remembering.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_deepener_2",
+    "category": "intimacy",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What did your partner do recently that helped you feel close? Small counts. Tell them it landed.",
+    "closing_text": "Things that land deserve to be known.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_deepener_3",
+    "category": "intimacy",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Closeness like this usually has conditions — rest, time, privacy, ease. Which were present lately?",
+    "closing_text": "Good conditions can be rebuilt on purpose. Now you know the recipe.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_repair_1_step1",
+    "category": "intimacy",
+    "branch": "repair",
+    "step": 1,
+    "text": "This one is tender, so go gently. From your side, what does the distance feel like — not why, just what? You can skip this one. It'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_repair_1_step2",
+    "category": "intimacy",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one small, low-stakes way to be close this week — a longer hug, sitting nearer, lights out at the same time? Offer one.",
+    "closing_text": "Small and doable beats big and postponed. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_repair_2_step1",
+    "category": "intimacy",
+    "branch": "repair",
+    "step": 1,
+    "text": "Distance rarely arrives all at once. When do you last remember closeness feeling easy? Just the memory, from where you sit. Skipping is fine — this will keep.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_repair_2_step2",
+    "category": "intimacy",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one thing that would make closeness feel a little more possible this week. Under ten minutes, nothing dramatic.",
+    "closing_text": "A little more possible is how it starts. This will come back around.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_repair_3_step1",
+    "category": "intimacy",
+    "branch": "repair",
+    "step": 1,
+    "text": "Sometimes distance is tiredness, timing, or something unsaid. Without solving anything, what sits between you right now, from your side? Skip if today's not the day.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_repair_3_step2",
+    "category": "intimacy",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one gentle step toward each other this week — yours to offer, not theirs to owe?",
+    "closing_text": "Offered, not owed. That's enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_divergence_1",
+    "category": "intimacy",
+    "branch": "divergence",
+    "step": 1,
+    "text": "Your numbers are far apart here. What might your partner be noticing about closeness lately that you might not be?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_intimacy_divergence_2",
+    "category": "intimacy",
+    "branch": "divergence",
+    "step": 1,
+    "text": "Closeness gets felt differently by different people in different weeks. What might this stretch have felt like from your partner's side?",
+    "closing_text": "A gap in numbers is usually a gap in vantage, not in wanting.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_affection_deepener_1",
+    "category": "affection",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What's one small gesture from this week that made your number high? Name the actual moment.",
+    "closing_text": "Small things, noticed, tend to multiply.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_affection_deepener_2",
+    "category": "affection",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What does your partner do that reads as love to you, even when it's tiny? Tell them it counts.",
+    "closing_text": "Now they know it counts. That's how it keeps happening.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_affection_deepener_3",
+    "category": "affection",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Warmth like this usually lives in routines — greetings, goodnights, passing touches. Which routine is carrying it?",
+    "closing_text": "Protect the routine and the warmth protects itself.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_affection_repair_1_step1",
+    "category": "affection",
+    "branch": "repair",
+    "step": 1,
+    "text": "Affection has felt thin lately. From your side, what does that look like day to day? Describe it, don't fix it yet. Skip if you'd rather — it'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_affection_repair_1_step2",
+    "category": "affection",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one small act of warmth you could add this week — a real hello, a hand on a shoulder?",
+    "closing_text": "Warmth comes back in small doses. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_affection_repair_2_step1",
+    "category": "affection",
+    "branch": "repair",
+    "step": 1,
+    "text": "When affection fades it's usually crowded out, not withdrawn. What's been crowding it, from where you sit? Just describe. You can skip this one.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_affection_repair_2_step2",
+    "category": "affection",
+    "branch": "repair",
+    "step": 2,
+    "text": "Pick one moment in your day — leaving, returning, going to sleep — and add one warm gesture this week. Which moment?",
+    "closing_text": "One warm moment a day is a quiet fortune. That's enough.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_affection_repair_3_step1",
+    "category": "affection",
+    "branch": "repair",
+    "step": 1,
+    "text": "You each read affection in your own language. Describe what you've been missing, in yours — without a verdict on anyone. Skipping is fine.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_affection_repair_3_step2",
+    "category": "affection",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one gesture in your partner's language, rather than your own, that you could try once this week.",
+    "closing_text": "Their language, spoken once, says a lot. That's enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_affection_divergence_1",
+    "category": "affection",
+    "branch": "divergence",
+    "step": 1,
+    "text": "One of you is feeling the warmth more than the other right now. What might your partner be counting that you're not?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_affection_divergence_2",
+    "category": "affection",
+    "branch": "divergence",
+    "step": 1,
+    "text": "Affection can be given in one language and looked for in another. What language might your partner be looking in?",
+    "closing_text": "Different numbers here usually mean different languages, not different love.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_money_deepener_1",
+    "category": "money",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Money felt steady to both of you. What's actually working — a habit, an agreement, a regular check-in? Name it.",
+    "closing_text": "Systems that work deserve to be noticed while they're working.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_money_deepener_2",
+    "category": "money",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What has your partner done with money lately that you respect — earned, planned, held back, spoke up? Say so.",
+    "closing_text": "Respect, said out loud, is rare around money. Worth repeating.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_money_deepener_3",
+    "category": "money",
+    "branch": "deepener",
+    "step": 1,
+    "text": "When money feels this calm, something is being done regularly. What's the routine you'd protect?",
+    "closing_text": "Calm around money is built, not found. You built this.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_money_repair_1_step1",
+    "category": "money",
+    "branch": "repair",
+    "step": 1,
+    "text": "Money came in low, and money is rarely just money. From your side, what's the uncomfortable part? Describe it without solving it. You can skip this one. It'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_money_repair_1_step2",
+    "category": "money",
+    "branch": "repair",
+    "step": 2,
+    "text": "One small money step this week, under ten minutes — checking one balance, naming one worry out loud. What's yours?",
+    "closing_text": "Ten minutes is plenty. This will come back around.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_money_repair_2_step1",
+    "category": "money",
+    "branch": "repair",
+    "step": 1,
+    "text": "Behind most money stress there's a quieter fear. Without fixing anything, what's the fear from where you sit? Skip if it's too much today — it'll keep.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_money_repair_2_step2",
+    "category": "money",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one number you'd both like to be able to say out loud without flinching. Just looking at it together is the whole step.",
+    "closing_text": "Looking is enough for now. Deciding can wait.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_money_repair_3_step1",
+    "category": "money",
+    "branch": "repair",
+    "step": 1,
+    "text": "You may be running different money stories — how you grew up, what safety costs. Briefly describe yours. No verdicts. It's fine to skip.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_money_repair_3_step2",
+    "category": "money",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one small agreement you could try for a single week — one purchase check-in, one shared note? Propose it lightly.",
+    "closing_text": "One week is a trial, not a contract. That's enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_money_divergence_1",
+    "category": "money",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You're reading the money picture very differently. What might your partner be looking at — a bill, a balance, a memory — that you're not?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_money_divergence_2",
+    "category": "money",
+    "branch": "divergence",
+    "step": 1,
+    "text": "Money weighs differently on different shoulders. What might feel heavy, or light, from your partner's side right now?",
+    "closing_text": "A gap here usually means two different histories, not two different levels of care.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_family_deepener_1",
+    "category": "family",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Family felt good to both of you. What went well — a visit, a boundary, a moment of backup? Name it.",
+    "closing_text": "Worth knowing what well looks like, for next time.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_family_deepener_2",
+    "category": "family",
+    "branch": "deepener",
+    "step": 1,
+    "text": "How did your partner show up around family lately in a way you appreciated? Tell them what you saw.",
+    "closing_text": "Being seen handling family is its own kind of thanks.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_family_deepener_3",
+    "category": "family",
+    "branch": "deepener",
+    "step": 1,
+    "text": "When family runs this smoothly, there's usually quiet coordination underneath. What's the move worth repeating?",
+    "closing_text": "Keep the move. It clearly works.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_family_repair_1_step1",
+    "category": "family",
+    "branch": "repair",
+    "step": 1,
+    "text": "Family came in low, and family is complicated for almost everyone. From your side, what's the hard part right now? Describe, don't fix. You can skip this — it'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_family_repair_1_step2",
+    "category": "family",
+    "branch": "repair",
+    "step": 2,
+    "text": "One small thing this week — a text sent, a boundary named, a visit adjusted. What's your small thing?",
+    "closing_text": "Small moves with family go further than big speeches. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_family_repair_2_step1",
+    "category": "family",
+    "branch": "repair",
+    "step": 1,
+    "text": "Sometimes the hard part isn't the family — it's feeling alone in handling them. Where do you feel solo in this, from your side? Skipping is allowed.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_family_repair_2_step2",
+    "category": "family",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one moment coming up where you'd like backup, and what backup would look like. Keep it small.",
+    "closing_text": "Knowing what backup looks like is most of getting it. That's enough for now.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_family_repair_3_step1",
+    "category": "family",
+    "branch": "repair",
+    "step": 1,
+    "text": "Your families raised two different people with two different rulebooks. Which unspoken rule from yours might be in play here? Just notice it. Skip if you'd rather.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_family_repair_3_step2",
+    "category": "family",
+    "branch": "repair",
+    "step": 2,
+    "text": "Propose one small adjustment for the next family moment — who answers, who drives, when you leave. One thing.",
+    "closing_text": "One adjustment at a time. This will come back around.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_family_divergence_1",
+    "category": "family",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You see the family picture differently right now. What might your partner be carrying — an obligation, an old dynamic — that's less visible to you?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_family_divergence_2",
+    "category": "family",
+    "branch": "divergence",
+    "step": 1,
+    "text": "It's easiest to see your own family clearly. What might your family look like from your partner's seat at the table?",
+    "closing_text": "Two vantage points, one table. Both views are real.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_friends_deepener_1",
+    "category": "friends",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Friendship felt healthy from both sides. What made the number high — a good night, easy room for separate plans?",
+    "closing_text": "A social life that fits is worth noticing while it fits.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_friends_deepener_2",
+    "category": "friends",
+    "branch": "deepener",
+    "step": 1,
+    "text": "How has your partner made room for your friendships lately? Name it — that kind of generosity is easy to miss.",
+    "closing_text": "Generosity noticed tends to continue.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_friends_deepener_3",
+    "category": "friends",
+    "branch": "deepener",
+    "step": 1,
+    "text": "When social life works, a balance is being kept — together, apart, shared. What's the balance you'd keep?",
+    "closing_text": "Now the balance has words. Easier to hold.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_friends_repair_1_step1",
+    "category": "friends",
+    "branch": "repair",
+    "step": 1,
+    "text": "Friends came in low. From where you sit, what's off — too little time, the wrong mix, feeling left out? Describe it plainly. Skip if you'd rather — it'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_friends_repair_1_step2",
+    "category": "friends",
+    "branch": "repair",
+    "step": 2,
+    "text": "One small social step this week — a text to an old friend, a plan made, an evening freed. What's yours?",
+    "closing_text": "Friendships restart smaller than you'd think. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_friends_repair_2_step1",
+    "category": "friends",
+    "branch": "repair",
+    "step": 1,
+    "text": "Couples can lose friendships slowly without anyone choosing it. What have you missed lately, from your side? No blame in it — just the missing. You can skip this one.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_friends_repair_2_step2",
+    "category": "friends",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one friendship — yours, theirs, or shared — worth ten minutes of tending this week, and what you'd do.",
+    "closing_text": "Ten minutes of tending is real tending. This will come back around.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_friends_repair_3_step1",
+    "category": "friends",
+    "branch": "repair",
+    "step": 1,
+    "text": "Feeling crowded and feeling left out can happen in the same house. Which is closer to yours right now? Describe it, don't defend it. Skipping is fine.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_friends_repair_3_step2",
+    "category": "friends",
+    "branch": "repair",
+    "step": 2,
+    "text": "Suggest one plan for the next two weeks — a night with your people, a night with theirs, or one with both.",
+    "closing_text": "One plan on the calendar is enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_friends_divergence_1",
+    "category": "friends",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You're reading your social life differently. What might your partner be wanting more of — or less of — that they haven't said?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_friends_divergence_2",
+    "category": "friends",
+    "branch": "divergence",
+    "step": 1,
+    "text": "What do friendships give your partner that might be hard for them to ask for out loud?",
+    "closing_text": "Different numbers here often mean different needs for elsewhere, not less need for each other.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_deepener_1",
+    "category": "fun_play",
+    "branch": "deepener",
+    "step": 1,
+    "text": "You both landed high on fun. Name the moment from this week you'd most want to happen again.",
+    "closing_text": "Fun leaves clues. You just found one.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_deepener_2",
+    "category": "fun_play",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What did your partner do this week that made you laugh? Tell them — laughter you name tends to come back.",
+    "closing_text": "Now it's on the record. That's how running jokes start.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_deepener_3",
+    "category": "fun_play",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Good fun usually has a setting — a time of day, a place, no plans. What were the conditions?",
+    "closing_text": "Now you have the recipe. Keep it somewhere handy.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_repair_1_step1",
+    "category": "fun_play",
+    "branch": "repair",
+    "step": 1,
+    "text": "Fun came in low, which usually means life got heavy — not that you got boring. From your side, what's been squeezing it out? Just describe. You can skip this — it'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_repair_1_step2",
+    "category": "fun_play",
+    "branch": "repair",
+    "step": 2,
+    "text": "One small dose of fun this week — ten minutes, zero planning. A game, a walk, a ridiculous video. What's your offer?",
+    "closing_text": "Fun doesn't need a plan. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_repair_2_step1",
+    "category": "fun_play",
+    "branch": "repair",
+    "step": 1,
+    "text": "When did you two last laugh together properly? Describe that moment from your side — what allowed it. No need to recreate it yet. Skipping is fine.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_repair_2_step2",
+    "category": "fun_play",
+    "branch": "repair",
+    "step": 2,
+    "text": "Pick one ordinary moment this week — a commute, a chore, dinner — and make it slightly more ridiculous. Which one?",
+    "closing_text": "Ordinary plus slightly ridiculous is the whole formula. That's enough.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_repair_3_step1",
+    "category": "fun_play",
+    "branch": "repair",
+    "step": 1,
+    "text": "Sometimes one of you carries the fun and quietly gets tired. From where you sit, who's been carrying it lately? Describe gently. It's fine to skip — this will keep.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_repair_3_step2",
+    "category": "fun_play",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one low-effort thing you'd genuinely enjoy doing together this week. Small counts double.",
+    "closing_text": "That's enough for now. Fun comes back around faster than most things.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_divergence_1",
+    "category": "fun_play",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You landed far apart on fun. What might count as fun for your partner that you might be overlooking?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_fun_play_divergence_2",
+    "category": "fun_play",
+    "branch": "divergence",
+    "step": 1,
+    "text": "One of you may be laughing more than the other lately. What might this stretch have felt like from your partner's side?",
+    "closing_text": "Different numbers usually mean different weeks, not different senses of humor.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_deepener_1",
+    "category": "future_dreams",
+    "branch": "deepener",
+    "step": 1,
+    "text": "The future feels good from both sides. What's the shared picture that earned the number? Sketch it in a sentence.",
+    "closing_text": "A future you can say in a sentence is one you can steer by.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_deepener_2",
+    "category": "future_dreams",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What has your partner done lately that made the future feel more possible — a plan, a saved dollar, a dream said out loud?",
+    "closing_text": "Possibility is usually somebody's quiet doing. You just named whose.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_deepener_3",
+    "category": "future_dreams",
+    "branch": "deepener",
+    "step": 1,
+    "text": "When you talk about the future well, it tends to happen somewhere — long drives, late nights. Where does it happen for you?",
+    "closing_text": "Protect the place and the talks will keep coming.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_repair_1_step1",
+    "category": "future_dreams",
+    "branch": "repair",
+    "step": 1,
+    "text": "The future came in low, which can feel bigger than one day's answer. From your side, what feels foggy or stuck? Describe it — no plans required yet. You can skip this one. It'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_repair_1_step2",
+    "category": "future_dreams",
+    "branch": "repair",
+    "step": 2,
+    "text": "One ten-minute future conversation this week — not the whole future, just one corner. Which corner would you pick?",
+    "closing_text": "One corner at a time is how whole pictures get painted. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_repair_2_step1",
+    "category": "future_dreams",
+    "branch": "repair",
+    "step": 1,
+    "text": "Sometimes the future feels hard because two timelines quietly disagree. From your side, what timeline are you on? Just name it. Skipping is allowed.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_repair_2_step2",
+    "category": "future_dreams",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one small thing you could do this week that your future selves would be glad about. Tiny counts.",
+    "closing_text": "Tiny and done beats grand and discussed. This will come back around.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_repair_3_step1",
+    "category": "future_dreams",
+    "branch": "repair",
+    "step": 1,
+    "text": "A deferred dream can sit quietly in a relationship for years. Is one of yours sitting there? Describe it gently — nobody has to act on it today. You can skip this.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_repair_3_step2",
+    "category": "future_dreams",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one question about the future you'd like to ask each other this week? Just write the question.",
+    "closing_text": "A good question is a step. The answer can take its time.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_divergence_1",
+    "category": "future_dreams",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You see the road ahead differently right now. What might your partner be seeing — a worry or a hope — that you're not?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_future_dreams_divergence_2",
+    "category": "future_dreams",
+    "branch": "divergence",
+    "step": 1,
+    "text": "The future looks different at different distances. Is your partner looking closer in, or further out, than you are? Write what they might see there.",
+    "closing_text": "Looking at different distances isn't disagreement. It's two sets of eyes on one road.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_deepener_1",
+    "category": "everyday_life",
+    "branch": "deepener",
+    "step": 1,
+    "text": "The everyday machine is running well for both of you. Name one thing that's quietly working, before it turns invisible.",
+    "closing_text": "The quietly working things run the whole show. Good catch.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_deepener_2",
+    "category": "everyday_life",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What invisible work has your partner been doing that deserves to be visible? Name one thing.",
+    "closing_text": "Invisible work, once seen, weighs half as much.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_deepener_3",
+    "category": "everyday_life",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Smooth weeks usually have a rhythm underneath. What's the rhythm — and what would you protect about it?",
+    "closing_text": "Rhythms hold when somebody minds them. Now you both are.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_repair_1_step1",
+    "category": "everyday_life",
+    "branch": "repair",
+    "step": 1,
+    "text": "Daily life came in low. From your side, where does the day pinch — mornings, evenings, the list that never ends? Describe the pinch, not the fix. Skip if you'd rather — it'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_repair_1_step2",
+    "category": "everyday_life",
+    "branch": "repair",
+    "step": 2,
+    "text": "One small trade this week — a task swapped, a chore dropped entirely. What would you offer?",
+    "closing_text": "One trade is enough for now. The list will still be there, slightly shorter.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_repair_2_step1",
+    "category": "everyday_life",
+    "branch": "repair",
+    "step": 1,
+    "text": "The invisible work — planning, remembering, noticing — is easy to miscount. From your side, what are you carrying that might not be seen? Just the list, no tallying. Skipping is fine.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_repair_2_step2",
+    "category": "everyday_life",
+    "branch": "repair",
+    "step": 2,
+    "text": "Pick one recurring task to make easier this week — automate it, halve it, or share it. Which one?",
+    "closing_text": "Easier, not perfect. That's enough for now.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_repair_3_step1",
+    "category": "everyday_life",
+    "branch": "repair",
+    "step": 1,
+    "text": "Some days are fine and still exhausting. Describe what tired looks like for you lately — it's hard to see from inside someone else's day. You can skip this one.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_repair_3_step2",
+    "category": "everyday_life",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one ten-minute pocket this week that could be just yours — and one that could be just theirs.",
+    "closing_text": "Two small pockets of air. That's enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_divergence_1",
+    "category": "everyday_life",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You're living in the same household and experiencing it differently. What might your partner's day actually feel like, hour by hour?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_everyday_life_divergence_2",
+    "category": "everyday_life",
+    "branch": "divergence",
+    "step": 1,
+    "text": "What load might weigh on your partner more than it would ever weigh on you?",
+    "closing_text": "Same house, different weights. Both counts are honest.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_deepener_1",
+    "category": "conflict_repair",
+    "branch": "deepener",
+    "step": 1,
+    "text": "You both feel good about how you handle friction. What's the move — the thing one of you does that softens it?",
+    "closing_text": "A named move is a keepable move.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_deepener_2",
+    "category": "conflict_repair",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Think of the last disagreement that went well. What did your partner do that helped? Tell them.",
+    "closing_text": "What helped once will likely help again — especially now that it's been said.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_deepener_3",
+    "category": "conflict_repair",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Couples who find their way back usually have a signal — a phrase, a touch, a cup of tea. What's yours?",
+    "closing_text": "If you have a signal, you have a way home. Worth remembering.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_repair_1_step1",
+    "category": "conflict_repair",
+    "branch": "repair",
+    "step": 1,
+    "text": "This is about the hard stuff, so take it slowly. From your side, what happens between you when things go wrong? Just the shape of it — no fixing yet. You can skip this one. It'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_repair_1_step2",
+    "category": "conflict_repair",
+    "branch": "repair",
+    "step": 2,
+    "text": "What's one small thing that would make the next disagreement five percent softer — a pause, a code word, a walk first? Offer one.",
+    "closing_text": "Five percent softer is a real number. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_repair_2_step1",
+    "category": "conflict_repair",
+    "branch": "repair",
+    "step": 1,
+    "text": "After a rough moment, people reach for repair differently. What do you tend to need first — space, words, touch? Describe yours, not theirs. Skipping is allowed.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_repair_2_step2",
+    "category": "conflict_repair",
+    "branch": "repair",
+    "step": 2,
+    "text": "Tell each other one thing that reliably helps you come back together after friction. Ten minutes, once this week.",
+    "closing_text": "Knowing the way back matters more than never leaving. This will come back around.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_repair_3_step1",
+    "category": "conflict_repair",
+    "branch": "repair",
+    "step": 1,
+    "text": "Some things get dropped instead of finished, and they hum in the background. Is something humming for you? Name only that it exists — not the whole case. It's fine to skip; this will keep.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_repair_3_step2",
+    "category": "conflict_repair",
+    "branch": "repair",
+    "step": 2,
+    "text": "Choose the smallest true piece of one old topic and say just that piece out loud this week. What's the piece?",
+    "closing_text": "The smallest piece still counts as begun. That's enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_divergence_1",
+    "category": "conflict_repair",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You feel differently about how conflict goes between you. What might disagreements feel like from inside your partner — before, during, after?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_conflict_repair_divergence_2",
+    "category": "conflict_repair",
+    "branch": "divergence",
+    "step": 1,
+    "text": "One of you may recover faster than the other. What might the slower recovery need that the faster one doesn't?",
+    "closing_text": "Different speeds of coming back, same direction home.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_deepener_1",
+    "category": "appreciation_trust",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Feeling valued landed high for both of you. What's one recent moment you felt genuinely seen? Describe it.",
+    "closing_text": "Moments like that are load-bearing. Good to know where they are.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_deepener_2",
+    "category": "appreciation_trust",
+    "branch": "deepener",
+    "step": 1,
+    "text": "What does your partner do that quietly builds your trust — the reliable, unglamorous things? Name one.",
+    "closing_text": "The unglamorous things were doing the heavy lifting all along.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_deepener_3",
+    "category": "appreciation_trust",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Steady appreciation is usually a habit, not luck. Which habit is doing it — the thank yous, the noticing?",
+    "closing_text": "Habits fed are habits kept.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_repair_1_step1",
+    "category": "appreciation_trust",
+    "branch": "repair",
+    "step": 1,
+    "text": "Feeling valued came in low, and that deserves a gentle approach. From your side, what's been going unnoticed? Describe it without keeping count. You can skip this one. It'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_repair_1_step2",
+    "category": "appreciation_trust",
+    "branch": "repair",
+    "step": 2,
+    "text": "One specific thank you this week — for a real thing, said plainly. What would you thank them for?",
+    "closing_text": "Specific beats grand. That's enough for now.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_repair_2_step1",
+    "category": "appreciation_trust",
+    "branch": "repair",
+    "step": 1,
+    "text": "Dips in trust are usually small things repeated, not one big thing. From where you sit, what small thing has been repeating? Just describe it. Skipping is fine.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_repair_2_step2",
+    "category": "appreciation_trust",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one small promise you could make and keep this week. Small enough to be certain.",
+    "closing_text": "Kept promises add up quietly. That's enough for now.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_repair_3_step1",
+    "category": "appreciation_trust",
+    "branch": "repair",
+    "step": 1,
+    "text": "Feeling unappreciated and being unappreciated aren't always the same thing — both are worth describing. What does it look like from your side? No verdicts. You can skip this.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_repair_3_step2",
+    "category": "appreciation_trust",
+    "branch": "repair",
+    "step": 2,
+    "text": "Catch your partner doing one thing right this week, and say so soon after. What might you watch for?",
+    "closing_text": "Noticing is a practice. One catch is enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_divergence_1",
+    "category": "appreciation_trust",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You feel differently valued right now. What might your partner already be doing that they count as appreciation — and you might be missing?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_appreciation_trust_divergence_2",
+    "category": "appreciation_trust",
+    "branch": "divergence",
+    "step": 1,
+    "text": "What might feeling valued look like to your partner — and where might they be looking for it?",
+    "closing_text": "People look for value in different places. Different numbers often just mean different places.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_deepener_1",
+    "category": "growth_independence",
+    "branch": "deepener",
+    "step": 1,
+    "text": "You both feel room to be yourselves. What made the number high — time protected, a pursuit supported, space given freely?",
+    "closing_text": "Room, given freely, tends to bring people back closer.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_deepener_2",
+    "category": "growth_independence",
+    "branch": "deepener",
+    "step": 1,
+    "text": "How has your partner backed the person you're becoming — a class, a habit, a quiet hour defended? Name it.",
+    "closing_text": "Now it's said. Support like that grows when it's noticed.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_deepener_3",
+    "category": "growth_independence",
+    "branch": "deepener",
+    "step": 1,
+    "text": "Couples who grow well trade freedom generously. What's the arrangement that's working? Say it out loud so it lasts.",
+    "closing_text": "Arrangements said out loud survive busy seasons.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_repair_1_step1",
+    "category": "growth_independence",
+    "branch": "repair",
+    "step": 1,
+    "text": "This one can feel tangled — needing space and needing each other at once. From your side, where does it feel tight? Describe the tightness, not the fix. You can skip this one. It'll keep.",
+    "closing_text": null,
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_repair_1_step2",
+    "category": "growth_independence",
+    "branch": "repair",
+    "step": 2,
+    "text": "One small piece of room this week — an hour claimed, or an hour offered. What would yours be?",
+    "closing_text": "An hour is enough for now. Room grows from there.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_repair_2_step1",
+    "category": "growth_independence",
+    "branch": "repair",
+    "step": 1,
+    "text": "Sometimes one person's growing reads as distance to the other. From where you sit, which side of that are you on right now? Just describe it. Skipping is allowed.",
+    "closing_text": null,
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_repair_2_step2",
+    "category": "growth_independence",
+    "branch": "repair",
+    "step": 2,
+    "text": "Name one solo thing you'd like to do this week — and one way you'll share it with each other afterward.",
+    "closing_text": "Going and returning. That's the whole shape, and it's enough for now.",
+    "variant": 2,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_repair_3_step1",
+    "category": "growth_independence",
+    "branch": "repair",
+    "step": 1,
+    "text": "The person you chose keeps changing — that's the deal. What change in yourself have you not quite said out loud? Gently. It's fine to skip; this will keep.",
+    "closing_text": null,
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_repair_3_step2",
+    "category": "growth_independence",
+    "branch": "repair",
+    "step": 2,
+    "text": "Ask your partner one question this week about who they're becoming. Write the question here first.",
+    "closing_text": "A good question is its own kind of room. That's enough for now.",
+    "variant": 3,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_divergence_1",
+    "category": "growth_independence",
+    "branch": "divergence",
+    "step": 1,
+    "text": "You feel differently about the room you each have. What might space — more of it, or less — mean to your partner right now?",
+    "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
+    "variant": 1,
+    "active": true
+  },
+  {
+    "id": "fu_growth_independence_divergence_2",
+    "category": "growth_independence",
+    "branch": "divergence",
+    "step": 1,
+    "text": "What might your partner be growing toward that they haven't fully said? Write your best guess, held gently.",
+    "closing_text": "A guess held gently is a way of paying attention. Different numbers, same direction.",
+    "variant": 2,
+    "active": true
+  }
+]

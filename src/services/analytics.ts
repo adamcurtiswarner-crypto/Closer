@@ -67,7 +67,8 @@ type AnalyticsEvent =
   | 'photo_viewed'
   | 'milestone_created'
   | 'milestone_viewed'
-  | 'prompt_reaction_added';
+  | 'prompt_reaction_added'
+  | 'follow_up_skipped';
 
 interface EventContext {
   user_id?: string;

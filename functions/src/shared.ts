@@ -83,6 +83,72 @@ export const VALID_PROMPT_TYPES = [
 export const VALID_PROMPT_DEPTHS = ['surface', 'medium', 'deep'];
 
 // ============================================
+// SCORED PROMPTS & FOLLOW-UPS
+// ============================================
+
+// Mirrors specs/types.ts (Firestore snake_case)
+export type ResponseFormat = 'text' | 'scale';
+export type FollowUpBranch = 'deepener' | 'repair' | 'divergence';
+export type AssignmentKind = 'daily' | 'follow_up';
+
+export interface ScaleConfig {
+  min: number; // 1
+  max: number; // 10
+  low_threshold: number; // 4 — min score <= this triggers repair
+  high_threshold: number; // 9 — both scores >= this triggers deepener
+  divergence_gap: number; // 4 — |scoreA - scoreB| >= this triggers divergence
+  min_label: string; // "Struggling"
+  max_label: string; // "Thriving"
+}
+
+export interface FollowUpAssignmentInfo {
+  branch: FollowUpBranch;
+  step: 1 | 2; // repair has steps 1 and 2; deepener/divergence always 1
+  parent_assignment_id: string; // the scored assignment that triggered this
+  template_id: string;
+}
+
+// /follow_up_templates/{templateId} — category-level follow-up content
+export interface FollowUpTemplate {
+  id: string;
+  category: string; // one of V1_PROMPT_CATEGORIES
+  branch: FollowUpBranch;
+  step: 1 | 2;
+  text: string; // question shown to both partners
+  closing_text?: string; // shown at reveal of the final step
+  variant: number;
+  active: boolean;
+}
+
+export const DEFAULT_SCALE_CONFIG: ScaleConfig = {
+  min: 1,
+  max: 10,
+  low_threshold: 4,
+  high_threshold: 9,
+  divergence_gap: 4,
+  min_label: 'Struggling',
+  max_label: 'Thriving',
+};
+
+export const VALID_FOLLOW_UP_BRANCHES = ['deepener', 'repair', 'divergence'];
+
+// v1 category taxonomy (snake_case ids) — mirrors src/config/promptCategories.ts
+export const V1_PROMPT_CATEGORIES = [
+  'communication',
+  'intimacy',
+  'affection',
+  'money',
+  'family',
+  'friends',
+  'fun_play',
+  'future_dreams',
+  'everyday_life',
+  'conflict_repair',
+  'appreciation_trust',
+  'growth_independence',
+];
+
+// ============================================
 // SHARED HELPERS
 // ============================================
 

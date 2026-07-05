@@ -50,6 +50,9 @@ import {
   PlusIcon,
   GiftIcon,
   NoteIcon,
+  CoinsIcon,
+  UsersIcon,
+  PlantIcon,
 } from 'phosphor-react-native';
 import { iconSize } from '@/config/theme';
 
@@ -103,6 +106,9 @@ const iconMap = {
   plus: PlusIcon,
   gift: GiftIcon,
   note: NoteIcon,
+  coins: CoinsIcon,
+  users: UsersIcon,
+  plant: PlantIcon,
 } as const;
 
 export type IconName = keyof typeof iconMap;

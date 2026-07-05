@@ -222,6 +222,15 @@ service cloud.firestore {
     }
 
     // ============================================
+    // FOLLOW-UP TEMPLATES (Admin only for write)
+    // ============================================
+
+    match /follow_up_templates/{templateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ============================================
     // PROMPT ASSIGNMENTS
     // ============================================
 

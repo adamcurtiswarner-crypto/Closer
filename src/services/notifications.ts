@@ -5,6 +5,7 @@ import { doc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'fireba
 import { db } from '@/config/firebase';
 import { logEvent } from '@/services/analytics';
 import { logger } from '@/utils/logger';
+import { FEATURES } from '@/config/features';
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -106,9 +107,11 @@ export function setupNotificationHandlers(): () => void {
     if (type === 'prompt' || type === 'partner_responded') {
       router.push('/(app)/today');
     } else if (type === 'recap' || type === 'weekly_recap') {
-      router.push('/(app)/memories');
+      // Memories is feature-flagged off for v1 — fall back to today
+      router.push(FEATURES.memories ? '/(app)/memories' : '/(app)/today');
     } else if (type === 'date_night' || type === 'date_night_reminder') {
-      router.push('/(app)/date-nights');
+      // Date nights is feature-flagged off for v1 — fall back to today
+      router.push(FEATURES.dateNights ? '/(app)/date-nights' : '/(app)/today');
     } else if (type === 'check_in' || type === 'coaching_insight') {
       router.push('/(app)/today');
     } else {

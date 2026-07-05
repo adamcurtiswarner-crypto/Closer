@@ -73,6 +73,13 @@ interface CompletionMomentProps {
   myReaction?: ReactionType | null;
   partnerReaction?: ReactionType | null;
   onReact?: (reaction: ReactionType | null) => void;
+  /** Scale prompts: both scores shown side by side, visually quiet */
+  yourScore?: number | null;
+  partnerScore?: number | null;
+  /** Middle-score reveal: one light optional line, static text */
+  showMidScaleLine?: boolean;
+  /** Final-step follow-up templates: shown at reveal */
+  closingText?: string | null;
 }
 
 export function CompletionMoment({
@@ -85,8 +92,13 @@ export function CompletionMoment({
   myReaction = null,
   partnerReaction = null,
   onReact,
+  yourScore = null,
+  partnerScore = null,
+  showMidScaleLine = false,
+  closingText = null,
 }: CompletionMomentProps) {
   const cardScale = useSharedValue(0.95);
+  const hasScores = yourScore != null && partnerScore != null;
 
   useEffect(() => {
     cardScale.value = withSpring(1.0, { damping: 14, stiffness: 150 });
@@ -120,25 +132,58 @@ export function CompletionMoment({
         </Animated.View>
 
         <View style={styles.responses}>
-          {/* Your response - reveals first */}
-          <Animated.View entering={FadeInUp.duration(500).delay(400)}>
-            <ResponseCard
-              label="You"
-              responseText={yourResponse}
-              imageUrl={yourImageUrl}
-              isYours={true}
-            />
-          </Animated.View>
+          {/* Scale prompts: both scores side by side — numbers with names, not a chart */}
+          {hasScores && (
+            <Animated.View entering={FadeInUp.duration(500).delay(300)} style={styles.scoresRow} testID="score-reveal">
+              <View style={styles.scoreCol}>
+                <Text style={styles.scoreName}>You</Text>
+                <Text style={styles.scoreValue} testID="your-score">{yourScore}</Text>
+              </View>
+              <View style={styles.scoreDivider} />
+              <View style={styles.scoreCol}>
+                <Text style={styles.scoreName}>{partnerName}</Text>
+                <Text style={styles.scoreValue} testID="partner-score">{partnerScore}</Text>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Your response - reveals first (scale notes are optional; hide when empty) */}
+          {(!hasScores || yourResponse.length > 0) && (
+            <Animated.View entering={FadeInUp.duration(500).delay(400)}>
+              <ResponseCard
+                label="You"
+                responseText={yourResponse}
+                imageUrl={yourImageUrl}
+                isYours={true}
+              />
+            </Animated.View>
+          )}
           <View style={styles.spacer} />
           {/* Partner response - reveals 500ms later for dramatic stagger */}
-          <Animated.View entering={FadeInUp.duration(500).delay(900)}>
-            <ResponseCard
-              label={partnerName}
-              responseText={partnerResponse}
-              imageUrl={partnerImageUrl}
-              isYours={false}
-            />
-          </Animated.View>
+          {(!hasScores || partnerResponse.length > 0) && (
+            <Animated.View entering={FadeInUp.duration(500).delay(900)}>
+              <ResponseCard
+                label={partnerName}
+                responseText={partnerResponse}
+                imageUrl={partnerImageUrl}
+                isYours={false}
+              />
+            </Animated.View>
+          )}
+
+          {/* Middle scores: a light optional line — static text, no obligation */}
+          {showMidScaleLine && (
+            <Animated.View entering={FadeIn.duration(400).delay(1100)}>
+              <Text style={styles.midScaleLine}>What would move this one point higher?</Text>
+            </Animated.View>
+          )}
+
+          {/* Closing text on final-step follow-up reveals */}
+          {closingText ? (
+            <Animated.View entering={FadeIn.duration(400).delay(1100)}>
+              <Text style={styles.closingText}>{closingText}</Text>
+            </Animated.View>
+          ) : null}
 
           {/* Reaction row */}
           {onReact && (
@@ -211,6 +256,58 @@ const styles = StyleSheet.create({
   responses: {},
   spacer: {
     height: 12,
+  },
+  scoresRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F2EE',
+    borderRadius: 14,
+    paddingVertical: 16,
+    marginBottom: 12,
+  },
+  scoreCol: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  scoreDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#E2DED8',
+  },
+  scoreName: {
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: 'Nunito-Bold',
+    color: '#6B6B7A',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  scoreValue: {
+    fontSize: 26,
+    fontWeight: '900',
+    fontFamily: 'Nunito-Black',
+    color: '#1E1E2E',
+    letterSpacing: -0.5,
+  },
+  midScaleLine: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  closingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: '#6B6B7A',
+    fontFamily: 'Nunito-Regular',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   footerRow: {
     flexDirection: 'row',
