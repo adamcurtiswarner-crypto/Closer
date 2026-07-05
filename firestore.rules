@@ -29,7 +29,11 @@ service cloud.firestore {
     // ============================================
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      // Owner always; partners in the same couple can read each other's
+      // profile (love language, photo, display name — product intent).
+      // Membership is validated against the couple doc's member_ids.
+      allow read: if isOwner(userId) ||
+        (resource.data.couple_id != null && isCoupleMember(resource.data.couple_id));
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
       allow delete: if false; // Soft delete only
