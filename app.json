@@ -92,7 +92,8 @@
             "buildReactNativeFromSource": true
           }
         }
-      ]
+      ],
+      "./plugins/withModularHeaders"
     ],
     "experiments": {
       "typedRoutes": true
