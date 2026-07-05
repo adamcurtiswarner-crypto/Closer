@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import Constants from 'expo-constants';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
+import { TIME_OPTIONS, getTimeDisplay, resolvePromptTime } from '@/config/promptTime';
 
 const FREQUENCY_OPTIONS = [
   { label: 'Daily', value: 'daily' as const, description: 'Every day' },
@@ -42,17 +43,6 @@ const FREQUENCY_OPTIONS = [
 
 function getFrequencyDisplay(value: string): string {
   return FREQUENCY_OPTIONS.find((f) => f.value === value)?.label || 'Daily';
-}
-
-const TIME_OPTIONS = [
-  { label: 'Morning (8 AM)', value: '08:00', display: '8:00 AM' },
-  { label: 'Afternoon (2 PM)', value: '14:00', display: '2:00 PM' },
-  { label: 'Evening (7 PM)', value: '19:00', display: '7:00 PM' },
-  { label: 'Night (9 PM)', value: '21:00', display: '9:00 PM' },
-];
-
-function getTimeDisplay(value: string): string {
-  return TIME_OPTIONS.find((t) => t.value === value)?.display || value;
 }
 
 export default function SettingsScreen() {
@@ -70,7 +60,9 @@ export default function SettingsScreen() {
   const [showPaywall, setShowPaywall] = useState(false);
   const currentFrequency = couple?.promptFrequency || 'daily';
 
-  const currentTime = user?.notificationTime || '19:00';
+  // Truth: display what delivery will actually use — the stored user value,
+  // falling back to the backend default (19:00, see functions/src/prompts.ts).
+  const currentTime = resolvePromptTime(user?.notificationTime);
 
   // Privacy & Data
   const deleteAccount = useDeleteAccount();
@@ -373,9 +365,14 @@ export default function SettingsScreen() {
               disabled={isPremium}
             >
               <Text style={styles.rowLabel}>{t('settings.subscription')}</Text>
-              <Text style={[styles.rowValue, isPremium && styles.premiumText]}>
-                {isPremium ? t('settings.premium') : t('settings.free') + ' >'}
-              </Text>
+              <View style={styles.rowRight}>
+                <Text style={[styles.rowValue, isPremium && styles.premiumText]}>
+                  {isPremium ? t('settings.premium') : t('settings.free')}
+                </Text>
+                {!isPremium && (
+                  <Icon name="caret-right" size="sm" color={colors.text.muted} />
+                )}
+              </View>
             </TouchableOpacity>
             {isBiometricAvailable && (
               <View style={styles.rowToggle}>
@@ -461,7 +458,7 @@ export default function SettingsScreen() {
               style={styles.modalClose}
               onPress={() => setShowTimePicker(false)}
             >
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -522,7 +519,7 @@ export default function SettingsScreen() {
               style={styles.modalClose}
               onPress={() => setShowFrequencyPicker(false)}
             >
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -575,7 +572,7 @@ export default function SettingsScreen() {
                 setDeleteConfirmText('');
               }}
             >
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -621,7 +618,7 @@ export default function SettingsScreen() {
               style={styles.modalClose}
               onPress={() => setShowAnonymizeModal(false)}
             >
-              <Text style={styles.modalCloseText}>Cancel</Text>
+              <Text style={styles.modalCloseText}>{t('common.cancel')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -11,9 +11,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useDeepLink } from '@/hooks/useDeepLink';
 import { useAuth, AuthProvider } from '@/hooks/useAuth';
 import { setAnalyticsContext, logEvent } from '@/services/analytics';
-import { registerForPushNotifications, setupNotificationHandlers } from '@/services/notifications';
+import { registerPushIfAlreadyGranted, setupNotificationHandlers } from '@/services/notifications';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { BiometricGate } from '@/components/BiometricGate';
+import { colors } from '@/config/theme';
 
 // Initialize Sentry before any rendering
 Sentry.init({
@@ -107,10 +108,13 @@ function AppBootstrap() {
     }
   }, [user]);
 
-  // Register for push notifications after auth
+  // Silent push token refresh at launch — ONLY for users who already granted
+  // permission (existing installs). New users are never hit with the system
+  // dialog at launch; the Today screen's branded pre-prompt owns that ask
+  // after their first submitted answer (see useNotificationPrePrompt).
   useEffect(() => {
     if (isAuthenticated && user?.id) {
-      registerForPushNotifications(user.id);
+      registerPushIfAlreadyGranted(user.id);
     }
   }, [isAuthenticated, user?.id]);
 
@@ -163,7 +167,7 @@ function RootLayout() {
             <Stack
               screenOptions={{
                 headerShown: false,
-                contentStyle: { backgroundColor: '#F5F2EE' },
+                contentStyle: { backgroundColor: colors.surface.background },
               }}
             >
               <Stack.Screen name="(auth)" />

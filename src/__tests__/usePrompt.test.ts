@@ -57,14 +57,21 @@ import {
   mapFollowUpInfo,
   selectAssignmentDoc,
   useSubmitResponse,
+  dedupeOfflineQueue,
+  flushOfflineQueue,
 } from '../hooks/usePrompt';
 
-function createWrapper() {
+function createClientAndWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return ({ children }: { children: React.ReactNode }) =>
+  const wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
+  return { queryClient, wrapper };
+}
+
+function createWrapper() {
+  return createClientAndWrapper().wrapper;
 }
 
 describe('usePrompt', () => {
@@ -369,6 +376,69 @@ describe('usePrompt', () => {
       ]);
     });
 
+    it('optimistically seals the UI when queueing offline (no drop back to unanswered)', async () => {
+      NetInfo.fetch.mockResolvedValue({ isConnected: false });
+      AsyncStorage.getItem.mockResolvedValue(null);
+      AsyncStorage.setItem.mockResolvedValue(undefined);
+
+      const { queryClient, wrapper } = createClientAndWrapper();
+      queryClient.setQueryData(['todayPrompt', 'couple-1'], {
+        assignment: { id: 'a-1', status: 'delivered', promptText: 'Q' },
+        myResponse: null,
+        partnerResponse: null,
+        partnerHasResponded: false,
+        isComplete: false,
+        nextPromptAt: null,
+        reactions: null,
+      });
+
+      const { result } = renderHook(() => useSubmitResponse(), { wrapper });
+
+      await act(async () => {
+        await result.current.mutateAsync({
+          assignmentId: 'a-1',
+          responseText: 'Queued while offline.',
+        });
+      });
+
+      const cached = queryClient.getQueryData<any>(['todayPrompt', 'couple-1']);
+      expect(cached.myResponse).toEqual(
+        expect.objectContaining({
+          responseText: 'Queued while offline.',
+          status: 'submitted',
+        })
+      );
+      expect(cached.isMyResponseOffline).toBe(true);
+      expect(cached.isComplete).toBe(false);
+      expect(cached.assignment.status).toBe('partial');
+    });
+
+    it('replaces (not appends) an offline resubmit for the same assignment', async () => {
+      NetInfo.fetch.mockResolvedValue({ isConnected: false });
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([{ assignmentId: 'a-1', responseText: 'First try.' }])
+      );
+      AsyncStorage.setItem.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useSubmitResponse(), {
+        wrapper: createWrapper(),
+      });
+
+      await act(async () => {
+        await result.current.mutateAsync({
+          assignmentId: 'a-1',
+          responseText: 'Second try, better words.',
+        });
+      });
+
+      const [, savedJson] = AsyncStorage.setItem.mock.calls.find(
+        ([key]: [string]) => key === '@closer_offline_responses'
+      );
+      const queue = JSON.parse(savedJson);
+      expect(queue).toHaveLength(1);
+      expect(queue[0].responseText).toBe('Second try, better words.');
+    });
+
     it('rejects scores outside 1-10 or non-integers at the boundary', async () => {
       NetInfo.fetch.mockResolvedValue({ isConnected: true });
 
@@ -388,6 +458,119 @@ describe('usePrompt', () => {
         });
       }
       expect(firestore.addDoc).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('dedupeOfflineQueue', () => {
+    it('keeps distinct assignments untouched', () => {
+      const queue = [
+        { assignmentId: 'a-1', responseText: 'one' },
+        { assignmentId: 'a-2', responseText: 'two' },
+      ];
+      expect(dedupeOfflineQueue(queue)).toEqual(queue);
+    });
+
+    it('keeps only the LATEST entry when the same assignment is queued twice', () => {
+      const queue = [
+        { assignmentId: 'a-1', responseText: 'first attempt' },
+        { assignmentId: 'a-2', responseText: 'other' },
+        { assignmentId: 'a-1', responseText: 'second attempt', responseScore: 7 },
+      ];
+      expect(dedupeOfflineQueue(queue)).toEqual([
+        { assignmentId: 'a-1', responseText: 'second attempt', responseScore: 7 },
+        { assignmentId: 'a-2', responseText: 'other' },
+      ]);
+    });
+
+    it('drops malformed entries without an assignmentId', () => {
+      const queue = [
+        { assignmentId: '', responseText: 'broken' },
+        { assignmentId: 'a-1', responseText: 'good' },
+      ] as any[];
+      expect(dedupeOfflineQueue(queue)).toEqual([
+        { assignmentId: 'a-1', responseText: 'good' },
+      ]);
+    });
+
+    it('handles an empty queue', () => {
+      expect(dedupeOfflineQueue([])).toEqual([]);
+    });
+  });
+
+  describe('flushOfflineQueue (at most one response per user per assignment)', () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const firestore = require('firebase/firestore');
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      firestore.getDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ prompt_id: 'p-1', response_count: 0 }),
+      });
+      firestore.addDoc.mockResolvedValue({ id: 'r-1' });
+      firestore.updateDoc.mockResolvedValue(undefined);
+      AsyncStorage.removeItem.mockResolvedValue(undefined);
+    });
+
+    it('writes queued items once and clears the queue', async () => {
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([{ assignmentId: 'a-1', responseText: 'Queued answer.' }])
+      );
+      firestore.getDocs.mockResolvedValue({ empty: true });
+
+      await flushOfflineQueue('user-1', 'couple-1');
+
+      expect(firestore.addDoc).toHaveBeenCalledTimes(1);
+      expect(firestore.addDoc).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({
+          assignment_id: 'a-1',
+          user_id: 'user-1',
+          response_text: 'Queued answer.',
+        })
+      );
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@closer_offline_responses');
+    });
+
+    it('dedupes WITHIN the queue before flushing — one write, latest wins', async () => {
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([
+          { assignmentId: 'a-1', responseText: 'stale duplicate' },
+          { assignmentId: 'a-1', responseText: 'latest version' },
+        ])
+      );
+      firestore.getDocs.mockResolvedValue({ empty: true });
+
+      await flushOfflineQueue('user-1', 'couple-1');
+
+      expect(firestore.addDoc).toHaveBeenCalledTimes(1);
+      expect(firestore.addDoc).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({ response_text: 'latest version' })
+      );
+    });
+
+    it('drops queued items when this user already responded on the server', async () => {
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([{ assignmentId: 'a-1', responseText: 'Would double-count.' }])
+      );
+      // Server already has a response by this user for a-1
+      firestore.getDocs.mockResolvedValue({ empty: false });
+
+      await flushOfflineQueue('user-1', 'couple-1');
+
+      expect(firestore.addDoc).not.toHaveBeenCalled();
+      expect(firestore.updateDoc).not.toHaveBeenCalled();
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@closer_offline_responses');
+    });
+
+    it('does nothing when the queue is empty', async () => {
+      AsyncStorage.getItem.mockResolvedValue(null);
+
+      await flushOfflineQueue('user-1', 'couple-1');
+
+      expect(firestore.addDoc).not.toHaveBeenCalled();
+      expect(firestore.getDocs).not.toHaveBeenCalled();
     });
   });
 });

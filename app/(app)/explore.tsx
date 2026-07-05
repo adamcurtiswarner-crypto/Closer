@@ -31,12 +31,16 @@ import {
   useStartExplorePrompt,
   useExploreResponses,
   ExplorePrompt,
+  NoCoupleLinkedError,
 } from '@/hooks/useExplorePrompts';
 import { useSubmitResponse } from '@/hooks/usePrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { Icon } from '@/components/Icon';
+import { QueryError } from '@/components/QueryError';
+import { Skeleton } from '@/components/Skeleton';
 import { SafetyResources } from '@/components/SafetyResources';
 import { logEvent } from '@/services/analytics';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
 type ScreenMode = 'browse' | 'responding';
@@ -53,13 +57,22 @@ export default function ExploreScreen() {
   const [viewingAssignmentId, setViewingAssignmentId] = useState<string | null>(null);
   // Safety off-ramp: set once per submission whose text matched the safety lexicon
   const [showSafetyResources, setShowSafetyResources] = useState(false);
+  // Quiet inline notice on the respond action when no couple is linked yet
+  const [linkNoticePromptId, setLinkNoticePromptId] = useState<string | null>(null);
 
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: prompts, isLoading } = usePromptsByCategory(selectedCategory);
+  const {
+    data: prompts,
+    isLoading,
+    isError: promptsFailed,
+    refetch: refetchPrompts,
+  } = usePromptsByCategory(selectedCategory);
   const { data: assignments } = useExploreAssignments();
   const startExplore = useStartExplorePrompt();
   const submitResponse = useSubmitResponse();
-  const { data: viewingResponses } = useExploreResponses(viewingAssignmentId);
+  const { data: viewingResponses, isLoading: responsesLoading } =
+    useExploreResponses(viewingAssignmentId);
 
   const submitScale = useSharedValue(1);
   const submitAnimStyle = useAnimatedStyle(() => ({
@@ -74,14 +87,28 @@ export default function ExploreScreen() {
   }
 
   async function handleStartPrompt(prompt: ExplorePrompt) {
+    // No couple linked — keep the user on the screen with a quiet inline
+    // notice on this card instead of throwing a raw alert at them.
+    if (!user?.coupleId) {
+      setLinkNoticePromptId(prompt.id);
+      return;
+    }
     hapticImpact();
     try {
       const result = await startExplore.mutateAsync(prompt);
+      setLinkNoticePromptId(null);
       setActivePrompt(prompt);
       setActiveAssignmentId(result.assignmentId);
       setMode('responding');
-    } catch (error: any) {
-      Alert.alert('Unable to start', error?.message || 'Something went wrong. Please try again.');
+    } catch (error: unknown) {
+      if (error instanceof NoCoupleLinkedError) {
+        setLinkNoticePromptId(prompt.id);
+        return;
+      }
+      Alert.alert(
+        t('explore.startErrorTitle'),
+        error instanceof Error && error.message ? error.message : t('explore.startErrorBody'),
+      );
     }
   }
 
@@ -100,7 +127,7 @@ export default function ExploreScreen() {
       setResponseText('');
       if (result.safetyMatch) setShowSafetyResources(true);
     } catch {
-      Alert.alert('Could not save your response', 'Please check your connection and try again.');
+      Alert.alert(t('explore.saveErrorTitle'), t('explore.saveErrorBody'));
     }
   }
 
@@ -130,7 +157,7 @@ export default function ExploreScreen() {
             <Animated.View entering={FadeInUp.duration(400).delay(100)}>
               <TextInput
                 style={styles.textInput}
-                placeholder="Share your thoughts..."
+                placeholder={t('explore.placeholder')}
                 placeholderTextColor={colors.text.secondary}
                 multiline
                 textAlignVertical="top"
@@ -143,8 +170,8 @@ export default function ExploreScreen() {
             <View style={styles.respondingFooter}>
               <Text style={styles.charHint}>
                 {responseText.length < 10
-                  ? `${10 - responseText.length} more characters`
-                  : 'Ready to share'}
+                  ? t('explore.moreCharacters', { count: 10 - responseText.length })
+                  : t('explore.readyToShare')}
               </Text>
 
               <View style={styles.buttonRow}>
@@ -155,7 +182,7 @@ export default function ExploreScreen() {
                     setResponseText('');
                   }}
                 >
-                  <Text style={styles.cancelText} maxFontSizeMultiplier={1.4}>Back</Text>
+                  <Text style={styles.cancelText} maxFontSizeMultiplier={1.4}>{t('explore.back')}</Text>
                 </TouchableOpacity>
                 <Animated.View style={[{ flex: 1 }, submitAnimStyle]}>
                   <TouchableOpacity
@@ -178,7 +205,7 @@ export default function ExploreScreen() {
                     activeOpacity={0.8}
                   >
                     <Text style={styles.submitText} maxFontSizeMultiplier={1.4}>
-                      {submitResponse.isPending ? 'Sending...' : 'Share'}
+                      {submitResponse.isPending ? t('explore.sending') : t('explore.share')}
                     </Text>
                     {!submitResponse.isPending && (
                       <Icon name="arrow-right" size="sm" color={colors.text.inverse} />
@@ -205,8 +232,8 @@ export default function ExploreScreen() {
       {/* Header — eyebrow + Nunito-Black headline. No back button: this is a
           root tab in v1 (canGoBack() is true from the launch redirect). */}
       <View style={styles.header}>
-        <Text style={styles.headerEyebrow}>Browse by category</Text>
-        <Text style={styles.headerTitle}>Categories</Text>
+        <Text style={styles.headerEyebrow}>{t('explore.eyebrow')}</Text>
+        <Text style={styles.headerTitle}>{t('explore.title')}</Text>
       </View>
 
       {/* Category tabs */}
@@ -264,9 +291,15 @@ export default function ExploreScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color={colors.accent.primary} />
           </View>
+        ) : promptsFailed ? (
+          // Quiet in-shell error — header and chips stay put above
+          <QueryError
+            message={t('explore.loadError')}
+            onRetry={() => refetchPrompts()}
+          />
         ) : !prompts || prompts.length === 0 ? (
           <Animated.View entering={FadeIn.duration(400)} style={styles.emptyState}>
-            <Text style={styles.emptyText}>No prompts in this category yet</Text>
+            <Text style={styles.emptyText}>{t('explore.emptyCategory')}</Text>
           </Animated.View>
         ) : (
           prompts.map((prompt, index) => {
@@ -286,10 +319,9 @@ export default function ExploreScreen() {
                     {prompt.hint && (
                       <Text style={styles.promptHint}>{prompt.hint}</Text>
                     )}
+                    {/* No depth badge — "Surface/Medium/Deep" is internal
+                        taxonomy, not user vocabulary. The action stands alone. */}
                     <View style={styles.promptFooter}>
-                      <View style={styles.depthBadge}>
-                        <Text style={styles.depthText}>{prompt.emotionalDepth}</Text>
-                      </View>
                       {status === 'completed' ? (
                         <TouchableOpacity
                           style={styles.statusBadge}
@@ -301,14 +333,16 @@ export default function ExploreScreen() {
                         >
                           <Icon name="checks" size={14} color={colors.semantic.success} />
                           <Text style={[styles.statusText, { color: colors.semantic.success }]}>
-                            {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id ? 'Hide' : 'View responses'}
+                            {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id
+                              ? t('explore.hide')
+                              : t('explore.viewResponses')}
                           </Text>
                         </TouchableOpacity>
                       ) : status === 'partial' ? (
                         <View style={styles.statusBadge}>
                           <Icon name="hourglass" size={14} color={colors.semantic.neutral} />
                           <Text style={[styles.statusText, { color: colors.semantic.neutral }]}>
-                            Waiting for partner
+                            {t('explore.waiting')}
                           </Text>
                         </View>
                       ) : (
@@ -317,23 +351,45 @@ export default function ExploreScreen() {
                           onPress={() => handleStartPrompt(prompt)}
                           disabled={startExplore.isPending}
                         >
-                          <Text style={styles.respondButtonText} maxFontSizeMultiplier={1.4}>Respond</Text>
+                          <Text style={styles.respondButtonText} maxFontSizeMultiplier={1.4}>
+                            {t('explore.respond')}
+                          </Text>
                         </TouchableOpacity>
                       )}
                     </View>
-                    {/* Show responses when tapped */}
-                    {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id && viewingResponses && (
-                      <Animated.View entering={FadeIn.duration(300)} style={styles.responsesSection}>
-                        {viewingResponses.map((r) => (
-                          <View key={r.id} style={styles.responseRow}>
-                            <Text style={styles.responseAuthor}>
-                              {r.isCurrentUser ? 'You' : 'Partner'}
-                            </Text>
-                            <Text style={styles.responseText}>{r.text}</Text>
-                          </View>
-                        ))}
+                    {/* Quiet notice on the respond action — no couple linked */}
+                    {linkNoticePromptId === prompt.id && (
+                      <Animated.View entering={FadeIn.duration(300)} style={styles.linkNotice}>
+                        <Icon name="users" size={14} color={colors.text.secondary} />
+                        <Text style={styles.linkNoticeText}>{t('explore.linkFirst')}</Text>
                       </Animated.View>
                     )}
+                    {/* Show responses when tapped */}
+                    {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id &&
+                      (responsesLoading ? (
+                        <View style={styles.responsesSection} testID="explore-responses-loading">
+                          <View style={styles.responseRow}>
+                            <Skeleton width={48} height={12} />
+                            <Skeleton height={16} />
+                            <Skeleton height={16} width="70%" />
+                          </View>
+                          <View style={styles.responseRow}>
+                            <Skeleton width={64} height={12} />
+                            <Skeleton height={16} width="85%" />
+                          </View>
+                        </View>
+                      ) : viewingResponses ? (
+                        <Animated.View entering={FadeIn.duration(300)} style={styles.responsesSection}>
+                          {viewingResponses.map((r) => (
+                            <View key={r.id} style={styles.responseRow}>
+                              <Text style={styles.responseAuthor}>
+                                {r.isCurrentUser ? t('common.you') : t('explore.partnerLabel')}
+                              </Text>
+                              <Text style={styles.responseText}>{r.text}</Text>
+                            </View>
+                          ))}
+                        </Animated.View>
+                      ) : null)}
                   </View>
                 </View>
               </Animated.View>
@@ -444,18 +500,21 @@ const styles = StyleSheet.create({
   promptFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginTop: spacing.xs,
   },
-  depthBadge: {
-    backgroundColor: colors.surface.background,
-    paddingHorizontal: spacing.smd,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.pill,
+
+  // Quiet inline notice — respond needs a linked partner
+  linkNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.smd,
   },
-  depthText: {
+  linkNoticeText: {
     ...typography.caption,
     color: colors.text.secondary,
+    flex: 1,
   },
 
   // Status badges

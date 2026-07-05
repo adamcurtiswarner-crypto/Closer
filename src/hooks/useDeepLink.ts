@@ -4,25 +4,9 @@ import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useAuth } from './useAuth';
+import { extractInviteCode } from '@/utils/inviteLink';
 
 const PENDING_INVITE_KEY = '@stoke/pending_invite_code';
-
-// Extract invite code from URL
-function extractInviteCode(url: string): string | null {
-  // Handle stoke://join/CODE (also accepts closer:// for backward compat)
-  const customSchemeMatch = url.match(/(?:stoke|closer):\/\/join\/([A-Z0-9]{6})/i);
-  if (customSchemeMatch) {
-    return customSchemeMatch[1].toUpperCase();
-  }
-
-  // Handle https://stoke.app/join/CODE (also accepts closer.app for backward compat)
-  const universalLinkMatch = url.match(/(?:stoke|closer)\.app\/join\/([A-Z0-9]{6})/i);
-  if (universalLinkMatch) {
-    return universalLinkMatch[1].toUpperCase();
-  }
-
-  return null;
-}
 
 export function useDeepLink() {
   const { user, isAuthenticated, isLoading } = useAuth();

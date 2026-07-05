@@ -78,8 +78,10 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { updateWidgetData, buildWidgetData } from '@/services/widgetBridge';
 import { getAnniversaryCountdown } from '@/config/milestones';
 import { logEvent } from '@/services/analytics';
-import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
+import { UnpairedTodayCard } from '@/components/UnpairedTodayCard';
+import { NotificationPrePrompt } from '@/components/NotificationPrePrompt';
+import { useNotificationPrePrompt } from '@/hooks/useNotificationPrePrompt';
 import { logger } from '@/utils/logger';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { FEATURES } from '@/config/features';
@@ -205,6 +207,7 @@ export default function TodayScreen() {
   const { t } = useTranslation();
 
   const skipFollowUp = useSkipFollowUp();
+  const prePrompt = useNotificationPrePrompt(user?.id);
 
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
@@ -329,13 +332,13 @@ export default function TodayScreen() {
     heldReveal != null &&
     isSameSessionDeepener(assignment, heldReveal.assignment.id);
 
-  type Mode = 'loading' | 'no-prompt' | 'prompt' | 'responding' | 'waiting' | 'complete';
+  type Mode = 'loading' | 'error' | 'no-prompt' | 'prompt' | 'responding' | 'waiting' | 'complete';
 
   let mode: Mode;
   if (isLoading) {
     mode = 'loading';
   } else if (error) {
-    mode = 'loading';
+    mode = 'error';
   } else if (!assignment) {
     mode = 'no-prompt';
   } else if (isResponding) {
@@ -450,6 +453,16 @@ export default function TodayScreen() {
     }
   }, [mode, markResponseViewed]);
 
+  // The reveal is the second (and last) chance to offer the push pre-prompt —
+  // the value of "know when they answer" is most concrete right here.
+  // Gating lives in useNotificationPrePrompt (undetermined permission only,
+  // once per session, two lifetime exposures, never after the system dialog).
+  useEffect(() => {
+    if (mode === 'complete') {
+      prePrompt.offer('reveal');
+    }
+  }, [mode, prePrompt.offer]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Update iOS home screen widget data
   useEffect(() => {
     if (!user || !couple) return;
@@ -513,7 +526,13 @@ export default function TodayScreen() {
       });
       setIsResponding(false);
       setSelectedImage(null);
-      if (result.safetyMatch) setShowSafetyResources(true);
+      if (result.safetyMatch) {
+        setShowSafetyResources(true);
+      } else {
+        // First-submission seam: offer the push pre-prompt (gated internally).
+        // Skipped when safety resources are up — never stack over that moment.
+        prePrompt.offer('first_submit');
+      }
     } catch (err) {
       logger.error('Error submitting response:', err);
       Alert.alert('Could not save your response', 'Please check your connection and try again.');
@@ -538,7 +557,11 @@ export default function TodayScreen() {
       });
       // Success only once the write actually lands
       hapticNotification(NotificationFeedbackType.Success);
-      if (result.safetyMatch) setShowSafetyResources(true);
+      if (result.safetyMatch) {
+        setShowSafetyResources(true);
+      } else {
+        prePrompt.offer('first_submit');
+      }
     } catch (err) {
       logger.error('Error submitting score:', err);
       Alert.alert('Could not save your response', 'Please check your connection and try again.');
@@ -661,24 +684,58 @@ export default function TodayScreen() {
   // ─── Per-mode content (rendered inside the shared crossfade wrapper) ───
 
   const renderLoading = () => (
-    error ? (
-      <View style={styles.centered}>
-        <QueryError
-          message={t('today.errorLoading')}
-          onRetry={() => refetch()}
-        />
+    <View style={styles.scrollView}>
+      <View style={styles.greetingRow}>
+        <Text style={styles.greeting}>{getGreeting(t)}</Text>
+        <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
       </View>
-    ) : (
-      <View style={styles.scrollView}>
-        <View style={styles.greetingRow}>
-          <Text style={styles.greeting}>{getGreeting(t)}</Text>
-          <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-        </View>
-        <View style={styles.promptSection}>
-          <PromptCardSkeleton />
-        </View>
+      <View style={styles.promptSection}>
+        <PromptCardSkeleton />
       </View>
-    )
+    </View>
+  );
+
+  // Error keeps the shell — header stays, tabs stay, just a quiet card
+  const renderError = () => (
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
+    >
+      <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
+
+      <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
+        <AccentBar />
+        <Icon name="cloud" size="xl" color={colors.text.muted} weight="light" />
+        <Text style={styles.emptyTitle}>{t('today.errorLoading')}</Text>
+        <TouchableOpacity
+          style={styles.triggerButton}
+          onPress={() => refetch()}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('today.retry')}
+        >
+          <Text style={styles.triggerButtonText} maxFontSizeMultiplier={1.4}>
+            {t('today.retry')}
+          </Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </ScrollView>
+  );
+
+  // No couple yet — daily delivery needs a partner, so say so and offer the fix
+  const renderUnpaired = () => (
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
+    >
+      <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
+      <UnpairedTodayCard
+        onInvite={() => router.push('/(onboarding)/invite-partner')}
+        onBrowse={() => router.push('/(app)/explore')}
+      />
+    </ScrollView>
   );
 
   const renderNoPrompt = () => (
@@ -752,7 +809,9 @@ export default function TodayScreen() {
           <BreathingLockIcon />
           <Text style={styles.sealedTitle}>{t('today.answerSaved')}</Text>
           <Text style={styles.sealedSubtitle}>
-            {t('today.sealedUntil', { name: partnerName ?? 'your partner' })}
+            {todayData?.isMyResponseOffline
+              ? t('today.savedOffline')
+              : t('today.sealedUntil', { name: partnerName ?? 'your partner' })}
           </Text>
         </Animated.View>
 
@@ -1035,7 +1094,8 @@ export default function TodayScreen() {
           style={styles.modeContainer}
         >
           {mode === 'loading' && renderLoading()}
-          {mode === 'no-prompt' && renderNoPrompt()}
+          {mode === 'error' && renderError()}
+          {mode === 'no-prompt' && (user?.coupleId ? renderNoPrompt() : renderUnpaired())}
           {mode === 'waiting' && renderWaiting()}
           {mode === 'complete' && renderComplete()}
           {mode === 'prompt' && renderPrompt()}
@@ -1051,6 +1111,12 @@ export default function TodayScreen() {
         visible={showSafetyResources}
         onClose={() => setShowSafetyResources(false)}
       />
+      <NotificationPrePrompt
+        visible={prePrompt.visible}
+        partnerName={partnerName}
+        onAccept={prePrompt.accept}
+        onDismiss={prePrompt.dismiss}
+      />
     </SafeAreaView>
   );
 }
@@ -1062,11 +1128,6 @@ const styles = StyleSheet.create({
   },
   modeContainer: {
     flex: 1,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   scrollView: {
     flex: 1,

@@ -13,6 +13,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "io.getstoke.app",
+      "associatedDomains": [
+        "applinks:stoke-5f762.web.app",
+        "applinks:link.getstoke.io"
+      ],
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
@@ -40,6 +44,16 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
+            {
+              "scheme": "https",
+              "host": "stoke-5f762.web.app",
+              "pathPrefix": "/join"
+            },
+            {
+              "scheme": "https",
+              "host": "link.getstoke.io",
+              "pathPrefix": "/join"
+            },
             {
               "scheme": "https",
               "host": "stoke.app",

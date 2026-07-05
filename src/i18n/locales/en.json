@@ -76,15 +76,26 @@
       "subtitle": "Enter the code they sent you.",
       "placeholder": "ABC123",
       "join": "Join",
-      "invalidCode": "Invalid Code",
+      "invalidCode": "Invalid code",
       "invalidCodeBody": "This code isn't valid or has expired. Ask your partner for a new one.",
-      "enterSixChar": "Please enter a 6-character code."
+      "enterSixChar": "Please enter a 6-character code.",
+      "clipboardFilled": "Filled in from your clipboard",
+      "errors": {
+        "alreadyPairedTitle": "Already paired",
+        "alreadyPairedBody": "Your account is already linked to a partner. Disconnect first in Settings, then try again.",
+        "expiredTitle": "Code expired",
+        "expiredBody": "This invite code has expired. Ask your partner to create a new one.",
+        "usedTitle": "Code already used",
+        "usedBody": "This invite code has already been accepted.",
+        "ownCodeTitle": "Own code",
+        "ownCodeBody": "This is your invite code. Share it with your partner instead."
+      }
     },
     "firstPrompt": {
       "title": "Here's how it works",
       "samplePrompt": "What's one thing your partner did this week that made your day better?",
       "explanation": "Each day, you both answer privately. Then you see each other's response.",
-      "showMe": "Show Me",
+      "showMe": "Show me",
       "theirResponse": "Their response",
       "sampleResponse": "When you made coffee before I asked. I noticed, even if I didn't say anything.",
       "tagline": "That's it. Small moments, shared.",
@@ -100,20 +111,21 @@
       "share": "Share",
       "waitForThem": "I'll wait for them to join",
       "haveInviteCode": "I have an invite code",
-      "createInvite": "Create Invite",
-      "inviteCopied": "Invite code copied to clipboard."
-    },
-    "preferences": {
-      "title": "A few quick things",
-      "partnerLabel": "What should we call your partner?",
-      "partnerPlaceholder": "Their name or nickname",
-      "promptTimeLabel": "When should your daily prompt arrive?",
-      "timeOptions": {
-        "morning": "Morning (8 AM)",
-        "afternoon": "Afternoon (2 PM)",
-        "evening": "Evening (7 PM)",
-        "night": "Night (9 PM)"
-      }
+      "createInvite": "Create invite",
+      "inviteCopied": "Invite code copied to clipboard.",
+      "createErrorTitle": "Could not create your invite",
+      "createErrorBody": "Check your connection and try again.",
+      "tryAgain": "Try again",
+      "shareFailedTitle": "Share didn't open",
+      "shareFailedBody": "You can copy the code instead.",
+      "skipErrorTitle": "Could not continue",
+      "skipErrorBody": "Check your connection and try again.",
+      "verifyNotice": "Verify your email when you can — we sent you a link.",
+      "verifyResend": "Resend the link",
+      "verifyResending": "Sending...",
+      "verifyResendSent": "Sent. Check your inbox.",
+      "verifyResendErrorTitle": "Could not resend",
+      "verifyResendErrorBody": "Please try again later."
     },
     "toneCalibration": {
       "title": "How are you two doing?",
@@ -128,22 +140,21 @@
     "ready": {
       "title": "You're all set",
       "subtitle": "Your first prompt arrives at {{time}}.",
-      "startNow": "Start Now",
+      "changeTime": "Prefer a different time?",
+      "startNow": "Start now",
       "waitForPrompt": "I'll wait for the prompt"
     },
-    "verifyEmail": {
-      "title": "Check your email",
-      "subtitle": "We sent a verification link to {{email}}. Tap the link to verify your account.",
-      "resend": "Resend email",
-      "resending": "Sending...",
-      "sentAlert": "Verification email resent. Check your inbox.",
-      "errorAlert": "Could not resend. Please try again later.",
-      "note": "You can verify later, but some features require a verified email."
+    "valueProp": {
+      "title": "Stay connected in\njust 5 minutes a day",
+      "subtitle": "One thoughtful question, answered together.\nThat's all it takes to keep the spark alive.",
+      "featureDaily": "One prompt a day, made for the two of you",
+      "featurePrivate": "Private by design — just you and your partner",
+      "featureCouples": "Built for long-term couples"
     },
     "waitingPartner": {
       "title": "Waiting for your partner",
       "subtitle": "We'll let you know when they join.",
-      "resendInvite": "Resend Invite"
+      "resendInvite": "Resend invite"
     }
   },
   "today": {
@@ -164,7 +175,7 @@
     "share": "Share",
     "sending": "Sending...",
     "niceOne": "Nice one",
-    "beautiful": "Beautiful",
+    "beautiful": "Well done",
     "yourResponse": "Your response",
     "waitingFor": "Waiting for {{name}}...",
     "answerSaved": "Your answer is saved",
@@ -176,10 +187,21 @@
     "okay": "Okay",
     "hard": "Hard",
     "thanksForSharing": "Thanks for sharing",
-    "streakStarted": "Streak started!",
-    "dayStreak": "{{count}} day streak!",
+    "streakStarted": "Streak started",
+    "dayStreak": "{{count}} days together",
     "seeYouTomorrow": "See you tomorrow",
-    "errorLoading": "Couldn't load today's prompt."
+    "errorLoading": "Couldn't load today's prompt.",
+    "retry": "Try again",
+    "savedOffline": "Saved on this phone — it'll send when you're back online.",
+    "unpairedEyebrow": "One more person",
+    "unpairedHeading": "Stoke needs both of you",
+    "unpairedBody": "Daily questions unlock when your partner joins.",
+    "invitePartner": "Invite your partner",
+    "browseQuestions": "Browse questions",
+    "notifHeading": "Know the moment they answer",
+    "notifBody": "We'll only nudge when it matters — when {{name}} answers, and when a new question is ready.",
+    "notifCta": "Turn on notifications",
+    "notNow": "Not now"
   },
   "memories": {
     "title": "Memories",
@@ -249,7 +271,7 @@
     "free": "Free",
     "version": "Version",
     "signOut": "Sign out",
-    "signOutConfirm": "Are you sure?",
+    "signOutConfirm": "You can sign back in anytime.",
     "promptTimeTitle": "Daily prompt time",
     "promptTimeSubtitle": "When should your daily prompt arrive?",
     "frequencyTitle": "Prompt frequency",
@@ -272,15 +294,16 @@
     "anonymized": "Responses anonymized",
     "anonymizedBody": "{{count}} responses have been replaced with [removed].",
     "exportUnavailable": "Data export is available once every 24 hours.",
-    "exportFailed": "Failed to export data. Please try again.",
-    "deleteFailed": "Failed to delete account. Please try again.",
-    "anonymizeFailed": "Failed to anonymize responses. Please try again.",
-    "privacyPolicy": "Privacy Policy",
-    "termsOfService": "Terms of Service",
+    "exportFailed": "Couldn't export your data. Please try again.",
+    "deleteFailed": "Couldn't delete your account. Please try again.",
+    "anonymizeFailed": "Couldn't anonymize your responses. Please try again.",
+    "privacyPolicy": "Privacy policy",
+    "termsOfService": "Terms of service",
     "safetyText": "Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.",
     "safetyLink": "National Domestic Violence Hotline",
-    "errorUpdateTime": "Failed to update notification time",
-    "errorUpdateFrequency": "Failed to update prompt frequency",
+    "errorUpdateTime": "Couldn't update your prompt time. Please try again.",
+    "errorUpdateFrequency": "Couldn't update your prompt frequency. Please try again.",
+    "partnerLoveLanguageNotSet": "They haven't picked theirs yet",
     "subscriptionWarning": "You have an active subscription",
     "subscriptionWarningBody": "Deleting your account will not cancel your subscription. You will continue to be charged unless you cancel it first.",
     "manageSubscription": "Manage subscription",
@@ -412,16 +435,27 @@
     "banner": "You're offline. Changes will sync when you reconnect."
   },
   "explore": {
-    "heading": "Explore prompts",
+    "eyebrow": "Browse by category",
+    "title": "Categories",
     "respond": "Respond",
     "waiting": "Waiting for partner",
     "completed": "Completed",
+    "viewResponses": "View responses",
+    "hide": "Hide",
     "emptyCategory": "No prompts in this category yet",
+    "loadError": "These prompts didn't load. Check your connection and try again.",
+    "linkFirst": "Link with your partner first — questions are answered together.",
+    "placeholder": "Share your thoughts...",
     "moreCharacters": "{{count}} more characters",
     "readyToShare": "Ready to share",
     "share": "Share",
     "sending": "Sending...",
-    "back": "Back"
+    "back": "Back",
+    "partnerLabel": "Partner",
+    "startErrorTitle": "Unable to start",
+    "startErrorBody": "Something went wrong. Please try again.",
+    "saveErrorTitle": "Could not save your response",
+    "saveErrorBody": "Please check your connection and try again."
   },
   "dateNights": {
     "title": "Date Nights",

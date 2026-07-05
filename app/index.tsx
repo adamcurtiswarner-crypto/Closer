@@ -22,7 +22,7 @@ export default function Index() {
     if (!user?.coupleId) {
       return <Redirect href="/(onboarding)/invite-partner" />;
     }
-    return <Redirect href="/(onboarding)/preferences" />;
+    return <Redirect href="/(onboarding)/tone-calibration" />;
   }
 
   return <Redirect href="/(app)/today" />;

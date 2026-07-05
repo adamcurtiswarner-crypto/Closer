@@ -17,22 +17,13 @@ import { Button, Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 
 import { colors, spacing, typography } from '@/config/theme';
+
+// Skippable — prompt selection falls back to the 'solid' default
+// written at sign-up (see useAuth), so no answer is required here.
 const TONE_OPTIONS = [
-  {
-    value: 'solid',
-    label: "We're solid",
-    description: 'Just want to stay that way',
-  },
-  {
-    value: 'distant',
-    label: "We're okay",
-    description: 'But feel a bit distant lately',
-  },
-  {
-    value: 'struggling',
-    label: "We're struggling to connect",
-    description: 'Want to be more intentional',
-  },
+  { value: 'solid', labelKey: 'solid', descriptionKey: 'solidDescription' },
+  { value: 'distant', labelKey: 'okay', descriptionKey: 'okayDescription' },
+  { value: 'struggling', labelKey: 'struggling', descriptionKey: 'strugglingDescription' },
 ];
 
 export default function ToneCalibrationScreen() {
@@ -51,13 +42,17 @@ export default function ToneCalibrationScreen() {
         updated_at: serverTimestamp(),
       });
       await refreshUser();
-      router.push('/(onboarding)/relationship-stage');
+      router.push('/(onboarding)/first-prompt');
     } catch (error) {
       logger.error('Error saving tone calibration:', error);
       Alert.alert('Could not save', 'Please check your connection and try again.');
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSkip = () => {
+    router.push('/(onboarding)/first-prompt');
   };
 
   return (
@@ -94,7 +89,7 @@ export default function ToneCalibrationScreen() {
                         : styles.optionLabelDefault,
                     ]}
                   >
-                    {option.label}
+                    {t(`onboarding.toneCalibration.${option.labelKey}`)}
                   </Text>
                   {selectedTone === option.value && (
                     <Icon name="check" size="sm" color={colors.accent.primary} weight="bold" />
@@ -108,7 +103,7 @@ export default function ToneCalibrationScreen() {
                       : styles.optionDescriptionDefault,
                   ]}
                 >
-                  {option.description}
+                  {t(`onboarding.toneCalibration.${option.descriptionKey}`)}
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -123,6 +118,13 @@ export default function ToneCalibrationScreen() {
             onPress={handleContinue}
             disabled={!selectedTone || isSaving}
           />
+          <TouchableOpacity
+            style={styles.skipLink}
+            onPress={handleSkip}
+            disabled={isSaving}
+          >
+            <Text style={styles.skipText}>{t('common.skipForNow')}</Text>
+          </TouchableOpacity>
         </Animated.View>
       </View>
     </SafeAreaView>
@@ -195,5 +197,16 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginBottom: spacing.xl,
+  },
+  skipLink: {
+    marginTop: spacing.md,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  skipText: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    textAlign: 'center',
   },
 });

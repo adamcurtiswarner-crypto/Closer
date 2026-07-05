@@ -196,6 +196,12 @@ interface TodayPrompt {
   isComplete: boolean;
   nextPromptAt: string | null;
   reactions: Record<string, string> | null;
+  /**
+   * True when myResponse is an optimistic local write queued offline —
+   * the UI shows the "saved on this phone" line instead of "sealed until".
+   * Cleared naturally when the flushed response arrives via onSnapshot.
+   */
+  isMyResponseOffline?: boolean;
 }
 
 const EMPTY_TODAY: TodayPrompt = {
@@ -351,24 +357,64 @@ export function useTodayPrompt() {
   });
 }
 
-// Flush any queued offline responses
-async function flushOfflineQueue(userId: string, coupleId: string) {
+interface OfflineQueuedResponse {
+  assignmentId: string;
+  responseText: string;
+  imageUri?: string;
+  responseScore?: number;
+}
+
+/**
+ * Dedupe the offline queue: the queue is per-device (one user), so one
+ * response per assignment is the invariant. Same assignment queued twice
+ * (user resubmitted while offline) → keep the LATEST entry.
+ */
+export function dedupeOfflineQueue(queue: OfflineQueuedResponse[]): OfflineQueuedResponse[] {
+  const latestByAssignment = new Map<string, OfflineQueuedResponse>();
+  for (const item of queue) {
+    if (item?.assignmentId) {
+      latestByAssignment.set(item.assignmentId, item);
+    }
+  }
+  return [...latestByAssignment.values()];
+}
+
+/**
+ * True when this user already has a response for the assignment on the
+ * server — the queued item is a duplicate (e.g. the original write landed
+ * before connectivity dropped, or another device flushed first) and must be
+ * dropped so response_count never double-counts one person.
+ */
+async function hasExistingResponse(assignmentId: string, userId: string): Promise<boolean> {
+  const existingQuery = query(
+    collection(db, 'prompt_responses'),
+    where('assignment_id', '==', assignmentId),
+    where('user_id', '==', userId)
+  );
+  const existingSnap = await getDocs(existingQuery);
+  return !existingSnap.empty;
+}
+
+// Flush any queued offline responses — at most one response per user per
+// assignment ever leaves this client (dedupe within the queue + server check).
+export async function flushOfflineQueue(userId: string, coupleId: string) {
   try {
     const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
     if (!raw) return;
-    const queue: {
-      assignmentId: string;
-      responseText: string;
-      imageUri?: string;
-      responseScore?: number;
-    }[] = JSON.parse(raw);
-    if (queue.length === 0) return;
+    const queue: OfflineQueuedResponse[] = dedupeOfflineQueue(JSON.parse(raw));
+    if (queue.length === 0) {
+      await AsyncStorage.removeItem(OFFLINE_QUEUE_KEY);
+      return;
+    }
 
     for (const item of queue) {
       const assignmentRef = doc(db, 'prompt_assignments', item.assignmentId);
       const assignmentSnap = await getDoc(assignmentRef);
       if (!assignmentSnap.exists()) continue;
       const assignmentData = assignmentSnap.data();
+
+      // Drop queued items already answered by this user on the server
+      if (await hasExistingResponse(item.assignmentId, userId)) continue;
 
       // Upload queued photo if present
       let imageUrl: string | null = null;
@@ -468,9 +514,37 @@ export function useSubmitResponse() {
       const netState = await NetInfo.fetch();
       if (!netState.isConnected) {
         const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
-        const queue = raw ? JSON.parse(raw) : [];
-        queue.push({ assignmentId, responseText, imageUri, responseScore });
-        await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+        const queue: OfflineQueuedResponse[] = raw ? JSON.parse(raw) : [];
+        // At most one queued response per assignment — resubmits replace
+        const nextQueue = dedupeOfflineQueue([
+          ...queue,
+          { assignmentId, responseText, imageUri, responseScore },
+        ]);
+        await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(nextQueue));
+
+        // Optimistically move today's cache to the answered state so the UI
+        // seals the card instead of dropping back to unanswered (which used
+        // to invite a duplicate resubmit). onSnapshot replaces this wholesale
+        // once the flushed response lands on the server.
+        const cacheKey = ['todayPrompt', user.coupleId];
+        const current = queryClient.getQueryData<TodayPrompt>(cacheKey);
+        if (current?.assignment?.id === assignmentId && !current.myResponse) {
+          queryClient.setQueryData<TodayPrompt>(cacheKey, {
+            ...current,
+            assignment: { ...current.assignment, status: 'partial' },
+            myResponse: {
+              id: `offline-${assignmentId}`,
+              responseText,
+              imageUrl: null,
+              submittedAt: new Date(),
+              status: 'submitted',
+              responseScore: responseScore ?? null,
+            },
+            isComplete: false,
+            isMyResponseOffline: true,
+          });
+        }
+
         return {
           responseId: 'offline-queued',
           isComplete: false,

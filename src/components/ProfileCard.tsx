@@ -322,17 +322,25 @@ export function ProfileCard() {
           <Icon name="caret-right" size="sm" color={colors.text.muted} />
         </TouchableOpacity>
 
-        {/* Partner's love language (read-only) */}
+        {/* Partner's love language — informational only, no press affordance
+            or chevron. Key lives in settings.* because ProfileCard renders
+            only inside the settings screen (namespace ownership). */}
         {user.coupleId && (
           <View style={styles.partnerLangRow}>
-            <Text style={styles.partnerLangLabel}>
-              {user.partnerName ? `${user.partnerName}'s` : "Partner's"}
-            </Text>
-            <Text style={styles.partnerLangValue}>
-              {partnerLoveLanguage
-                ? (getLoveLanguageDisplay(partnerLoveLanguage)?.icon || '') + ' ' + (getLoveLanguageDisplay(partnerLoveLanguage)?.label || '')
-                : t('common.notSetYet')}
-            </Text>
+            {partnerLoveLanguage ? (
+              <>
+                <Text style={styles.partnerLangLabel}>
+                  {user.partnerName ? `${user.partnerName}'s` : "Partner's"}
+                </Text>
+                <Text style={styles.partnerLangValue}>
+                  {getLoveLanguageDisplay(partnerLoveLanguage)?.label || ''}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.partnerLangValue}>
+                {t('settings.partnerLoveLanguageNotSet')}
+              </Text>
+            )}
           </View>
         )}
       </Animated.View>

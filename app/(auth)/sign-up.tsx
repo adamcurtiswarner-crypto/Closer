@@ -60,7 +60,9 @@ export default function SignUpScreen() {
         // User came from "I have an invite code" on welcome screen
         router.replace('/(onboarding)/accept-invite');
       } else {
-        router.replace('/(onboarding)/verify-email');
+        // Verification is a passive notice on the invite screen now —
+        // lead with the value proposition instead of an email gate.
+        router.replace('/(onboarding)/value-prop');
       }
     } catch (error: any) {
       Alert.alert(t('auth.signUp.failed'), getAuthErrorMessage(error));

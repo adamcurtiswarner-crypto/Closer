@@ -11,6 +11,8 @@ import {
 import { format } from 'date-fns';
 import { useCouple, usePendingInvite, useCreateInvite, useCancelInvite, useDisconnectPartner } from '@/hooks/useCouple';
 import { usePartner } from '@/hooks/usePartner';
+import { getShareMessage } from '@/config/app';
+import { copyInviteToClipboard } from '@/utils/inviteLink';
 
 import { colors, spacing, typography } from '@/config/theme';
 interface PartnershipSectionProps {
@@ -45,6 +47,7 @@ export function PartnershipSection({
     try {
       const result = await createInvite.mutateAsync();
       // Share the invite
+      void copyInviteToClipboard(result.code);
       await Share.share({
         message: result.shareMessage,
       });
@@ -56,8 +59,9 @@ export function PartnershipSection({
   const handleShareInvite = async () => {
     if (!pendingInvite) return;
     try {
+      void copyInviteToClipboard(pendingInvite.code);
       await Share.share({
-        message: `Join me on Stoke — a daily prompt app for couples. Download Stoke from the App Store, then enter this code to link up: ${pendingInvite.code}`,
+        message: getShareMessage(pendingInvite.code),
       });
     } catch (error) {
       // User cancelled share

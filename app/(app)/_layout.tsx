@@ -105,9 +105,19 @@ export default function AppLayout() {
     return <Redirect href="/(auth)/welcome" />;
   }
 
-  // Redirect non-onboarded users
+  // Redirect non-onboarded users to where they left off:
+  // paired users resume at tone calibration, unpaired at the invite step.
+  // Users who skipped the invite have is_onboarded set and stay here.
   if (!isLoading && isAuthenticated && user && !user.isOnboarded) {
-    return <Redirect href="/(onboarding)/preferences" />;
+    return (
+      <Redirect
+        href={
+          user.coupleId
+            ? '/(onboarding)/tone-calibration'
+            : '/(onboarding)/invite-partner'
+        }
+      />
+    );
   }
 
   return (

@@ -28,7 +28,7 @@ export default function WaitingPartnerScreen() {
   // If partner joined, redirect
   React.useEffect(() => {
     if (couple?.status === 'active') {
-      router.replace('/(onboarding)/value-prop');
+      router.replace('/(onboarding)/tone-calibration');
     }
   }, [couple]);
 

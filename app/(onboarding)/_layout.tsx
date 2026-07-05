@@ -11,14 +11,11 @@ export default function OnboardingLayout() {
         animation: 'slide_from_right',
       }}
     >
-      <Stack.Screen name="verify-email" />
+      <Stack.Screen name="value-prop" />
       <Stack.Screen name="invite-partner" />
       <Stack.Screen name="accept-invite" />
       <Stack.Screen name="waiting-partner" />
-      <Stack.Screen name="value-prop" />
-      <Stack.Screen name="preferences" />
       <Stack.Screen name="tone-calibration" />
-      <Stack.Screen name="relationship-stage" />
       <Stack.Screen name="first-prompt" />
       <Stack.Screen name="ready" />
     </Stack>

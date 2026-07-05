@@ -69,7 +69,10 @@ type AnalyticsEvent =
   | 'milestone_viewed'
   | 'prompt_reaction_added'
   | 'follow_up_skipped'
-  | 'safety_resources_shown';
+  | 'safety_resources_shown'
+  | 'push_preprompt_shown'
+  | 'push_preprompt_accepted'
+  | 'push_preprompt_dismissed';
 
 interface EventContext {
   user_id?: string;

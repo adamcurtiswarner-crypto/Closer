@@ -20,6 +20,15 @@ export interface ExplorePrompt {
   emotionalDepth: string;
 }
 
+// Thrown when a respond action needs a linked couple and there isn't one —
+// lets the UI surface a quiet inline notice instead of matching error strings.
+export class NoCoupleLinkedError extends Error {
+  constructor() {
+    super('No couple linked');
+    this.name = 'NoCoupleLinkedError';
+  }
+}
+
 // Fetch all active prompts for a given category
 export function usePromptsByCategory(category: string | null) {
   return useQuery({
@@ -81,7 +90,7 @@ export function useStartExplorePrompt() {
 
   return useMutation({
     mutationFn: async (prompt: ExplorePrompt) => {
-      if (!user?.coupleId) throw new Error('No couple linked');
+      if (!user?.coupleId) throw new NoCoupleLinkedError();
       const today = new Date().toISOString().split('T')[0];
       const ref = collection(db, 'prompt_assignments');
       const assignmentDoc = await addDoc(ref, {

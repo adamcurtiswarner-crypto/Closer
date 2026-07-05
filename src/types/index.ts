@@ -66,10 +66,10 @@ export type AuthStackParamList = {
 };
 
 export type OnboardingStackParamList = {
+  'value-prop': undefined;
   'invite-partner': undefined;
   'accept-invite': undefined;
   'waiting-partner': undefined;
-  preferences: undefined;
   'tone-calibration': undefined;
   'first-prompt': undefined;
   ready: undefined;

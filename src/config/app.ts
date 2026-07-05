@@ -1,3 +1,8 @@
-export function getShareMessage(code: string): string {
-  return `Join me on Stoke — a daily prompt app for couples. Download Stoke from the App Store, then enter this code to link up: ${code}`;
+import { buildInviteLink } from '@/utils/inviteLink';
+
+export function getShareMessage(code: string, inviterName?: string | null): string {
+  const opening = inviterName
+    ? `${inviterName} is inviting you to Stoke`
+    : 'Join me on Stoke';
+  return `${opening} — one question a day, answered together. Join here: ${buildInviteLink(code)}`;
 }

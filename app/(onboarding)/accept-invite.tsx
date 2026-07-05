@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View,
   Text,
   TextInput,
   Alert,
@@ -11,17 +10,22 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 import { Button } from '@/components';
 import { useAcceptInvite } from '@/hooks/useCouple';
 import { clearPendingInviteCode } from '@/hooks/useDeepLink';
+import { matchClipboardInvite } from '@/utils/inviteCode';
+import { logger } from '@/utils/logger';
 import { useTranslation } from 'react-i18next';
 
 import { colors, spacing, typography } from '@/config/theme';
 export default function AcceptInviteScreen() {
   const { code: codeParam } = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState('');
+  const [clipboardFilled, setClipboardFilled] = useState(false);
   const acceptInvite = useAcceptInvite();
   const hasAutoSubmitted = useRef(false);
+  const hasCheckedClipboard = useRef(false);
   const { t } = useTranslation();
 
   // Handle code from deep link params
@@ -31,7 +35,37 @@ export default function AcceptInviteScreen() {
     }
   }, [codeParam]);
 
-  // Auto-submit if code came from deep link
+  // Quiet clipboard auto-fill: if there's no deep-link code and the field
+  // is empty, prefill from a copied invite code or join link. Fill only —
+  // auto-submit stays reserved for the join URL param below.
+  useEffect(() => {
+    if (codeParam || hasCheckedClipboard.current) return;
+    hasCheckedClipboard.current = true;
+
+    const checkClipboard = async () => {
+      try {
+        const hasString = await Clipboard.hasStringAsync();
+        if (!hasString) return;
+
+        const text = await Clipboard.getStringAsync();
+        const match = matchClipboardInvite(text);
+        if (match) {
+          setCode((current) => {
+            if (current.length > 0) return current;
+            setClipboardFilled(true);
+            return match.code;
+          });
+        }
+      } catch (error) {
+        // Clipboard access is best-effort; typing still works
+        logger.warn('Could not read clipboard for invite code:', error);
+      }
+    };
+
+    checkClipboard();
+  }, [codeParam]);
+
+  // Auto-submit if code came from a deep link
   useEffect(() => {
     if (
       codeParam &&
@@ -53,7 +87,7 @@ export default function AcceptInviteScreen() {
     try {
       await acceptInvite.mutateAsync(code.toUpperCase());
       await clearPendingInviteCode();
-      router.replace('/(onboarding)/value-prop');
+      router.replace('/(onboarding)/tone-calibration');
     } catch (error: any) {
       hasAutoSubmitted.current = false; // Allow retry
       const message = error?.message || '';
@@ -61,23 +95,23 @@ export default function AcceptInviteScreen() {
       // Show specific error messages for known cases
       if (message.includes('Already in a couple')) {
         Alert.alert(
-          'Already Paired',
-          'Your account is already linked to a partner. Sign out and try again, or contact support.'
+          t('onboarding.acceptInvite.errors.alreadyPairedTitle'),
+          t('onboarding.acceptInvite.errors.alreadyPairedBody')
         );
       } else if (message.includes('expired')) {
         Alert.alert(
-          'Code Expired',
-          'This invite code has expired. Ask your partner to generate a new one.'
+          t('onboarding.acceptInvite.errors.expiredTitle'),
+          t('onboarding.acceptInvite.errors.expiredBody')
         );
       } else if (message.includes('already been used')) {
         Alert.alert(
-          'Code Already Used',
-          'This invite code has already been accepted.'
+          t('onboarding.acceptInvite.errors.usedTitle'),
+          t('onboarding.acceptInvite.errors.usedBody')
         );
       } else if (message.includes('your own invite')) {
         Alert.alert(
-          'Own Code',
-          'You cannot accept your own invite code. Share it with your partner instead.'
+          t('onboarding.acceptInvite.errors.ownCodeTitle'),
+          t('onboarding.acceptInvite.errors.ownCodeBody')
         );
       } else {
         Alert.alert(
@@ -109,11 +143,19 @@ export default function AcceptInviteScreen() {
             placeholder="ABC123"
             placeholderTextColor={colors.border.default}
             value={code}
-            onChangeText={(text) => setCode(text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+            onChangeText={(text) => {
+              setClipboardFilled(false);
+              setCode(text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6));
+            }}
             autoCapitalize="characters"
             autoCorrect={false}
             maxLength={6}
           />
+          {clipboardFilled && (
+            <Animated.Text entering={FadeIn.duration(300)} style={styles.clipboardHint}>
+              {t('onboarding.acceptInvite.clipboardFilled')}
+            </Animated.Text>
+          )}
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(300)} style={styles.joinButtonContainer}>
@@ -171,6 +213,12 @@ const styles = StyleSheet.create({
     color: colors.accent.primary,
     borderWidth: 1,
     borderColor: colors.border.default,
+  },
+  clipboardHint: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
   },
   joinButtonContainer: {
     marginTop: spacing.xl,

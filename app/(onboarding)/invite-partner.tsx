@@ -10,36 +10,100 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import * as Clipboard from 'expo-clipboard';
+import { sendEmailVerification } from 'firebase/auth';
 import { logger } from '@/utils/logger';
 import { router } from 'expo-router';
 import { Button } from '@/components';
+import { useAuth } from '@/hooks/useAuth';
 import { useCreateInvite, usePendingInvite } from '@/hooks/useCouple';
+import { completeOnboarding } from '@/utils/onboarding';
 import { getShareMessage } from '@/config/app';
+import { copyInviteToClipboard } from '@/utils/inviteLink';
 import { useTranslation } from 'react-i18next';
 
 import { colors, spacing, typography } from '@/config/theme';
+
+type ResendState = 'idle' | 'sending' | 'sent';
+
+// Passive verification notice — the flow no longer stops on a
+// dedicated verify-email screen; verification can happen any time.
+function VerifyEmailNotice() {
+  const { firebaseUser } = useAuth();
+  const [resendState, setResendState] = useState<ResendState>('idle');
+  const { t } = useTranslation();
+
+  if (!firebaseUser || firebaseUser.emailVerified) return null;
+
+  const handleResend = async () => {
+    if (resendState !== 'idle') return;
+    setResendState('sending');
+    try {
+      await sendEmailVerification(firebaseUser);
+      setResendState('sent');
+    } catch (error) {
+      logger.warn('Could not resend verification email:', error);
+      setResendState('idle');
+      Alert.alert(
+        t('onboarding.invitePartner.verifyResendErrorTitle'),
+        t('onboarding.invitePartner.verifyResendErrorBody')
+      );
+    }
+  };
+
+  return (
+    <Animated.View entering={FadeIn.duration(400).delay(700)} style={styles.verifyNotice}>
+      <Text style={styles.verifyNoticeText}>
+        {t('onboarding.invitePartner.verifyNotice')}
+      </Text>
+      {resendState === 'sent' ? (
+        <Text style={styles.verifyNoticeSent}>
+          {t('onboarding.invitePartner.verifyResendSent')}
+        </Text>
+      ) : (
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={handleResend}
+          disabled={resendState === 'sending'}
+          style={styles.verifyNoticeLinkButton}
+        >
+          <Text style={styles.verifyNoticeLink}>
+            {resendState === 'sending'
+              ? t('onboarding.invitePartner.verifyResending')
+              : t('onboarding.invitePartner.verifyResend')}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </Animated.View>
+  );
+}
+
 export default function InvitePartnerScreen() {
+  const { user, refreshUser } = useAuth();
   const { data: pendingInvite } = usePendingInvite();
   const createInvite = useCreateInvite();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [isSkipping, setIsSkipping] = useState(false);
   const { t } = useTranslation();
 
   // Sync state when pending invite loads asynchronously
   useEffect(() => {
     if (pendingInvite?.code && !inviteCode) {
       setInviteCode(pendingInvite.code);
-      setShareMessage(getShareMessage(pendingInvite.code));
+      setShareMessage(getShareMessage(pendingInvite.code, user?.displayName));
     }
-  }, [pendingInvite?.code]);
+  }, [pendingInvite?.code, user?.displayName]);
 
   const handleCreateInvite = async () => {
+    setCreateError(null);
     try {
       const result = await createInvite.mutateAsync();
       setInviteCode(result.code);
       setShareMessage(result.shareMessage);
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to create invite.');
+    } catch (error) {
+      logger.error('Could not create invite:', error);
+      setCreateError(t('onboarding.invitePartner.createErrorBody'));
     }
   };
 
@@ -54,14 +118,50 @@ export default function InvitePartnerScreen() {
     if (!shareMessage) return;
 
     try {
+      void copyInviteToClipboard(inviteCode ?? pendingInvite?.code);
       await Share.share({
         message: shareMessage,
       });
     } catch (error) {
       logger.error('Share failed:', error);
-      Alert.alert('Share failed', 'Could not open the share dialog. You can copy the code instead.');
+      Alert.alert(
+        t('onboarding.invitePartner.shareFailedTitle'),
+        t('onboarding.invitePartner.shareFailedBody')
+      );
     }
   };
+
+  // Skipping the invite still completes onboarding, so Today can offer
+  // pairing again later instead of bouncing back into this flow.
+  const handleSkip = async () => {
+    if (!user?.id || isSkipping) return;
+    setIsSkipping(true);
+    try {
+      await completeOnboarding(user.id, { skippedInvite: true });
+      await refreshUser();
+      router.replace('/(app)/today');
+    } catch (error) {
+      logger.error('Could not complete onboarding on skip:', error);
+      Alert.alert(
+        t('onboarding.invitePartner.skipErrorTitle'),
+        t('onboarding.invitePartner.skipErrorBody')
+      );
+    } finally {
+      setIsSkipping(false);
+    }
+  };
+
+  const skipLink = (
+    <TouchableOpacity
+      style={styles.skipLink}
+      onPress={handleSkip}
+      disabled={isSkipping}
+    >
+      <Text style={styles.skipText}>
+        {isSkipping ? t('common.loading') : t('common.skipForNow')}
+      </Text>
+    </TouchableOpacity>
+  );
 
   // If already have invite, show it
   if (inviteCode || pendingInvite?.code) {
@@ -124,14 +224,9 @@ export default function InvitePartnerScreen() {
             </TouchableOpacity>
           </Animated.View>
 
-          <TouchableOpacity
-            style={styles.skipLink}
-            onPress={() => router.replace('/(app)/today')}
-          >
-            <Text style={styles.skipText}>
-              {t('common.skipForNow')}
-            </Text>
-          </TouchableOpacity>
+          {skipLink}
+
+          <VerifyEmailNotice />
         </View>
       </SafeAreaView>
     );
@@ -150,9 +245,22 @@ export default function InvitePartnerScreen() {
           </Text>
         </Animated.View>
 
+        {createError && (
+          <Animated.View entering={FadeIn.duration(300)} style={styles.errorCard}>
+            <Text style={styles.errorTitle}>
+              {t('onboarding.invitePartner.createErrorTitle')}
+            </Text>
+            <Text style={styles.errorBody}>{createError}</Text>
+          </Animated.View>
+        )}
+
         <Animated.View entering={FadeInUp.duration(400).delay(200)}>
           <Button
-            title={t('onboarding.invitePartner.createInvite')}
+            title={
+              createError
+                ? t('onboarding.invitePartner.tryAgain')
+                : t('onboarding.invitePartner.createInvite')
+            }
             onPress={handleCreateInvite}
             loading={createInvite.isPending}
           />
@@ -168,14 +276,9 @@ export default function InvitePartnerScreen() {
           />
         </Animated.View>
 
-        <TouchableOpacity
-          style={styles.skipLink}
-          onPress={() => router.replace('/(app)/today')}
-        >
-          <Text style={styles.skipText}>
-            {t('common.skipForNow')}
-          </Text>
-        </TouchableOpacity>
+        {skipLink}
+
+        <VerifyEmailNotice />
       </View>
     </SafeAreaView>
   );
@@ -243,10 +346,51 @@ const styles = StyleSheet.create({
   },
   skipLink: {
     marginTop: spacing.lg,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   skipText: {
     ...typography.bodySm,
     color: colors.text.secondary,
     textAlign: 'center',
+  },
+  errorCard: {
+    backgroundColor: colors.surface.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  errorTitle: {
+    ...typography.bodySm,
+    color: colors.text.primary,
+  },
+  errorBody: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+  },
+  verifyNotice: {
+    marginTop: spacing.xl,
+    alignItems: 'center',
+  },
+  verifyNoticeText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+  },
+  verifyNoticeLinkButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  verifyNoticeLink: {
+    ...typography.caption,
+    color: colors.accent.primary,
+  },
+  verifyNoticeSent: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
   },
 });

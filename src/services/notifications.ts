@@ -6,6 +6,7 @@ import { db } from '@/config/firebase';
 import { logEvent } from '@/services/analytics';
 import { logger } from '@/utils/logger';
 import { FEATURES } from '@/config/features';
+import type { PushPermissionStatus } from '@/utils/pushPrePrompt';
 
 // Configure how notifications appear when app is in foreground
 Notifications.setNotificationHandler({
@@ -17,6 +18,39 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+/**
+ * Read the current OS notification permission without prompting.
+ * Falls back to 'undetermined' on read failure so callers stay conservative
+ * (an undetermined status never triggers the system dialog by itself).
+ */
+export async function getPushPermissionStatus(): Promise<PushPermissionStatus> {
+  try {
+    const permissions = await Notifications.getPermissionsAsync();
+    if (permissions.granted) return 'granted';
+    if (permissions.status === Notifications.PermissionStatus.UNDETERMINED) {
+      return 'undetermined';
+    }
+    return 'denied';
+  } catch (error) {
+    logger.warn('Failed to read push permission status:', error);
+    return 'undetermined';
+  }
+}
+
+/**
+ * Silent launch-time registration: refresh the push token ONLY for users who
+ * already granted permission (existing installs). Never shows the system
+ * dialog — undetermined and denied users are left alone; the branded
+ * pre-prompt on the Today screen owns the ask for new users.
+ */
+export async function registerPushIfAlreadyGranted(userId: string): Promise<string | null> {
+  const status = await getPushPermissionStatus();
+  if (status !== 'granted') return null;
+  // Permission already granted, so this never surfaces a dialog —
+  // it only refreshes the device token in Firestore.
+  return registerForPushNotifications(userId);
+}
 
 /**
  * Request notification permissions and register the push token

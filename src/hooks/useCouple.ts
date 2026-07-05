@@ -199,7 +199,7 @@ export function useCreateInvite() {
 
       return {
         code,
-        shareMessage: getShareMessage(code),
+        shareMessage: getShareMessage(code, user.displayName),
       };
     },
     onSuccess: () => {

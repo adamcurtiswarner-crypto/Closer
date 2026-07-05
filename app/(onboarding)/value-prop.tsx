@@ -3,11 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@/components';
 import type { IconName } from '@/components/Icon';
 import { colors, radius, spacing, typography } from '@/config/theme';
 
 export default function ValuePropScreen() {
+  const { t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -16,17 +19,14 @@ export default function ValuePropScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(200)}>
-          <Text style={styles.title}>Stay connected in{'\n'}just 5 minutes a day</Text>
-          <Text style={styles.subtitle}>
-            One thoughtful question, answered together.{'\n'}
-            That's all it takes to keep the spark alive.
-          </Text>
+          <Text style={styles.title}>{t('onboarding.valueProp.title')}</Text>
+          <Text style={styles.subtitle}>{t('onboarding.valueProp.subtitle')}</Text>
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(400)} style={styles.features}>
-          <FeatureRow icon="check" text="Daily prompts designed for couples" />
-          <FeatureRow icon="lock" text="Private and encrypted" />
-          <FeatureRow icon="heart" text="Built on relationship science" />
+          <FeatureRow icon="check" text={t('onboarding.valueProp.featureDaily')} />
+          <FeatureRow icon="lock" text={t('onboarding.valueProp.featurePrivate')} />
+          <FeatureRow icon="heart" text={t('onboarding.valueProp.featureCouples')} />
         </Animated.View>
       </View>
 
@@ -35,9 +35,9 @@ export default function ValuePropScreen() {
           style={styles.cta}
           accessibilityRole="button"
           activeOpacity={0.8}
-          onPress={() => router.push('/(onboarding)/preferences')}
+          onPress={() => router.push('/(onboarding)/invite-partner')}
         >
-          <Text style={styles.ctaText} maxFontSizeMultiplier={1.4}>Continue</Text>
+          <Text style={styles.ctaText} maxFontSizeMultiplier={1.4}>{t('common.continue')}</Text>
         </TouchableOpacity>
       </Animated.View>
     </SafeAreaView>

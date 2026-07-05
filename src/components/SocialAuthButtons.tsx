@@ -31,8 +31,8 @@ export function SocialAuthButtons({ animationDelay = 0, dividerText = 'or' }: So
         params: { code: pendingCode },
       });
     } else if (isNewUser) {
-      // New social auth users skip email verification, go to invite-partner
-      router.replace('/(onboarding)/invite-partner');
+      // New users see the value proposition before inviting their partner
+      router.replace('/(onboarding)/value-prop');
     } else {
       router.replace('/');
     }
