@@ -1,10 +1,13 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, act } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CompletionMoment } from '../components/CompletionMoment';
+import { hapticImpact } from '@utils/haptics';
 
 jest.mock('@utils/haptics', () => ({
   hapticImpact: jest.fn(),
   hapticNotification: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
   NotificationFeedbackType: { Success: 'success' },
 }));
 
@@ -157,6 +160,82 @@ describe('CompletionMoment', () => {
         <CompletionMoment {...scaleProps} closingText="Small answers count." />
       );
       expect(getByText('Small answers count.')).toBeTruthy();
+    });
+
+    it('renders the em-dash placeholder in the partner column (held-breath beat)', () => {
+      const { getByTestId } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} />
+      );
+      // The placeholder is decorative — hidden from accessibility on purpose
+      const placeholder = getByTestId('partner-score-placeholder', {
+        includeHiddenElements: true,
+      });
+      expect(placeholder.props.children).toBe('—');
+      // The real score is in the tree from the start — the beats are opacity/spring only
+      expect(getByTestId('partner-score').props.children).toBe(8);
+    });
+  });
+
+  describe('first-reveal gating (reveal_seen)', () => {
+    const scaleProps = {
+      promptText: 'How connected did you feel this week?',
+      yourResponse: 'Felt close after our walk.',
+      partnerResponse: 'The weekend helped.',
+      partnerName: 'Alex',
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    });
+
+    it('marks the reveal as seen on first mount', async () => {
+      render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="a1" />
+      );
+      await act(async () => {});
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('reveal_seen_a1');
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('reveal_seen_a1', 'true');
+    });
+
+    it('fires the two haptic beats on first reveal: Light at your score, Medium at partner score', async () => {
+      render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="a2" />
+      );
+      await act(async () => {});
+      expect(hapticImpact).not.toHaveBeenCalled();
+
+      act(() => { jest.advanceTimersByTime(500); });
+      expect(hapticImpact).toHaveBeenCalledTimes(1);
+      expect(hapticImpact).toHaveBeenLastCalledWith('light');
+
+      act(() => { jest.advanceTimersByTime(800); }); // t=1300, the held breath ends
+      expect(hapticImpact).toHaveBeenCalledTimes(2);
+      expect(hapticImpact).toHaveBeenLastCalledWith('medium');
+    });
+
+    it('revisits are silent: no haptics and no re-marking of reveal_seen', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue('true');
+      const { getByTestId } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="a3" />
+      );
+      await act(async () => {});
+      act(() => { jest.advanceTimersByTime(5000); });
+      expect(hapticImpact).not.toHaveBeenCalled();
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+      // Content still renders on the revisit, just with flat fades
+      expect(getByTestId('your-score').props.children).toBe(7);
+      expect(getByTestId('partner-score').props.children).toBe(8);
+    });
+
+    it('clears pending haptic timers on unmount (no beat after the reveal is gone)', async () => {
+      const { unmount } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="a4" />
+      );
+      await act(async () => {});
+      unmount();
+      act(() => { jest.advanceTimersByTime(5000); });
+      expect(hapticImpact).not.toHaveBeenCalled();
     });
   });
 });

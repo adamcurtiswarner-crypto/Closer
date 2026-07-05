@@ -6,11 +6,21 @@ import { REACTIONS, type ReactionType, type ReactionIconName } from '@/hooks/use
 import { Icon } from './Icon';
 import { colors } from '@/config/theme';
 
+// VoiceOver names for each reaction (and its lowercase noun for the partner line)
+const REACTION_A11Y: Record<ReactionType, { label: string; noun: string }> = {
+  heart: { label: 'Heart', noun: 'heart' },
+  fire: { label: 'Flame', noun: 'flame' },
+  laughing: { label: 'Smile', noun: 'smile' },
+  teary: { label: 'Tear', noun: 'tear' },
+};
+
 interface ReactionRowProps {
   myReaction: ReactionType | null;
   partnerReaction: ReactionType | null;
   onReact: (reaction: ReactionType | null) => void;
   disabled?: boolean;
+  /** Used for the partner-reaction accessibility label */
+  partnerName?: string;
 }
 
 function ReactionButton({
@@ -39,7 +49,13 @@ function ReactionButton({
   };
 
   return (
-    <TouchableOpacity onPress={handlePress} activeOpacity={0.7}>
+    <TouchableOpacity
+      onPress={handlePress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={REACTION_A11Y[type].label}
+      accessibilityState={{ selected: isSelected }}
+    >
       <Animated.View
         style={[
           styles.reactionBtn,
@@ -58,7 +74,13 @@ function ReactionButton({
   );
 }
 
-export function ReactionRow({ myReaction, partnerReaction, onReact, disabled }: ReactionRowProps) {
+export function ReactionRow({
+  myReaction,
+  partnerReaction,
+  onReact,
+  disabled,
+  partnerName,
+}: ReactionRowProps) {
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
       <View style={styles.row}>
@@ -76,7 +98,14 @@ export function ReactionRow({ myReaction, partnerReaction, onReact, disabled }: 
         ))}
       </View>
       {partnerReaction && (
-        <Animated.View entering={FadeIn.duration(300)} style={styles.partnerReaction}>
+        <Animated.View
+          entering={FadeIn.duration(300)}
+          style={styles.partnerReaction}
+          accessible
+          accessibilityLabel={`${partnerName ?? 'Partner'} reacted with a ${
+            REACTION_A11Y[partnerReaction]?.noun ?? 'heart'
+          }`}
+        >
           <Icon
             name={REACTIONS.find((r) => r.type === partnerReaction)?.icon ?? 'heart'}
             size="sm"
@@ -102,14 +131,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
     justifyContent: 'center',
     alignItems: 'center',
   },
   reactionBtnSelected: {
-    backgroundColor: '#fef3ee',
+    backgroundColor: colors.surface.warmTint,
     borderWidth: 1.5,
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
   },
   partnerReaction: {
     alignItems: 'flex-end',

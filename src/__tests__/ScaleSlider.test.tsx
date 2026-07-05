@@ -1,6 +1,14 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ScaleSlider } from '../components/ScaleSlider';
+import { hapticImpact } from '@utils/haptics';
+
+jest.mock('@utils/haptics', () => ({
+  hapticImpact: jest.fn(),
+  hapticNotification: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  NotificationFeedbackType: { Success: 'success' },
+}));
 
 describe('ScaleSlider', () => {
   const defaultProps = {
@@ -51,6 +59,18 @@ describe('ScaleSlider', () => {
     );
     fireEvent.press(getByTestId('scale-dot-3'));
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('fires a light haptic tick when a new value is tapped', () => {
+    const { getByTestId } = render(<ScaleSlider {...defaultProps} value={3} />);
+    fireEvent.press(getByTestId('scale-dot-7'));
+    expect(hapticImpact).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not fire a haptic when the already-selected value is tapped', () => {
+    const { getByTestId } = render(<ScaleSlider {...defaultProps} value={7} />);
+    fireEvent.press(getByTestId('scale-dot-7'));
+    expect(hapticImpact).not.toHaveBeenCalled();
   });
 
   it('respects a custom min/max range', () => {

@@ -223,21 +223,21 @@ export default function ExploreScreen() {
               key={cat.type}
               style={[
                 styles.categoryChip,
-                isActive
-                  ? { backgroundColor: cat.color }
-                  : { backgroundColor: cat.bgColor },
+                isActive ? styles.categoryChipActive : styles.categoryChipInactive,
               ]}
               onPress={() => setSelectedCategory(cat.type)}
             >
               <Icon
                 name={cat.icon}
                 size={18}
-                color={isActive ? colors.text.inverse : cat.color}
+                color={isActive ? colors.text.inverse : colors.accent.primary}
               />
               <Text
                 style={[
                   styles.categoryChipLabel,
-                  { color: isActive ? colors.text.inverse : cat.color },
+                  isActive
+                    ? styles.categoryChipLabelActive
+                    : styles.categoryChipLabelInactive,
                 ]}
               >
                 {cat.label}
@@ -279,7 +279,8 @@ export default function ExploreScreen() {
                 entering={FadeInUp.duration(400).delay(index * 80)}
               >
                 <View style={styles.promptCard}>
-                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || colors.accent.primary }]} />
+                  {/* No accent bar on list cards — a cue on every card is a
+                      cue on none. Only a primary/hero surface carries it. */}
                   <View style={styles.promptContent}>
                     <Text style={styles.promptText}>{prompt.text}</Text>
                     {prompt.hint && (
@@ -312,10 +313,7 @@ export default function ExploreScreen() {
                         </View>
                       ) : (
                         <TouchableOpacity
-                          style={[
-                            styles.respondButton,
-                            { backgroundColor: currentCategory?.color || colors.accent.primary },
-                          ]}
+                          style={styles.respondButton}
                           onPress={() => handleStartPrompt(prompt)}
                           disabled={startExplore.isPending}
                         >
@@ -381,6 +379,8 @@ const styles = StyleSheet.create({
   // Category tabs
   categoryScrollContainer: { flexShrink: 0 },
   categoryRow: { paddingHorizontal: spacing.screen, gap: spacing.itemGap, paddingBottom: 12 },
+  // Chips — identity is carried by the icon, not a per-category hue.
+  // Unselected: warm tint + coral. Selected: coral + white.
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -390,10 +390,22 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     gap: 6,
   },
+  categoryChipActive: {
+    backgroundColor: colors.accent.primary,
+  },
+  categoryChipInactive: {
+    backgroundColor: colors.surface.warmTint,
+  },
   categoryChipLabel: {
     fontSize: 12,
     fontWeight: '800',
     fontFamily: 'Nunito-ExtraBold',
+  },
+  categoryChipLabelActive: {
+    color: colors.text.inverse,
+  },
+  categoryChipLabelInactive: {
+    color: colors.accent.primary,
   },
 
   // Category description
@@ -419,7 +431,6 @@ const styles = StyleSheet.create({
     ...shadow.card,
     overflow: 'hidden',
   },
-  promptAccent: { height: 3 },
   promptContent: { padding: spacing.cardPad },
   promptText: {
     fontSize: 16,
@@ -463,8 +474,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Bold',
   },
 
-  // Respond button — pill, uppercase letterspaced label
+  // Respond button — coral pill, uppercase letterspaced label
   respondButton: {
+    backgroundColor: colors.accent.primary,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radius.pill,

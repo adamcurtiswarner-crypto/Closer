@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { format } from 'date-fns';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
-
-const logo = require('@/assets/logo.png');
+import { colors } from '@/config/theme';
 
 interface TodayScreenHeaderProps {
   greeting: string;
@@ -34,11 +33,10 @@ export function TodayScreenHeader({
 }: TodayScreenHeaderProps) {
   return (
     <>
+      {/* Greeting stands alone — the wordmark next to it read as one
+          garbled phrase, so the lockup is greeting + date only. */}
       <View style={styles.greetingRow}>
-        <View style={styles.greetingTop}>
-          <Image source={logo} style={styles.logoMark} resizeMode="contain" />
-          <Text style={styles.greeting}>{greeting}</Text>
-        </View>
+        <Text style={styles.greeting}>{greeting}</Text>
         <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
       </View>
 
@@ -62,26 +60,18 @@ const styles = StyleSheet.create({
   greetingRow: {
     marginBottom: 8,
   },
-  greetingTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  logoMark: {
-    width: 72,
-    height: 28,
-  },
   greeting: {
     fontSize: 28,
-    fontWeight: '700',
+    // Nunito-Black is weight 900 — fontWeight must match the family.
+    fontWeight: '900',
     fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    color: colors.text.primary,
     letterSpacing: -0.5,
   },
   dateText: {
     fontSize: 15,
     fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    color: colors.text.secondary,
     marginTop: 2,
   },
 });

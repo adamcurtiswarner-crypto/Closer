@@ -1,4 +1,5 @@
 import { IconName } from '@/components/Icon';
+import { colors } from '@/config/theme';
 
 export interface PromptCategory {
   type: string;
@@ -15,15 +16,18 @@ export interface PromptCategory {
 export const PROMPT_CATEGORIES: PromptCategory[] = [
   // ============================================
   // LEGACY TAXONOMY (pre-v1) — do not remove;
-  // existing prompts reference these type ids
+  // existing prompts reference these type ids.
+  // Colors pinned to sanctioned theme tokens (see
+  // v1 color-discipline note below) — the old
+  // per-category pastels are gone on purpose.
   // ============================================
   {
     type: 'love_map_update',
     label: 'Know Each Other',
     description: 'Deepen your understanding',
     icon: 'compass',
-    color: '#D4522A',
-    bgColor: '#F5F2EE',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
     legacy: true,
   },
   {
@@ -31,8 +35,8 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Connect',
     description: 'Reach toward each other',
     icon: 'handshake',
-    color: '#6b8e7b',
-    bgColor: '#f0f7f3',
+    color: colors.brand.green,
+    bgColor: colors.brand.greenLight,
     legacy: true,
   },
   {
@@ -40,8 +44,8 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Appreciate',
     description: 'Express gratitude',
     icon: 'heart',
-    color: '#d4736e',
-    bgColor: '#fdf2f2',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
     legacy: true,
   },
   {
@@ -49,8 +53,8 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Dream Together',
     description: 'Explore your future',
     icon: 'sparkle',
-    color: '#7b6b8e',
-    bgColor: '#f5f2f7',
+    color: colors.brand.purple,
+    bgColor: colors.brand.purpleLight,
     legacy: true,
   },
   {
@@ -58,8 +62,8 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Navigate',
     description: 'Work through friction',
     icon: 'compass',
-    color: '#3D2870',
-    bgColor: '#f7f4f0',
+    color: colors.brand.purple,
+    bgColor: colors.brand.purpleLight,
     legacy: true,
   },
   {
@@ -67,110 +71,119 @@ export const PROMPT_CATEGORIES: PromptCategory[] = [
     label: 'Repair',
     description: 'Reconnect after distance',
     icon: 'bandaids',
-    color: '#5b8ea3',
-    bgColor: '#f0f5f7',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
     legacy: true,
   },
 
   // ============================================
   // V1 TAXONOMY — 12 categories for scored
   // prompts and score-triggered follow-ups
+  //
+  // Color discipline (v1): the visible v1 UI (explore.tsx,
+  // ExploreCategoryRow) must NOT consume color/bgColor — category
+  // identity is carried by the icon, and chips/cards use the shared
+  // coral/warm treatment from theme tokens. The fields stay on the
+  // type because hidden (feature-flagged) screens still read them,
+  // so every v1 entry is pinned to sanctioned theme tokens
+  // (coral primary; purple/green brand accents used sparingly)
+  // to guarantee nothing off-palette can leak.
   // ============================================
   {
     type: 'communication',
     label: 'Communication',
     description: 'How you talk, listen, and land with each other',
     icon: 'chat-circle',
-    color: '#5b8ea3',
-    bgColor: '#f0f5f7',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'intimacy',
     label: 'Intimacy',
     description: 'Physical closeness, desire, and being wanted',
     icon: 'flame',
-    color: '#D4522A',
-    bgColor: '#fdf1ec',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'affection',
     label: 'Affection',
     description: "The small daily gestures that say you're noticed",
     icon: 'heart',
-    color: '#d4736e',
-    bgColor: '#fdf2f2',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'money',
     label: 'Money',
     description: 'Spending, saving, fairness, and money stress',
     icon: 'coins',
-    color: '#8b7355',
-    bgColor: '#f7f4f0',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'family',
     label: 'Family',
     description: 'The people you each came with',
     icon: 'house-simple',
-    color: '#c98a54',
-    bgColor: '#fdf6ef',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'friends',
     label: 'Friends',
     description: 'Your life with people outside the two of you',
     icon: 'users',
-    color: '#6b8e7b',
-    bgColor: '#f0f7f3',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'fun_play',
     label: 'Fun and play',
     description: 'Laughing together, novelty, lightness',
     icon: 'game-controller',
-    color: '#c49a4a',
-    bgColor: '#faf6ec',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'future_dreams',
     label: 'Future dreams',
     description: "Where you're headed, together and separately",
     icon: 'path',
-    color: '#7b6b8e',
-    bgColor: '#f5f2f7',
+    color: colors.brand.purple,
+    bgColor: colors.brand.purpleLight,
   },
   {
     type: 'everyday_life',
     label: 'Everyday life',
     description: 'Chores, logistics, and the invisible work',
     icon: 'coffee',
-    color: '#96705b',
-    bgColor: '#f9f3f0',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'conflict_repair',
     label: 'Conflict and repair',
     description: 'How you fight and how you find your way back',
     icon: 'bandaids',
-    color: '#a35b5b',
-    bgColor: '#f9f0f0',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'appreciation_trust',
     label: 'Appreciation and trust',
     description: 'Feeling valued, relied on, and safe',
     icon: 'handshake',
-    color: '#5b9a8e',
-    bgColor: '#eff7f5',
+    color: colors.accent.primary,
+    bgColor: colors.accent.primaryLight,
   },
   {
     type: 'growth_independence',
     label: 'Growth and independence',
     description: 'Staying whole people inside the couple',
     icon: 'plant',
-    color: '#7b8e6b',
-    bgColor: '#f4f7f0',
+    color: colors.brand.green,
+    bgColor: colors.brand.greenLight,
   },
 ];
 

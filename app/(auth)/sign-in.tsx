@@ -19,6 +19,7 @@ import { Button, Input, SocialAuthButtons } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getPendingInviteCode, clearPendingInviteCode } from '@/hooks/useDeepLink';
 import { getAuthErrorMessage } from '@/utils/authErrors';
+import { colors, spacing, typography } from '@config/theme';
 
 type SignInFormData = { email: string; password: string };
 
@@ -92,7 +93,6 @@ export default function SignInScreen() {
                   onChangeText={onChange}
                   value={value}
                   error={errors.email?.message}
-                  style={{ borderRadius: 38 }}
                 />
               )}
             />
@@ -112,7 +112,6 @@ export default function SignInScreen() {
                   onChangeText={onChange}
                   value={value}
                   error={errors.password?.message}
-                  style={{ borderRadius: 38 }}
                 />
               )}
             />
@@ -136,7 +135,7 @@ export default function SignInScreen() {
             <View style={styles.footer}>
               <Text style={styles.footerText}>{t('auth.signIn.noAccount')}</Text>
               <Link href="/(auth)/sign-up" asChild>
-                <TouchableOpacity>
+                <TouchableOpacity style={styles.footerLinkButton}>
                   <Text style={styles.footerLink}>{t('auth.signIn.signUpLink')}</Text>
                 </TouchableOpacity>
               </Link>
@@ -151,50 +150,55 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   keyboardView: {
     flex: 1,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    marginBottom: 32,
+    ...typography.display,
+    color: colors.text.primary,
+    marginBottom: spacing.xl,
   },
   form: {},
   spacer: {
-    height: 16,
+    height: spacing.md,
   },
   forgot: {
-    marginTop: 12,
+    marginTop: spacing.xs,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   forgotText: {
-    color: '#D4522A',
-    fontFamily: 'Nunito-SemiBold',
-    fontSize: 14,
+    ...typography.body,
+    color: colors.accent.primary,
   },
   submit: {
-    marginTop: 32,
+    marginTop: spacing.lg,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
+    alignItems: 'center',
+    marginTop: spacing.md,
   },
   footerText: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
+  },
+  footerLinkButton: {
+    minHeight: 44,
+    justifyContent: 'center',
   },
   footerLink: {
-    color: '#D4522A',
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '500',
+    ...typography.body,
+    fontFamily: 'Nunito-Bold',
+    fontWeight: '700',
+    color: colors.accent.primary,
   },
 });

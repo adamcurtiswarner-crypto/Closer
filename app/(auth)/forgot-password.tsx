@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Input } from '@components';
 import { useAuth } from '@hooks/useAuth';
 import { getAuthErrorMessage } from '@/utils/authErrors';
+import { colors, spacing, typography } from '@config/theme';
 
 type FormData = { email: string };
 
@@ -124,33 +125,30 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   keyboardView: {
     flex: 1,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
     justifyContent: 'center',
   },
   header: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.display,
+    color: colors.text.primary,
   },
   subtitle: {
-    fontSize: 16,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginTop: 8,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
   },
   submit: {
-    marginTop: 32,
-    marginBottom: 12,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
 });

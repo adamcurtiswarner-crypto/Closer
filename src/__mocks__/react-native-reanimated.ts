@@ -8,10 +8,35 @@ const Animated = {
   createAnimatedComponent: (comp: any) => comp,
 };
 
-const FadeIn = { duration: () => ({ delay: () => ({}) }) };
-const FadeInUp = { duration: () => ({ delay: () => ({}) }) };
-const FadeInDown = { duration: () => ({ delay: () => ({}) }) };
-const FadeOut = { duration: () => ({ delay: () => ({}) }) };
+// Layout-animation builders are chainable (duration().delay().springify()...)
+// — return a self-referencing object so any chain order works in tests.
+const makeAnimationBuilder = () => {
+  const builder: Record<string, any> = {};
+  const chainMethods = [
+    'duration',
+    'delay',
+    'springify',
+    'damping',
+    'stiffness',
+    'mass',
+    'easing',
+    'reduceMotion',
+    'withInitialValues',
+    'withCallback',
+    'overshootClamping',
+    'restDisplacementThreshold',
+    'restSpeedThreshold',
+  ];
+  for (const method of chainMethods) {
+    builder[method] = () => builder;
+  }
+  return builder;
+};
+
+const FadeIn = makeAnimationBuilder();
+const FadeInUp = makeAnimationBuilder();
+const FadeInDown = makeAnimationBuilder();
+const FadeOut = makeAnimationBuilder();
 
 module.exports = {
   __esModule: true,
@@ -30,6 +55,11 @@ module.exports = {
   withDelay: (_: any, val: any) => val,
   runOnJS: (fn: any) => fn,
   interpolate: () => 0,
+  ReduceMotion: {
+    System: 'system',
+    Always: 'always',
+    Never: 'never',
+  },
   Easing: {
     linear: (t: any) => t,
     ease: (t: any) => t,

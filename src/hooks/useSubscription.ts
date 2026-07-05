@@ -15,6 +15,8 @@ interface SubscriptionState {
   isPremium: boolean;
   isLoading: boolean;
   offering: PurchasesOffering | null;
+  offeringError: boolean;
+  refreshOffering: () => Promise<void>;
   purchase: (pkg: PurchasesPackage) => Promise<void>;
   restore: () => Promise<void>;
 }
@@ -25,6 +27,7 @@ export function useSubscription(): SubscriptionState {
   const [revenueCatPremium, setRevenueCatPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+  const [offeringError, setOfferingError] = useState(false);
 
   // Check couple-level premium from Firestore
   const coupleIsPremium = couple?.premiumUntil
@@ -55,11 +58,17 @@ export function useSubscription(): SubscriptionState {
         }
 
         const offerings = await Purchases.getOfferings();
-        if (!cancelled && offerings.current) {
-          setOffering(offerings.current);
+        if (!cancelled) {
+          if (offerings.current) {
+            setOffering(offerings.current);
+          } else {
+            setOfferingError(true);
+          }
         }
       } catch (error) {
-        // RevenueCat not configured or unavailable — default to free
+        // RevenueCat not configured or unavailable — default to free,
+        // but surface the offering failure so the paywall can react.
+        if (!cancelled) setOfferingError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -80,6 +89,20 @@ export function useSubscription(): SubscriptionState {
       Purchases.removeCustomerInfoUpdateListener(listener);
     };
   }, [user?.id]);
+
+  const refreshOffering = useCallback(async () => {
+    setOfferingError(false);
+    try {
+      const offerings = await Purchases.getOfferings();
+      if (offerings.current) {
+        setOffering(offerings.current);
+      } else {
+        setOfferingError(true);
+      }
+    } catch (error) {
+      setOfferingError(true);
+    }
+  }, []);
 
   const purchase = useCallback(async (pkg: PurchasesPackage) => {
     try {
@@ -108,5 +131,5 @@ export function useSubscription(): SubscriptionState {
     }
   }, []);
 
-  return { isPremium, isLoading, offering, purchase, restore };
+  return { isPremium, isLoading, offering, offeringError, refreshOffering, purchase, restore };
 }

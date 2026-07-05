@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, {
-  FadeIn,
+  FadeInDown,
   useSharedValue,
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
+import { hapticImpact } from '@utils/haptics';
 import { colors, typography } from '@config/theme';
 
 type ScaleSliderTone = 'light' | 'dark';
@@ -26,7 +27,7 @@ function ScaleDot({ selected, tone }: { selected: boolean; tone: ScaleSliderTone
   const scale = useSharedValue(1);
 
   useEffect(() => {
-    scale.value = withSpring(selected ? 1.5 : 1, { damping: 14, stiffness: 200 });
+    scale.value = withSpring(selected ? 1.5 : 1, { damping: 15, stiffness: 260 });
   }, [selected, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -68,7 +69,7 @@ export function ScaleSlider({
         {value !== null && (
           <Animated.Text
             key={value}
-            entering={FadeIn.duration(200)}
+            entering={FadeInDown.duration(180).springify()}
             style={styles.valueText}
             testID="scale-value"
           >
@@ -83,7 +84,10 @@ export function ScaleSlider({
             key={n}
             testID={`scale-dot-${n}`}
             style={styles.step}
-            onPress={() => onChange(n)}
+            onPress={() => {
+              if (n !== value) hapticImpact(); // Light — quiet tick per new value
+              onChange(n);
+            }}
             disabled={disabled}
             activeOpacity={0.7}
             accessibilityRole="button"

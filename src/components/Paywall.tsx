@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
+import { Skeleton } from './Skeleton';
 import { ToneShapes } from './ToneShapes';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
@@ -19,22 +20,62 @@ interface PaywallProps {
   onClose: () => void;
 }
 
+type PlanId = 'annual' | 'monthly';
+
+// How long we wait for the RevenueCat offering before treating it as failed.
+const OFFERING_TIMEOUT_MS = 8000;
+// Disabled convention: whole control at 40% opacity.
+const DISABLED_OPACITY = 0.4;
+// Equal min heights keep the plan row balanced regardless of line count.
+const PLAN_CARD_MIN_HEIGHT = 104;
+// Matches the rendered CTA pill: text line + vertical padding.
+const CTA_PILL_HEIGHT = 52;
+// Minimum tappable area for quiet text buttons.
+const MIN_TOUCH_TARGET = 44;
+
 // v1 scope: benefits describe only visible features (see src/config/features.ts)
 const PREMIUM_FEATURES = [
-  { icon: 'flame' as const, text: 'A new question for the two of you, every day' },
-  { icon: 'lightbulb' as const, text: 'Follow-ups that go deeper when it matters' },
-  { icon: 'target' as const, text: 'Twelve areas of your relationship, covered' },
-  { icon: 'heart' as const, text: 'Private between you two, always' },
+  { icon: 'flame' as const, key: 'paywall.features.daily' },
+  { icon: 'lightbulb' as const, key: 'paywall.features.followUps' },
+  { icon: 'target' as const, key: 'paywall.features.categories' },
+  { icon: 'heart' as const, key: 'paywall.features.privacy' },
 ];
 
 export function Paywall({ visible, onClose }: PaywallProps) {
-  const { offering, purchase, restore, isLoading } = useSubscription();
+  const { offering, offeringError, refreshOffering, purchase, restore, isLoading } =
+    useSubscription();
   const { t } = useTranslation();
-  const [selectedPlan, setSelectedPlan] = useState<'annual' | 'monthly'>('annual');
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>('annual');
+  const [timedOut, setTimedOut] = useState(false);
 
   const annualPackage = offering?.annual ?? null;
   const monthlyPackage = offering?.monthly ?? null;
   const activePackage = selectedPlan === 'annual' ? annualPackage : monthlyPackage;
+
+  // Three states: loading (no offering yet), loaded, failed (error or timeout).
+  const plansFailed = offeringError || (!offering && timedOut);
+  const plansLoading = !offering && !plansFailed;
+
+  useEffect(() => {
+    if (!visible || offering || offeringError || timedOut) return;
+    const timer = setTimeout(() => setTimedOut(true), OFFERING_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [visible, offering, offeringError, timedOut]);
+
+  // Prefer real store prices from the RevenueCat package; fall back to the
+  // localized constants so loaded copy never shows an empty price.
+  const annualPrice = annualPackage?.product?.priceString
+    ? `${annualPackage.product.priceString}/year`
+    : t('paywall.plans.annual');
+  const monthlyPrice = monthlyPackage?.product?.priceString
+    ? `${monthlyPackage.product.priceString}/month`
+    : t('paywall.plans.monthly');
+  const activePrice = selectedPlan === 'annual' ? annualPrice : monthlyPrice;
+
+  const handleRetry = () => {
+    setTimedOut(false);
+    void refreshOffering();
+  };
 
   return (
     <Modal
@@ -65,56 +106,109 @@ export function Paywall({ visible, onClose }: PaywallProps) {
           <View style={styles.featureList}>
             {PREMIUM_FEATURES.map((feature, index) => (
               <Animated.View
-                key={feature.text}
+                key={feature.key}
                 entering={FadeInUp.duration(400).delay(200 + index * 80)}
                 style={styles.featureRow}
               >
                 <Icon name={feature.icon} size="sm" color={colors.accent.primary} weight="bold" />
-                <Text style={styles.featureText}>{feature.text}</Text>
+                <Text style={styles.featureText}>{t(feature.key)}</Text>
               </Animated.View>
             ))}
           </View>
 
-          <Animated.View entering={FadeInUp.duration(400).delay(520)}>
-            <View style={styles.planRow}>
+          {plansFailed ? (
+            <View style={styles.plansErrorBox} testID="paywall-error">
+              <Text style={styles.plansErrorText}>{t('paywall.plansError')}</Text>
               <TouchableOpacity
-                style={[styles.planCard, selectedPlan === 'annual' && styles.planCardSelected]}
-                onPress={() => setSelectedPlan('annual')}
+                style={styles.retryButton}
+                onPress={handleRetry}
+                accessibilityRole="button"
               >
-                <Text style={styles.planBadge}>Best Value</Text>
-                <Text style={styles.planPrice}>$49.99/year</Text>
-                <Text style={styles.planSubprice}>$4.17/month</Text>
-                <Text style={styles.planTrial}>14-day free trial</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.planCard, selectedPlan === 'monthly' && styles.planCardSelected]}
-                onPress={() => setSelectedPlan('monthly')}
-              >
-                <Text style={styles.planPrice}>$9.99/month</Text>
+                <Text style={styles.retryText}>{t('paywall.tryAgain')}</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.sharedNote}>{t('paywall.sharedNote')}</Text>
-          </Animated.View>
-
-          <Animated.View entering={FadeInUp.duration(400).delay(600)}>
-            <TouchableOpacity
-              style={[styles.ctaButton, (!activePackage || isLoading) && styles.disabled]}
-              onPress={() => activePackage && purchase(activePackage)}
-              disabled={!activePackage || isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={colors.text.inverse} />
+          ) : (
+            <Animated.View entering={FadeInUp.duration(400).delay(520)}>
+              {/* Differentiator, promoted above the plan cards */}
+              <Text style={styles.sharedNote}>{t('paywall.sharedNote')}</Text>
+              {plansLoading ? (
+                <View style={styles.planRow} testID="paywall-plans-loading">
+                  <View style={styles.planCard}>
+                    <Skeleton width={64} height={10} style={styles.skeletonGap} />
+                    <Skeleton width={96} height={18} style={styles.skeletonGap} />
+                    <Skeleton width={72} height={12} />
+                  </View>
+                  <View style={styles.planCard}>
+                    <Skeleton width={96} height={18} style={styles.skeletonGap} />
+                    <Skeleton width={72} height={12} />
+                  </View>
+                </View>
               ) : (
-                <Text style={styles.ctaText}>{t('paywall.startPremium', { price: selectedPlan === 'annual' ? '$49.99/year' : '$9.99/month' })}</Text>
+                <View style={styles.planRow}>
+                  <TouchableOpacity
+                    style={[styles.planCard, selectedPlan === 'annual' && styles.planCardSelected]}
+                    onPress={() => setSelectedPlan('annual')}
+                  >
+                    <Text style={styles.planBadge}>{t('paywall.plans.bestValue')}</Text>
+                    <Text style={styles.planPrice}>{annualPrice}</Text>
+                    <Text style={styles.planSubprice}>{t('paywall.plans.annualMonthly')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.planCard, selectedPlan === 'monthly' && styles.planCardSelected]}
+                    onPress={() => setSelectedPlan('monthly')}
+                  >
+                    <Text style={styles.planPrice}>{monthlyPrice}</Text>
+                    <Text style={styles.planSubprice}>{t('paywall.plans.billedMonthly')}</Text>
+                  </TouchableOpacity>
+                </View>
               )}
-            </TouchableOpacity>
-          </Animated.View>
+            </Animated.View>
+          )}
 
-          <TouchableOpacity style={styles.restoreButton} onPress={restore}>
+          {!plansFailed && (
+            <Animated.View entering={FadeInUp.duration(400).delay(600)}>
+              {plansLoading ? (
+                <View style={styles.ctaSkeletonWrap} testID="paywall-cta-loading">
+                  <Skeleton height={CTA_PILL_HEIGHT} borderRadius={radius.pill} />
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={[
+                      styles.ctaButton,
+                      (!activePackage || isLoading) && styles.disabled,
+                    ]}
+                    onPress={() => activePackage && purchase(activePackage)}
+                    disabled={!activePackage || isLoading}
+                    accessibilityRole="button"
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color={colors.text.inverse} />
+                    ) : (
+                      <Text style={styles.ctaText}>{t('paywall.ctaTrial')}</Text>
+                    )}
+                  </TouchableOpacity>
+                  <Text style={styles.ctaSubline}>
+                    {t('paywall.ctaSubline', { price: activePrice })}
+                  </Text>
+                </>
+              )}
+            </Animated.View>
+          )}
+
+          <TouchableOpacity
+            style={styles.restoreButton}
+            onPress={restore}
+            accessibilityRole="button"
+          >
             <Text style={styles.restoreText}>{t('paywall.restore')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+            accessibilityRole="button"
+          >
             <Text style={styles.closeText}>{t('paywall.notNow')}</Text>
           </TouchableOpacity>
         </View>
@@ -134,7 +228,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.hero,
     borderTopRightRadius: radius.hero,
     overflow: 'hidden',
-    paddingBottom: 40,
+    paddingBottom: spacing.xl,
   },
   // Hero title block — full-bleed coral card
   headerArea: {
@@ -152,7 +246,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...typography.body,
-    color: 'rgba(255, 255, 255, 0.72)',
+    color: colors.onDark.body,
     textAlign: 'center',
     marginTop: spacing.sm,
   },
@@ -173,6 +267,12 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     flex: 1,
   },
+  sharedNote: {
+    ...typography.h3,
+    color: colors.text.primary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
   planRow: {
     flexDirection: 'row',
     gap: 12,
@@ -181,10 +281,12 @@ const styles = StyleSheet.create({
   },
   planCard: {
     flex: 1,
+    minHeight: PLAN_CARD_MIN_HEIGHT,
     backgroundColor: colors.surface.card,
     borderRadius: radius.card,
     padding: spacing.md,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: colors.border.default,
   },
@@ -198,9 +300,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   planPrice: {
+    ...typography.h3,
     fontSize: 18,
-    fontWeight: '800',
-    fontFamily: 'Nunito-ExtraBold',
     color: colors.text.primary,
   },
   planSubprice: {
@@ -209,54 +310,74 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: 2,
   },
-  planTrial: {
-    fontSize: 11,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
-    color: colors.accent.primary,
-    marginTop: spacing.xs,
+  skeletonGap: {
+    marginBottom: spacing.sm,
   },
-  sharedNote: {
-    ...typography.caption,
-    fontSize: 13,
+  plansErrorBox: {
+    marginVertical: spacing.md,
+    marginHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  plansErrorText: {
+    ...typography.body,
     color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: spacing.sm,
+  },
+  retryButton: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  retryText: {
+    ...typography.body,
+    color: colors.accent.primary,
   },
   // CTA — full-width pill
   ctaButton: {
     backgroundColor: colors.accent.primary,
     borderRadius: radius.pill,
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     marginHorizontal: spacing.lg,
     marginTop: spacing.md,
     ...shadow.accent,
   },
+  ctaSkeletonWrap: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+  },
   disabled: {
-    opacity: 0.5,
+    opacity: DISABLED_OPACITY,
   },
   ctaText: {
     ...typography.btn,
     color: colors.text.inverse,
   },
+  ctaSubline: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
   restoreButton: {
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   restoreText: {
-    fontSize: 13,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.secondary,
   },
   closeButton: {
-    marginTop: 12,
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
   },
   closeText: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
   },
 });

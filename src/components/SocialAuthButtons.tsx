@@ -7,6 +7,10 @@ import { router } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
 import { getPendingInviteCode, clearPendingInviteCode } from '@/hooks/useDeepLink';
 import { getAuthErrorMessage } from '@/utils/authErrors';
+import { colors, radius, spacing, typography } from '@config/theme';
+
+// Google brand color — exempt from theme tokens
+const GOOGLE_BLUE = '#4285F4';
 
 interface SocialAuthButtonsProps {
   animationDelay?: number;
@@ -68,7 +72,7 @@ export function SocialAuthButtons({ animationDelay = 0, dividerText = 'or' }: So
         <AppleAuthentication.AppleAuthenticationButton
           buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
           buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-          cornerRadius={14}
+          cornerRadius={radius.input}
           style={styles.appleButton}
           onPress={handleAppleSignIn}
         />
@@ -80,7 +84,7 @@ export function SocialAuthButtons({ animationDelay = 0, dividerText = 'or' }: So
         disabled={isGoogleLoading}
         activeOpacity={0.8}
       >
-        <AntDesign name="google" size={20} color="#4285F4" />
+        <AntDesign name="google" size={20} color={GOOGLE_BLUE} />
         <Text style={styles.googleButtonText}>
           {isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
         </Text>
@@ -98,40 +102,36 @@ export function SocialAuthButtons({ animationDelay = 0, dividerText = 'or' }: So
 const styles = StyleSheet.create({
   appleButton: {
     height: 52,
-    marginBottom: 12,
+    marginBottom: spacing.sm + spacing.xs,
   },
   googleButton: {
     height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.input,
     borderWidth: 1,
-    borderColor: 'rgba(139, 115, 85, 0.3)',
+    borderColor: colors.border.default,
     gap: 10,
   },
   googleButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E1E2E',
+    ...typography.h3,
+    color: colors.text.primary,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
-    gap: 16,
+    marginVertical: spacing.lg,
+    gap: spacing.md,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(139, 115, 85, 0.2)',
+    backgroundColor: colors.border.default,
   },
   dividerText: {
-    fontSize: 12,
-    color: '#B8B8C4',
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    ...typography.eyebrow,
+    color: colors.text.secondary,
   },
 });

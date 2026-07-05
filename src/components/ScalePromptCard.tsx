@@ -14,6 +14,8 @@ interface ScalePromptCardProps {
   onChangeValue: (value: number) => void;
   note: string;
   onChangeNote: (text: string) => void;
+  /** Fired when the note field gains focus — lets the screen scroll it above the keyboard */
+  onNoteFocus?: () => void;
   onSubmit: () => void;
   isPending: boolean;
 }
@@ -30,6 +32,7 @@ export function ScalePromptCard({
   onChangeValue,
   note,
   onChangeNote,
+  onNoteFocus,
   onSubmit,
   isPending,
 }: ScalePromptCardProps) {
@@ -70,6 +73,7 @@ export function ScalePromptCard({
           textAlignVertical="top"
           value={note}
           onChangeText={onChangeNote}
+          onFocus={onNoteFocus}
           editable={!isPending}
           testID="scale-note-input"
         />

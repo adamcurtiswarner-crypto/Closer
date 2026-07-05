@@ -1,14 +1,12 @@
 import React, { useMemo } from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Icon } from '@/components';
 import { FEATURES } from '@/config/features';
 import { colors, radius } from '@/config/theme';
-
-const logo = require('@/assets/logo.png');
 
 // Today is the v1 landing tab (home is feature-flagged off)
 export const unstable_settings = {
@@ -140,12 +138,8 @@ export default function AppLayout() {
         name="today"
         options={{
           title: 'Today',
-          tabBarIcon: ({ focused }) => (
-            <Image
-              source={logo}
-              style={[tabStyles.tabLogo, !focused && tabStyles.tabLogoInactive]}
-              resizeMode="contain"
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <Icon name="flame" size="md" color={color} weight={focused ? 'fill' : 'light'} />
           ),
         }}
       />
@@ -308,15 +302,5 @@ const customTabBarStyles = StyleSheet.create({
     fontWeight: '800',
     marginTop: 3,
     fontFamily: 'Nunito-ExtraBold',
-  },
-});
-
-const tabStyles = StyleSheet.create({
-  tabLogo: {
-    width: 52,
-    height: 20,
-  },
-  tabLogoInactive: {
-    opacity: 0.4,
   },
 });

@@ -3,6 +3,14 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ScalePromptCard } from '../components/ScalePromptCard';
 import type { ScaleConfig } from '../types';
 
+// ScaleSlider fires a light haptic per value change
+jest.mock('@utils/haptics', () => ({
+  hapticImpact: jest.fn(),
+  hapticNotification: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  NotificationFeedbackType: { Success: 'success' },
+}));
+
 describe('ScalePromptCard', () => {
   const scaleConfig: ScaleConfig = {
     min: 1,
@@ -70,6 +78,20 @@ describe('ScalePromptCard', () => {
     const { getByTestId } = render(<ScalePromptCard {...defaultProps} value={6} />);
     fireEvent.press(getByTestId('scale-submit'));
     expect(defaultProps.onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('notifies onNoteFocus when the note field gains focus', () => {
+    const onNoteFocus = jest.fn();
+    const { getByTestId } = render(
+      <ScalePromptCard {...defaultProps} onNoteFocus={onNoteFocus} />
+    );
+    fireEvent(getByTestId('scale-note-input'), 'focus');
+    expect(onNoteFocus).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders without an onNoteFocus handler (prop is optional)', () => {
+    const { getByTestId } = render(<ScalePromptCard {...defaultProps} />);
+    expect(() => fireEvent(getByTestId('scale-note-input'), 'focus')).not.toThrow();
   });
 
   it('falls back to default 1-10 config when scaleConfig is null', () => {

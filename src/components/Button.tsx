@@ -16,6 +16,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { colors, radius, spacing, typography } from '@config/theme';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -63,14 +64,12 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
     styles[`${variant}Button`],
     styles[`${size}Size`],
     fullWidth && styles.fullWidth,
-    isDisabled && variant === 'primary' && styles.primaryDisabled,
-    isDisabled && variant !== 'primary' && styles.disabled,
+    isDisabled && styles.disabled,
   ].filter(Boolean) as ViewStyle[];
 
   const textStyles: TextStyle[] = [
     styles.text,
     styles[`${variant}Text`],
-    styles[`${size}Text`],
   ];
 
   return (
@@ -87,7 +86,7 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
       >
         {loading ? (
           <ActivityIndicator
-            color={variant === 'primary' ? '#ffffff' : '#D4522A'}
+            color={variant === 'primary' ? colors.text.inverse : colors.accent.primary}
             size="small"
           />
         ) : (
@@ -100,7 +99,7 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 12,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -111,53 +110,41 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.4,
   },
-  primaryDisabled: {
-    backgroundColor: '#f9a07a',
-  },
   // Variants
   primaryButton: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   secondaryButton: {
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.accent.primaryLight,
   },
   ghostButton: {
     backgroundColor: 'transparent',
   },
-  // Sizes
+  // Sizes — 44pt minimum touch target
   smSize: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    height: 44,
+    paddingHorizontal: spacing.cardPad,
   },
   mdSize: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+    height: 52,
+    paddingHorizontal: spacing.lg,
   },
   lgSize: {
-    paddingVertical: 18,
-    paddingHorizontal: 32,
+    height: 56,
+    paddingHorizontal: spacing.xl,
   },
   // Text
   text: {
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '600',
+    ...typography.btn,
+    textAlign: 'center',
   },
   primaryText: {
-    color: '#ffffff',
+    color: colors.text.inverse,
   },
   secondaryText: {
-    color: '#292524',
+    color: colors.accent.primary,
   },
   ghostText: {
-    color: '#D4522A',
-  },
-  smText: {
-    fontSize: 14,
-  },
-  mdText: {
-    fontSize: 16,
-  },
-  lgText: {
-    fontSize: 18,
+    color: colors.text.secondary,
   },
 });

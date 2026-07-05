@@ -26,7 +26,7 @@
     "welcome": {
       "tagline": "Small moments. Real closeness.",
       "description": "Stoke helps couples stay connected through simple daily prompts.",
-      "getStarted": "Get Started",
+      "getStarted": "Get started",
       "haveAccount": "I have an account",
       "haveInvite": "I have an invite"
     },
@@ -34,7 +34,7 @@
       "title": "Welcome back",
       "passwordPlaceholder": "Your password",
       "forgotPassword": "Forgot password?",
-      "submit": "Sign In",
+      "submit": "Sign in",
       "noAccount": "Don't have an account? ",
       "signUpLink": "Sign up",
       "failed": "Sign in failed",
@@ -46,7 +46,7 @@
     "signUp": {
       "title": "Create your account",
       "passwordPlaceholder": "At least 8 characters",
-      "submit": "Create Account",
+      "submit": "Create account",
       "terms": "By creating an account, you agree to our ",
       "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy",
@@ -61,10 +61,10 @@
     "forgotPassword": {
       "title": "Reset password",
       "subtitle": "Enter your email and we'll send you a reset link.",
-      "submit": "Send Reset Link",
+      "submit": "Send reset link",
       "sentTitle": "Check your email",
       "sentSubtitle": "We sent you a link to reset your password.",
-      "backToSignIn": "Back to Sign In",
+      "backToSignIn": "Back to sign in",
       "validation": {
         "emailRequired": "Enter a valid email"
       }
@@ -167,6 +167,8 @@
     "beautiful": "Beautiful",
     "yourResponse": "Your response",
     "waitingFor": "Waiting for {{name}}...",
+    "answerSaved": "Your answer is saved",
+    "sealedUntil": "Sealed until {{name}} answers.",
     "notifyWhenAnswered": "We'll let you know when they answer",
     "isResponding": "{{name}} is responding...",
     "howDidThisFeel": "How did this feel?",
@@ -378,11 +380,14 @@
       "bestValue": "Best Value",
       "annual": "$49.99/year",
       "annualMonthly": "$4.17/month",
-      "freeTrial": "14-day free trial",
-      "monthly": "$9.99/month"
+      "monthly": "$9.99/month",
+      "billedMonthly": "Billed monthly"
     },
-    "sharedNote": "One subscription covers both partners",
-    "startPremium": "Start Premium — {{price}}",
+    "sharedNote": "One subscription. Both of you.",
+    "ctaTrial": "Try 14 days free",
+    "ctaSubline": "then {{price}}, cancel anytime",
+    "plansError": "Plans aren't loading right now.",
+    "tryAgain": "Try again",
     "restore": "Restore purchases",
     "notNow": "Not now"
   },

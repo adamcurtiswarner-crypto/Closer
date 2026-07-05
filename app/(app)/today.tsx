@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   RefreshControl,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -14,8 +16,27 @@ import { pickImage } from '@/services/imageUpload';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import Animated, { FadeIn, FadeInUp, FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
-import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
+import Animated, {
+  FadeIn,
+  FadeInUp,
+  FadeInDown,
+  FadeOut,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withSequence,
+  withRepeat,
+  cancelAnimation,
+  Easing,
+  ReduceMotion,
+} from 'react-native-reanimated';
+import {
+  hapticImpact,
+  hapticNotification,
+  ImpactFeedbackStyle,
+  NotificationFeedbackType,
+} from '@utils/haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import {
@@ -41,6 +62,11 @@ import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt, useSkipFollowUp } from '@/hooks/usePrompt';
 import { isMiddleScaleOutcome } from '@/utils/scale';
+import {
+  isSameSessionDeepener,
+  deepenerEntranceDelay,
+  shouldOfferStagePrompt,
+} from '@/utils/revealGate';
 import { useReaction, type ReactionType } from '@/hooks/useReaction';
 import { useStreak } from '@/hooks/useStreak';
 import { useMonthlyActivity } from '@/hooks/useMonthlyActivity';
@@ -57,6 +83,13 @@ import { logger } from '@/utils/logger';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { FEATURES } from '@/config/features';
 import { useTranslation } from 'react-i18next';
+
+const STAGE_PROMPT_DISMISSED_KEY = 'stage_prompt_dismissed';
+const STAGE_PROMPT_VIEW_COUNT_KEY = 'stage_prompt_view_count';
+/** Wait for the keyboard show animation before scrolling the note into view. */
+const KEYBOARD_SETTLE_MS = 250;
+/** How much of the scale card's tail (note + CTA) to keep above the keyboard. */
+const SCALE_CARD_TAIL_PX = 320;
 
 // Greeting based on time of day
 function getGreeting(t: (key: string) => string): string {
@@ -83,12 +116,67 @@ function AnimatedFeedbackButton({ option, onPress, isSelected, style }: {
         onPressIn={() => { scale.value = withSpring(1.15, { damping: 12, stiffness: 200 }); }}
         onPressOut={() => { scale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
         onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={option.label}
+        accessibilityState={{ selected: isSelected }}
       >
         <View style={styles.feedbackIconWrap}>{option.icon}</View>
         <Text style={styles.feedbackOptionText}>{option.label}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
+}
+
+/** Quiet breathing loop on the sealed-card lock while waiting for the partner. */
+function BreathingLockIcon() {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.06, {
+          duration: 1600,
+          easing: Easing.inOut(Easing.ease),
+          reduceMotion: ReduceMotion.System,
+        }),
+        withTiming(1, {
+          duration: 1600,
+          easing: Easing.inOut(Easing.ease),
+          reduceMotion: ReduceMotion.System,
+        })
+      ),
+      -1,
+      false,
+      undefined,
+      ReduceMotion.System
+    );
+    return () => {
+      cancelAnimation(scale);
+    };
+  }, [scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Icon name="lock" size="md" color={colors.accent.primary} weight="light" />
+    </Animated.View>
+  );
+}
+
+type TodayData = NonNullable<ReturnType<typeof useTodayPrompt>['data']>;
+type TodayAssignment = NonNullable<TodayData['assignment']>;
+type TodayResponse = TodayData['myResponse'];
+
+/** Snapshot of a just-completed scored reveal, held while its deepener arrives. */
+interface HeldReveal {
+  assignment: TodayAssignment;
+  myResponse: NonNullable<TodayResponse>;
+  partnerResponse: TodayResponse;
+  reactions: TodayData['reactions'];
+  mountedAt: number;
 }
 
 export default function TodayScreen() {
@@ -137,10 +225,23 @@ export default function TodayScreen() {
   // lexicon; dismissing it is the end of it — no re-show, no follow-up.
   const [showSafetyResources, setShowSafetyResources] = useState(false);
 
+  // Stage prompt is offered at most 3 times before it quietly stops asking.
   useEffect(() => {
-    AsyncStorage.getItem('stage_prompt_dismissed').then(val => {
-      if (val !== 'true') setStageDismissed(false);
-    });
+    (async () => {
+      try {
+        const [dismissed, countRaw] = await Promise.all([
+          AsyncStorage.getItem(STAGE_PROMPT_DISMISSED_KEY),
+          AsyncStorage.getItem(STAGE_PROMPT_VIEW_COUNT_KEY),
+        ]);
+        const viewCount = Number.parseInt(countRaw ?? '0', 10) || 0;
+        if (shouldOfferStagePrompt(dismissed === 'true', viewCount)) {
+          setStageDismissed(false);
+          await AsyncStorage.setItem(STAGE_PROMPT_VIEW_COUNT_KEY, String(viewCount + 1));
+        }
+      } catch {
+        // Storage failure — keep the stage prompt hidden; it is optional
+      }
+    })();
   }, []);
 
   const handleSetStage = async (stage: RelationshipStage) => {
@@ -152,12 +253,12 @@ export default function TodayScreen() {
     });
     await refreshUser();
     setStageDismissed(true);
-    AsyncStorage.setItem('stage_prompt_dismissed', 'true');
+    AsyncStorage.setItem(STAGE_PROMPT_DISMISSED_KEY, 'true');
   };
 
   const handleDismissStage = () => {
     setStageDismissed(true);
-    AsyncStorage.setItem('stage_prompt_dismissed', 'true');
+    AsyncStorage.setItem(STAGE_PROMPT_DISMISSED_KEY, 'true');
   };
 
   const handleCoachingAction = (actionType: string, actionText: string) => {
@@ -211,6 +312,22 @@ export default function TodayScreen() {
     ? getFollowUpContextLine(assignment.followUp.branch)
     : null;
 
+  // ─── Reveal dwell gate (P0) ───
+  // When both partners answer a scored prompt, the server immediately creates
+  // the deepener follow-up; its snapshot swap used to unmount the reveal before
+  // the couple dwelled on it. Hold the completed reveal on screen and let the
+  // deepener land BELOW it as its own card. Next-day follow-ups are unaffected
+  // (no reveal is held across sessions).
+  const heldRevealRef = useRef<HeldReveal | null>(null);
+  const heldReveal = heldRevealRef.current;
+  const deepenerHold =
+    !isLoading &&
+    !error &&
+    !!assignment &&
+    !myResponse &&
+    heldReveal != null &&
+    isSameSessionDeepener(assignment, heldReveal.assignment.id);
+
   type Mode = 'loading' | 'no-prompt' | 'prompt' | 'responding' | 'waiting' | 'complete';
 
   let mode: Mode;
@@ -223,12 +340,61 @@ export default function TodayScreen() {
   } else if (isResponding) {
     mode = 'responding';
   } else if (!myResponse) {
-    mode = 'prompt';
+    // Keep the just-completed reveal mounted while its same-session deepener
+    // arrives — the deepener renders below the CompletionMoment instead.
+    mode = deepenerHold ? 'complete' : 'prompt';
   } else if (!isComplete) {
     mode = 'waiting';
   } else {
     mode = 'complete';
   }
+
+  // What the completion reveal shows: the live completed assignment, or the
+  // held one while the deepener is on screen underneath it.
+  const revealAssignment = deepenerHold && heldReveal ? heldReveal.assignment : assignment;
+  const revealMyResponse = deepenerHold && heldReveal ? heldReveal.myResponse : myResponse;
+  const revealPartnerResponse = deepenerHold && heldReveal ? heldReveal.partnerResponse : partnerResponse;
+  const revealReactions = deepenerHold && heldReveal ? heldReveal.reactions : todayData?.reactions ?? null;
+  const isRevealScale = revealAssignment?.responseFormat === 'scale';
+  const isRevealFollowUp = revealAssignment?.assignmentKind === 'follow_up';
+
+  // Capture the completed scored reveal (deepener parents are always scored)
+  useEffect(() => {
+    if (mode === 'complete' && !deepenerHold && assignment && myResponse && isScalePrompt) {
+      const prev = heldRevealRef.current;
+      heldRevealRef.current = {
+        assignment,
+        myResponse,
+        partnerResponse,
+        reactions: todayData?.reactions ?? null,
+        // Keep the original reveal mount time across snapshot refreshes
+        mountedAt: prev?.assignment.id === assignment.id ? prev.mountedAt : Date.now(),
+      };
+    }
+  }, [mode, deepenerHold, assignment, myResponse, partnerResponse, todayData?.reactions, isScalePrompt]);
+
+  // The deepener card never lands earlier than ~2.6s after the reveal mounted;
+  // compute its entrance delay once per deepener assignment.
+  const deepenerEntranceRef = useRef<{ id: string; delay: number } | null>(null);
+  if (deepenerHold && assignment && deepenerEntranceRef.current?.id !== assignment.id) {
+    deepenerEntranceRef.current = {
+      id: assignment.id,
+      delay: heldReveal ? deepenerEntranceDelay(heldReveal.mountedAt, Date.now()) : 0,
+    };
+  }
+
+  // Light haptic as the deepener card lands
+  const deepenerHapticFiredRef = useRef<string | null>(null);
+  const deepenerId = deepenerHold && assignment ? assignment.id : null;
+  useEffect(() => {
+    if (!deepenerId || deepenerHapticFiredRef.current === deepenerId) return;
+    const delay = deepenerEntranceRef.current?.delay ?? 0;
+    const timer = setTimeout(() => {
+      deepenerHapticFiredRef.current = deepenerId;
+      hapticImpact(ImpactFeedbackStyle.Light);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [deepenerId]);
 
   // Auto-fetch today's prompt if none exists
   const hasAutoTriggered = useRef(false);
@@ -361,7 +527,7 @@ export default function TodayScreen() {
   // Scale prompts: score is required, the note is optional
   const handleScaleSubmit = async () => {
     if (scaleValue === null || !assignment) return;
-    hapticNotification(NotificationFeedbackType.Success);
+    hapticImpact(ImpactFeedbackStyle.Medium);
     Keyboard.dismiss();
     try {
       const result = await submitResponse.mutateAsync({
@@ -369,11 +535,35 @@ export default function TodayScreen() {
         responseText: scaleNote.trim(),
         responseScore: scaleValue,
       });
+      // Success only once the write actually lands
+      hapticNotification(NotificationFeedbackType.Success);
       if (result.safetyMatch) setShowSafetyResources(true);
     } catch (err) {
       logger.error('Error submitting score:', err);
       Alert.alert('Could not save your response', 'Please check your connection and try again.');
     }
+  };
+
+  // Keyboard handling for the scale note field: the KeyboardAvoidingView
+  // shrinks the viewport, and these scroll the note + CTA above the keyboard.
+  const promptScrollRef = useRef<ScrollView>(null);
+  const completeScrollRef = useRef<ScrollView>(null);
+  const deepenerLayoutRef = useRef({ y: 0, height: 0 });
+
+  const handlePromptNoteFocus = () => {
+    setTimeout(() => {
+      promptScrollRef.current?.scrollToEnd({ animated: true });
+    }, KEYBOARD_SETTLE_MS);
+  };
+
+  const handleDeepenerNoteFocus = () => {
+    setTimeout(() => {
+      const { y, height } = deepenerLayoutRef.current;
+      completeScrollRef.current?.scrollTo({
+        y: y + Math.max(0, height - SCALE_CARD_TAIL_PX),
+        animated: true,
+      });
+    }, KEYBOARD_SETTLE_MS);
   };
 
   // Skipping a follow-up dismisses it locally for the day — no nagging, no penalty
@@ -435,33 +625,15 @@ export default function TodayScreen() {
     onCloseWishlistModal: () => setShowAddWishlistModal(false),
   };
 
-  // ─── Loading ───
-  if (mode === 'loading') {
-    return (
-      <SafeAreaView style={styles.container}>
-        {error ? (
-          <View style={styles.centered}>
-            <QueryError
-              message={t('today.errorLoading')}
-              onRetry={() => refetch()}
-            />
-          </View>
-        ) : (
-          <View style={styles.scrollView}>
-            <View style={styles.greetingRow}>
-              <Text style={styles.greeting}>{getGreeting(t)}</Text>
-              <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
-            </View>
-            <View style={styles.promptSection}>
-              <PromptCardSkeleton />
-            </View>
-          </View>
-        )}
-      </SafeAreaView>
-    );
-  }
+  // The stage prompt is quiet by design: it renders BELOW the day's main card
+  // (prompt, reveal, waiting, or empty state), never above it.
+  const stagePromptCard = showStagePrompt ? (
+    <View style={styles.stagePromptSection}>
+      <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
+    </View>
+  ) : null;
 
-  // ─── Responding ───
+  // ─── Responding (full-screen editor, outside the crossfade wrapper) ───
   if (mode === 'responding') {
     return (
       <>
@@ -485,327 +657,391 @@ export default function TodayScreen() {
     );
   }
 
-  // ─── No prompt yet ───
-  if (mode === 'no-prompt') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
-        >
-          <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
+  // ─── Per-mode content (rendered inside the shared crossfade wrapper) ───
 
-          {showStagePrompt && (
-            <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
-          )}
+  const renderLoading = () => (
+    error ? (
+      <View style={styles.centered}>
+        <QueryError
+          message={t('today.errorLoading')}
+          onRetry={() => refetch()}
+        />
+      </View>
+    ) : (
+      <View style={styles.scrollView}>
+        <View style={styles.greetingRow}>
+          <Text style={styles.greeting}>{getGreeting(t)}</Text>
+          <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
+        </View>
+        <View style={styles.promptSection}>
+          <PromptCardSkeleton />
+        </View>
+      </View>
+    )
+  );
 
-          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
-            <View style={styles.accentBar} />
-            <Icon name="coffee" size="xl" color={colors.accent.primary} weight="light" />
-            <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
-            <Text style={styles.emptySubtitle}>
-              {nextPromptAt
-                ? t('today.arrivingAround', { time: format(new Date(nextPromptAt), 'h:mm a') })
-                : t('today.emptySubtitle')}
+  const renderNoPrompt = () => (
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
+    >
+      <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
+
+      <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
+        <View style={styles.accentBar} />
+        <Icon name="coffee" size="xl" color={colors.accent.primary} weight="light" />
+        <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
+        <Text style={styles.emptySubtitle}>
+          {nextPromptAt
+            ? t('today.arrivingAround', { time: format(new Date(nextPromptAt), 'h:mm a') })
+            : t('today.emptySubtitle')}
+        </Text>
+        {user?.coupleId && (
+          <TouchableOpacity
+            style={[styles.triggerButton, triggerPrompt.isPending && styles.disabled]}
+            onPress={() => triggerPrompt.mutate()}
+            disabled={triggerPrompt.isPending}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.triggerButtonText}>
+              {triggerPrompt.isPending ? t('common.loading') : t('today.getTodaysPrompt')}
             </Text>
-            {user?.coupleId && (
-              <TouchableOpacity
-                style={[styles.triggerButton, triggerPrompt.isPending && styles.disabled]}
-                onPress={() => triggerPrompt.mutate()}
-                disabled={triggerPrompt.isPending}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.triggerButtonText}>
-                  {triggerPrompt.isPending ? t('common.loading') : t('today.getTodaysPrompt')}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </Animated.View>
+          </TouchableOpacity>
+        )}
+      </Animated.View>
 
-          {FEATURES.streaks && (currentStreak > 0 || monthCompletedCount > 0) && (
-            <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
-              <StreakRing
-                currentStreak={currentStreak}
-                days={monthDays}
-                completedCount={monthCompletedCount}
-                isStreakActive={isStreakActive}
-                month={month}
-                year={year}
-                startDayOffset={startDayOffset}
-              />
-            </Animated.View>
-          )}
+      {stagePromptCard}
 
-          <TodayBottomSections {...bottomProps} animationBaseDelay={600} />
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
+      {FEATURES.streaks && (currentStreak > 0 || monthCompletedCount > 0) && (
+        <Animated.View entering={FadeInUp.duration(500).delay(400)} style={styles.streakSection}>
+          <StreakRing
+            currentStreak={currentStreak}
+            days={monthDays}
+            completedCount={monthCompletedCount}
+            isStreakActive={isStreakActive}
+            month={month}
+            year={year}
+            startDayOffset={startDayOffset}
+          />
+        </Animated.View>
+      )}
 
-  // ─── Waiting for partner ───
-  if (mode === 'waiting') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
-        >
-          <TodayScreenHeader greeting={t('today.niceOne')} {...headerProps} />
+      <TodayBottomSections {...bottomProps} animationBaseDelay={600} />
+    </ScrollView>
+  );
 
-          {showStagePrompt && (
-            <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
-          )}
+  const renderWaiting = () => (
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
+    >
+      <TodayScreenHeader greeting={t('today.niceOne')} {...headerProps} />
 
-          <EngagementCards {...engagementProps} />
+      <EngagementCards {...engagementProps} />
 
-          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
-            <View style={styles.accentBar} />
-            <Text style={styles.waitingPrompt}>
-              {'\u201C'}{assignment!.promptText}{'\u201D'}
-            </Text>
+      <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
+        <View style={styles.accentBar} />
+        <Text style={styles.waitingPrompt}>
+          {'“'}{assignment!.promptText}{'”'}
+        </Text>
 
-            <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
-              <Icon name="lock" size="md" color={colors.accent.primary} weight="light" />
-              <Text style={styles.sealedTitle}>Your answer is saved</Text>
-              <Text style={styles.sealedSubtitle}>
-                Waiting for {partnerName ?? 'your partner'}...
-              </Text>
-            </Animated.View>
-
-            <View style={styles.waitingDivider} />
-
-            {isPartnerTyping && partnerTypingContext === 'prompt' ? (
-              <Animated.View entering={FadeIn.duration(300)} style={styles.typingRow}>
-                <PulsingDots color={colors.accent.primary} size={5} />
-                <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
-              </Animated.View>
-            ) : (
-              <View style={styles.waitingMessageRow}>
-                <Icon name="hourglass" size={16} color={colors.text.muted} />
-                <Text style={styles.waitingMessage}>{t('today.notifyWhenAnswered')}</Text>
-              </View>
-            )}
-          </Animated.View>
-
-          <TodayBottomSections {...bottomProps} animationBaseDelay={400} />
-        </ScrollView>
-        <ConversationStarterModal
-          visible={showConversationModal}
-          onClose={() => setShowConversationModal(false)}
-          starterText={conversationStarterText}
-        />
-        <SafetyResources
-          visible={showSafetyResources}
-          onClose={() => setShowSafetyResources(false)}
-        />
-      </SafeAreaView>
-    );
-  }
-
-  // ─── Complete ───
-  if (mode === 'complete') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
-        >
-          <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
-
-          {showStagePrompt && (
-            <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
-          )}
-
-          <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
-            <CompletionMoment
-              promptText={assignment!.promptText}
-              yourResponse={myResponse!.responseText}
-              partnerResponse={partnerResponse?.responseText || ''}
-              partnerName={partnerName}
-              yourImageUrl={myResponse!.imageUrl}
-              partnerImageUrl={partnerResponse?.imageUrl}
-              myReaction={todayData?.reactions?.[user!.id] as ReactionType | undefined ?? null}
-              partnerReaction={
-                todayData?.reactions
-                  ? (Object.entries(todayData.reactions).find(([k]) => k !== user!.id)?.[1] as ReactionType | undefined ?? null)
-                  : null
-              }
-              onReact={(r) => reaction.mutate({
-                assignmentId: assignment!.id,
-                reaction: r,
-                promptType: assignment!.promptType,
-              })}
-              yourScore={isScalePrompt ? myResponse!.responseScore : null}
-              partnerScore={isScalePrompt ? partnerResponse?.responseScore ?? null : null}
-              showMidScaleLine={
-                isScalePrompt &&
-                isMiddleScaleOutcome(
-                  myResponse!.responseScore,
-                  partnerResponse?.responseScore,
-                  assignment!.scaleConfig
-                )
-              }
-              closingText={isFollowUp ? assignment!.closingText : null}
-            />
-          </Animated.View>
-
-          <EngagementCards {...engagementProps} />
-
-          {/* Emotional Feedback */}
-          {myResponse && !feedbackGiven && (
-            <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.feedbackCard}>
-              <View style={styles.accentBar} />
-              <Text style={styles.feedbackTitle}>{t('today.howDidThisFeel')}</Text>
-              <View style={styles.feedbackRow}>
-                {([
-                  { value: 'positive' as const, label: t('today.warm'), icon: <Icon name="sun-dim" size="md" /> },
-                  { value: 'neutral' as const, label: t('today.okay'), icon: <Icon name="cloud" size="md" /> },
-                  { value: 'negative' as const, label: t('today.hard'), icon: <Icon name="cloud-rain" size="md" /> },
-                ]).map((option) => (
-                  <AnimatedFeedbackButton
-                    key={option.value}
-                    option={option}
-                    style={styles.feedbackOption}
-                    isSelected={false}
-                    onPress={() => {
-                      hapticImpact();
-                      submitFeedback.mutate({
-                        responseId: myResponse.id,
-                        emotionalResponse: option.value,
-                      });
-                      setFeedbackGiven(true);
-                    }}
-                  />
-                ))}
-              </View>
-            </Animated.View>
-          )}
-
-          {feedbackGiven && (
-            <Animated.View entering={FadeIn.duration(400)}>
-              <Text style={styles.feedbackThanks}>{t('today.thanksForSharing')}</Text>
-            </Animated.View>
-          )}
-
-          {/* Streak celebration */}
-          {FEATURES.streaks && currentStreak > 0 && (
-            <Animated.View entering={FadeInUp.duration(500).delay(700)}>
-              <TouchableOpacity
-                style={styles.streakCelebration}
-                onPress={() => setShowStreakDetail(!showStreakDetail)}
-                activeOpacity={0.8}
-              >
-                <Icon name="flame" size="md" color={colors.accent.primary} weight="fill" />
-                <Text style={styles.streakCelebrationText}>
-                  {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
-
-          {FEATURES.streaks && showStreakDetail && (
-            <Animated.View entering={FadeInDown.duration(400)} style={styles.streakDetailSection}>
-              <StreakRing
-                currentStreak={currentStreak}
-                days={monthDays}
-                completedCount={monthCompletedCount}
-                isStreakActive={isStreakActive}
-                month={month}
-                year={year}
-                startDayOffset={startDayOffset}
-                celebrate
-              />
-            </Animated.View>
-          )}
-
-          <TodayBottomSections {...bottomProps} animationBaseDelay={800} />
-
-          <Animated.View entering={FadeIn.duration(400).delay(1300)}>
-            <View style={styles.doneRow}>
-              <View style={styles.doneDot} />
-              <Text style={styles.doneText}>{t('today.seeYouTomorrow')}</Text>
-              <View style={styles.doneDot} />
-            </View>
-          </Animated.View>
-        </ScrollView>
-        <ConversationStarterModal
-          visible={showConversationModal}
-          onClose={() => setShowConversationModal(false)}
-          starterText={conversationStarterText}
-        />
-        <SafetyResources
-          visible={showSafetyResources}
-          onClose={() => setShowSafetyResources(false)}
-        />
-      </SafeAreaView>
-    );
-  }
-
-  // ─── Default: Show prompt ───
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        <Animated.View entering={FadeIn.duration(400)}>
-          <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
+        <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
+          <BreathingLockIcon />
+          <Text style={styles.sealedTitle}>{t('today.answerSaved')}</Text>
+          <Text style={styles.sealedSubtitle}>
+            {t('today.sealedUntil', { name: partnerName ?? 'your partner' })}
+          </Text>
         </Animated.View>
 
-        {showStagePrompt && (
-          <RelationshipStagePrompt onSelectStage={handleSetStage} onDismiss={handleDismissStage} />
-        )}
+        <View style={styles.waitingDivider} />
 
-        {FEATURES.engines && (
-          <Animated.View entering={FadeInUp.duration(500).delay(150)}>
-            <TouchableOpacity
-              style={styles.sparkCard}
-              onPress={() => router.push('/(app)/todays-spark')}
-              activeOpacity={0.8}
-            >
-              <View style={styles.sparkAccent} />
-              <View style={styles.sparkContent}>
-                <Icon name="sparkle" size="sm" color={colors.accent.primary} weight="fill" />
-                <View style={styles.sparkTextWrap}>
-                  <Text style={styles.sparkTitle}>Today's Spark</Text>
-                  <Text style={styles.sparkSubtitle}>A quick moment to connect</Text>
-                </View>
-                <Icon name="arrow-right" size="sm" color={colors.text.muted} />
-              </View>
-            </TouchableOpacity>
+        {isPartnerTyping && partnerTypingContext === 'prompt' ? (
+          <Animated.View
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+            style={styles.typingRow}
+          >
+            <PulsingDots color={colors.accent.primary} size={5} />
+            <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
+          </Animated.View>
+        ) : (
+          <Animated.View
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+            style={styles.waitingMessageRow}
+          >
+            <Icon name="hourglass" size={16} color={colors.text.muted} />
+            <Text style={styles.waitingMessage}>{t('today.notifyWhenAnswered')}</Text>
           </Animated.View>
         )}
+      </Animated.View>
 
-        <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
-          {isFollowUp && assignment!.followUp && (
-            <FollowUpContextLine branch={assignment!.followUp.branch} />
+      {stagePromptCard}
+
+      <TodayBottomSections {...bottomProps} animationBaseDelay={400} />
+    </ScrollView>
+  );
+
+  const renderComplete = () => (
+    <ScrollView
+      ref={completeScrollRef}
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
+    >
+      <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
+
+      <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
+        <CompletionMoment
+          key={revealAssignment!.id}
+          assignmentId={revealAssignment!.id}
+          promptText={revealAssignment!.promptText}
+          yourResponse={revealMyResponse!.responseText}
+          partnerResponse={revealPartnerResponse?.responseText || ''}
+          partnerName={partnerName}
+          yourImageUrl={revealMyResponse!.imageUrl}
+          partnerImageUrl={revealPartnerResponse?.imageUrl}
+          myReaction={revealReactions?.[user!.id] as ReactionType | undefined ?? null}
+          partnerReaction={
+            revealReactions
+              ? (Object.entries(revealReactions).find(([k]) => k !== user!.id)?.[1] as ReactionType | undefined ?? null)
+              : null
+          }
+          onReact={(r) => reaction.mutate({
+            assignmentId: revealAssignment!.id,
+            reaction: r,
+            promptType: revealAssignment!.promptType,
+          })}
+          yourScore={isRevealScale ? revealMyResponse!.responseScore : null}
+          partnerScore={isRevealScale ? revealPartnerResponse?.responseScore ?? null : null}
+          showMidScaleLine={
+            isRevealScale &&
+            isMiddleScaleOutcome(
+              revealMyResponse!.responseScore,
+              revealPartnerResponse?.responseScore,
+              revealAssignment!.scaleConfig
+            )
+          }
+          closingText={isRevealFollowUp ? revealAssignment!.closingText : null}
+        />
+      </Animated.View>
+
+      {/* Same-session deepener lands quietly below the reveal — the couple keeps
+          dwelling on the moment, then answers the follow-up from this card. */}
+      {deepenerHold && assignment && (
+        <Animated.View
+          key={`deepener-${assignment.id}`}
+          entering={FadeInUp.duration(500)
+            .delay(deepenerEntranceRef.current?.delay ?? 0)
+            .springify()}
+          style={styles.promptSection}
+          onLayout={(e) => {
+            deepenerLayoutRef.current = {
+              y: e.nativeEvent.layout.y,
+              height: e.nativeEvent.layout.height,
+            };
+          }}
+        >
+          {assignment.followUp && (
+            <FollowUpContextLine branch={assignment.followUp.branch} />
           )}
           {isScalePrompt ? (
             <ScalePromptCard
-              promptText={assignment!.promptText}
-              scaleConfig={assignment!.scaleConfig}
+              promptText={assignment.promptText}
+              scaleConfig={assignment.scaleConfig}
               value={scaleValue}
               onChangeValue={setScaleValue}
               note={scaleNote}
               onChangeNote={setScaleNote}
+              onNoteFocus={handleDeepenerNoteFocus}
               onSubmit={handleScaleSubmit}
               isPending={submitResponse.isPending}
             />
           ) : (
             <PromptCard
-              promptText={assignment!.promptText}
-              promptHint={assignment!.promptHint}
-              promptType={assignment!.promptType}
+              promptText={assignment.promptText}
+              promptHint={assignment.promptHint}
+              promptType={assignment.promptType}
               onRespond={handleRespond}
             />
           )}
-          {isFollowUp && (
-            <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
-          )}
+          <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
         </Animated.View>
+      )}
 
-        <EngagementCards {...engagementProps} />
-      </ScrollView>
+      {stagePromptCard}
+
+      <EngagementCards {...engagementProps} />
+
+      {/* Emotional Feedback */}
+      {revealMyResponse && !feedbackGiven && (
+        <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.feedbackCard}>
+          <View style={styles.accentBar} />
+          <Text style={styles.feedbackTitle}>{t('today.howDidThisFeel')}</Text>
+          <View style={styles.feedbackRow}>
+            {([
+              { value: 'positive' as const, label: t('today.warm'), icon: <Icon name="sun-dim" size="md" /> },
+              { value: 'neutral' as const, label: t('today.okay'), icon: <Icon name="cloud" size="md" /> },
+              { value: 'negative' as const, label: t('today.hard'), icon: <Icon name="cloud-rain" size="md" /> },
+            ]).map((option) => (
+              <AnimatedFeedbackButton
+                key={option.value}
+                option={option}
+                style={styles.feedbackOption}
+                isSelected={false}
+                onPress={() => {
+                  hapticImpact();
+                  submitFeedback.mutate({
+                    responseId: revealMyResponse.id,
+                    emotionalResponse: option.value,
+                  });
+                  setFeedbackGiven(true);
+                }}
+              />
+            ))}
+          </View>
+        </Animated.View>
+      )}
+
+      {feedbackGiven && (
+        <Animated.View entering={FadeIn.duration(400)}>
+          <Text style={styles.feedbackThanks}>{t('today.thanksForSharing')}</Text>
+        </Animated.View>
+      )}
+
+      {/* Streak celebration */}
+      {FEATURES.streaks && currentStreak > 0 && (
+        <Animated.View entering={FadeInUp.duration(500).delay(700)}>
+          <TouchableOpacity
+            style={styles.streakCelebration}
+            onPress={() => setShowStreakDetail(!showStreakDetail)}
+            activeOpacity={0.8}
+          >
+            <Icon name="flame" size="md" color={colors.accent.primary} weight="fill" />
+            <Text style={styles.streakCelebrationText}>
+              {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {FEATURES.streaks && showStreakDetail && (
+        <Animated.View entering={FadeInDown.duration(400)} style={styles.streakDetailSection}>
+          <StreakRing
+            currentStreak={currentStreak}
+            days={monthDays}
+            completedCount={monthCompletedCount}
+            isStreakActive={isStreakActive}
+            month={month}
+            year={year}
+            startDayOffset={startDayOffset}
+            celebrate
+          />
+        </Animated.View>
+      )}
+
+      <TodayBottomSections {...bottomProps} animationBaseDelay={800} />
+
+      <Animated.View entering={FadeIn.duration(400).delay(1300)}>
+        <View style={styles.doneRow}>
+          <View style={styles.doneDot} />
+          <Text style={styles.doneText}>{t('today.seeYouTomorrow')}</Text>
+          <View style={styles.doneDot} />
+        </View>
+      </Animated.View>
+    </ScrollView>
+  );
+
+  const renderPrompt = () => (
+    <ScrollView
+      ref={promptScrollRef}
+      style={styles.scrollView}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Animated.View entering={FadeIn.duration(400)}>
+        <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
+      </Animated.View>
+
+      {FEATURES.engines && (
+        <Animated.View entering={FadeInUp.duration(500).delay(150)}>
+          <TouchableOpacity
+            style={styles.sparkCard}
+            onPress={() => router.push('/(app)/todays-spark')}
+            activeOpacity={0.8}
+          >
+            <View style={styles.sparkAccent} />
+            <View style={styles.sparkContent}>
+              <Icon name="sparkle" size="sm" color={colors.accent.primary} weight="fill" />
+              <View style={styles.sparkTextWrap}>
+                <Text style={styles.sparkTitle}>Today's Spark</Text>
+                <Text style={styles.sparkSubtitle}>A quick moment to connect</Text>
+              </View>
+              <Icon name="arrow-right" size="sm" color={colors.text.muted} />
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
+        {isFollowUp && assignment!.followUp && (
+          <FollowUpContextLine branch={assignment!.followUp.branch} />
+        )}
+        {isScalePrompt ? (
+          <ScalePromptCard
+            promptText={assignment!.promptText}
+            scaleConfig={assignment!.scaleConfig}
+            value={scaleValue}
+            onChangeValue={setScaleValue}
+            note={scaleNote}
+            onChangeNote={setScaleNote}
+            onNoteFocus={handlePromptNoteFocus}
+            onSubmit={handleScaleSubmit}
+            isPending={submitResponse.isPending}
+          />
+        ) : (
+          <PromptCard
+            promptText={assignment!.promptText}
+            promptHint={assignment!.promptHint}
+            promptType={assignment!.promptType}
+            onRespond={handleRespond}
+          />
+        )}
+        {isFollowUp && (
+          <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
+        )}
+      </Animated.View>
+
+      {stagePromptCard}
+
+      <EngagementCards {...engagementProps} />
+    </ScrollView>
+  );
+
+  // ─── Shared shell: one SafeAreaView, modes crossfade inside it ───
+  return (
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.modeContainer}
+      >
+        <Animated.View
+          key={mode}
+          entering={FadeIn.duration(300)}
+          exiting={FadeOut.duration(180)}
+          style={styles.modeContainer}
+        >
+          {mode === 'loading' && renderLoading()}
+          {mode === 'no-prompt' && renderNoPrompt()}
+          {mode === 'waiting' && renderWaiting()}
+          {mode === 'complete' && renderComplete()}
+          {mode === 'prompt' && renderPrompt()}
+        </Animated.View>
+      </KeyboardAvoidingView>
+
       <ConversationStarterModal
         visible={showConversationModal}
         onClose={() => setShowConversationModal(false)}
@@ -823,6 +1059,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.background,
+  },
+  modeContainer: {
+    flex: 1,
   },
   accentBar: {
     position: 'absolute',
@@ -1006,6 +1245,9 @@ const styles = StyleSheet.create({
   // ─── Complete ───
   completionSection: {
     marginTop: spacing.screen,
+  },
+  stagePromptSection: {
+    marginTop: spacing.md,
   },
   feedbackCard: {
     marginTop: spacing.screen,

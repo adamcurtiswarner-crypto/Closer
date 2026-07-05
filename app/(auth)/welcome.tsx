@@ -1,47 +1,54 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { Link } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@components';
+import { useTranslation } from 'react-i18next';
+import { Button, ToneShapes } from '@components';
+import { colors, radius, spacing, typography } from '@config/theme';
 
 const logo = require('@/assets/logo.png');
-const illustration = require('@/assets/welcome-illustration.png');
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
+  const { t } = useTranslation();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Logo */}
+        {/* Wordmark */}
         <Animated.View entering={FadeIn.duration(600)} style={styles.logoContainer}>
           <Image source={logo} style={styles.logo} resizeMode="contain" />
         </Animated.View>
 
-        {/* Illustration */}
-        <Animated.View entering={FadeIn.duration(700).delay(200)} style={styles.illustrationContainer}>
-          <Image source={illustration} style={styles.illustration} resizeMode="contain" />
+        {/* Hero — full-bleed coral card with tone-on-tone shapes */}
+        <Animated.View entering={FadeIn.duration(700).delay(200)} style={styles.hero}>
+          <ToneShapes variant="coral" />
+          <View style={styles.heroContent}>
+            <Text style={styles.heroHeadline}>{t('auth.welcome.tagline')}</Text>
+            <Text style={styles.heroBody}>{t('auth.welcome.description')}</Text>
+          </View>
         </Animated.View>
 
-        {/* Tagline */}
-        <Animated.View entering={FadeIn.duration(500).delay(400)} style={styles.textContainer}>
-          <Text style={styles.tagline}>Tend to the moments,{'\n'}keep the Flame.</Text>
-          <Text style={styles.subtitle}>Stoke curiosity. Keep the spark alive.</Text>
-        </Animated.View>
-
-        {/* CTA */}
+        {/* CTAs */}
         <View style={styles.bottomSection}>
-          <Animated.View entering={FadeInUp.duration(500).delay(600)}>
+          <Animated.View entering={FadeInUp.duration(500).delay(400)}>
             <Link href="/(auth)/sign-up" asChild>
-              <Button title="Sign up" />
+              <Button title={t('auth.welcome.getStarted')} />
             </Link>
           </Animated.View>
 
-          <Animated.View entering={FadeIn.duration(400).delay(700)} style={styles.loginRow}>
-            <Text style={styles.loginText}>Already have an account? </Text>
+          <Animated.View entering={FadeIn.duration(400).delay(500)}>
             <Link href="/(auth)/sign-in" asChild>
-              <Text style={styles.loginLink}>Log in</Text>
+              <Button title={t('auth.welcome.haveAccount')} variant="ghost" />
+            </Link>
+
+            <Link
+              href={{ pathname: '/(auth)/sign-up', params: { invite: 'true' } }}
+              asChild
+            >
+              <TouchableOpacity style={styles.inviteLink} accessibilityRole="link">
+                <Text style={styles.inviteLinkText}>{t('auth.welcome.haveInvite')}</Text>
+              </TouchableOpacity>
             </Link>
           </Animated.View>
         </View>
@@ -53,67 +60,54 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
   },
   logo: {
     width: 160,
     height: 60,
   },
-  illustrationContainer: {
+  hero: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: colors.accent.primary,
+    borderRadius: radius.hero,
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
   },
-  illustration: {
-    width: SCREEN_WIDTH * 0.85,
-    height: SCREEN_WIDTH * 0.85,
+  heroContent: {
+    padding: spacing.cardPad,
+    paddingBottom: spacing.lg,
   },
-  textContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
+  heroHeadline: {
+    ...typography.hero,
+    lineHeight: 38,
+    color: colors.text.inverse,
+    marginBottom: spacing.sm,
   },
-  tagline: {
-    fontSize: 28,
-    fontFamily: 'Nunito-Black',
-    fontWeight: '900',
-    color: '#1E1E2E',
-    textAlign: 'center',
-    lineHeight: 36,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    textAlign: 'center',
-    marginTop: 12,
+  heroBody: {
+    ...typography.body,
+    color: colors.onDark.body,
   },
   bottomSection: {
-    paddingBottom: 16,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    gap: spacing.itemGap,
   },
-  loginRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  inviteLink: {
+    minHeight: 44,
     alignItems: 'center',
-    marginTop: 16,
-    paddingBottom: 8,
+    justifyContent: 'center',
   },
-  loginText: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-  },
-  loginLink: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '600',
-    color: '#D4522A',
+  inviteLinkText: {
+    ...typography.caption,
+    color: colors.text.secondary,
   },
 });

@@ -8,6 +8,7 @@ import {
   NativeSyntheticEvent,
   TargetedEvent,
 } from 'react-native';
+import { colors, radius, spacing, typography } from '@config/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -41,7 +42,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             hasError && styles.inputError,
             style,
           ]}
-          placeholderTextColor="#B8B8C4"
+          placeholderTextColor={colors.text.muted}
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...props}
@@ -60,39 +61,38 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    fontFamily: 'Nunito-SemiBold',
-    color: '#6B6B7A',
-    fontSize: 14,
-    fontWeight: '500',
+    ...typography.body,
+    color: colors.text.secondary,
     marginBottom: 6,
   },
   input: {
-    fontFamily: 'Nunito-Regular',
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
     width: '100%',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#F5F2EE',
-    color: '#1E1E2E',
+    borderRadius: radius.input,
+    backgroundColor: colors.surface.background,
+    color: colors.text.primary,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
   },
   inputFocused: {
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
   },
   inputError: {
-    borderColor: '#f87171',
-    backgroundColor: '#fefbfb',
+    borderColor: colors.semantic.destructive,
+    backgroundColor: colors.semantic.destructiveLight,
   },
   hint: {
-    color: '#6B6B7A',
-    fontSize: 12,
-    marginTop: 4,
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
   },
   error: {
-    color: '#f87171',
-    fontSize: 12,
-    marginTop: 4,
+    ...typography.caption,
+    color: colors.semantic.destructive,
+    marginTop: spacing.xs,
   },
 });

@@ -1,76 +1,184 @@
 import React from 'react';
+import { render, fireEvent, act } from '@testing-library/react-native';
+import { Paywall } from '../components/Paywall';
 
-jest.mock('react-native-purchases', () => ({
-  getOfferings: jest.fn().mockResolvedValue({
-    current: {
-      availablePackages: [
-        { product: { priceString: '$4.99/mo' } },
-      ],
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: Record<string, unknown>) => {
+      const en = require('../i18n/locales/en.json');
+      const value = key
+        .split('.')
+        .reduce<unknown>((acc, part) => (acc as Record<string, unknown>)?.[part], en);
+      if (typeof value !== 'string') return key;
+      return value.replace(/\{\{(\w+)\}\}/g, (_, name: string) =>
+        String(opts?.[name] ?? '')
+      );
     },
   }),
-  purchasePackage: jest.fn(),
-  restorePurchases: jest.fn(),
 }));
 
+jest.mock('@/components/Icon', () => {
+  const { View } = require('react-native');
+  return { Icon: (props: Record<string, unknown>) => <View {...props} /> };
+});
+
+jest.mock('@/components/ToneShapes', () => {
+  const { View } = require('react-native');
+  return { ToneShapes: (props: Record<string, unknown>) => <View {...props} /> };
+});
+
+const mockUseSubscription = jest.fn();
 jest.mock('@/hooks/useSubscription', () => ({
-  useSubscription: () => ({
+  useSubscription: () => mockUseSubscription(),
+}));
+
+const annualPackage = { identifier: '$rc_annual', product: { priceString: '$49.99' } };
+const monthlyPackage = { identifier: '$rc_monthly', product: { priceString: '$9.99' } };
+
+function subscriptionState(overrides: Record<string, unknown> = {}) {
+  return {
     isPremium: false,
     isLoading: false,
-    offering: {
-      availablePackages: [
-        { product: { priceString: '$4.99/mo' } },
-      ],
-    },
+    offering: null,
+    offeringError: false,
+    refreshOffering: jest.fn(),
     purchase: jest.fn(),
     restore: jest.fn(),
-  }),
-}));
+    ...overrides,
+  };
+}
+
+function loadedState(overrides: Record<string, unknown> = {}) {
+  return subscriptionState({
+    offering: { annual: annualPackage, monthly: monthlyPackage },
+    ...overrides,
+  });
+}
 
 describe('Paywall', () => {
-  const FEATURES = [
-    'Unlimited saved memories',
-    'Streak badges & insights',
-    'Tone calibration insights',
-    'Priority support',
-  ];
-
-  it('should render feature list', () => {
-    expect(FEATURES).toHaveLength(4);
-    expect(FEATURES).toContain('Unlimited saved memories');
-    expect(FEATURES).toContain('Streak badges & insights');
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('should display price from offering', () => {
-    const priceString = '$4.99/mo';
-    const ctaText = `Start Premium — ${priceString}`;
-    expect(ctaText).toContain('$4.99/mo');
+  describe('loading state (offering not yet available)', () => {
+    it('renders skeleton placeholders instead of prices or a washed CTA', () => {
+      mockUseSubscription.mockReturnValue(subscriptionState());
+      const { getByTestId, queryByText } = render(
+        <Paywall visible onClose={jest.fn()} />
+      );
+
+      expect(getByTestId('paywall-plans-loading')).toBeTruthy();
+      expect(getByTestId('paywall-cta-loading')).toBeTruthy();
+      expect(queryByText('Try 14 days free')).toBeNull();
+      expect(queryByText(/\$49\.99/)).toBeNull();
+      expect(queryByText(/\$9\.99/)).toBeNull();
+    });
+
+    it('keeps restore purchases and not now available', () => {
+      mockUseSubscription.mockReturnValue(subscriptionState());
+      const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
+
+      expect(getByText('Restore purchases')).toBeTruthy();
+      expect(getByText('Not now')).toBeTruthy();
+    });
+
+    it('falls into the failure state after the 8s timeout', () => {
+      mockUseSubscription.mockReturnValue(subscriptionState());
+      const { getByTestId, getByText, queryByTestId } = render(
+        <Paywall visible onClose={jest.fn()} />
+      );
+
+      expect(queryByTestId('paywall-error')).toBeNull();
+
+      act(() => {
+        jest.advanceTimersByTime(8000);
+      });
+
+      expect(getByTestId('paywall-error')).toBeTruthy();
+      expect(getByText("Plans aren't loading right now.")).toBeTruthy();
+      expect(queryByTestId('paywall-plans-loading')).toBeNull();
+    });
   });
 
-  it('should trigger purchase on CTA press', () => {
-    const purchase = jest.fn();
-    const mockPackage = { product: { priceString: '$4.99/mo' } };
+  describe('loaded state', () => {
+    it('renders the trial CTA with subline and package prices', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      const { getByText, queryByTestId } = render(
+        <Paywall visible onClose={jest.fn()} />
+      );
 
-    purchase(mockPackage);
-    expect(purchase).toHaveBeenCalledWith(mockPackage);
+      expect(getByText('Try 14 days free')).toBeTruthy();
+      expect(getByText('then $49.99/year, cancel anytime')).toBeTruthy();
+      expect(getByText('$49.99/year')).toBeTruthy();
+      expect(getByText('$9.99/month')).toBeTruthy();
+      expect(getByText('Billed monthly')).toBeTruthy();
+      expect(getByText('One subscription. Both of you.')).toBeTruthy();
+      expect(queryByTestId('paywall-plans-loading')).toBeNull();
+      expect(queryByTestId('paywall-error')).toBeNull();
+    });
+
+    it('falls back to constant prices when the package has no priceString', () => {
+      mockUseSubscription.mockReturnValue(
+        loadedState({ offering: { annual: { product: {} }, monthly: null } })
+      );
+      const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
+
+      expect(getByText('$49.99/year')).toBeTruthy();
+      expect(getByText('$9.99/month')).toBeTruthy();
+    });
+
+    it('updates the subline when the monthly plan is selected', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
+
+      fireEvent.press(getByText('$9.99/month'));
+      expect(getByText('then $9.99/month, cancel anytime')).toBeTruthy();
+    });
+
+    it('purchases the selected package on CTA press', () => {
+      const state = loadedState();
+      mockUseSubscription.mockReturnValue(state);
+      const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
+
+      fireEvent.press(getByText('Try 14 days free'));
+      expect(state.purchase).toHaveBeenCalledWith(annualPackage);
+    });
+
+    it('triggers restore on restore press', () => {
+      const state = loadedState();
+      mockUseSubscription.mockReturnValue(state);
+      const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
+
+      fireEvent.press(getByText('Restore purchases'));
+      expect(state.restore).toHaveBeenCalled();
+    });
+
+    it('calls onClose from not now', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      const onClose = jest.fn();
+      const { getByText } = render(<Paywall visible onClose={onClose} />);
+
+      fireEvent.press(getByText('Not now'));
+      expect(onClose).toHaveBeenCalled();
+    });
   });
 
-  it('should trigger restore on restore press', () => {
-    const restore = jest.fn();
-    restore();
-    expect(restore).toHaveBeenCalled();
-  });
+  describe('failure state', () => {
+    it('shows the quiet error message with retry and keeps restore visible', () => {
+      const state = subscriptionState({ offeringError: true });
+      mockUseSubscription.mockReturnValue(state);
+      const { getByTestId, getByText, queryByText, queryByTestId } = render(
+        <Paywall visible onClose={jest.fn()} />
+      );
 
-  it('should be closeable', () => {
-    const onClose = jest.fn();
-    onClose();
-    expect(onClose).toHaveBeenCalled();
-  });
+      expect(getByTestId('paywall-error')).toBeTruthy();
+      expect(getByText("Plans aren't loading right now.")).toBeTruthy();
+      expect(getByText('Restore purchases')).toBeTruthy();
+      expect(queryByText('Try 14 days free')).toBeNull();
+      expect(queryByTestId('paywall-cta-loading')).toBeNull();
 
-  it('should respect visible prop', () => {
-    const visible = true;
-    expect(visible).toBe(true);
-
-    const hidden = false;
-    expect(hidden).toBe(false);
+      fireEvent.press(getByText('Try again'));
+      expect(state.refreshOffering).toHaveBeenCalled();
+    });
   });
 });
