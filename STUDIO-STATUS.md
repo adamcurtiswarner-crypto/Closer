@@ -1,5 +1,5 @@
 # Stoke Studio Status
-*Last updated: 2026-07-05 — CEO review (v1 build complete, pre-submission)*
+*Last updated: 2026-07-05 — CEO review (v1 deployed to production backend; App Store steps remain)*
 
 ## Founder Directive (2026-07-05)
 Adam reset the scope for the first App Store release. v1 is ONLY:
@@ -10,60 +10,52 @@ Adam reset the scope for the first App Store release. v1 is ONLY:
 Everything else is HIDDEN via `src/config/features.ts` flags, not deleted.
 
 ## Current Sprint
-- **Focus**: v1 simplification — DONE. Next: device testing + deployment + App Store submission
-- **Status**: GREEN on build (all workstreams landed, full regression passing), YELLOW on submission (iOS 26 release-build crash unverified, RevenueCat unconfigured)
+- **Focus**: v1 built, design-conformed, E2E-verified, and backend DEPLOYED to production. Next: device build + App Store submission steps
+- **Status**: GREEN on product/backend. YELLOW on submission (iOS 26 release-build crash unverified, RevenueCat unconfigured)
 
-## v1 Build — COMPLETE (2026-07-05, uncommitted working tree)
+## Done Today (2026-07-05) — commits d86212d, 8ee80c1, 5d9a2b5
 
-All six workstreams landed and verified. Regression: app tsc clean, 28 suites / 192 tests passing; functions build clean, 156 tests passing; data files valid JSON.
+### Build (d86212d)
+All six workstreams: client simplification (3 tabs: Today landing / Categories / Settings, features.ts flags), functions scope-cut (6 hidden-feature push schedules disabled, `functions/V1-SCOPE.md`), data model (scale + follow-up schema, 12-category taxonomy, rules, indexes), follow-up trigger (`functions/src/followUps.ts`: divergence gap ≥ 4 > repair min ≤ 4 > deepener both ≥ 9; deepener same-session, repair/divergence next-day scheduled + activated in delivery path replacing that day's daily; repair L2 chains next day), scored UI (ScaleSlider 1–10, optional note, side-by-side reveal, skippable follow-up cards), content (132 follow-up templates + 60 scored prompts across 12 categories, tone-lint clean). Paywall copy fixed; seed script fixed (was loading v3 from wrong dir + silently dropping fields).
 
-| Workstream | What landed |
-|---|---|
-| Client simplification | 3 tabs (Today landing / Categories / Settings) driven by `src/config/features.ts`; today.tsx stripped of streak/check-in/coaching/spark/wishlist/memories entry points; notification-tap routing falls back to Today for hidden targets; onboarding copy audited (already v1-accurate) |
-| Functions scope-cut | 6 scheduled push functions disabled in index.ts barrel (checkStreakBreaks, deliverCheckIn, dateNightReminder, deliverMorningCheckin, deliverEveningReflection, detectChurnRisk). sendWeeklyRecaps audited and kept. Deploy-time delete commands in `functions/V1-SCOPE.md` |
-| Data model | Scale + follow-up schema in specs/types.ts, functions/src/shared.ts, src/types; 12-category taxonomy in promptCategories.ts (legacy 6 kept, marked); firestore.rules for follow_up_templates; 2 new composite indexes |
-| Follow-up trigger | `functions/src/followUps.ts` wired into onResponseSubmitted. Precedence: divergence (gap ≥ 4) > repair (min ≤ 4) > deepener (both ≥ 9). Deepener same-session; repair L1/divergence next-day via status 'scheduled' + activation in the delivery path (replaces that day's daily prompt); repair L2 chains the day after L1 completes; depth capped; idempotent; 44 dedicated tests |
-| Scored UI | ScaleSlider (1–10 dots, anchored labels), ScalePromptCard with optional note, side-by-side score reveal in CompletionMoment, follow-up context lines + closing text, local skip mechanism (AsyncStorage, no nagging, expires server-side) |
-| Content | `app/data/follow-up-templates-v1.json` (132 templates: 36 deepener / 72 repair / 24 divergence) + `app/data/seed-prompts-v5.json` (60 scored prompts, 5×12 categories, 3 comfortable / 2 brave each). Tone-lint clean. Seed script fixed (was pointing at v3 in the wrong directory; now seeds v4+v5+templates, fixed silent field-drop) |
-| Extras | Paywall benefits copy rewritten to v1-accurate (was advertising coaching/insights/check-ins); CLAUDE.md updated (tabs, functions scope, follow_up_templates collection) |
+### Design conformance (8ee80c1)
+Both design agents swept every v1-visible surface against `docs/design-reference/StokeScreens.jsx` (checked into repo): zero hardcoded hexes remain, all Nunito family/weight mismatches fixed, pill buttons + eyebrow caps throughout, ScalePromptCard rebuilt as full-bleed ink hero with ToneShapes + dark-tone scale dots, Paywall as coral hero sheet, tab bar matched to reference Nav. theme.ts gained surface.ink + onDark group; brand.purpleLight migration slip fixed.
 
-### Locked product decisions (reference)
-Scale 1–10 ("Struggling"…"Thriving"); thresholds low ≤ 4 / high ≥ 9 (both partners) / divergence gap ≥ 4; blind answer → reveal when both submit; follow-ups max 2 levels, always skippable; 12 categories, curated rotation with override; deepener same-session, repair/divergence next-day; v1 prompt selection filters to scale-format prompts.
+### Emulator E2E + critical race fix (5d9a2b5)
+Full pipeline exercised live in Firebase emulators: seed counts verified (422 prompts / 132 templates), all branch scenarios PASS (deepener immediate, repair scheduled next-day, divergence overrides at 9/3 AND at exact gap 4, middle scores fire nothing, activation replaces daily prompt, repair chains step 2 same variant family, no over-chaining).
+**Found + fixed a launch-blocking race**: onResponseSubmitted branched on the client-maintained response_count snapshot; under production timing the first response took the completion path (1-response completions, follow-ups never firing, streak double-counts). Now branches on the queried actual response count with atomic completion `create()` idempotency (winner runs streaks/reveal/follow-up exactly once). 6 new race tests; functions at 162/162.
 
-## What Needs Attention NOW
+### Production deployment (all verified)
+1. Firestore rules + indexes deployed to stoke-5f762 ✓
+2. Functions deployed with `--force`: all v1 functions updated (incl. race-fixed onResponseSubmitted + follow-up trigger); 6 hidden-feature schedules DELETED (checkStreakBreaks, deliverCheckIn, dateNightReminder, deliverMorningCheckin, deliverEveningReflection, detectChurnRisk) ✓
+3. Production content seeded and verified by query: 422 prompts (60 scale with full scale_config intact), 132 follow_up_templates ✓
 
-### Priority 1: Verify & commit
+## What Needs Attention NOW (App Store path)
+
 | Item | Status |
 |---|---|
-| Review + commit the v1 working tree (large uncommitted diff on main) | AWAITING ADAM — CEO recommends commit |
-| Emulator end-to-end test: seed → deliver → both respond → branch fires → next-day activation | NOT DONE (unit-tested only) |
-| Device/simulator visual pass on ScaleSlider, reveal, follow-up cards, Categories tab | NOT DONE |
-
-### Priority 2: Deployment (in order, when ready)
-1. `firebase deploy --only firestore:rules,firestore:indexes`
-2. `firebase deploy --only functions` then run the `functions:delete` list in `functions/V1-SCOPE.md`
-3. Seed production `prompts` (v5) + `follow_up_templates` (script currently targets emulator — needs a production path or admin managePrompt route)
-
-### Priority 3: App Store blockers (unchanged)
-| Item | Status |
-|---|---|
+| Simulator/device visual pass with human eyes (design conformed in code; needs a look on device) | NOT DONE — `npx expo run:ios` |
 | iOS 26 + RN 0.83 release-build TurboModule crash (facebook/react-native#54859) | UNVERIFIED — submission blocker |
-| RevenueCat configuration | NOT CONFIGURED |
-| Push notifications end-to-end test | NOT TESTED |
+| RevenueCat configuration (decide trial length first: spec says 14-day, paywall copy says 7-day) | NOT CONFIGURED |
+| Push notifications end-to-end test on device (incl. new "Today's follow-up is ready.") | NOT TESTED |
 | getstoke.io live URLs | NOT VERIFIED |
 | App Store screenshots (3-tab v1 design) | NOT CAPTURED |
+| TestFlight build | STALE — needs rebuild from d86212d+ |
 
 ## Punch List (non-blocking)
-- Content batch 2: grow 60 → ~180 scored prompts (15/category) before or shortly after launch
 - Safety off-ramp (crisis-lexicon suppression of follow-ups + resources screen) — spec'd, NOT built; strongly recommended before public launch
-- "Explore prompts" row copy on Today vs tab named "Categories" — copy inconsistency
-- 14-day curated rotation (current selection is weighted-random within scale prompts; acceptable v1)
-- Paywall trial length: product spec said 14-day full-access trial; current copy says 7-day — decide before RevenueCat config
+- Content batch 2: grow 60 → ~180 scored prompts (15/category)
+- Shared `src/components/Button.tsx` primitive still non-conformant (radius 12, Nunito-Bold+'600'); used by auth screens
+- Emulator tooling: firebase-tools proxy bug breaks admin.firestore.FieldValue in emulated triggers (E2E agent patched a scratchpad copy); long-term migrate functions to `import { FieldValue } from 'firebase-admin/firestore'`. OpenJDK 26 now installed locally for emulators
+- Seed script hardcodes emulator project id 'closer-app-dev'; add a `.firebaserc` so emulator + CLI project ids agree
+- "Explore prompts" row copy on Today vs tab named "Categories"
+- specs/types.ts schema additions live OUTSIDE this git repo (repo root is app/) — not covered by today's commits
+- 14-day curated category rotation (current: weighted-random within scale prompts; acceptable v1)
 
 ## Engineering Health
 - App: tsc clean, 28 suites / 192 tests passing
-- Functions: build clean, 2 suites / 156 tests passing
-- Working tree: LARGE UNCOMMITTED v1 diff on main (intentional — awaiting review/commit)
+- Functions: build clean, 3 suites / 162 tests passing
+- Working tree: clean at 5d9a2b5 (main, not pushed — no remote configured check pending)
 - Expo SDK 55, Firebase 12.13.0, RN 0.83.6
 
 ## Key Metrics for v1 (post-launch)
