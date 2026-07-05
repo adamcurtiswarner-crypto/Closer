@@ -90,7 +90,7 @@ export const Button = React.forwardRef<View, ButtonProps>(function Button(
             size="small"
           />
         ) : (
-          <Text style={textStyles}>{title}</Text>
+          <Text style={textStyles} maxFontSizeMultiplier={1.4}>{title}</Text>
         )}
       </TouchableOpacity>
     </Animated.View>
@@ -122,15 +122,15 @@ const styles = StyleSheet.create({
   },
   // Sizes — 44pt minimum touch target
   smSize: {
-    height: 44,
+    minHeight: 44,
     paddingHorizontal: spacing.cardPad,
   },
   mdSize: {
-    height: 52,
+    minHeight: 52,
     paddingHorizontal: spacing.lg,
   },
   lgSize: {
-    height: 56,
+    minHeight: 56,
     paddingHorizontal: spacing.xl,
   },
   // Text

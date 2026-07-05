@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { useCouple, usePendingInvite, useCreateInvite, useCancelInvite, useDisconnectPartner } from '@/hooks/useCouple';
 import { usePartner } from '@/hooks/usePartner';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface PartnershipSectionProps {
   sectionTitleStyle: object;
   sectionStyle: object;
@@ -110,7 +111,7 @@ export function PartnershipSection({
       <>
         <Text style={sectionTitleStyle}>PARTNERSHIP</Text>
         <View style={[sectionStyle, styles.loadingContainer]}>
-          <ActivityIndicator color="#D4522A" />
+          <ActivityIndicator color={colors.accent.primary} />
         </View>
       </>
     );
@@ -210,21 +211,17 @@ export function PartnershipSection({
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    padding: 24,
+    padding: spacing.lg,
     alignItems: 'center',
   },
   codeText: {
-    fontFamily: 'Courier',
-    fontWeight: '600',
-    letterSpacing: 2,
+    ...typography.codeInline,
   },
   actionText: {
-    fontSize: 16,
-    color: '#D4522A',
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
+    color: colors.accent.primary,
   },
   emailText: {
-    fontSize: 14,
+    ...typography.bodySm,
   },
 });

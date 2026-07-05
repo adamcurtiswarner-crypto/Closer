@@ -185,7 +185,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
                     {isLoading ? (
                       <ActivityIndicator color={colors.text.inverse} />
                     ) : (
-                      <Text style={styles.ctaText}>{t('paywall.ctaTrial')}</Text>
+                      <Text style={styles.ctaText} maxFontSizeMultiplier={1.4}>{t('paywall.ctaTrial')}</Text>
                     )}
                   </TouchableOpacity>
                   <Text style={styles.ctaSubline}>
@@ -233,19 +233,18 @@ const styles = StyleSheet.create({
   // Hero title block — full-bleed coral card
   headerArea: {
     backgroundColor: colors.accent.primary,
-    paddingTop: 28,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
     overflow: 'hidden',
   },
   title: {
-    ...typography.display,
-    fontSize: 24,
+    ...typography.headingLg,
     color: colors.text.inverse,
     textAlign: 'center',
   },
   subtitle: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.onDark.body,
     textAlign: 'center',
     marginTop: spacing.sm,
@@ -258,12 +257,11 @@ const styles = StyleSheet.create({
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    gap: 14,
+    paddingVertical: spacing.smd,
+    gap: spacing.md,
   },
   featureText: {
     ...typography.body,
-    fontSize: 15,
     color: colors.text.primary,
     flex: 1,
   },
@@ -275,7 +273,7 @@ const styles = StyleSheet.create({
   },
   planRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smd,
     marginVertical: spacing.md,
     paddingHorizontal: spacing.lg,
   },
@@ -301,12 +299,10 @@ const styles = StyleSheet.create({
   },
   planPrice: {
     ...typography.h3,
-    fontSize: 18,
     color: colors.text.primary,
   },
   planSubprice: {
     ...typography.caption,
-    fontSize: 12,
     color: colors.text.secondary,
     marginTop: 2,
   },
@@ -320,7 +316,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   plansErrorText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
     textAlign: 'center',
   },
@@ -331,7 +327,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   retryText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.accent.primary,
   },
   // CTA — full-width pill
@@ -368,7 +364,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   restoreText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
   },
   closeButton: {

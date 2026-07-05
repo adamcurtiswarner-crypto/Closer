@@ -6,12 +6,14 @@ import Animated, {
   withTiming,
   withRepeat,
   cancelAnimation,
+  ReduceMotion,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 export function OfflineBanner() {
   const { isConnected } = useNetworkStatus();
   const { t } = useTranslation();
@@ -27,9 +29,11 @@ export function OfflineBanner() {
 
     if (!isConnected) {
       iconOpacity.value = withRepeat(
-        withTiming(0.4, { duration: 800 }),
+        withTiming(0.4, { duration: 800, reduceMotion: ReduceMotion.System }),
         -1,
-        true
+        true,
+        undefined,
+        ReduceMotion.System
       );
     } else {
       cancelAnimation(iconOpacity);
@@ -50,7 +54,7 @@ export function OfflineBanner() {
       style={[styles.banner, { paddingTop: insets.top + 8 }, animatedStyle]}
     >
       <Animated.View style={iconAnimatedStyle}>
-        <Icon name="warning" size="sm" color="#f59e0b" weight="fill" />
+        <Icon name="warning" size="sm" color={colors.semantic.neutral} weight="fill" />
       </Animated.View>
       <Text style={styles.text}>{t('offline.banner')}</Text>
     </Animated.View>
@@ -63,19 +67,18 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#6B6B7A',
-    paddingBottom: 10,
-    paddingHorizontal: 16,
+    backgroundColor: colors.text.secondary,
+    paddingBottom: spacing.smd,
+    paddingHorizontal: spacing.md,
     zIndex: 999,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   text: {
-    color: '#ffffff',
-    fontSize: 13,
+    color: colors.text.inverse,
+    ...typography.bodySm,
     textAlign: 'center',
-    fontWeight: '500',
   },
 });

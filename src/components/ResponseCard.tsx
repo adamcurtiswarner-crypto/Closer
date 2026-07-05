@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface ResponseCardProps {
   label: string;
   responseText: string;
@@ -33,19 +34,19 @@ export function ResponseCard({
 const styles = StyleSheet.create({
   card: {
     borderRadius: 14,
-    padding: 16,
+    padding: spacing.md,
   },
   yoursCard: {
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   partnersCard: {
-    backgroundColor: '#fdf8f6',
+    backgroundColor: colors.surface.warmTint,
   },
   labelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   labelDot: {
     width: 6,
@@ -53,34 +54,28 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   yoursDot: {
-    backgroundColor: '#B8B8C4',
+    backgroundColor: colors.text.muted,
   },
   partnersDot: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   label: {
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    ...typography.caption,
   },
   yoursLabel: {
-    color: '#6B6B7A',
+    color: colors.text.secondary,
   },
   partnersLabel: {
-    color: '#b85d3f',
+    color: colors.accent.primary,
   },
   responseText: {
-    color: '#292524',
-    fontSize: 16,
-    fontFamily: 'Nunito-Regular',
-    lineHeight: 24,
+    color: colors.text.primary,
+    ...typography.body,
   },
   responseImage: {
     width: '100%',
     height: 200,
     borderRadius: 12,
-    marginTop: 12,
+    marginTop: spacing.smd,
   },
 });

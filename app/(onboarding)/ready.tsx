@@ -68,7 +68,7 @@ export default function ReadyScreen() {
             activeOpacity={0.8}
             onPress={handleStart}
           >
-            <Text style={styles.ctaText}>{t('onboarding.ready.startNow')}</Text>
+            <Text style={styles.ctaText} maxFontSizeMultiplier={1.4}>{t('onboarding.ready.startNow')}</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -94,13 +94,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    ...typography.display,
-    fontSize: 24,
+    ...typography.headingLg,
     color: colors.text.primary,
     textAlign: 'center',
   },
   subtitle: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
     textAlign: 'center',
     marginTop: spacing.sm,
@@ -112,7 +111,7 @@ const styles = StyleSheet.create({
   cta: {
     backgroundColor: colors.accent.primary,
     borderRadius: radius.pill,
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     width: '100%',
   },

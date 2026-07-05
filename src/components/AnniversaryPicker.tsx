@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface AnniversaryPickerProps {
   visible: boolean;
   selectedDate: Date;
@@ -68,7 +69,7 @@ export function AnniversaryPicker({
                 disabled={saving}
               >
                 {saving ? (
-                  <ActivityIndicator color="#ffffff" size="small" />
+                  <ActivityIndicator color={colors.text.inverse} size="small" />
                 ) : (
                   <Text style={styles.modalSaveText}>{saveLabel}</Text>
                 )}
@@ -103,55 +104,50 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 24,
-    paddingBottom: 40,
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    marginBottom: 4,
+    ...typography.heading,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   modalSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginBottom: 16,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginBottom: spacing.md,
   },
   datePicker: {
     height: 200,
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
+    gap: spacing.smd,
+    marginTop: spacing.md,
   },
   modalCancel: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
   modalCancelText: {
-    fontSize: 16,
-    color: '#6B6B7A',
-    fontWeight: '500',
+    ...typography.body,
+    color: colors.text.secondary,
   },
   modalSave: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     borderRadius: 12,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   modalSaveText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '600',
+    ...typography.body,
+    color: colors.text.inverse,
   },
 });

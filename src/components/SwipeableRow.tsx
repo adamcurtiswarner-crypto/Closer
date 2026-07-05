@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 
+import { colors, typography } from '@/config/theme';
 interface SwipeAction {
   label: string;
   color: string;
@@ -92,8 +93,7 @@ const styles = StyleSheet.create({
     width: 80,
   },
   actionText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 13,
+    color: colors.text.inverse,
+    ...typography.bodySm,
   },
 });

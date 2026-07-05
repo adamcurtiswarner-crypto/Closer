@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { Icon } from './Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface ConversationStarterModalProps {
   visible: boolean;
   onClose: () => void;
@@ -51,14 +52,13 @@ export function ConversationStarterModal({
           <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>Start a conversation</Text>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose} activeOpacity={0.8}>
-            <Icon name="x" size="sm" color="#6B6B7A" />
+            <Icon name="x" size="sm" color={colors.text.secondary} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
           <Animated.View entering={FadeInUp.duration(400).delay(200)} style={styles.card}>
-            <View style={styles.accentBar} />
-            <Icon name="chat-circle" size="xl" color="#D4522A" weight="light" />
+            <Icon name="chat-circle" size="xl" color={colors.accent.primary} weight="light" />
             <Text style={styles.starterText}>{starterText}</Text>
           </Animated.View>
 
@@ -71,7 +71,7 @@ export function ConversationStarterModal({
               <Icon
                 name={copied ? 'check' : 'chat-text'}
                 size="sm"
-                color={copied ? '#22c55e' : '#D4522A'}
+                color={copied ? colors.semantic.success : colors.accent.primary}
               />
               <Text style={[styles.copyText, copied && styles.copyTextCopied]}>
                 {copied ? 'Copied' : 'Copy to clipboard'}
@@ -88,109 +88,95 @@ export function ConversationStarterModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   handleBar: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#d6d3d1',
+    backgroundColor: colors.border.default,
     alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: spacing.smd,
+    marginBottom: spacing.sm,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   headerSpacer: {
     width: 36,
     height: 36,
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1E1E2E',
-    letterSpacing: -0.3,
+    ...typography.body,
+    color: colors.text.primary,
   },
   closeButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
     justifyContent: 'center',
     alignItems: 'center',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    gap: 24,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    gap: spacing.lg,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 32,
-    paddingTop: 40,
+    padding: spacing.xl,
+    paddingTop: spacing.xl,
     overflow: 'hidden',
     alignItems: 'center',
-    gap: 20,
-    shadowColor: '#1E1E2E',
+    gap: spacing.cardPad,
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
   },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#D4522A',
-  },
   starterText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#1E1E2E',
+    ...typography.body,
+    color: colors.text.primary,
     textAlign: 'center',
-    lineHeight: 26,
   },
   actions: {
     alignItems: 'center',
-    gap: 20,
+    gap: spacing.cardPad,
   },
   copyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#F5F2EE',
+    gap: spacing.sm,
+    backgroundColor: colors.surface.background,
     borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.screen,
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
     alignSelf: 'stretch',
     justifyContent: 'center',
   },
   copyButtonCopied: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#dcfce7',
+    backgroundColor: colors.semantic.successLight,
+    borderColor: colors.semantic.successLight,
   },
   copyText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#D4522A',
+    ...typography.body,
+    color: colors.accent.primary,
   },
   copyTextCopied: {
-    color: '#22c55e',
+    color: colors.semantic.success,
   },
   chatLink: {
-    color: '#D4522A',
-    fontSize: 14,
-    fontWeight: '500',
+    color: colors.accent.primary,
+    ...typography.bodySm,
   },
 });

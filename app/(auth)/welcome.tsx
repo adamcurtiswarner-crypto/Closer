@@ -24,7 +24,7 @@ export default function WelcomeScreen() {
         <Animated.View entering={FadeIn.duration(700).delay(200)} style={styles.hero}>
           <ToneShapes variant="coral" />
           <View style={styles.heroContent}>
-            <Text style={styles.heroHeadline}>{t('auth.welcome.tagline')}</Text>
+            <Text style={styles.heroHeadline} maxFontSizeMultiplier={1.4}>{t('auth.welcome.tagline')}</Text>
             <Text style={styles.heroBody}>{t('auth.welcome.description')}</Text>
           </View>
         </Animated.View>
@@ -88,12 +88,11 @@ const styles = StyleSheet.create({
   },
   heroHeadline: {
     ...typography.hero,
-    lineHeight: 38,
     color: colors.text.inverse,
     marginBottom: spacing.sm,
   },
   heroBody: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.onDark.body,
   },
   bottomSection: {

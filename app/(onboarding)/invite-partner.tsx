@@ -17,6 +17,7 @@ import { useCreateInvite, usePendingInvite } from '@/hooks/useCouple';
 import { getShareMessage } from '@/config/app';
 import { useTranslation } from 'react-i18next';
 
+import { colors, spacing, typography } from '@/config/theme';
 export default function InvitePartnerScreen() {
   const { data: pendingInvite } = usePendingInvite();
   const createInvite = useCreateInvite();
@@ -183,77 +184,69 @@ export default function InvitePartnerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   contentCentered: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
     justifyContent: 'center',
   },
   headerCenter: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.headingLg,
+    color: colors.text.primary,
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   codeCard: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface.card,
     borderRadius: 16,
-    padding: 24,
+    padding: spacing.lg,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E2DED8',
-    marginBottom: 16,
+    borderColor: colors.border.default,
+    marginBottom: spacing.md,
   },
   codeText: {
-    fontSize: 32,
-    fontFamily: 'monospace',
-    fontWeight: '700',
-    color: '#D4522A',
-    letterSpacing: 4,
+    ...typography.code,
+    color: colors.accent.primary,
   },
   tapToCopy: {
-    fontFamily: 'Nunito-Regular',
-    color: '#B8B8C4',
-    fontSize: 14,
-    marginTop: 8,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
   },
   validDays: {
-    fontFamily: 'Nunito-Regular',
-    color: '#B8B8C4',
-    fontSize: 12,
+    ...typography.caption,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   spacerSmall: {
     height: 16,
   },
   haveCodeLink: {
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   linkText: {
-    fontFamily: 'Nunito-SemiBold',
-    color: '#D4522A',
+    ...typography.body,
+    color: colors.accent.primary,
     textAlign: 'center',
   },
   skipLink: {
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   skipText: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
-    fontSize: 14,
   },
 });

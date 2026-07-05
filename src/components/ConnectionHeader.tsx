@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Icon } from './Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface ConnectionHeaderProps {
   userName: string | null;
   partnerName: string;
@@ -143,7 +144,7 @@ function StreakPill({ streak, active }: { streak: number; active: boolean }) {
   return (
     <Animated.View style={[styles.streakPill, active ? styles.streakPillActive : styles.streakPillInactive, pillStyle]}>
       <Animated.View style={flameStyle}>
-        <Icon name="flame" size="xs" color="#D4522A" weight="fill" />
+        <Icon name="flame" size="xs" color={colors.accent.primary} weight="fill" />
       </Animated.View>
       <Text style={[styles.streakCount, active ? styles.streakCountActive : styles.streakCountInactive]}>
         {streak}
@@ -155,7 +156,7 @@ function StreakPill({ streak, active }: { streak: number; active: boolean }) {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   avatarRow: {
     flexDirection: 'row',
@@ -172,16 +173,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   avatarPartner: {
-    backgroundColor: '#3D2870',
+    backgroundColor: colors.brand.purple,
   },
   avatarText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
+    color: colors.text.inverse,
+    ...typography.h3,
   },
   onlineDot: {
     position: 'absolute',
@@ -191,18 +190,18 @@ const styles = StyleSheet.create({
     height: 12,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#F5F2EE',
+    borderColor: colors.surface.background,
   },
   onlineActive: {
-    backgroundColor: '#22c55e',
+    backgroundColor: colors.semantic.success,
   },
   onlineInactive: {
-    backgroundColor: '#d6d3d1',
+    backgroundColor: colors.border.default,
   },
   connectionLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 4,
+    marginHorizontal: spacing.xs,
     flex: 1,
     minWidth: 40,
     maxWidth: 120,
@@ -211,7 +210,7 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 2,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
   dot: {
     width: 5,
@@ -219,44 +218,42 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   dotLeft: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   dotRight: {
-    backgroundColor: '#3D2870',
+    backgroundColor: colors.brand.purple,
   },
   streakPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
     borderRadius: 12,
-    marginHorizontal: 4,
+    marginHorizontal: spacing.xs,
     gap: 2,
   },
   streakPillActive: {
-    backgroundColor: '#fef3ee',
+    backgroundColor: colors.surface.warmTint,
   },
   streakPillInactive: {
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
   streakCount: {
-    fontSize: 12,
-    fontWeight: '700',
+    ...typography.caption,
   },
   streakCountActive: {
-    color: '#D4522A',
+    color: colors.accent.primary,
   },
   streakCountInactive: {
-    color: '#B8B8C4',
+    color: colors.text.secondary,
   },
   statusText: {
-    marginTop: 6,
-    fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    marginTop: spacing.sm,
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   statusTyping: {
-    color: '#D4522A',
+    color: colors.accent.primary,
     fontStyle: 'italic',
   },
 });

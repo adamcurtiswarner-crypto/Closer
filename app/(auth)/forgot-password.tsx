@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
   },
   subtitle: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
     marginTop: spacing.sm,
   },

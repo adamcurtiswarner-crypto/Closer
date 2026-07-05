@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
+import { colors, spacing } from '@/config/theme';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,6 +9,7 @@ import Animated, {
   withDelay,
   withSequence,
   Easing,
+  ReduceMotion,
 } from 'react-native-reanimated';
 
 interface PulsingDotsProps {
@@ -24,10 +26,13 @@ function Dot({ delay, color, size }: { delay: number; color: string; size: numbe
       delay,
       withRepeat(
         withSequence(
-          withTiming(1, { duration: 400, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0.3, { duration: 400, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 400, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+          withTiming(0.3, { duration: 400, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
         ),
         -1,
+        false,
+        undefined,
+        ReduceMotion.System,
       ),
     );
   }, []);
@@ -47,7 +52,7 @@ function Dot({ delay, color, size }: { delay: number; color: string; size: numbe
   );
 }
 
-export function PulsingDots({ color = '#D4522A', size = 5, style }: PulsingDotsProps) {
+export function PulsingDots({ color = colors.accent.primary, size = 5, style }: PulsingDotsProps) {
   return (
     <Animated.View style={[styles.container, style]}>
       <Dot delay={0} color={color} size={size} />
@@ -61,6 +66,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
 });

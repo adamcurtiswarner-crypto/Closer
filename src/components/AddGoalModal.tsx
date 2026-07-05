@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { useCreateGoal, type TargetFrequency } from '@/hooks/useGoals';
 import { Icon } from './Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface AddGoalModalProps {
   visible: boolean;
   onClose: () => void;
@@ -132,7 +133,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
             <TextInput
               style={styles.input}
               placeholder="e.g., Weekly date night"
-              placeholderTextColor="#B8B8C4"
+              placeholderTextColor={colors.text.secondary}
               value={title}
               onChangeText={setTitle}
               maxLength={60}
@@ -147,7 +148,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
             <TextInput
               style={[styles.input, styles.descriptionInput]}
               placeholder={t('goals.descriptionPlaceholder')}
-              placeholderTextColor="#B8B8C4"
+              placeholderTextColor={colors.text.secondary}
               value={description}
               onChangeText={setDescription}
               maxLength={200}
@@ -211,7 +212,7 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
                 <Text style={styles.createText}>
                   {createGoal.isPending ? t('common.saving') : t('goals.createGoal')}
                 </Text>
-                {!createGoal.isPending && <Icon name="arrow-right" size="sm" color="#ffffff" />}
+                {!createGoal.isPending && <Icon name="arrow-right" size="sm" color={colors.text.inverse} />}
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -224,63 +225,51 @@ export function AddGoalModal({ visible, onClose }: AddGoalModalProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.smd,
+    paddingBottom: spacing.lg,
   },
   handleBar: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#d6d3d1',
+    backgroundColor: colors.border.default,
     alignSelf: 'center',
-    marginBottom: 28,
+    marginBottom: spacing.lg,
   },
   modalTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    letterSpacing: -0.5,
+    ...typography.headingLg,
+    color: colors.text.primary,
   },
   modalSubtitle: {
-    fontSize: 15,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginTop: 4,
-    marginBottom: 32,
-    lineHeight: 20,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+    marginBottom: spacing.xl,
   },
   label: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#6B6B7A',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
-    marginBottom: 8,
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
   },
   labelHint: {
-    fontWeight: '500',
-    color: '#B8B8C4',
-    textTransform: 'none',
-    letterSpacing: 0,
+    color: colors.text.secondary,
   },
   input: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 14,
-    padding: 16,
-    fontSize: 16,
-    color: '#1E1E2E',
+    padding: spacing.md,
+    ...typography.body,
+    color: colors.text.primary,
     borderWidth: 1.5,
-    borderColor: '#E2DED8',
-    marginBottom: 24,
-    lineHeight: 22,
+    borderColor: colors.border.default,
+    marginBottom: spacing.lg,
   },
   descriptionInput: {
     minHeight: 88,
@@ -288,99 +277,91 @@ const styles = StyleSheet.create({
   },
   frequencyRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 24,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   frequencyPill: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 4,
+    paddingVertical: spacing.smd,
+    paddingHorizontal: spacing.xs,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
     gap: 2,
   },
   frequencyPillActive: {
-    backgroundColor: '#FDF1ED',
-    borderColor: '#D4522A',
+    backgroundColor: colors.surface.warmTint,
+    borderColor: colors.accent.primary,
   },
   frequencyText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   frequencyTextActive: {
-    color: '#D4522A',
+    color: colors.accent.primary,
   },
   frequencyHint: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#B8B8C4',
+    ...typography.caption,
+    color: colors.text.secondary,
   },
   frequencyHintActive: {
-    color: '#D4522A',
+    color: colors.accent.primary,
     opacity: 0.7,
   },
   errorContainer: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: colors.semantic.destructiveLight,
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+    padding: spacing.smd,
+    marginBottom: spacing.md,
   },
   errorText: {
-    color: '#dc2626',
-    fontSize: 13,
+    color: colors.semantic.destructive,
+    ...typography.bodySm,
     textAlign: 'center',
-    fontWeight: '500',
   },
   buttonContainer: {
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    paddingTop: 12,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+    paddingTop: spacing.smd,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
-    backgroundColor: '#F5F2EE',
+    borderTopColor: colors.border.default,
+    backgroundColor: colors.surface.background,
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smd,
   },
   cancelButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    backgroundColor: '#E2DED8',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.border.default,
     borderRadius: 14,
     justifyContent: 'center',
   },
   cancelText: {
-    color: '#6B6B7A',
-    fontWeight: '600',
-    fontSize: 16,
+    color: colors.text.secondary,
+    ...typography.body,
   },
   createButton: {
     flex: 1,
-    paddingVertical: 16,
-    backgroundColor: '#D4522A',
+    paddingVertical: spacing.md,
+    backgroundColor: colors.accent.primary,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 6,
+    gap: spacing.sm,
   },
   createText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    fontSize: 16,
-    letterSpacing: 0.2,
+    color: colors.text.inverse,
+    ...typography.h3,
   },
   disabled: {
     opacity: 0.4,
   },
   primaryDisabled: {
     opacity: 0.4,
-    backgroundColor: '#f9a07a',
   },
 });

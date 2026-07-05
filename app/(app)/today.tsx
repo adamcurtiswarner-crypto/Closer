@@ -40,6 +40,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { format } from 'date-fns';
 import {
+  AccentBar,
   PromptCard,
   CompletionMoment,
   PulsingDots,
@@ -689,7 +690,7 @@ export default function TodayScreen() {
       <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
 
       <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
-        <View style={styles.accentBar} />
+        <AccentBar />
         <Icon name="coffee" size="xl" color={colors.accent.primary} weight="light" />
         <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
         <Text style={styles.emptySubtitle}>
@@ -704,7 +705,7 @@ export default function TodayScreen() {
             disabled={triggerPrompt.isPending}
             activeOpacity={0.8}
           >
-            <Text style={styles.triggerButtonText}>
+            <Text style={styles.triggerButtonText} maxFontSizeMultiplier={1.4}>
               {triggerPrompt.isPending ? t('common.loading') : t('today.getTodaysPrompt')}
             </Text>
           </TouchableOpacity>
@@ -742,7 +743,7 @@ export default function TodayScreen() {
       <EngagementCards {...engagementProps} />
 
       <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
-        <View style={styles.accentBar} />
+        <AccentBar />
         <Text style={styles.waitingPrompt}>
           {'“'}{assignment!.promptText}{'”'}
         </Text>
@@ -879,7 +880,6 @@ export default function TodayScreen() {
       {/* Emotional Feedback */}
       {revealMyResponse && !feedbackGiven && (
         <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.feedbackCard}>
-          <View style={styles.accentBar} />
           <Text style={styles.feedbackTitle}>{t('today.howDidThisFeel')}</Text>
           <View style={styles.feedbackRow}>
             {([
@@ -1063,14 +1063,6 @@ const styles = StyleSheet.create({
   modeContainer: {
     flex: 1,
   },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: colors.accent.primary,
-  },
   centered: {
     flex: 1,
     justifyContent: 'center',
@@ -1078,11 +1070,11 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
   },
   scrollContent: {
-    paddingTop: 20,
-    paddingBottom: 40,
+    paddingTop: spacing.cardPad,
+    paddingBottom: spacing.xl,
   },
   // ─── Spark card ───
   sparkCard: {
@@ -1100,20 +1092,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
-    gap: 12,
+    gap: spacing.smd,
   },
   sparkTextWrap: {
     flex: 1,
   },
   sparkTitle: {
-    ...typography.heading,
-    fontSize: 15,
-    letterSpacing: -0.3,
+    ...typography.h3,
     color: colors.text.primary,
   },
   sparkSubtitle: {
-    ...typography.caption,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text.secondary,
     marginTop: 2,
   },
@@ -1128,7 +1117,6 @@ const styles = StyleSheet.create({
   },
   dateText: {
     ...typography.body,
-    fontSize: 15,
     color: colors.text.secondary,
     marginTop: 2,
   },
@@ -1154,8 +1142,6 @@ const styles = StyleSheet.create({
   },
   emptySubtitle: {
     ...typography.body,
-    fontSize: 15,
-    lineHeight: 22,
     color: colors.text.secondary,
     textAlign: 'center',
   },
@@ -1189,8 +1175,6 @@ const styles = StyleSheet.create({
   },
   waitingPrompt: {
     ...typography.body,
-    fontSize: 16,
-    lineHeight: 24,
     color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
@@ -1205,14 +1189,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sealedTitle: {
-    ...typography.heading,
-    fontSize: 15,
+    ...typography.h3,
     color: colors.text.primary,
   },
   sealedSubtitle: {
-    ...typography.caption,
-    fontSize: 13,
-    color: colors.text.muted,
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   waitingDivider: {
     height: 1,
@@ -1226,8 +1208,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   typingText: {
-    ...typography.caption,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.accent.primary,
     fontStyle: 'italic',
   },
@@ -1238,8 +1219,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   waitingMessage: {
-    ...typography.caption,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text.secondary,
   },
   // ─── Complete ───
@@ -1260,15 +1240,15 @@ const styles = StyleSheet.create({
   },
   feedbackTitle: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     marginBottom: spacing.md,
   },
   feedbackRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smd,
   },
   feedbackOption: {
-    paddingVertical: 12,
+    paddingVertical: spacing.smd,
     paddingHorizontal: spacing.screen,
     backgroundColor: colors.surface.background,
     borderRadius: radius.choice,
@@ -1282,15 +1262,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   feedbackOptionText: {
-    ...typography.caption,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text.secondary,
   },
   feedbackThanks: {
-    ...typography.caption,
-    fontSize: 13,
+    ...typography.bodySm,
     marginTop: spacing.md,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   streakCelebration: {
@@ -1299,7 +1277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.accent.primaryLight,
-    paddingVertical: spacing.md - 2,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.pill,
     gap: spacing.sm,
@@ -1316,7 +1294,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: spacing.smd,
     marginTop: spacing.xl,
     marginBottom: spacing.md,
   },
@@ -1327,8 +1305,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border.default,
   },
   doneText: {
-    ...typography.caption,
-    fontSize: 13,
-    color: colors.text.muted,
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
 });

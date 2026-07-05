@@ -3,6 +3,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { CheckInCard, CoachingCard } from '@components';
 import { logEvent } from '@/services/analytics';
 
+import { spacing } from '@/config/theme';
 interface CoachingInsight {
   id?: string;
   insightText: string;
@@ -55,7 +56,7 @@ export function EngagementCards({
   }
 
   return (
-    <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: 16, marginTop: 16 }}>
+    <Animated.View entering={FadeInUp.duration(500).delay(200)} style={{ gap: spacing.md, marginTop: spacing.md }}>
       {hasPendingCheckIn && (
         <CheckInCard
           partnerName={partnerName}

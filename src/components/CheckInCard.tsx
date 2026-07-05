@@ -8,6 +8,7 @@ import { selectCheckInQuestions } from '@/config/checkInQuestions';
 import type { CheckInQuestion } from '@/config/checkInQuestions';
 import { logEvent } from '@/services/analytics';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface CheckInCardProps {
   partnerName: string;
   onSubmit: (responses: { questionId: string; dimension: string; score: number }[]) => void;
@@ -49,13 +50,12 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.card}>
-      <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="heart" size="sm" color="#D4522A" weight="light" />
+        <Icon name="heart" size="sm" color={colors.accent.primary} weight="light" />
         <Text style={styles.headerText}>{t('checkIn.title')}</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="x" size="xs" color="#B8B8C4" />
+          <Icon name="x" size="xs" color={colors.text.muted} />
         </TouchableOpacity>
       </View>
 
@@ -99,119 +99,98 @@ export function CheckInCard({ partnerName, onSubmit, onDismiss }: CheckInCardPro
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 24,
-    paddingTop: 20,
+    padding: spacing.lg,
+    paddingTop: spacing.cardPad,
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
   },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#D4522A',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
   },
   headerText: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#292524',
-    letterSpacing: -0.3,
+    ...typography.h3,
+    color: colors.text.primary,
     flex: 1,
   },
   dismissBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   privacy: {
-    fontSize: 11,
-    color: '#B8B8C4',
-    marginBottom: 16,
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginBottom: spacing.md,
   },
   questionArea: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   stepLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    color: '#B8B8C4',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginBottom: spacing.smd,
   },
   questionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#1E1E2E',
+    ...typography.h3,
+    color: colors.text.primary,
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 20,
+    marginBottom: spacing.cardPad,
   },
   scoreRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 8,
+    gap: spacing.smd,
+    marginBottom: spacing.sm,
   },
   scoreBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
     justifyContent: 'center',
     alignItems: 'center',
   },
   scoreBtnSelected: {
-    borderColor: '#D4522A',
-    backgroundColor: '#D4522A',
+    borderColor: colors.accent.primary,
+    backgroundColor: colors.accent.primary,
   },
   scoreNum: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
   },
   scoreNumSelected: {
-    color: '#ffffff',
+    color: colors.text.inverse,
   },
   scoreLabel: {
-    fontSize: 12,
-    color: '#D4522A',
-    fontWeight: '600',
-    marginTop: 4,
+    ...typography.caption,
+    color: colors.accent.primary,
+    marginTop: spacing.xs,
   },
   nextBtn: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   nextBtnDisabled: {
     opacity: 0.4,
   },
   nextBtnText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#ffffff',
+    ...typography.body,
+    color: colors.text.inverse,
   },
 });

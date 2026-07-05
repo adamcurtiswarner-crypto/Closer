@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { revealSeenKey } from '@/utils/revealGate';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
+import { AccentBar } from './AccentBar';
 import { ResponseCard } from './ResponseCard';
 import { ReactionRow } from './ReactionRow';
 import { Icon } from './Icon';
@@ -232,7 +233,7 @@ export function CompletionMoment({
     <Animated.View style={cardAnimatedStyle}>
       <View style={styles.card}>
         {/* Accent bar (pulses once at the partner-score beat) */}
-        <Animated.View style={[styles.accentBar, accentAnimatedStyle]} />
+        <AccentBar style={accentAnimatedStyle} />
 
         {resolved && (
           <>
@@ -359,30 +360,20 @@ const styles = StyleSheet.create({
     ...shadow.card,
     overflow: 'hidden',
   },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: colors.accent.primary,
-  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: spacing.sm,
     marginBottom: spacing.md,
     marginTop: spacing.xs,
   },
   header: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
   },
   promptText: {
     ...typography.body,
-    fontSize: 16,
-    lineHeight: 24,
     color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: spacing.lg,
@@ -399,7 +390,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.background,
     borderRadius: radius.choice,
     paddingVertical: spacing.md,
-    marginBottom: 12,
+    marginBottom: spacing.smd,
   },
   scoreCol: {
     flex: 1,
@@ -413,12 +404,10 @@ const styles = StyleSheet.create({
   },
   scoreName: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
   },
   scoreValue: {
     ...typography.display,
-    fontSize: 26,
-    letterSpacing: -0.5,
     color: colors.text.primary,
   },
   scoreValueWrap: {
@@ -427,21 +416,17 @@ const styles = StyleSheet.create({
   },
   scorePlaceholder: {
     position: 'absolute',
-    color: colors.text.muted,
+    color: colors.text.secondary,
   },
   midScaleLine: {
-    ...typography.caption,
-    fontSize: 13,
-    lineHeight: 19,
+    ...typography.bodySm,
     marginTop: spacing.md,
     color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
   },
   closingText: {
-    ...typography.caption,
-    fontSize: 13,
-    lineHeight: 19,
+    ...typography.bodySm,
     marginTop: spacing.md,
     color: colors.text.secondary,
     fontStyle: 'italic',
@@ -462,8 +447,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     ...typography.caption,
-    fontSize: 12,
-    color: colors.text.muted,
-    letterSpacing: 0.3,
+    color: colors.text.secondary,
   },
 });

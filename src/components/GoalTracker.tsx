@@ -22,6 +22,7 @@ import { SwipeableRow } from './SwipeableRow';
 import { Icon } from './Icon';
 import { GoalTrackerSkeleton } from './Skeleton';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface GoalTrackerProps {
   onAddGoal: () => void;
 }
@@ -62,11 +63,10 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
   return (
     <View style={styles.card}>
       {/* Accent bar */}
-      <View style={styles.accentBar} />
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
-        <Icon name="target" size="sm" color="#D4522A" weight="regular" />
+        <Icon name="target" size="sm" color={colors.accent.primary} weight="regular" />
         <Text style={styles.headerTitle}>Goals & Challenges</Text>
       </Animated.View>
 
@@ -100,7 +100,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
           <SwipeableRow
             rightActions={[{
               label: 'Archive',
-              color: '#B8B8C4',
+              color: colors.text.muted,
               onPress: () => handleArchive(activeChallenge.id),
             }]}
           >
@@ -123,7 +123,7 @@ export function GoalTracker({ onAddGoal }: GoalTrackerProps) {
           <SwipeableRow
             rightActions={[{
               label: 'Archive',
-              color: '#B8B8C4',
+              color: colors.text.muted,
               onPress: () => handleArchive(goal.id),
             }]}
           >
@@ -202,7 +202,7 @@ function GoalRow({
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         activeOpacity={0.6}
       >
-        <Icon name="x" size="xs" color="#B8B8C4" />
+        <Icon name="x" size="xs" color={colors.text.muted} />
       </TouchableOpacity>
     </View>
   );
@@ -222,7 +222,7 @@ function ProgressBarRow({
     <View style={styles.progressRow}>
       <AnimatedProgressBar
         progress={progress}
-        color={isComplete ? '#22c55e' : '#D4522A'}
+        color={isComplete ? colors.semantic.success : colors.accent.primary}
         height={6}
         style={{ flex: 1 }}
       />
@@ -235,116 +235,97 @@ function ProgressBarRow({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 24,
-    paddingTop: 20,
+    padding: spacing.lg,
+    paddingTop: spacing.cardPad,
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
   },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#3D2870',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   headerIcon: {
-    fontSize: 16,
+    ...typography.body,
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#292524',
-    letterSpacing: -0.3,
+    ...typography.h3,
+    color: colors.text.primary,
   },
   // ─── Weekly Challenge CTA ───
   challengeCta: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     borderRadius: 14,
-    padding: 14,
-    marginBottom: 4,
+    padding: spacing.md,
+    marginBottom: spacing.xs,
     borderWidth: 1,
-    borderColor: '#FDF1ED',
+    borderColor: colors.surface.warmTint,
   },
   challengeCtaLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smd,
     flex: 1,
   },
   challengeIconWrap: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
   },
   challengeIcon: {
-    fontSize: 20,
+    ...typography.heading,
   },
   challengeCtaText: {
     flex: 1,
   },
   challengeCtaLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    color: '#D4522A',
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    ...typography.eyebrow,
+    color: colors.accent.primary,
     marginBottom: 3,
   },
   challengeCtaTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#292524',
-    lineHeight: 18,
+    ...typography.bodySm,
+    color: colors.text.primary,
   },
   startButton: {
-    backgroundColor: '#D4522A',
-    paddingVertical: 8,
-    paddingHorizontal: 18,
+    backgroundColor: colors.accent.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderRadius: 10,
   },
   startButtonText: {
-    color: '#ffffff',
-    fontWeight: '700',
-    fontSize: 13,
-    letterSpacing: 0.2,
+    color: colors.text.inverse,
+    ...typography.bodySm,
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
   // ─── Goal Rows ───
   goalRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
+    gap: spacing.smd,
+    paddingVertical: spacing.smd,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   checkbox: {
     width: 28,
@@ -354,110 +335,101 @@ const styles = StyleSheet.create({
   },
   goalInfo: {
     flex: 1,
-    gap: 6,
+    gap: spacing.sm,
   },
   goalTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   weeklyBadge: {
-    backgroundColor: '#fef3ee',
+    backgroundColor: colors.surface.warmTint,
     paddingVertical: 2,
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     borderRadius: 20,
   },
   weeklyBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#D4522A',
-    letterSpacing: 0.5,
+    ...typography.caption,
+    color: colors.accent.primary,
   },
   goalTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#292524',
+    ...typography.bodySm,
+    color: colors.text.primary,
     flex: 1,
   },
   goalTitleDone: {
-    color: '#B8B8C4',
+    color: colors.text.secondary,
     textDecorationLine: 'line-through',
   },
   archiveButton: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   archiveIcon: {
-    fontSize: 16,
-    color: '#B8B8C4',
-    fontWeight: '600',
+    ...typography.body,
+    color: colors.text.secondary,
     marginTop: -1,
   },
   // ─── Progress Bar ───
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   progressLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#B8B8C4',
+    ...typography.caption,
+    color: colors.text.secondary,
     minWidth: 28,
     textAlign: 'right',
   },
   progressLabelComplete: {
-    color: '#22c55e',
+    color: colors.semantic.success,
   },
   // ─── Add Button ───
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    marginTop: 8,
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   addIconWrap: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
-    fontSize: 15,
-    color: '#D4522A',
-    fontWeight: '600',
+    ...typography.body,
+    color: colors.accent.primary,
     marginTop: -1,
   },
   addText: {
-    fontSize: 14,
-    color: '#D4522A',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
   // ─── Footer ───
   footerDots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 12,
+    gap: spacing.sm,
+    marginTop: spacing.smd,
   },
   footerDot: {
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
 });

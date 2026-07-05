@@ -9,6 +9,7 @@ import { Icon } from './Icon';
 
 import type { DateNight } from '@/types';
 
+import { colors, spacing, typography } from '@/config/theme';
 export function DateNightCard() {
   const { data: dateNights, isLoading } = useDateNights();
 
@@ -37,10 +38,9 @@ export function DateNightCard() {
   if (isLoading) {
     return (
       <View style={styles.card}>
-        <View style={styles.accentBar} />
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Icon name="calendar" size="sm" color="#D4522A" weight="regular" />
+            <Icon name="calendar" size="sm" color={colors.accent.primary} weight="regular" />
             <Text style={styles.headerTitle}>Date Nights</Text>
           </View>
         </View>
@@ -54,12 +54,11 @@ export function DateNightCard() {
 
   return (
     <View style={styles.card}>
-      <View style={styles.accentBar} />
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Icon name="calendar" size="sm" color="#D4522A" weight="regular" />
+          <Icon name="calendar" size="sm" color={colors.accent.primary} weight="regular" />
           <Text style={styles.headerTitle}>Date Nights</Text>
         </View>
         {scheduled.length > 0 && (
@@ -72,7 +71,7 @@ export function DateNightCard() {
       {/* Empty state */}
       {isEmpty && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="calendar" size="lg" color="#D4522A" weight="light" />
+          <Icon name="calendar" size="lg" color={colors.accent.primary} weight="light" />
           <Text style={styles.emptyTitle}>Plan something together</Text>
           <Text style={styles.emptySubtitle}>
             Browse ideas or plan your own night out (or in).
@@ -83,7 +82,7 @@ export function DateNightCard() {
       {/* No scheduled but have saved ideas */}
       {!isEmpty && !nextUp && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="calendar" size="lg" color="#D4522A" weight="light" />
+          <Icon name="calendar" size="lg" color={colors.accent.primary} weight="light" />
           <Text style={styles.emptyTitle}>Nothing scheduled yet</Text>
           <Text style={styles.emptySubtitle}>
             You have saved ideas. Pick one and set a date.
@@ -108,7 +107,7 @@ export function DateNightCard() {
                 Tap to mark it done or reschedule
               </Text>
             </View>
-            <Icon name="arrow-right" size="xs" color="#D4522A" />
+            <Icon name="arrow-right" size="xs" color={colors.accent.primary} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -122,7 +121,7 @@ export function DateNightCard() {
             activeOpacity={0.7}
           >
             <View style={styles.upcomingIconWrap}>
-              <Icon name="calendar" size="sm" color="#D4522A" weight="fill" />
+              <Icon name="calendar" size="sm" color={colors.accent.primary} weight="fill" />
             </View>
             <View style={styles.upcomingContent}>
               <Text style={styles.upcomingTitle} numberOfLines={1}>
@@ -136,7 +135,7 @@ export function DateNightCard() {
                 </Text>
               )}
             </View>
-            <Icon name="arrow-right" size="xs" color="#B8B8C4" />
+            <Icon name="arrow-right" size="xs" color={colors.text.muted} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -147,14 +146,14 @@ export function DateNightCard() {
           <Text style={styles.seeAllText}>
             {isEmpty ? 'Browse ideas' : 'See all'}
           </Text>
-          <Icon name="arrow-right" size="xs" color="#D4522A" />
+          <Icon name="arrow-right" size="xs" color={colors.accent.primary} />
         </TouchableOpacity>
       </Animated.View>
 
       {/* Play a game secondary link */}
       <Animated.View entering={FadeIn.duration(300).delay(400)}>
         <TouchableOpacity style={styles.gameLink} onPress={handlePlayGames} activeOpacity={0.7}>
-          <Icon name="game-controller" size="xs" color="#3D2870" weight="regular" />
+          <Icon name="game-controller" size="xs" color={colors.brand.purple} weight="regular" />
           <Text style={styles.gameLinkText}>Play a game</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -171,66 +170,54 @@ export function DateNightCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 24,
-    paddingTop: 20,
+    padding: spacing.lg,
+    paddingTop: spacing.cardPad,
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
-  },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#D4522A',
   },
   // --- Header ---
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#292524',
-    letterSpacing: -0.3,
+    ...typography.h3,
+    color: colors.text.primary,
   },
   countBadge: {
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     paddingVertical: 3,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     borderRadius: 20,
   },
   countText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#D4522A',
+    ...typography.caption,
+    color: colors.accent.primary,
   },
   // --- Loading ---
   loadingBody: {
-    paddingVertical: 16,
-    gap: 8,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
     alignItems: 'center',
   },
   loadingLine: {
     height: 12,
     width: '60%',
     borderRadius: 6,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
   loadingLineShort: {
     width: '40%',
@@ -238,65 +225,60 @@ const styles = StyleSheet.create({
   // --- Empty State ---
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#292524',
-    marginTop: 8,
-    marginBottom: 4,
+    ...typography.h3,
+    color: colors.text.primary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
   },
   emptySubtitle: {
-    fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#B8B8C4',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 18,
   },
   // --- Past-due nudge ---
   nudgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
+    gap: spacing.smd,
+    paddingVertical: spacing.smd,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   nudgeDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   nudgeContent: {
     flex: 1,
   },
   nudgeTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#292524',
+    ...typography.bodySm,
+    color: colors.text.primary,
   },
   nudgeSubtitle: {
-    fontSize: 12,
-    color: '#B8B8C4',
+    ...typography.caption,
+    color: colors.text.secondary,
     marginTop: 1,
   },
   // --- Upcoming ---
   upcomingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
+    gap: spacing.smd,
+    paddingVertical: spacing.smd,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   upcomingIconWrap: {
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -304,14 +286,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   upcomingTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#292524',
+    ...typography.bodySm,
+    color: colors.text.primary,
   },
   upcomingDate: {
-    fontSize: 12,
-    color: '#D4522A',
-    fontWeight: '500',
+    ...typography.caption,
+    color: colors.accent.primary,
     marginTop: 1,
   },
   // --- See All ---
@@ -319,40 +299,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 10,
+    gap: spacing.xs,
+    paddingVertical: spacing.smd,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   seeAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#D4522A',
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
   // --- Game link ---
   gameLink: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 6,
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
   },
   gameLinkText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#3D2870',
+    ...typography.bodySm,
+    color: colors.brand.purple,
   },
   // --- Footer ---
   footerDots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   footerDot: {
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
 });

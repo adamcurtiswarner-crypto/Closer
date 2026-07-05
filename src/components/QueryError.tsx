@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Icon } from './Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface QueryErrorProps {
   message?: string;
   onRetry?: () => void;
@@ -15,7 +16,7 @@ export function QueryError({
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
       <View style={styles.icon}>
-        <Icon name="cloud" size="lg" color="#B8B8C4" />
+        <Icon name="cloud" size="lg" color={colors.text.muted} />
       </View>
       <Text style={styles.title}>Couldn't load</Text>
       <Text style={styles.message}>{message}</Text>
@@ -30,46 +31,40 @@ export function QueryError({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 32,
+    padding: spacing.xl,
     alignItems: 'center',
     width: '100%',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 1,
   },
   icon: {
-    marginBottom: 12,
+    marginBottom: spacing.smd,
   },
   title: {
-    fontSize: 17,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#292524',
-    marginBottom: 6,
+    ...typography.h3,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
   },
   message: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
+    marginBottom: spacing.cardPad,
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.smd,
+    paddingHorizontal: spacing.lg,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
   },
   buttonText: {
-    fontSize: 14,
-    color: '#D4522A',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
 });

@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTriggerPrompt } from '@/hooks/usePrompt';
 import { useTranslation } from 'react-i18next';
 
+import { colors, shadow, spacing, typography } from '@/config/theme';
 export default function FirstPromptScreen() {
   const { user } = useAuth();
   const triggerPrompt = useTriggerPrompt();
@@ -91,97 +92,79 @@ export default function FirstPromptScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 48,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.xxl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.headingLg,
+    color: colors.text.primary,
   },
   cardArea: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    padding: spacing.lg,
+    ...shadow.cardSubtle,
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
   },
   promptText: {
-    color: '#1E1E2E',
-    fontSize: 20,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.primary,
+    ...typography.heading,
     textAlign: 'center',
-    lineHeight: 28,
   },
   explanation: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 16,
-    marginBottom: 24,
-    fontSize: 15,
-    lineHeight: 22,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
   },
   showButton: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
     borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.smd,
+    paddingHorizontal: spacing.lg,
     alignSelf: 'center',
   },
   showButtonText: {
-    color: '#ffffff',
+    color: colors.text.inverse,
     textAlign: 'center',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    fontSize: 15,
+    ...typography.body,
   },
   responseCard: {
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     borderRadius: 12,
-    padding: 16,
+    padding: spacing.md,
   },
   responseLabel: {
-    color: '#D4522A',
-    fontSize: 12,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    marginBottom: 8,
+    color: colors.accent.primary,
+    ...typography.caption,
+    marginBottom: spacing.sm,
   },
   responseText: {
-    fontFamily: 'Nunito-Regular',
-    color: '#44403c',
-    fontSize: 16,
+    ...typography.body,
+    color: colors.text.primary,
     fontStyle: 'italic',
-    lineHeight: 24,
   },
   tagline: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   taglineText: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
     textAlign: 'center',
-    fontSize: 15,
   },
   spacer: {
     flex: 1,
   },
   buttonContainer: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
 });

@@ -13,12 +13,14 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
+  ReduceMotion,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Button, Icon } from '@/components';
 import { useCouple } from '@/hooks/useCouple';
 import { useTranslation } from 'react-i18next';
 
+import { colors, spacing, typography } from '@/config/theme';
 export default function WaitingPartnerScreen() {
   const { data: couple, refetch } = useCouple();
   const { t } = useTranslation();
@@ -45,10 +47,13 @@ export default function WaitingPartnerScreen() {
   React.useEffect(() => {
     pulseOpacity.value = withRepeat(
       withSequence(
-        withTiming(0.4, { duration: 1200 }),
-        withTiming(1, { duration: 1200 }),
+        withTiming(0.4, { duration: 1200, reduceMotion: ReduceMotion.System }),
+        withTiming(1, { duration: 1200, reduceMotion: ReduceMotion.System }),
       ),
       -1,
+      false,
+      undefined,
+      ReduceMotion.System,
     );
   }, []);
 
@@ -61,7 +66,7 @@ export default function WaitingPartnerScreen() {
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
           <Animated.View style={pulseStyle}>
-            <Icon name="hourglass" size="xl" color="#D4522A" weight="light" />
+            <Icon name="hourglass" size="xl" color={colors.accent.primary} weight="light" />
           </Animated.View>
           <Text style={styles.title}>
             {t('onboarding.waitingPartner.title')}
@@ -96,29 +101,27 @@ export default function WaitingPartnerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   contentCentered: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
     justifyContent: 'center',
   },
   headerCenter: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: spacing.xxl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.headingLg,
+    color: colors.text.primary,
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   spacerSmall: {
     height: 12,

@@ -88,7 +88,7 @@ export function ScalePromptCard({
           accessibilityRole="button"
           testID="scale-submit"
         >
-          <Text style={styles.buttonText}>{isPending ? 'Sending...' : 'Share'}</Text>
+          <Text style={styles.buttonText} maxFontSizeMultiplier={1.4}>{isPending ? 'Sending...' : 'Share'}</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -100,20 +100,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.ink,
     borderRadius: radius.hero,
     padding: spacing.cardPad,
-    paddingTop: spacing.cardPad + 4,
+    paddingTop: spacing.lg,
     overflow: 'hidden',
     ...shadow.card,
   },
   eyebrow: {
     ...typography.eyebrow,
     color: colors.onDark.muted,
-    marginBottom: spacing.md - 4,
+    marginBottom: spacing.smd,
   },
   promptText: {
-    ...typography.heading,
-    fontSize: 22,
-    lineHeight: 28,
-    letterSpacing: -0.3,
+    ...typography.headingLg,
     color: colors.text.inverse,
   },
   sliderSection: {
@@ -124,12 +121,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.onDark.field,
     borderRadius: radius.input,
     padding: spacing.md,
-    fontSize: 15,
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.inverse,
     minHeight: 72,
     maxHeight: 160,
-    lineHeight: 22,
   },
   button: {
     marginTop: spacing.lg,

@@ -131,7 +131,7 @@ export default function ExploreScreen() {
               <TextInput
                 style={styles.textInput}
                 placeholder="Share your thoughts..."
-                placeholderTextColor={colors.text.muted}
+                placeholderTextColor={colors.text.secondary}
                 multiline
                 textAlignVertical="top"
                 value={responseText}
@@ -155,7 +155,7 @@ export default function ExploreScreen() {
                     setResponseText('');
                   }}
                 >
-                  <Text style={styles.cancelText}>Back</Text>
+                  <Text style={styles.cancelText} maxFontSizeMultiplier={1.4}>Back</Text>
                 </TouchableOpacity>
                 <Animated.View style={[{ flex: 1 }, submitAnimStyle]}>
                   <TouchableOpacity
@@ -177,7 +177,7 @@ export default function ExploreScreen() {
                     disabled={responseText.length < 10 || submitResponse.isPending}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.submitText}>
+                    <Text style={styles.submitText} maxFontSizeMultiplier={1.4}>
                       {submitResponse.isPending ? 'Sending...' : 'Share'}
                     </Text>
                     {!submitResponse.isPending && (
@@ -317,7 +317,7 @@ export default function ExploreScreen() {
                           onPress={() => handleStartPrompt(prompt)}
                           disabled={startExplore.isPending}
                         >
-                          <Text style={styles.respondButtonText}>Respond</Text>
+                          <Text style={styles.respondButtonText} maxFontSizeMultiplier={1.4}>Respond</Text>
                         </TouchableOpacity>
                       )}
                     </View>
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   },
   headerEyebrow: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     marginBottom: spacing.sm,
   },
   headerTitle: {
@@ -378,17 +378,17 @@ const styles = StyleSheet.create({
 
   // Category tabs
   categoryScrollContainer: { flexShrink: 0 },
-  categoryRow: { paddingHorizontal: spacing.screen, gap: spacing.itemGap, paddingBottom: 12 },
+  categoryRow: { paddingHorizontal: spacing.screen, gap: spacing.itemGap, paddingBottom: spacing.smd },
   // Chips — identity is carried by the icon, not a per-category hue.
   // Unselected: warm tint + coral. Selected: coral + white.
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: radius.pill,
-    gap: 6,
+    gap: spacing.sm,
   },
   categoryChipActive: {
     backgroundColor: colors.accent.primary,
@@ -397,9 +397,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.warmTint,
   },
   categoryChipLabel: {
-    fontSize: 12,
-    fontWeight: '800',
-    fontFamily: 'Nunito-ExtraBold',
+    ...typography.caption,
   },
   categoryChipLabelActive: {
     color: colors.text.inverse,
@@ -409,19 +407,19 @@ const styles = StyleSheet.create({
   },
 
   // Category description
-  categoryDesc: { paddingHorizontal: spacing.screen, paddingBottom: 12 },
+  categoryDesc: { paddingHorizontal: spacing.screen, paddingBottom: spacing.smd },
   categoryDescText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
   },
 
   // Prompt list
-  promptList: { paddingHorizontal: spacing.screen, paddingBottom: 40, gap: 12 },
-  loadingContainer: { paddingTop: 40, alignItems: 'center' },
-  emptyState: { paddingTop: 40, alignItems: 'center' },
+  promptList: { paddingHorizontal: spacing.screen, paddingBottom: spacing.xl, gap: spacing.smd },
+  loadingContainer: { paddingTop: spacing.xl, alignItems: 'center' },
+  emptyState: { paddingTop: spacing.xl, alignItems: 'center' },
   emptyText: {
-    ...typography.body,
-    color: colors.text.muted,
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
 
   // Prompt card
@@ -433,18 +431,15 @@ const styles = StyleSheet.create({
   },
   promptContent: { padding: spacing.cardPad },
   promptText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.primary,
-    lineHeight: 24,
     marginBottom: spacing.sm,
   },
   promptHint: {
     ...typography.caption,
     color: colors.text.secondary,
     fontStyle: 'italic',
-    marginBottom: 12,
+    marginBottom: spacing.smd,
   },
   promptFooter: {
     flexDirection: 'row',
@@ -454,24 +449,19 @@ const styles = StyleSheet.create({
   },
   depthBadge: {
     backgroundColor: colors.surface.background,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing.smd,
+    paddingVertical: spacing.xs,
     borderRadius: radius.pill,
   },
   depthText: {
-    fontSize: 11,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.caption,
     color: colors.text.secondary,
-    textTransform: 'capitalize',
   },
 
   // Status badges
-  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   statusText: {
-    fontSize: 12,
-    fontWeight: '700',
-    fontFamily: 'Nunito-Bold',
+    ...typography.caption,
   },
 
   // Respond button — coral pill, uppercase letterspaced label
@@ -483,7 +473,6 @@ const styles = StyleSheet.create({
   },
   respondButtonText: {
     ...typography.btn,
-    fontSize: 11,
     color: colors.text.inverse,
   },
 
@@ -493,19 +482,17 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     borderTopWidth: 1,
     borderTopColor: colors.border.default,
-    gap: 12,
+    gap: spacing.smd,
   },
   responseRow: {
-    gap: 4,
+    gap: spacing.xs,
   },
   responseAuthor: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
   },
   responseText: {
     ...typography.body,
-    fontSize: 15,
-    lineHeight: 22,
     color: colors.text.primary,
   },
 
@@ -515,11 +502,10 @@ const styles = StyleSheet.create({
   respondingPrompt: {
     ...typography.heading,
     color: colors.text.primary,
-    lineHeight: 30,
     fontStyle: 'italic',
   },
   respondingHint: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
     marginTop: spacing.sm,
   },
@@ -527,9 +513,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.card,
     borderRadius: radius.card,
     padding: spacing.md,
-    fontSize: 16,
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '600',
+    ...typography.body,
     color: colors.text.primary,
     minHeight: 160,
     textAlignVertical: 'top',
@@ -538,21 +522,19 @@ const styles = StyleSheet.create({
   respondingFooter: { marginTop: spacing.md },
   charHint: {
     ...typography.caption,
-    color: colors.text.muted,
-    marginBottom: 12,
+    color: colors.text.secondary,
+    marginBottom: spacing.smd,
   },
-  buttonRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  cancelButton: { paddingVertical: 14, paddingHorizontal: spacing.md },
+  buttonRow: { flexDirection: 'row', gap: spacing.smd, alignItems: 'center' },
+  cancelButton: { paddingVertical: spacing.md, paddingHorizontal: spacing.md },
   cancelText: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.secondary,
   },
   submitButton: {
     backgroundColor: colors.accent.primary,
     borderRadius: radius.pill,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -562,5 +544,5 @@ const styles = StyleSheet.create({
     ...typography.btn,
     color: colors.text.inverse,
   },
-  disabled: { opacity: 0.5 },
+  disabled: { opacity: 0.4 },
 });

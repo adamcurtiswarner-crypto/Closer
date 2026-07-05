@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/config/firebase';
 import { logger } from '@/utils/logger';
 
+import { colors, spacing, typography } from '@/config/theme';
 type RelationshipStage =
   | 'comfortable_but_busy'
   | 'new_and_exciting'
@@ -140,61 +141,56 @@ export default function RelationshipStageScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 48,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.xxl,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    lineHeight: 36,
-    marginBottom: 8,
+    ...typography.display,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
   },
   scrollView: {
     flex: 1,
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   scrollContent: {
-    paddingBottom: 16,
+    paddingBottom: spacing.md,
   },
   gridContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.smd,
   },
   column: {
     flex: 1,
-    gap: 12,
+    gap: spacing.smd,
   },
   card: {
     borderRadius: 20,
-    padding: 16,
+    padding: spacing.md,
     justifyContent: 'center',
   },
   cardDefault: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
   },
   cardSelected: {
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     borderWidth: 2,
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
   },
   cardLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    color: '#1E1E2E',
+    ...typography.body,
+    color: colors.text.primary,
   },
   cardLabelSelected: {
-    color: '#D4522A',
+    color: colors.accent.primary,
   },
   buttonContainer: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
 });

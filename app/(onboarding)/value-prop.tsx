@@ -37,7 +37,7 @@ export default function ValuePropScreen() {
           activeOpacity={0.8}
           onPress={() => router.push('/(onboarding)/preferences')}
         >
-          <Text style={styles.ctaText}>Continue</Text>
+          <Text style={styles.ctaText} maxFontSizeMultiplier={1.4}>Continue</Text>
         </TouchableOpacity>
       </Animated.View>
     </SafeAreaView>
@@ -71,12 +71,10 @@ const styles = StyleSheet.create({
     ...typography.display,
     color: colors.text.primary,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smd,
   },
   subtitle: {
     ...typography.body,
-    fontSize: 15,
-    lineHeight: 22,
     color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: spacing.xl,
@@ -87,19 +85,18 @@ const styles = StyleSheet.create({
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smd,
     paddingHorizontal: spacing.lg,
   },
   featureText: {
     ...typography.body,
-    fontSize: 15,
     color: colors.text.secondary,
   },
   // Full-width pill CTA
   cta: {
     backgroundColor: colors.accent.primary,
     borderRadius: radius.pill,
-    paddingVertical: 16,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     width: '100%',
   },

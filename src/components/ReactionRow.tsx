@@ -4,7 +4,7 @@ import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withSpring } from '
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { REACTIONS, type ReactionType, type ReactionIconName } from '@/hooks/useReaction';
 import { Icon } from './Icon';
-import { colors } from '@/config/theme';
+import { colors, spacing } from '@/config/theme';
 
 // VoiceOver names for each reaction (and its lowercase noun for the partner line)
 const REACTION_A11Y: Record<ReactionType, { label: string; noun: string }> = {
@@ -120,12 +120,12 @@ export function ReactionRow({
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 12,
+    marginTop: spacing.smd,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
+    gap: spacing.smd,
   },
   reactionBtn: {
     width: 44,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   },
   partnerReaction: {
     alignItems: 'flex-end',
-    marginTop: 6,
-    paddingRight: 4,
+    marginTop: spacing.sm,
+    paddingRight: spacing.xs,
   },
 });

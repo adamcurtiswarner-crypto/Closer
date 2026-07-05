@@ -548,7 +548,7 @@ export default function SettingsScreen() {
               value={deleteConfirmText}
               onChangeText={setDeleteConfirmText}
               placeholder="DELETE"
-              placeholderTextColor={colors.text.muted}
+              placeholderTextColor={colors.text.secondary}
               autoCapitalize="characters"
               autoCorrect={false}
             />
@@ -564,7 +564,7 @@ export default function SettingsScreen() {
               {deleteAccount.isPending ? (
                 <ActivityIndicator size="small" color={colors.text.inverse} />
               ) : (
-                <Text style={styles.deleteButtonText}>{t('settings.deleteButton')}</Text>
+                <Text style={styles.deleteButtonText} maxFontSizeMultiplier={1.4}>{t('settings.deleteButton')}</Text>
               )}
             </TouchableOpacity>
 
@@ -613,7 +613,7 @@ export default function SettingsScreen() {
               {anonymizeResponses.isPending ? (
                 <ActivityIndicator size="small" color={colors.text.inverse} />
               ) : (
-                <Text style={styles.deleteButtonText}>{t('settings.anonymizeButton')}</Text>
+                <Text style={styles.deleteButtonText} maxFontSizeMultiplier={1.4}>{t('settings.anonymizeButton')}</Text>
               )}
             </TouchableOpacity>
 
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
   // Section headers — eyebrow caps
   sectionTitle: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     marginTop: spacing.lg,
     marginBottom: spacing.sm,
     marginLeft: spacing.xs,
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.default,
   },
@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    paddingVertical: spacing.smd,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.default,
   },
@@ -684,15 +684,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
   },
   rowLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.primary,
   },
   rowValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.secondary,
   },
   rowRight: {
@@ -702,13 +698,9 @@ const styles = StyleSheet.create({
   },
   premiumText: {
     color: colors.accent.primary,
-    fontWeight: '800',
-    fontFamily: 'Nunito-ExtraBold',
   },
   dangerText: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.semantic.destructive,
   },
   safety: {
@@ -721,14 +713,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   safetyText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
   },
   safetyLink: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.accent.primary,
-    fontWeight: '800',
-    fontFamily: 'Nunito-ExtraBold',
     marginTop: spacing.sm,
   },
   // Modal styles
@@ -742,7 +732,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.hero,
     borderTopRightRadius: radius.hero,
     padding: spacing.lg,
-    paddingBottom: 40,
+    paddingBottom: spacing.xl,
   },
   modalTitle: {
     ...typography.heading,
@@ -750,14 +740,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   modalSubtitle: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
     marginBottom: spacing.cardPad,
   },
   timeOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    padding: spacing.md,
     borderRadius: radius.choice,
     borderWidth: 1.5,
     borderColor: 'transparent',
@@ -774,7 +764,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: colors.text.muted,
-    marginRight: 12,
+    marginRight: spacing.smd,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -788,36 +778,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent.primary,
   },
   timeOptionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.secondary,
   },
   timeOptionTextActive: {
     color: colors.accent.primary,
-    fontWeight: '700',
-    fontFamily: 'Nunito-Bold',
   },
   frequencyDescription: {
     ...typography.caption,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     marginTop: 2,
   },
   modalClose: {
     marginTop: spacing.sm,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   modalCloseText: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.secondary,
   },
   deleteModalBody: {
     ...typography.body,
-    fontSize: 15,
-    lineHeight: 22,
     color: colors.text.secondary,
     marginBottom: spacing.cardPad,
   },
@@ -830,19 +812,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.border.default,
     borderRadius: radius.input,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '600',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.smd,
+    ...typography.body,
     color: colors.text.primary,
     marginBottom: spacing.md,
-    letterSpacing: 2,
   },
   deleteButton: {
     backgroundColor: colors.semantic.destructive,
     borderRadius: radius.pill,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   deleteButtonDisabled: {
@@ -855,7 +834,7 @@ const styles = StyleSheet.create({
   anonymizeButton: {
     backgroundColor: colors.accent.primary,
     borderRadius: radius.pill,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
 });

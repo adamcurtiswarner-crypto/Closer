@@ -24,6 +24,7 @@ import { getAuthErrorMessage } from '@/utils/authErrors';
 import { logger } from '@/utils/logger';
 import { useTranslation } from 'react-i18next';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface ReauthModalProps {
   visible: boolean;
   onSuccess: () => void;
@@ -148,7 +149,7 @@ export function ReauthModal({ visible, onSuccess, onCancel }: ReauthModalProps) 
                 value={password}
                 onChangeText={setPassword}
                 placeholder={t('settings.reauth.password')}
-                placeholderTextColor="#d6d3d1"
+                placeholderTextColor={colors.border.default}
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -159,7 +160,7 @@ export function ReauthModal({ visible, onSuccess, onCancel }: ReauthModalProps) 
                 disabled={!password || isLoading}
               >
                 {isLoading ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
+                  <ActivityIndicator size="small" color={colors.text.inverse} />
                 ) : (
                   <Text style={styles.buttonText}>{t('settings.reauth.confirm')}</Text>
                 )}
@@ -174,7 +175,7 @@ export function ReauthModal({ visible, onSuccess, onCancel }: ReauthModalProps) 
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator size="small" color="#D4522A" />
+                <ActivityIndicator size="small" color={colors.accent.primary} />
               ) : (
                 <Text style={styles.socialButtonText}>{t('settings.reauth.googleButton')}</Text>
               )}
@@ -188,7 +189,7 @@ export function ReauthModal({ visible, onSuccess, onCancel }: ReauthModalProps) 
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={colors.text.inverse} />
               ) : (
                 <Text style={[styles.socialButtonText, styles.appleButtonText]}>
                   {t('settings.reauth.appleButton')}
@@ -213,89 +214,80 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   content: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 24,
-    paddingBottom: 40,
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    marginBottom: 4,
+    ...typography.heading,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
-    marginBottom: 20,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginBottom: spacing.cardPad,
   },
   error: {
-    fontSize: 14,
-    color: '#ef4444',
-    fontFamily: 'Nunito-Regular',
-    marginBottom: 12,
+    ...typography.bodySm,
+    color: colors.semantic.destructive,
+    marginBottom: spacing.smd,
   },
   emailLabel: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
-    marginBottom: 12,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginBottom: spacing.smd,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
     borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#1E1E2E',
-    marginBottom: 16,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.smd,
+    ...typography.body,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
   },
   button: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   buttonDisabled: {
-    backgroundColor: '#d6c4b8',
+    opacity: 0.4,
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#ffffff',
+    ...typography.h3,
+    color: colors.text.inverse,
   },
   socialButton: {
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   socialButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#1E1E2E',
+    ...typography.h3,
+    color: colors.text.primary,
   },
   appleButton: {
-    backgroundColor: '#000000',
-    borderColor: '#000000',
+    backgroundColor: colors.external.apple,
+    borderColor: colors.external.apple,
   },
   appleButtonText: {
-    color: '#ffffff',
+    color: colors.text.inverse,
   },
   cancelButton: {
-    marginTop: 8,
-    paddingVertical: 14,
+    marginTop: spacing.sm,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   cancelText: {
-    fontSize: 16,
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
   },
 });

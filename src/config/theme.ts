@@ -10,7 +10,6 @@ export const colors = {
     background: '#F5F2EE',
     card: '#FFFFFF',
     warmTint: '#FDF1ED',
-    warmTintDeep: '#FDF1ED',
     ink: '#1E1E2E',
   },
 
@@ -27,8 +26,11 @@ export const colors = {
   text: {
     primary: '#1E1E2E',
     secondary: '#6B6B7A',
-    tertiary: '#6B6B7A',
-    muted: '#B8B8C4',
+    // muted is NOT for copy — reserved for disabled states, inactive tab
+    // tint, and decorative glyphs. Darkened from #B8B8C4 so UI components
+    // pass 3:1 on white/warm surfaces (3.4:1 / 3.1:1). Readable copy uses
+    // text.secondary.
+    muted: '#8A8A96',
     inverse: '#FFFFFF',
   },
 
@@ -37,13 +39,12 @@ export const colors = {
     primary: '#D4522A',
     primaryLight: '#FDF1ED',
     secondary: '#3D2870',
-    secondaryLight: '#3D2870',
+    secondaryLight: '#F3ECF6',
   },
 
   // Gradients (start, end)
   gradient: {
     warmGlow: ['#F5F2EE', '#FDF1ED'] as const,
-    ember: ['#D4522A', '#D4522A'] as const,
     sunrise: ['#FDF1ED', '#F5F2EE'] as const,
   },
 
@@ -55,12 +56,12 @@ export const colors = {
     greenLight: '#EDF4EE',
   },
 
-  // Semantic
+  // Semantic — warm-shifted family (same roles, warmer hues)
   semantic: {
-    success: '#22c55e',
-    successLight: '#dcfce7',
-    destructive: '#ef4444',
-    destructiveLight: '#fef2f2',
+    success: '#4E7E52',
+    successLight: '#EAF2EB',
+    destructive: '#BA4234',
+    destructiveLight: '#F9EDEB',
     neutral: '#f59e0b',
     neutralLight: '#fefce8',
   },
@@ -68,7 +69,6 @@ export const colors = {
   // Border
   border: {
     default: '#E2DED8',
-    subtle: '#E2DED8',
     accent: '#D4522A',
   },
 
@@ -76,6 +76,12 @@ export const colors = {
   skeleton: {
     base: '#E2DED8',
     shimmer: 'rgba(255, 255, 255, 0.3)',
+  },
+
+  // Third-party brand colors (fixed by external brand guidelines)
+  external: {
+    google: '#4285F4',
+    apple: '#000000',
   },
 
   // Badge tiers
@@ -101,6 +107,7 @@ export const spacing = {
   // Backward-compatible numeric scale
   xs: 4,
   sm: 8,
+  smd: 12,
   md: 16,
   lg: 24,
   xl: 32,
@@ -171,11 +178,15 @@ export const card = {
     borderRadius: 16,
     ...shadow.card,
   },
+  // Canonical 3px accent bar — render via <AccentBar /> (src/components/AccentBar.tsx).
+  // Only the primary card of a screen carries it. Parent needs overflow: 'hidden'.
   accentBar: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
     height: 3,
     backgroundColor: '#D4522A',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
   },
 } as const;
 
@@ -183,9 +194,13 @@ export const card = {
 // TYPOGRAPHY SCALE
 // ============================================
 
+// One true type scale. Line-heights are baked in — never override
+// fontSize / lineHeight / fontFamily / fontWeight at a usage site.
+// Text styles compose as `...typography.X` plus color/textAlign/margins only.
 export const typography = {
   hero: {
     fontSize: 32,
+    lineHeight: 38,
     fontFamily: 'Nunito-Black',
     fontWeight: '900',
     letterSpacing: -0.5,
@@ -193,39 +208,57 @@ export const typography = {
 
   display: {
     fontSize: 28,
+    lineHeight: 34,
     fontFamily: 'Nunito-Black',
     fontWeight: '900',
     letterSpacing: -0.3,
   } as TextStyle,
 
+  headingLg: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: 'Nunito-Black',
+    fontWeight: '900',
+  } as TextStyle,
+
   heading: {
     fontSize: 20,
+    lineHeight: 26,
     fontFamily: 'Nunito-Black',
     fontWeight: '900',
   } as TextStyle,
 
   h3: {
     fontSize: 16,
+    lineHeight: 21,
     fontFamily: 'Nunito-ExtraBold',
     fontWeight: '800',
   } as TextStyle,
 
   body: {
-    fontSize: 13,
+    fontSize: 15,
+    lineHeight: 22,
     fontFamily: 'Nunito-SemiBold',
     fontWeight: '600',
-    lineHeight: 20,
+  } as TextStyle,
+
+  bodySm: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
   } as TextStyle,
 
   caption: {
-    fontSize: 11,
+    fontSize: 12,
+    lineHeight: 17,
     fontFamily: 'Nunito-SemiBold',
     fontWeight: '600',
-    lineHeight: 17,
   } as TextStyle,
 
   eyebrow: {
     fontSize: 9,
+    lineHeight: 13,
     fontFamily: 'Nunito-ExtraBold',
     fontWeight: '800',
     letterSpacing: 1.2,
@@ -234,10 +267,27 @@ export const typography = {
 
   btn: {
     fontSize: 12,
+    lineHeight: 16,
     fontFamily: 'Nunito-Black',
     fontWeight: '900',
     letterSpacing: 2,
     textTransform: 'uppercase',
+  } as TextStyle,
+
+  // Monospace invite-code display (hero readout on invite/accept screens)
+  code: {
+    fontSize: 28,
+    lineHeight: 34,
+    fontFamily: 'Courier',
+    fontWeight: '700',
+    letterSpacing: 4,
+  } as TextStyle,
+
+  // Monospace invite-code inline (settings partnership row)
+  codeInline: {
+    fontFamily: 'Courier',
+    fontWeight: '600',
+    letterSpacing: 2,
   } as TextStyle,
 } as const;
 

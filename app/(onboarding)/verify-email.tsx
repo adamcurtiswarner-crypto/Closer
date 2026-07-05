@@ -8,6 +8,7 @@ import { auth } from '@/config/firebase';
 import { Button } from '@/components';
 import { useTranslation } from 'react-i18next';
 
+import { colors, spacing, typography } from '@/config/theme';
 export default function VerifyEmailScreen() {
   const [isSending, setIsSending] = useState(false);
   const { t } = useTranslation();
@@ -64,36 +65,31 @@ export default function VerifyEmailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    marginBottom: 12,
+    ...typography.headingLg,
+    color: colors.text.primary,
+    marginBottom: spacing.smd,
   },
   subtitle: {
-    fontSize: 16,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    lineHeight: 24,
-    marginBottom: 32,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginBottom: spacing.xl,
   },
   actions: {},
   spacer: {
     height: 12,
   },
   note: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    fontSize: 13,
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
 });

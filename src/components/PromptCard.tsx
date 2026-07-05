@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { Icon } from './Icon';
+import { AccentBar } from './AccentBar';
 import type { IconName } from './Icon';
 
 // Prompt type visual config: icon, label, accent color, background tint.
@@ -92,7 +93,7 @@ export function PromptCard({
   return (
     <View style={[styles.card, { backgroundColor: config.bgTint }]}>
       {/* Decorative top accent bar */}
-      <View style={[styles.accentBar, { backgroundColor: config.accent }]} />
+      <AccentBar color={config.accent} />
 
       {/* Type badge */}
       <Animated.View entering={FadeIn.duration(400).delay(100)} style={styles.badgeRow}>
@@ -122,7 +123,7 @@ export function PromptCard({
             style={[styles.button, { backgroundColor: config.accent }]}
             activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>Respond</Text>
+            <Text style={styles.buttonText} maxFontSizeMultiplier={1.4}>Respond</Text>
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -133,19 +134,10 @@ export function PromptCard({
 const styles = StyleSheet.create({
   card: {
     borderRadius: radius.hero,
-    padding: spacing.lg + 4,
+    padding: spacing.lg,
     paddingTop: spacing.screen,
     ...shadow.card,
     overflow: 'hidden',
-  },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    borderTopLeftRadius: radius.hero,
-    borderTopRightRadius: radius.hero,
   },
   badgeRow: {
     alignItems: 'center',
@@ -155,34 +147,28 @@ const styles = StyleSheet.create({
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: spacing.md - 2,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
-    gap: 6,
+    gap: spacing.sm,
   },
   typeLabel: {
     ...typography.eyebrow,
-    fontSize: 10,
   },
   promptText: {
-    ...typography.heading,
-    fontSize: 22,
-    lineHeight: 30,
-    letterSpacing: -0.3,
+    ...typography.headingLg,
     color: colors.text.primary,
     textAlign: 'center',
   },
   hint: {
-    ...typography.caption,
-    fontSize: 13,
-    lineHeight: 19,
+    ...typography.bodySm,
     color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: spacing.md - 2,
+    marginTop: spacing.md,
     fontStyle: 'italic',
   },
   button: {
-    marginTop: spacing.lg + 4,
+    marginTop: spacing.lg,
     borderRadius: radius.pill,
     paddingVertical: spacing.md,
     alignItems: 'center',

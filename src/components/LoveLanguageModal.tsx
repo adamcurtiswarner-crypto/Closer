@@ -10,6 +10,7 @@ import {
 import { LOVE_LANGUAGES } from '@/config/loveLanguages';
 import { Icon } from './Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface LoveLanguageModalProps {
   visible: boolean;
   currentValue: string | null;
@@ -64,7 +65,7 @@ export function LoveLanguageModal({
                   </View>
                   {isActive && (
                     <View style={styles.langCheck}>
-                      <Icon name="check" size="sm" color="#D4522A" weight="bold" />
+                      <Icon name="check" size="sm" color={colors.accent.primary} weight="bold" />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -90,24 +91,21 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 24,
-    paddingBottom: 40,
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    marginBottom: 4,
+    ...typography.heading,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   modalSubtitle: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginBottom: 16,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginBottom: spacing.md,
   },
   langList: {
     maxHeight: 340,
@@ -115,55 +113,53 @@ const styles = StyleSheet.create({
   langOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
+    padding: spacing.md,
     borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#F5F2EE',
-    gap: 12,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface.background,
+    gap: spacing.smd,
   },
   langOptionActive: {
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     borderWidth: 1,
-    borderColor: '#f9a07a',
+    borderColor: colors.border.accent,
   },
   langOptionIcon: {
-    fontSize: 24,
+    ...typography.headingLg,
   },
   langOptionInfo: {
     flex: 1,
   },
   langOptionLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1E1E2E',
+    ...typography.body,
+    color: colors.text.primary,
   },
   langOptionLabelActive: {
-    color: '#D4522A',
+    color: colors.accent.primary,
   },
   langOptionDesc: {
-    fontSize: 12,
-    color: '#6B6B7A',
+    ...typography.caption,
+    color: colors.text.secondary,
     marginTop: 2,
   },
   langOptionDescActive: {
-    color: '#D4522A',
+    color: colors.accent.primary,
   },
   langCheck: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalCancelFull: {
-    marginTop: 8,
-    paddingVertical: 14,
+    marginTop: spacing.sm,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   modalCancelText: {
-    fontSize: 16,
-    color: '#6B6B7A',
-    fontWeight: '500',
+    ...typography.body,
+    color: colors.text.secondary,
   },
 });

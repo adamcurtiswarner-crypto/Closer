@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 
+import { colors, spacing, typography } from '@/config/theme';
 const TONE_OPTIONS = [
   {
     value: 'solid',
@@ -96,7 +97,7 @@ export default function ToneCalibrationScreen() {
                     {option.label}
                   </Text>
                   {selectedTone === option.value && (
-                    <Icon name="check" size="sm" color="#D4522A" weight="bold" />
+                    <Icon name="check" size="sm" color={colors.accent.primary} weight="bold" />
                   )}
                 </View>
                 <Text
@@ -131,41 +132,39 @@ export default function ToneCalibrationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 48,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.xxl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.headingLg,
+    color: colors.text.primary,
   },
   subtitle: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginTop: 8,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
   },
   optionsContainer: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   optionCard: {
-    padding: 16,
+    padding: spacing.md,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: spacing.smd,
   },
   optionCardSelected: {
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     borderWidth: 1.5,
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
   },
   optionCardDefault: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface.card,
     borderWidth: 1.5,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
   },
   optionHeader: {
     flexDirection: 'row',
@@ -173,31 +172,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   optionLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
   },
   optionLabelSelected: {
-    color: '#D4522A',
+    color: colors.accent.primary,
   },
   optionLabelDefault: {
-    color: '#1E1E2E',
+    color: colors.text.primary,
   },
   optionDescription: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    marginTop: 4,
+    ...typography.bodySm,
+    marginTop: spacing.xs,
   },
   optionDescriptionSelected: {
-    color: '#D4522A',
+    color: colors.accent.primary,
   },
   optionDescriptionDefault: {
-    color: '#B8B8C4',
+    color: colors.text.secondary,
   },
   spacer: {
     flex: 1,
   },
   buttonContainer: {
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
 });

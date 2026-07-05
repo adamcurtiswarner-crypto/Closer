@@ -10,9 +10,11 @@ import Animated, {
   withTiming,
   withDelay,
   Easing,
+  ReduceMotion,
 } from 'react-native-reanimated';
 import type { DayActivity } from '@/hooks/useMonthlyActivity';
 
+import { colors, spacing, typography } from '@/config/theme';
 const DAY_HEADERS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 interface StreakRingProps {
@@ -42,14 +44,17 @@ function AnimatedFlame({ size = 22 }: { size?: number }) {
   useEffect(() => {
     rotation.value = withRepeat(
       withSequence(
-        withTiming(-8, { duration: 300, easing: Easing.inOut(Easing.ease) }),
-        withTiming(8, { duration: 300, easing: Easing.inOut(Easing.ease) }),
-        withTiming(-4, { duration: 200, easing: Easing.inOut(Easing.ease) }),
-        withTiming(4, { duration: 200, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 150, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 400 }),
+        withTiming(-8, { duration: 300, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+        withTiming(8, { duration: 300, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+        withTiming(-4, { duration: 200, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+        withTiming(4, { duration: 200, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+        withTiming(0, { duration: 150, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+        withTiming(0, { duration: 400, reduceMotion: ReduceMotion.System }),
       ),
-      -1
+      -1,
+      false,
+      undefined,
+      ReduceMotion.System
     );
   }, []);
 
@@ -59,7 +64,7 @@ function AnimatedFlame({ size = 22 }: { size?: number }) {
 
   return (
     <Animated.View style={animatedStyle}>
-      <Icon name="flame" size={size} color="#D4522A" weight="fill" />
+      <Icon name="flame" size={size} color={colors.accent.primary} weight="fill" />
     </Animated.View>
   );
 }
@@ -72,10 +77,13 @@ function CalendarDay({ day }: { day: DayActivity }) {
       pulse.value = withDelay(500,
         withRepeat(
           withSequence(
-            withTiming(1.12, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-            withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+            withTiming(1.12, { duration: 800, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
+            withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease), reduceMotion: ReduceMotion.System }),
           ),
-          -1
+          -1,
+          false,
+          undefined,
+          ReduceMotion.System
         )
       );
     }
@@ -113,17 +121,17 @@ function CalendarDay({ day }: { day: DayActivity }) {
         </Text>
         {isCompleted && (
           <View style={styles.checkOverlay}>
-            <Icon name="check" size={10} color="#ffffff" weight="bold" />
+            <Icon name="check" size={10} color={colors.text.inverse} weight="bold" />
           </View>
         )}
         {isPartial && (
           <View style={styles.checkOverlay}>
-            <Icon name="check" size={10} color="#ffffff" weight="bold" />
+            <Icon name="check" size={10} color={colors.text.inverse} weight="bold" />
           </View>
         )}
         {isMissed && (
           <View style={styles.missedOverlay}>
-            <Icon name="x" size={8} color="#ef4444" weight="bold" />
+            <Icon name="x" size={8} color={colors.semantic.destructive} weight="bold" />
           </View>
         )}
       </Animated.View>
@@ -161,7 +169,10 @@ export function StreakRing({
       {/* Streak header */}
       <View style={styles.streakHeader}>
         <AnimatedFlame size={24} />
-        <Text style={[styles.streakCount, isStreakActive ? styles.streakActive : styles.streakInactive]}>
+        <Text
+          style={[styles.streakCount, isStreakActive ? styles.streakActive : styles.streakInactive]}
+          maxFontSizeMultiplier={1.4}
+        >
           {currentStreak}
         </Text>
         <Text style={styles.streakLabel}>day streak</Text>
@@ -209,10 +220,10 @@ export function StreakRing({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 20,
-    shadowColor: '#1E1E2E',
+    padding: spacing.cardPad,
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -222,38 +233,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    marginBottom: 16,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   streakCount: {
-    fontSize: 28,
-    fontFamily: 'Nunito-Black',
-    fontWeight: '600',
+    ...typography.display,
   },
-  streakActive: { color: '#D4522A' },
-  streakInactive: { color: '#B8B8C4' },
+  streakActive: { color: colors.accent.primary },
+  streakInactive: { color: colors.text.muted },
   streakLabel: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   monthTitle: {
-    fontSize: 16,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '600',
-    color: '#1E1E2E',
+    ...typography.h3,
+    color: colors.text.primary,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.smd,
   },
   dayHeaderRow: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   dayHeaderText: {
-    fontSize: 11,
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '500',
-    color: '#B8B8C4',
+    ...typography.caption,
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   calendarRow: {
@@ -273,43 +277,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dayCellCompleted: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
     borderWidth: 2,
-    borderColor: '#f59e0b',
+    borderColor: colors.semantic.neutral,
   },
   dayCellPartial: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: colors.accent.secondary,
   },
   dayCellMissed: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: colors.semantic.destructiveLight,
   },
   dayCellToday: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderWidth: 2,
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
   },
   dayCellUpcoming: {
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
   dayNumber: {
-    fontSize: 12,
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '500',
-    color: '#1E1E2E',
+    ...typography.caption,
+    color: colors.text.primary,
   },
   dayNumberLight: {
-    color: '#ffffff',
+    color: colors.text.inverse,
   },
   dayNumberMissed: {
-    color: '#ef4444',
+    color: colors.semantic.destructive,
     opacity: 0.6,
   },
   dayNumberToday: {
-    color: '#D4522A',
-    fontWeight: '600',
+    color: colors.accent.primary,
   },
   dayNumberUpcoming: {
-    color: '#B8B8C4',
+    color: colors.text.muted,
   },
   checkOverlay: {
     position: 'absolute',
@@ -322,11 +323,9 @@ const styles = StyleSheet.create({
     right: -1,
   },
   motivation: {
-    fontSize: 14,
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '500',
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 14,
+    marginTop: spacing.md,
   },
 });

@@ -2,13 +2,14 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Ellipse, G, Rect } from 'react-native-svg';
 
+import { colors } from '@/config/theme';
 interface ToneShapesProps {
   readonly variant: 'coral' | 'black' | 'purple';
   /** Optional multiplier applied to all shape opacities */
   readonly opacity?: number;
 }
 
-const FILL = '#FFFFFF';
+const FILL = colors.surface.card;
 
 function CoralShapes({ multiplier }: { readonly multiplier: number }) {
   return (

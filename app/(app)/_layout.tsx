@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Icon } from '@/components';
 import { FEATURES } from '@/config/features';
-import { colors, radius } from '@/config/theme';
+import { colors, radius, spacing, typography } from '@/config/theme';
 
 // Today is the v1 landing tab (home is feature-flagged off)
 export const unstable_settings = {
@@ -85,6 +85,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                   customTabBarStyles.label,
                   { color },
                 ]}
+                maxFontSizeMultiplier={1.4}
               >
                 {label}
               </Text>
@@ -273,7 +274,7 @@ const customTabBarStyles = StyleSheet.create({
     backgroundColor: colors.surface.card,
     borderTopWidth: 1,
     borderTopColor: colors.border.default,
-    paddingTop: 8,
+    paddingTop: spacing.sm,
     height: 85,
   },
   tabRow: {
@@ -283,7 +284,7 @@ const customTabBarStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   // Active tab — small warm pill behind the icon (reference Nav treatment)
   iconPill: {
@@ -298,9 +299,7 @@ const customTabBarStyles = StyleSheet.create({
     backgroundColor: colors.accent.primaryLight,
   },
   label: {
-    fontSize: 9,
-    fontWeight: '800',
+    ...typography.caption,
     marginTop: 3,
-    fontFamily: 'Nunito-ExtraBold',
   },
 });

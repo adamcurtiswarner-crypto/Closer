@@ -7,7 +7,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { hapticImpact } from '@utils/haptics';
-import { colors, typography } from '@config/theme';
+import { colors, spacing, typography } from '@config/theme';
 
 type ScaleSliderTone = 'light' | 'dark';
 
@@ -71,6 +71,7 @@ export function ScaleSlider({
             key={value}
             entering={FadeInDown.duration(180).springify()}
             style={styles.valueText}
+            maxFontSizeMultiplier={1.4}
             testID="scale-value"
           >
             {value}
@@ -113,7 +114,7 @@ export function ScaleSlider({
 
 const styles = StyleSheet.create({
   valueRow: {
-    height: 40,
+    minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
   labelsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: spacing.xs,
     paddingHorizontal: 2,
   },
   endLabel: {

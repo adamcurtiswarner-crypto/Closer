@@ -26,6 +26,7 @@ import { Icon } from './Icon';
 import { LoveLanguageModal } from './LoveLanguageModal';
 import { AnniversaryPicker } from './AnniversaryPicker';
 
+import { colors, spacing, typography } from '@/config/theme';
 function getInitials(name: string | null): string {
   if (!name) return '?';
   return name.charAt(0).toUpperCase();
@@ -182,7 +183,6 @@ export function ProfileCard() {
 
   return (
     <View style={styles.card}>
-      <View style={styles.accentBar} />
 
       {/* You */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.profileRow}>
@@ -201,11 +201,11 @@ export function ProfileCard() {
           )}
           {uploadingUser ? (
             <View style={styles.cameraOverlay}>
-              <ActivityIndicator color="#ffffff" size="small" />
+              <ActivityIndicator color={colors.text.inverse} size="small" />
             </View>
           ) : (
             <View style={styles.cameraOverlay}>
-              <Icon name="camera" size="xs" color="#ffffff" weight="fill" />
+              <Icon name="camera" size="xs" color={colors.text.inverse} weight="fill" />
             </View>
           )}
         </TouchableOpacity>
@@ -218,7 +218,7 @@ export function ProfileCard() {
             onChangeText={setDisplayName}
             onBlur={handleSaveDisplayName}
             placeholder={t('profile.yourNamePlaceholder')}
-            placeholderTextColor="#B8B8C4"
+            placeholderTextColor={colors.text.secondary}
             maxLength={30}
             returnKeyType="done"
           />
@@ -246,11 +246,11 @@ export function ProfileCard() {
           )}
           {uploadingPartner ? (
             <View style={styles.cameraOverlay}>
-              <ActivityIndicator color="#ffffff" size="small" />
+              <ActivityIndicator color={colors.text.inverse} size="small" />
             </View>
           ) : (
             <View style={styles.cameraOverlay}>
-              <Icon name="camera" size="xs" color="#ffffff" weight="fill" />
+              <Icon name="camera" size="xs" color={colors.text.inverse} weight="fill" />
             </View>
           )}
         </TouchableOpacity>
@@ -263,7 +263,7 @@ export function ProfileCard() {
             onChangeText={setPartnerName}
             onBlur={handleSavePartnerName}
             placeholder={t('profile.partnerPlaceholder')}
-            placeholderTextColor="#B8B8C4"
+            placeholderTextColor={colors.text.secondary}
             maxLength={30}
             returnKeyType="done"
             editable={!!user.coupleId}
@@ -287,7 +287,7 @@ export function ProfileCard() {
               }}
               activeOpacity={0.7}
             >
-              <Icon name="calendar" size="md" color="#D4522A" />
+              <Icon name="calendar" size="md" color={colors.accent.primary} />
               <View style={styles.anniversaryInfo}>
                 <Text style={styles.anniversaryLabel}>{t('profile.anniversary')}</Text>
                 <Text style={styles.anniversaryValue}>
@@ -296,7 +296,7 @@ export function ProfileCard() {
                     : t('profile.setYourDate')}
                 </Text>
               </View>
-              <Icon name="caret-right" size="sm" color="#B8B8C4" />
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
             </TouchableOpacity>
           </Animated.View>
         </>
@@ -310,7 +310,7 @@ export function ProfileCard() {
           onPress={() => setShowLoveLanguageModal(true)}
           activeOpacity={0.7}
         >
-          <Icon name="heart" size="md" color="#D4522A" weight="fill" />
+          <Icon name="heart" size="md" color={colors.accent.primary} weight="fill" />
           <View style={styles.anniversaryInfo}>
             <Text style={styles.anniversaryLabel}>{t('profile.yourLoveLanguage')}</Text>
             <Text style={styles.anniversaryValue}>
@@ -319,7 +319,7 @@ export function ProfileCard() {
                 : t('common.setYours')}
             </Text>
           </View>
-          <Icon name="caret-right" size="sm" color="#B8B8C4" />
+          <Icon name="caret-right" size="sm" color={colors.text.muted} />
         </TouchableOpacity>
 
         {/* Partner's love language (read-only) */}
@@ -368,30 +368,22 @@ export function ProfileCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 24,
-    paddingTop: 20,
+    padding: spacing.lg,
+    paddingTop: spacing.cardPad,
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
-    marginBottom: 8,
-  },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#D4522A',
+    marginBottom: spacing.sm,
   },
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: spacing.md,
   },
   avatarContainer: {
     position: 'relative',
@@ -404,15 +396,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarYou: {
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   avatarPartner: {
-    backgroundColor: '#3D2870',
+    backgroundColor: colors.brand.purple,
   },
   avatarText: {
-    color: '#ffffff',
-    fontSize: 28,
-    fontWeight: '700',
+    color: colors.text.inverse,
+    ...typography.display,
   },
   cameraOverlay: {
     position: 'absolute',
@@ -425,91 +416,80 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#ffffff',
+    borderColor: colors.surface.card,
   },
   cameraIcon: {
-    fontSize: 13,
+    ...typography.bodySm,
   },
   profileInfo: {
     flex: 1,
   },
   profileLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    color: '#B8B8C4',
-    letterSpacing: 0.8,
-    marginBottom: 4,
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
   },
   nameInput: {
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#1E1E2E',
+    ...typography.h3,
+    color: colors.text.primary,
     padding: 0,
     marginBottom: 2,
   },
   emailText: {
-    fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#B8B8C4',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     marginTop: 2,
   },
   hintText: {
-    fontSize: 13,
-    color: '#B8B8C4',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     fontStyle: 'italic',
     marginTop: 2,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E2DED8',
-    marginVertical: 18,
+    backgroundColor: colors.border.default,
+    marginVertical: spacing.md,
   },
   anniversaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smd,
   },
   anniversaryIcon: {
-    fontSize: 20,
+    ...typography.heading,
   },
   anniversaryInfo: {
     flex: 1,
   },
   anniversaryLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#B8B8C4',
-    letterSpacing: 0.8,
+    ...typography.caption,
+    color: colors.text.secondary,
     marginBottom: 2,
   },
   anniversaryValue: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1E1E2E',
+    ...typography.body,
+    color: colors.text.primary,
   },
   anniversaryChevron: {
-    fontSize: 16,
-    color: '#B8B8C4',
+    ...typography.body,
+    color: colors.text.secondary,
   },
   // Modal styles moved to LoveLanguageModal and AnniversaryPicker
   partnerLangRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 12,
-    paddingLeft: 32,
+    marginTop: spacing.smd,
+    paddingLeft: spacing.xl,
   },
   partnerLangLabel: {
-    fontSize: 12,
-    color: '#B8B8C4',
-    fontWeight: '500',
+    ...typography.caption,
+    color: colors.text.secondary,
   },
   partnerLangValue: {
-    fontSize: 13,
-    color: '#6B6B7A',
-    fontWeight: '500',
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   // Love language modal styles moved to LoveLanguageModal
 });

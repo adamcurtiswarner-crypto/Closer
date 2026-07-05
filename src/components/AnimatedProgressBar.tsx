@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
+import { colors } from '@/config/theme';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -17,8 +18,8 @@ interface AnimatedProgressBarProps {
 
 export function AnimatedProgressBar({
   progress,
-  color = '#D4522A',
-  trackColor = '#E2DED8',
+  color = colors.accent.primary,
+  trackColor = colors.border.default,
   height = 6,
   style,
 }: AnimatedProgressBarProps) {

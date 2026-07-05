@@ -16,6 +16,7 @@ import { useAcceptInvite } from '@/hooks/useCouple';
 import { clearPendingInviteCode } from '@/hooks/useDeepLink';
 import { useTranslation } from 'react-i18next';
 
+import { colors, spacing, typography } from '@/config/theme';
 export default function AcceptInviteScreen() {
   const { code: codeParam } = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState('');
@@ -106,7 +107,7 @@ export default function AcceptInviteScreen() {
           <TextInput
             style={styles.codeInput}
             placeholder="ABC123"
-            placeholderTextColor="#d6d3d1"
+            placeholderTextColor={colors.border.default}
             value={code}
             onChangeText={(text) => setCode(text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
             autoCapitalize="characters"
@@ -139,44 +140,39 @@ export default function AcceptInviteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   contentCentered: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screen,
     justifyContent: 'center',
   },
   headerCenter: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.headingLg,
+    color: colors.text.primary,
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   codeInput: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface.card,
     borderRadius: 16,
-    padding: 24,
+    padding: spacing.lg,
     textAlign: 'center',
-    fontSize: 28,
-    fontFamily: 'monospace',
-    fontWeight: '700',
-    color: '#D4522A',
-    letterSpacing: 4,
+    ...typography.code,
+    color: colors.accent.primary,
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
   },
   joinButtonContainer: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
 });

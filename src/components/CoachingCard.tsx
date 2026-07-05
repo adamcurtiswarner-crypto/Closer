@@ -5,6 +5,7 @@ import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { Icon } from './Icon';
 import type { IconName } from '@/components/Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface CoachingCardProps {
   insightText: string;
   actionType: string;
@@ -32,13 +33,12 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.card}>
-      <View style={styles.accentBar} />
 
       <View style={styles.header}>
-        <Icon name="lightbulb" size="sm" color="#D4522A" weight="light" />
+        <Icon name="lightbulb" size="sm" color={colors.accent.primary} weight="light" />
         <Text style={styles.headerText}>Weekly insight</Text>
         <TouchableOpacity onPress={onDismiss} style={styles.dismissBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Icon name="x" size="xs" color="#B8B8C4" />
+          <Icon name="x" size="xs" color={colors.text.muted} />
         </TouchableOpacity>
       </View>
 
@@ -48,19 +48,19 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
 
       <Animated.View entering={FadeInUp.duration(400).delay(400)}>
         <TouchableOpacity style={styles.actionBtn} onPress={handleAction} activeOpacity={0.8}>
-          <Icon name={config.icon} size="sm" color="#ffffff" weight="bold" />
+          <Icon name={config.icon} size="sm" color={colors.text.inverse} weight="bold" />
           <View style={styles.actionTextWrap}>
             <Text style={styles.actionLabel}>{config.label}</Text>
             <Text style={styles.actionDetail} numberOfLines={2}>{actionText || 'Take a moment to connect today'}</Text>
           </View>
-          <Icon name="arrow-right" size="sm" color="#ffffff" />
+          <Icon name="arrow-right" size="sm" color={colors.text.inverse} />
         </TouchableOpacity>
       </Animated.View>
 
       {onViewCoaching && (
         <TouchableOpacity onPress={onViewCoaching} style={styles.viewCoachingLink}>
           <Text style={styles.viewCoachingText}>View all insights</Text>
-          <Icon name="arrow-right" size="xs" color="#6B6B7A" />
+          <Icon name="arrow-right" size="xs" color={colors.text.secondary} />
         </TouchableOpacity>
       )}
     </Animated.View>
@@ -69,91 +69,71 @@ export function CoachingCard({ insightText, actionType, actionText, onAction, on
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 24,
-    paddingTop: 20,
+    padding: spacing.lg,
+    paddingTop: spacing.cardPad,
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
   },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#D4522A',
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   headerText: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#292524',
-    letterSpacing: -0.3,
+    ...typography.h3,
+    color: colors.text.primary,
     flex: 1,
   },
   dismissBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   insightText: {
-    fontSize: 15,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    lineHeight: 22,
-    marginBottom: 16,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginBottom: spacing.md,
   },
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#D4522A',
+    gap: spacing.smd,
+    backgroundColor: colors.accent.primary,
     borderRadius: 14,
-    padding: 16,
+    padding: spacing.md,
   },
   actionTextWrap: {
     flex: 1,
   },
   actionLabel: {
-    fontSize: 10,
-    fontWeight: '800',
+    ...typography.eyebrow,
     color: 'rgba(255,255,255,0.7)',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
     marginBottom: 2,
   },
   actionDetail: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#ffffff',
-    lineHeight: 19,
+    ...typography.bodySm,
+    color: colors.text.inverse,
   },
   viewCoachingLink: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    marginTop: 12,
-    paddingVertical: 4,
+    gap: spacing.xs,
+    marginTop: spacing.smd,
+    paddingVertical: spacing.xs,
   },
   viewCoachingText: {
-    fontSize: 13,
-    fontFamily: 'Nunito-SemiBold',
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
 });

@@ -68,7 +68,7 @@ export function RespondingScreen({
             <TextInput
               style={styles.textInput}
               placeholder={t('today.sharePlaceholder')}
-              placeholderTextColor={colors.text.muted}
+              placeholderTextColor={colors.text.secondary}
               multiline
               textAlignVertical="top"
               value={responseText}
@@ -100,7 +100,7 @@ export function RespondingScreen({
 
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                <Text style={styles.cancelText}>Back</Text>
+                <Text style={styles.cancelText} maxFontSizeMultiplier={1.4}>Back</Text>
               </TouchableOpacity>
               <Animated.View style={[{ flex: 1 }, submitAnimStyle]}>
                 <TouchableOpacity
@@ -111,7 +111,7 @@ export function RespondingScreen({
                   disabled={responseText.length < 10 || isPending}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.submitText}>
+                  <Text style={styles.submitText} maxFontSizeMultiplier={1.4}>
                     {isPending ? t('today.sending') : t('today.share')}
                   </Text>
                 </TouchableOpacity>
@@ -146,15 +146,12 @@ const styles = StyleSheet.create({
   },
   contextText: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: spacing.sm,
-    lineHeight: 15,
   },
   respondingPrompt: {
     ...typography.body,
-    fontSize: 17,
-    lineHeight: 26,
     color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
@@ -163,33 +160,30 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.card,
     borderRadius: radius.card,
     padding: spacing.screen,
-    fontSize: 17,
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.body,
     color: colors.text.primary,
     borderWidth: 1.5,
     borderColor: colors.border.default,
     minHeight: 140,
     maxHeight: 240,
-    lineHeight: 24,
   },
   attachPhotoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginTop: 12,
-    paddingVertical: 10,
+    gap: spacing.sm,
+    marginTop: spacing.smd,
+    paddingVertical: spacing.smd,
     paddingHorizontal: spacing.md,
     alignSelf: 'flex-start',
     backgroundColor: colors.border.default,
     borderRadius: radius.input,
   },
   attachPhotoText: {
-    ...typography.caption,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text.secondary,
   },
   imagePreview: {
-    marginTop: 12,
+    marginTop: spacing.smd,
     position: 'relative',
     alignSelf: 'flex-start',
   },
@@ -210,19 +204,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   respondingFooter: {
-    marginTop: 12,
+    marginTop: spacing.smd,
   },
   charHint: {
     ...typography.caption,
-    fontSize: 12,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     textAlign: 'center',
     marginBottom: spacing.md,
   },
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.smd,
   },
   cancelButton: {
     paddingVertical: spacing.md,
@@ -232,7 +225,6 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     ...typography.eyebrow,
-    fontSize: 10,
     color: colors.text.secondary,
   },
   submitButton: {

@@ -56,7 +56,7 @@ import {
   SmileyIcon,
   DropIcon,
 } from 'phosphor-react-native';
-import { iconSize } from '@/config/theme';
+import { colors, iconSize } from '@/config/theme';
 
 const iconMap = {
   flame: FlameIcon,
@@ -124,7 +124,7 @@ interface IconComponentProps {
   weight?: PhosphorIconProps['weight'];
 }
 
-export function Icon({ name, size = 'md', color = '#6B6B7A', weight = 'light' }: IconComponentProps) {
+export function Icon({ name, size = 'md', color = colors.text.secondary, weight = 'light' }: IconComponentProps) {
   const IconComponent = iconMap[name];
   const resolvedSize = typeof size === 'number' ? size : iconSize[size];
   return <IconComponent size={resolvedSize} color={color as string} weight={weight} />;

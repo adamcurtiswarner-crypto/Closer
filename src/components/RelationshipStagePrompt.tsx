@@ -4,6 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { Icon } from '@components';
 import type { IconName } from '@/components/Icon';
 
+import { colors, spacing, typography } from '@/config/theme';
 export type RelationshipStage = 'dating' | 'engaged' | 'married' | 'long_distance';
 
 const STAGES: { value: RelationshipStage; label: string; icon: IconName }[] = [
@@ -26,7 +27,7 @@ export function RelationshipStagePrompt({ onSelectStage, onDismiss }: Relationsh
       <View style={styles.stageButtons}>
         {STAGES.map(s => (
           <TouchableOpacity key={s.value} style={styles.stageChip} onPress={() => onSelectStage(s.value)}>
-            <Icon name={s.icon} size="sm" color="#D4522A" />
+            <Icon name={s.icon} size="sm" color={colors.accent.primary} />
             <Text style={styles.stageChipText}>{s.label}</Text>
           </TouchableOpacity>
         ))}
@@ -40,56 +41,50 @@ export function RelationshipStagePrompt({ onSelectStage, onDismiss }: Relationsh
 
 const styles = StyleSheet.create({
   stagePromptCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#1E1E2E',
+    padding: spacing.cardPad,
+    marginBottom: spacing.md,
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 1,
   },
   stagePromptTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    marginBottom: 4,
+    ...typography.h3,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   stagePromptSubtitle: {
-    fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginBottom: 16,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginBottom: spacing.md,
   },
   stageButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
+    gap: spacing.sm,
+    marginBottom: spacing.smd,
   },
   stageChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#FDF1ED',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    gap: spacing.sm,
+    backgroundColor: colors.surface.warmTint,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#FDF1ED',
+    borderColor: colors.surface.warmTint,
   },
   stageChipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#D4522A',
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
   stageSkip: {
-    fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#B8B8C4',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
   },
 });

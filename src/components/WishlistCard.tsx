@@ -19,6 +19,7 @@ import { AnimatedCheckbox } from './AnimatedCheckbox';
 import { Icon } from './Icon';
 import { WishlistCardSkeleton } from './Skeleton';
 
+import { colors, spacing, typography } from '@/config/theme';
 interface WishlistCardProps {
   onAddItem: () => void;
 }
@@ -53,12 +54,11 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
   return (
     <View style={styles.card}>
       {/* Accent bar */}
-      <View style={styles.accentBar} />
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(400)} style={styles.header}>
         <View style={styles.headerLeft}>
-          <Icon name="sparkle" size="sm" color="#D4522A" weight="regular" />
+          <Icon name="sparkle" size="sm" color={colors.accent.primary} weight="regular" />
           <Text style={styles.headerTitle}>{t('wishlist.title')}</Text>
         </View>
         {totalCount > 0 && (
@@ -73,7 +73,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
       {/* Empty state */}
       {totalCount === 0 && (
         <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.emptyState}>
-          <Icon name="star" size="lg" color="#D4522A" weight="light" />
+          <Icon name="star" size="lg" color={colors.accent.primary} weight="light" />
           <Text style={styles.emptyTitle}>{t('wishlist.dreamTogether')}</Text>
           <Text style={styles.emptySubtitle}>{t('wishlist.emptySubtitle')}</Text>
         </Animated.View>
@@ -103,7 +103,7 @@ export function WishlistCard({ onAddItem }: WishlistCardProps) {
         <Animated.View entering={FadeIn.duration(300).delay(400)}>
           <TouchableOpacity style={styles.seeAllButton} onPress={handleSeeAll} activeOpacity={0.7}>
             <Text style={styles.seeAllText}>{t('wishlist.seeAll')}</Text>
-            <Icon name="arrow-right" size="xs" color="#D4522A" />
+            <Icon name="arrow-right" size="xs" color={colors.accent.primary} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -147,7 +147,7 @@ function WishlistRow({
       </TouchableOpacity>
       {cat?.icon
         ? <Text style={styles.itemIcon}>{cat.icon}</Text>
-        : <Icon name="sparkle" size="sm" color="#3D2870" />
+        : <Icon name="sparkle" size="sm" color={colors.brand.purple} />
       }
       <Text
         style={[styles.itemTitle, item.isCompleted && styles.itemTitleDone]}
@@ -161,88 +161,73 @@ function WishlistRow({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.surface.card,
     borderRadius: 20,
-    padding: 24,
-    paddingTop: 20,
+    padding: spacing.lg,
+    paddingTop: spacing.cardPad,
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
+    shadowColor: colors.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
-  },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#D4522A',
   },
   // ─── Header ───
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   headerIcon: {
-    fontSize: 16,
+    ...typography.body,
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#292524',
-    letterSpacing: -0.3,
+    ...typography.h3,
+    color: colors.text.primary,
   },
   countBadge: {
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.surface.warmTint,
     paddingVertical: 3,
-    paddingHorizontal: 10,
+    paddingHorizontal: spacing.smd,
     borderRadius: 20,
   },
   countText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#D4522A',
+    ...typography.caption,
+    color: colors.accent.primary,
   },
   // ─── Empty State ───
   emptyState: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   emptyIcon: {
-    fontSize: 28,
-    marginBottom: 8,
+    ...typography.display,
+    marginBottom: spacing.sm,
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#292524',
-    marginBottom: 4,
+    ...typography.h3,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   emptySubtitle: {
-    fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#B8B8C4',
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   // ─── Item Rows ───
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 10,
+    gap: spacing.smd,
+    paddingVertical: spacing.smd,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   checkbox: {
     width: 24,
@@ -251,88 +236,82 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itemIcon: {
-    fontSize: 14,
+    ...typography.bodySm,
   },
   itemTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#292524',
+    ...typography.bodySm,
+    color: colors.text.primary,
     flex: 1,
   },
   itemTitleDone: {
-    color: '#B8B8C4',
+    color: colors.text.secondary,
     textDecorationLine: 'line-through',
   },
   moreHint: {
-    fontSize: 12,
-    color: '#B8B8C4',
-    fontWeight: '500',
+    ...typography.caption,
+    color: colors.text.secondary,
     textAlign: 'center',
-    paddingVertical: 6,
+    paddingVertical: spacing.sm,
   },
   // ─── See All ───
   seeAllButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 10,
+    gap: spacing.xs,
+    paddingVertical: spacing.smd,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   seeAllText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#D4522A',
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
   seeAllArrow: {
-    fontSize: 14,
-    color: '#D4522A',
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
   // ─── Add Button ───
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-    marginTop: 4,
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    marginTop: spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
   },
   addIconWrap: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   addIcon: {
-    fontSize: 15,
-    color: '#D4522A',
-    fontWeight: '600',
+    ...typography.body,
+    color: colors.accent.primary,
     marginTop: -1,
   },
   addText: {
-    fontSize: 14,
-    color: '#D4522A',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
   // ─── Footer ───
   footerDots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 12,
+    gap: spacing.sm,
+    marginTop: spacing.smd,
   },
   footerDot: {
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
 });

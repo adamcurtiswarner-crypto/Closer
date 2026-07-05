@@ -50,17 +50,16 @@ export function FollowUpSkip({ onSkip, disabled = false }: FollowUpSkipProps) {
 
 const styles = StyleSheet.create({
   contextWrap: {
-    marginBottom: 12,
+    marginBottom: spacing.smd,
     paddingHorizontal: spacing.sm,
   },
   contextText: {
     ...typography.eyebrow,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     textAlign: 'center',
-    lineHeight: 15,
   },
   skipWrap: {
-    marginTop: 12,
+    marginTop: spacing.smd,
     alignItems: 'center',
   },
   skipButton: {
@@ -71,13 +70,11 @@ const styles = StyleSheet.create({
   },
   skipText: {
     ...typography.eyebrow,
-    fontSize: 10,
     color: colors.text.secondary,
   },
   skipHint: {
     ...typography.caption,
-    fontSize: 12,
-    color: colors.text.muted,
+    color: colors.text.secondary,
     marginTop: 2,
   },
 });

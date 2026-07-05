@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   forgotText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.accent.primary,
   },
   submit: {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   footerText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
   },
   footerLinkButton: {
@@ -196,9 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footerLink: {
-    ...typography.body,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '700',
+    ...typography.bodySm,
     color: colors.accent.primary,
   },
 });

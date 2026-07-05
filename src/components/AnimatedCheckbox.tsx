@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Icon } from './Icon';
 
+import { colors } from '@/config/theme';
 interface AnimatedCheckboxProps {
   checked: boolean;
   size?: number;
@@ -19,7 +20,7 @@ interface AnimatedCheckboxProps {
 export function AnimatedCheckbox({
   checked,
   size = 24,
-  color = '#D4522A',
+  color = colors.accent.primary,
   style,
 }: AnimatedCheckboxProps) {
   const scale = useSharedValue(1);
@@ -45,7 +46,7 @@ export function AnimatedCheckbox({
     const borderColor = interpolateColor(
       progress.value,
       [0, 1],
-      ['#d6d3d1', color],
+      [colors.border.default, color],
     );
     return {
       backgroundColor,
@@ -69,7 +70,7 @@ export function AnimatedCheckbox({
       ]}
     >
       <Animated.View style={checkmarkStyle}>
-        <Icon name="check" size={Math.round(size * 0.55)} color="#ffffff" weight="bold" />
+        <Icon name="check" size={Math.round(size * 0.55)} color={colors.text.inverse} weight="bold" />
       </Animated.View>
     </Animated.View>
   );

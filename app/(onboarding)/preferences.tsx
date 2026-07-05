@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Input, Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 
+import { colors, spacing, typography } from '@/config/theme';
 const TIME_OPTIONS = [
   { label: 'Morning (8 AM)', value: '08:00' },
   { label: 'Afternoon (2 PM)', value: '14:00' },
@@ -143,7 +144,7 @@ export default function PreferencesScreen() {
                     {option.label}
                   </Text>
                   {selectedTime === option.value && (
-                    <Icon name="check" size="sm" color="#D4522A" weight="bold" />
+                    <Icon name="check" size="sm" color={colors.accent.primary} weight="bold" />
                   )}
                 </View>
               </TouchableOpacity>
@@ -220,59 +221,53 @@ export default function PreferencesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 48,
-    paddingBottom: 32,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xl,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.headingLg,
+    color: colors.text.primary,
   },
   helperText: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginTop: 8,
-    lineHeight: 20,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
   },
   inputSection: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   timeSection: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   timeLabel: {
-    color: '#44403c',
-    fontSize: 14,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    marginBottom: 12,
+    color: colors.text.primary,
+    ...typography.bodySm,
+    marginBottom: spacing.smd,
   },
   optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
     borderRadius: 12,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     borderWidth: 1,
   },
   optionRowSelected: {
-    backgroundColor: '#FDF1ED',
-    borderColor: '#D4522A',
+    backgroundColor: colors.surface.warmTint,
+    borderColor: colors.accent.primary,
     borderWidth: 2,
   },
   optionRowDefault: {
-    backgroundColor: '#fff',
-    borderColor: '#E2DED8',
+    backgroundColor: colors.surface.card,
+    borderColor: colors.border.default,
   },
   optionContent: {
     flexDirection: 'row',
@@ -281,31 +276,26 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionText: {
-    fontSize: 16,
-    fontFamily: 'Nunito-Regular',
+    ...typography.body,
   },
   optionTextSelected: {
-    color: '#b5370f',
+    color: colors.accent.primary,
   },
   optionTextDefault: {
-    color: '#44403c',
+    color: colors.text.primary,
   },
   daySection: {
-    marginTop: 32,
+    marginTop: spacing.xl,
   },
   daySectionTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.h3,
+    color: colors.text.primary,
   },
   daySectionHelper: {
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
-    marginTop: 6,
-    marginBottom: 16,
-    lineHeight: 20,
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
   },
   dayRow: {
     flexDirection: 'row',
@@ -317,38 +307,35 @@ const styles = StyleSheet.create({
     height: 41,
     borderRadius: 20.5,
     borderWidth: 1,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dayCircleSelected: {
-    backgroundColor: '#D4522A',
-    borderColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
+    borderColor: colors.accent.primary,
   },
   dayLabel: {
-    fontFamily: 'Nunito-SemiBold',
-    fontSize: 13,
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   dayLabelSelected: {
-    color: '#ffffff',
+    color: colors.text.inverse,
   },
   spacer: {
     flex: 1,
     minHeight: 24,
   },
   buttonWrapper: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     alignItems: 'center',
   },
   skipButton: {
-    marginTop: 16,
-    paddingVertical: 8,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
   },
   skipText: {
-    fontFamily: 'Nunito-SemiBold',
-    fontSize: 14,
-    color: '#B8B8C4',
-    letterSpacing: 1,
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
 });

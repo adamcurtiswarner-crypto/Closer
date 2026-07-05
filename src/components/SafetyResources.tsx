@@ -108,7 +108,7 @@ export function SafetyResources({ visible, onClose }: SafetyResourcesProps) {
               accessibilityRole="button"
               activeOpacity={0.8}
             >
-              <Text style={styles.dismissText}>Okay</Text>
+              <Text style={styles.dismissText} maxFontSizeMultiplier={1.4}>Okay</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -128,8 +128,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: colors.border.default,
     alignSelf: 'center',
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: spacing.smd,
+    marginBottom: spacing.sm,
   },
   content: {
     flex: 1,
@@ -147,10 +147,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   body: {
-    fontSize: 15,
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '600',
-    lineHeight: 23,
+    ...typography.body,
     color: colors.text.secondary,
     marginBottom: spacing.lg,
   },
@@ -161,8 +158,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.card,
     borderRadius: radius.card,
     borderWidth: 1,
-    borderColor: colors.border.subtle,
-    paddingVertical: 14,
+    borderColor: colors.border.default,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     minHeight: 44,
     ...shadow.cardSubtle,
@@ -185,7 +182,7 @@ const styles = StyleSheet.create({
   },
   dismissPill: {
     minHeight: 44,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.xl,
     borderRadius: radius.pill,
     backgroundColor: colors.surface.ink,

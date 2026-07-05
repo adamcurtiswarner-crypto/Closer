@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { format } from 'date-fns';
 import { ConnectionHeader } from '@/components/ConnectionHeader';
-import { colors } from '@/config/theme';
+import { colors, spacing, typography } from '@/config/theme';
 
 interface TodayScreenHeaderProps {
   greeting: string;
@@ -36,7 +36,7 @@ export function TodayScreenHeader({
       {/* Greeting stands alone — the wordmark next to it read as one
           garbled phrase, so the lockup is greeting + date only. */}
       <View style={styles.greetingRow}>
-        <Text style={styles.greeting}>{greeting}</Text>
+        <Text style={styles.greeting} maxFontSizeMultiplier={1.4}>{greeting}</Text>
         <Text style={styles.dateText}>{format(new Date(), 'EEEE, MMMM d')}</Text>
       </View>
 
@@ -58,19 +58,14 @@ export function TodayScreenHeader({
 
 const styles = StyleSheet.create({
   greetingRow: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   greeting: {
-    fontSize: 28,
-    // Nunito-Black is weight 900 — fontWeight must match the family.
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
+    ...typography.display,
     color: colors.text.primary,
-    letterSpacing: -0.5,
   },
   dateText: {
-    fontSize: 15,
-    fontFamily: 'Nunito-Regular',
+    ...typography.body,
     color: colors.text.secondary,
     marginTop: 2,
   },

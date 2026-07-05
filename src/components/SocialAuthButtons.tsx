@@ -10,7 +10,7 @@ import { getAuthErrorMessage } from '@/utils/authErrors';
 import { colors, radius, spacing, typography } from '@config/theme';
 
 // Google brand color — exempt from theme tokens
-const GOOGLE_BLUE = '#4285F4';
+const GOOGLE_BLUE = colors.external.google;
 
 interface SocialAuthButtonsProps {
   animationDelay?: number;
@@ -102,10 +102,10 @@ export function SocialAuthButtons({ animationDelay = 0, dividerText = 'or' }: So
 const styles = StyleSheet.create({
   appleButton: {
     height: 52,
-    marginBottom: spacing.sm + spacing.xs,
+    marginBottom: spacing.smd,
   },
   googleButton: {
-    height: 52,
+    minHeight: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.input,
     borderWidth: 1,
     borderColor: colors.border.default,
-    gap: 10,
+    gap: spacing.smd,
   },
   googleButtonText: {
     ...typography.h3,

@@ -42,7 +42,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             hasError && styles.inputError,
             style,
           ]}
-          placeholderTextColor={colors.text.muted}
+          placeholderTextColor={colors.text.secondary}
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...props}
@@ -61,20 +61,18 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text.secondary,
-    marginBottom: 6,
+    marginBottom: spacing.sm,
   },
   input: {
-    fontFamily: 'Nunito-SemiBold',
-    fontWeight: '600',
+    ...typography.body,
     width: '100%',
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     borderRadius: radius.input,
     backgroundColor: colors.surface.background,
     color: colors.text.primary,
-    fontSize: 16,
     borderWidth: 1,
     borderColor: colors.border.default,
   },
