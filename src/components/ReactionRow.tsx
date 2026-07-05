@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
-import { REACTIONS, type ReactionType } from '@/hooks/useReaction';
+import { REACTIONS, type ReactionType, type ReactionIconName } from '@/hooks/useReaction';
+import { Icon } from './Icon';
+import { colors } from '@/config/theme';
 
 interface ReactionRowProps {
   myReaction: ReactionType | null;
@@ -12,12 +14,12 @@ interface ReactionRowProps {
 }
 
 function ReactionButton({
-  emoji,
+  icon,
   type,
   isSelected,
   onPress,
 }: {
-  emoji: string;
+  icon: ReactionIconName;
   type: ReactionType;
   isSelected: boolean;
   onPress: () => void;
@@ -45,7 +47,12 @@ function ReactionButton({
           animatedStyle,
         ]}
       >
-        <Text style={styles.reactionEmoji}>{emoji}</Text>
+        <Icon
+          name={icon}
+          size="sm"
+          color={isSelected ? colors.accent.primary : colors.text.secondary}
+          weight={isSelected ? 'fill' : 'regular'}
+        />
       </Animated.View>
     </TouchableOpacity>
   );
@@ -58,7 +65,7 @@ export function ReactionRow({ myReaction, partnerReaction, onReact, disabled }: 
         {REACTIONS.map((r) => (
           <ReactionButton
             key={r.type}
-            emoji={r.emoji}
+            icon={r.icon}
             type={r.type}
             isSelected={myReaction === r.type}
             onPress={() => {
@@ -70,9 +77,12 @@ export function ReactionRow({ myReaction, partnerReaction, onReact, disabled }: 
       </View>
       {partnerReaction && (
         <Animated.View entering={FadeIn.duration(300)} style={styles.partnerReaction}>
-          <Text style={styles.partnerLabel}>
-            {REACTIONS.find((r) => r.type === partnerReaction)?.emoji}
-          </Text>
+          <Icon
+            name={REACTIONS.find((r) => r.type === partnerReaction)?.icon ?? 'heart'}
+            size="sm"
+            color={colors.accent.primary}
+            weight="fill"
+          />
         </Animated.View>
       )}
     </Animated.View>
@@ -101,15 +111,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#D4522A',
   },
-  reactionEmoji: {
-    fontSize: 18,
-  },
   partnerReaction: {
     alignItems: 'flex-end',
     marginTop: 6,
     paddingRight: 4,
-  },
-  partnerLabel: {
-    fontSize: 14,
   },
 });

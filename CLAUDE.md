@@ -155,7 +155,9 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 ### Brand Voice
 - **Warm, Quiet, Direct** — never cute, clinical, or urgent
 - No exclamation points, no emojis in system text
-- No ALL CAPS text — use sentence case
+- No ALL CAPS in body/heading copy — use sentence case. Exception (Four Engines
+  design system): pill button labels and eyebrow caps are UPPERCASE with wide
+  letter-spacing (see docs/design-reference/StokeScreens.jsx Btn/Cap)
 - Vocabulary: "Prompt" not "exercise", "Memory" not "highlight", "Respond" not "complete"
 - Celebrate quietly: "Another moment saved" not "Great job!"
 

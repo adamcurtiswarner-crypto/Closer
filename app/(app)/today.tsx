@@ -584,7 +584,7 @@ export default function TodayScreen() {
             ) : (
               <View style={styles.waitingMessageRow}>
                 <Icon name="hourglass" size={16} color={colors.text.muted} />
-                <Text style={styles.waitingMessage}>{t('today.waitingFor', { name: partnerName })}</Text>
+                <Text style={styles.waitingMessage}>{t('today.notifyWhenAnswered')}</Text>
               </View>
             )}
           </Animated.View>

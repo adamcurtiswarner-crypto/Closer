@@ -6,11 +6,16 @@ import { logEvent } from '@/services/analytics';
 
 export type ReactionType = 'heart' | 'fire' | 'laughing' | 'teary';
 
-export const REACTIONS: { type: ReactionType; emoji: string }[] = [
-  { type: 'heart', emoji: '\u2764\uFE0F' },
-  { type: 'fire', emoji: '\uD83D\uDD25' },
-  { type: 'laughing', emoji: '\uD83D\uDE02' },
-  { type: 'teary', emoji: '\uD83E\uDD7A' },
+export type ReactionIconName = 'heart' | 'flame' | 'smiley' | 'drop';
+
+// Phosphor icon names (see @components Icon map). Emoji glyphs rendered as
+// missing-glyph boxes in iOS 26 release builds; SVG icons also match the
+// design language (no emoji in system surfaces).
+export const REACTIONS: { type: ReactionType; icon: ReactionIconName }[] = [
+  { type: 'heart', icon: 'heart' },
+  { type: 'fire', icon: 'flame' },
+  { type: 'laughing', icon: 'smiley' },
+  { type: 'teary', icon: 'drop' },
 ];
 
 export function useReaction() {

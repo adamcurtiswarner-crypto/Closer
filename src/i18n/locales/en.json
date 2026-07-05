@@ -167,6 +167,7 @@
     "beautiful": "Beautiful",
     "yourResponse": "Your response",
     "waitingFor": "Waiting for {{name}}...",
+    "notifyWhenAnswered": "We'll let you know when they answer",
     "isResponding": "{{name}} is responding...",
     "howDidThisFeel": "How did this feel?",
     "warm": "Warm",

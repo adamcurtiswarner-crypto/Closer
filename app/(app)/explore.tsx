@@ -202,13 +202,9 @@ export default function ExploreScreen() {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header — eyebrow + Nunito-Black headline */}
+      {/* Header — eyebrow + Nunito-Black headline. No back button: this is a
+          root tab in v1 (canGoBack() is true from the launch redirect). */}
       <View style={styles.header}>
-        {router.canGoBack() && (
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Icon name="arrow-left" size="md" color={colors.text.primary} />
-          </TouchableOpacity>
-        )}
         <Text style={styles.headerEyebrow}>Browse by category</Text>
         <Text style={styles.headerTitle}>Categories</Text>
       </View>
