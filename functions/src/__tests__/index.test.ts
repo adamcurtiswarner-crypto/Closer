@@ -295,14 +295,18 @@ describe('Response Reminders', () => {
 });
 
 describe('onResponseSubmitted', () => {
-  it('should create completion when response_count is 1 (second response)', () => {
-    const responseCount: number = 1;
-    expect(responseCount === 1).toBe(true);
+  // Branch decisions derive from the actual count of prompt_responses docs,
+  // never from the client-maintained assignment.response_count snapshot
+  // (which races with the trigger). See triggers.race.test.ts for the full
+  // ordering matrix.
+  it('should create completion when actual submitted response count is 2', () => {
+    const submittedCount: number = 2;
+    expect(submittedCount >= 2).toBe(true);
   });
 
-  it('should notify partner on first response (response_count is 0)', () => {
-    const responseCount: number = 0;
-    expect(responseCount === 0).toBe(true);
+  it('should notify partner when actual submitted response count is 1', () => {
+    const submittedCount: number = 1;
+    expect(submittedCount === 1).toBe(true);
   });
 
   it('should respect partner notification preference', () => {

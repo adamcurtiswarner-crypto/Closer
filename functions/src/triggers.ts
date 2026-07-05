@@ -16,6 +16,16 @@ import { evaluateFollowUpOnCompletion } from './followUps';
 // FIRESTORE TRIGGER: On Response Submitted
 // ============================================
 
+/**
+ * True when a Firestore write failed because the document already exists
+ * (DocumentReference.create() on an existing id). gRPC code 6 / ALREADY_EXISTS.
+ */
+function isAlreadyExistsError(err: unknown): boolean {
+  const code = (err as { code?: number | string } | null)?.code;
+  if (code === 6 || code === 'already-exists') return true;
+  return err instanceof Error && err.message.includes('ALREADY_EXISTS');
+}
+
 export const onResponseSubmitted = functions.firestore
   .document('prompt_responses/{responseId}')
   .onCreate(async (snap, _context) => {
@@ -26,14 +36,20 @@ export const onResponseSubmitted = functions.firestore
     const assignmentDoc = await assignmentRef.get();
     const assignment = assignmentDoc.data()!;
 
-    // Check if this completes the prompt
-    if (assignment.response_count === 1) {
-      // This is the second response - create completion
-      const responsesSnapshot = await db
-        .collection('prompt_responses')
-        .where('assignment_id', '==', response.assignment_id)
-        .get();
+    // Derive the truth from the source: the client (useSubmitResponse) creates
+    // the response doc and then immediately increments the assignment's
+    // response_count, while this trigger fires asynchronously — usually AFTER
+    // that increment. Branching on the client-maintained snapshot therefore
+    // races; count the actual response docs instead.
+    const responsesSnapshot = await db
+      .collection('prompt_responses')
+      .where('assignment_id', '==', response.assignment_id)
+      .get();
+    const submittedCount = responsesSnapshot.size;
 
+    // Check if this completes the prompt
+    if (submittedCount >= 2) {
+      // Both partners have responded - create completion
       const responses = responsesSnapshot.docs.map((doc) => ({
         user_id: doc.data().user_id,
         response_text: doc.data().response_text,
@@ -52,128 +68,153 @@ export const onResponseSubmitted = functions.firestore
           ? Math.round((timestamps[timestamps.length - 1].getTime() - timestamps[0].getTime()) / 1000)
           : 0;
 
-      await db.collection('prompt_completions').doc(response.assignment_id).set({
-        assignment_id: response.assignment_id,
-        couple_id: response.couple_id,
-        prompt_id: response.prompt_id,
-        responses,
-        time_to_complete_seconds: timeToCompleteSeconds,
-        total_response_length: responsesSnapshot.docs.reduce(
-          (sum, d) => sum + (d.data().response_length || 0),
-          0
-        ),
-        emotional_responses: [],
-        talked_about_it: false,
-        week: format(new Date(), "yyyy-'W'ww"),
-        is_memory_saved: false,
-        completed_at: admin.firestore.FieldValue.serverTimestamp(),
-        created_at: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      // Update couple stats + streaks
-      const streakCoupleDoc = await db.collection('couples').doc(response.couple_id).get();
-      const streakCoupleData = streakCoupleDoc.data() || {};
-      const today = format(new Date(), 'yyyy-MM-dd');
-      const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
-      const lastStreakDate = streakCoupleData.last_streak_date || null;
-      let currentStreak = streakCoupleData.current_streak || 0;
-      let longestStreak = streakCoupleData.longest_streak || 0;
-
-      if (lastStreakDate === today) {
-        // Already counted today, no change
-      } else if (lastStreakDate === yesterday) {
-        currentStreak += 1;
-      } else {
-        currentStreak = 1;
-      }
-      longestStreak = Math.max(currentStreak, longestStreak);
-
-      await db.collection('couples').doc(response.couple_id).update({
-        total_completions: admin.firestore.FieldValue.increment(1),
-        current_week_completions: admin.firestore.FieldValue.increment(1),
-        last_completion_at: admin.firestore.FieldValue.serverTimestamp(),
-        current_streak: currentStreak,
-        longest_streak: longestStreak,
-        last_streak_date: today,
-      });
-
-      // Advance depth progression
-      const promptDoc = await db.collection('prompts').doc(response.prompt_id).get();
-      if (promptDoc.exists) {
-        const promptData = promptDoc.data()!;
-        const promptType = promptData.type;
-        const promptDepth = promptData.emotional_depth || 'surface';
-
-        const depthProgress = streakCoupleData.depth_progress || initializeDepthProgress();
-        const typeProgress = depthProgress[promptType] || {
-          level: 'surface',
-          surface_completions: 0,
-          medium_completions: 0,
-        };
-
-        if (promptDepth === 'surface') {
-          typeProgress.surface_completions += 1;
-        } else if (promptDepth === 'medium') {
-          typeProgress.medium_completions += 1;
-        }
-
-        // Calculate week number for deep floor check
-        const linkedAt = streakCoupleData.linked_at?.toDate() || new Date();
-        const coupleWeekNumber = Math.floor(
-          (Date.now() - linkedAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
-        ) + 1;
-
-        if (typeProgress.level === 'surface' && typeProgress.surface_completions >= DEPTH_THRESHOLD) {
-          typeProgress.level = 'medium';
-        } else if (typeProgress.level === 'medium' && typeProgress.medium_completions >= DEPTH_THRESHOLD && coupleWeekNumber >= DEEP_WEEK_FLOOR) {
-          typeProgress.level = 'deep';
-        }
-
-        depthProgress[promptType] = typeProgress;
-        await db.collection('couples').doc(response.couple_id).update({
-          depth_progress: depthProgress,
-        });
-      }
-
-      // Log event
-      await logEvent('prompt_completed', response.user_id, response.couple_id, {
-        assignment_id: response.assignment_id,
-        prompt_id: response.prompt_id,
-      });
-
-      // Notify first responder that both have answered
-      const firstResponderId = assignment.first_responder_id;
-      if (firstResponderId && firstResponderId !== response.user_id) {
-        const secondResponderDoc = await db.collection('users').doc(response.user_id).get();
-        const secondResponderName = secondResponderDoc.data()?.display_name || 'Your partner';
-
-        await sendPushNotification(firstResponderId, {
-          title: secondResponderName,
-          body: 'answered too. Tap to reveal both responses.',
-        }, { type: 'prompt' });
-      }
-
-      // Follow-up branch evaluation (v1 scored prompts).
-      // Only scale-format daily assignments can score-trigger; repair step-1
-      // completions chain step 2. Guards live in evaluateFollowUpOnCompletion.
+      // Idempotency: two near-simultaneous triggers (or an at-least-once
+      // redelivery) can both observe >= 2 responses. create() on the
+      // deterministic id is atomic — the first writer wins; the loser skips
+      // the entire completion block below (completion doc, streak/stats,
+      // notification, follow-up evaluation).
+      let completionCreated = false;
       try {
-        await evaluateFollowUpOnCompletion(
-          response.assignment_id,
-          assignment,
-          responsesSnapshot.docs.map((doc) => ({
-            response_score: doc.data().response_score,
-          })),
-          response.user_id
-        );
-      } catch (err) {
-        await reportError('onResponseSubmitted.followUp', err, {
-          userId: response.user_id,
-          coupleId: response.couple_id,
-          extra: { assignmentId: response.assignment_id },
+        await db.collection('prompt_completions').doc(response.assignment_id).create({
+          assignment_id: response.assignment_id,
+          couple_id: response.couple_id,
+          prompt_id: response.prompt_id,
+          responses,
+          time_to_complete_seconds: timeToCompleteSeconds,
+          total_response_length: responsesSnapshot.docs.reduce(
+            (sum, d) => sum + (d.data().response_length || 0),
+            0
+          ),
+          emotional_responses: [],
+          talked_about_it: false,
+          week: format(new Date(), "yyyy-'W'ww"),
+          is_memory_saved: false,
+          completed_at: admin.firestore.FieldValue.serverTimestamp(),
+          created_at: admin.firestore.FieldValue.serverTimestamp(),
         });
+        completionCreated = true;
+      } catch (err) {
+        if (!isAlreadyExistsError(err)) throw err;
+        console.log(
+          `Completion already exists for assignment ${response.assignment_id}, skipping duplicate completion processing`
+        );
       }
-    } else {
-      // First response - track first responder and notify partner
+
+      if (completionCreated) {
+        // Update couple stats + streaks
+        const streakCoupleDoc = await db.collection('couples').doc(response.couple_id).get();
+        const streakCoupleData = streakCoupleDoc.data() || {};
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+        const lastStreakDate = streakCoupleData.last_streak_date || null;
+        let currentStreak = streakCoupleData.current_streak || 0;
+        let longestStreak = streakCoupleData.longest_streak || 0;
+
+        if (lastStreakDate === today) {
+          // Already counted today, no change
+        } else if (lastStreakDate === yesterday) {
+          currentStreak += 1;
+        } else {
+          currentStreak = 1;
+        }
+        longestStreak = Math.max(currentStreak, longestStreak);
+
+        await db.collection('couples').doc(response.couple_id).update({
+          total_completions: admin.firestore.FieldValue.increment(1),
+          current_week_completions: admin.firestore.FieldValue.increment(1),
+          last_completion_at: admin.firestore.FieldValue.serverTimestamp(),
+          current_streak: currentStreak,
+          longest_streak: longestStreak,
+          last_streak_date: today,
+        });
+
+        // Advance depth progression
+        const promptDoc = await db.collection('prompts').doc(response.prompt_id).get();
+        if (promptDoc.exists) {
+          const promptData = promptDoc.data()!;
+          const promptType = promptData.type;
+          const promptDepth = promptData.emotional_depth || 'surface';
+
+          const depthProgress = streakCoupleData.depth_progress || initializeDepthProgress();
+          const typeProgress = depthProgress[promptType] || {
+            level: 'surface',
+            surface_completions: 0,
+            medium_completions: 0,
+          };
+
+          if (promptDepth === 'surface') {
+            typeProgress.surface_completions += 1;
+          } else if (promptDepth === 'medium') {
+            typeProgress.medium_completions += 1;
+          }
+
+          // Calculate week number for deep floor check
+          const linkedAt = streakCoupleData.linked_at?.toDate() || new Date();
+          const coupleWeekNumber = Math.floor(
+            (Date.now() - linkedAt.getTime()) / (7 * 24 * 60 * 60 * 1000)
+          ) + 1;
+
+          if (typeProgress.level === 'surface' && typeProgress.surface_completions >= DEPTH_THRESHOLD) {
+            typeProgress.level = 'medium';
+          } else if (typeProgress.level === 'medium' && typeProgress.medium_completions >= DEPTH_THRESHOLD && coupleWeekNumber >= DEEP_WEEK_FLOOR) {
+            typeProgress.level = 'deep';
+          }
+
+          depthProgress[promptType] = typeProgress;
+          await db.collection('couples').doc(response.couple_id).update({
+            depth_progress: depthProgress,
+          });
+        }
+
+        // Log event
+        await logEvent('prompt_completed', response.user_id, response.couple_id, {
+          assignment_id: response.assignment_id,
+          prompt_id: response.prompt_id,
+        });
+
+        // Notify first responder that both have answered
+        const firstResponderId = assignment.first_responder_id;
+        if (firstResponderId && firstResponderId !== response.user_id) {
+          const secondResponderDoc = await db.collection('users').doc(response.user_id).get();
+          const secondResponderName = secondResponderDoc.data()?.display_name || 'Your partner';
+
+          await sendPushNotification(firstResponderId, {
+            title: secondResponderName,
+            body: 'answered too. Tap to reveal both responses.',
+          }, { type: 'prompt' });
+        }
+
+        // Follow-up branch evaluation (v1 scored prompts).
+        // Only scale-format daily assignments can score-trigger; repair step-1
+        // completions chain step 2. Guards live in evaluateFollowUpOnCompletion.
+        //
+        // Gated behind the create-winner on purpose: createFollowUpAssignment's
+        // own idempotency check (existing follow-up by parent_assignment_id +
+        // step) is a non-atomic read-then-write, so two concurrent executions
+        // could both pass it and create duplicate follow-ups. The atomic
+        // completion create() above guarantees exactly one execution reaches
+        // this call; the internal check remains as defense for event retries.
+        try {
+          await evaluateFollowUpOnCompletion(
+            response.assignment_id,
+            assignment,
+            responsesSnapshot.docs.map((doc) => ({
+              response_score: doc.data().response_score,
+            })),
+            response.user_id
+          );
+        } catch (err) {
+          await reportError('onResponseSubmitted.followUp', err, {
+            userId: response.user_id,
+            coupleId: response.couple_id,
+            extra: { assignmentId: response.assignment_id },
+          });
+        }
+      }
+    } else if (submittedCount === 1) {
+      // First response - track first responder and notify partner.
+      // Guarded on the actual count so a late-firing duplicate of this event
+      // (after the partner has responded) cannot re-send the nudge.
       await assignmentRef.update({
         first_responder_id: response.user_id,
       });
