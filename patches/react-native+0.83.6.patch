@@ -1,0 +1,34 @@
+diff --git a/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm b/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
+index 35cfd7a..e7cf557 100644
+--- a/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
++++ b/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm
+@@ -470,9 +470,26 @@ void ObjCTurboModule::performVoidMethodInvocation(
+     @try {
+       [inv invokeWithTarget:strongModule];
+     } @catch (NSException *exception) {
+-      // Void methods are always async, re-throw instead of converting to
+-      // JSError, same as the async branch in performMethodInvocation.
+-      @throw exception;
++      if (shouldVoidMethodsExecuteSync_) {
++        // We can only convert NSException to JSError in sync method calls.
++        // See https://github.com/reactwg/react-native-new-architecture/discussions/276#discussioncomment-12567155
++        throw convertNSExceptionToJSError(runtime, exception, std::string{moduleName}, methodNameStr);
++      } else {
++        // PATCH(stoke) facebook/react-native#54859: re-throwing here re-raises
++        // the NSException inside a GCD block on the method queue, where nothing
++        // can catch it, and the app aborts (SIGABRT) on iOS 26 devices in
++        // release builds. Mirror the exception-safe treatment introduced for
++        // performMethodInvocation in facebook/react-native#50193: since the
++        // async path cannot convert the exception to a JSError, log it
++        // thoroughly and fail soft instead of crashing.
++        RCTLogError(
++            @"TurboModuleExceptionGuard: swallowed NSException from void TurboModule method %s.%s. name: %@, reason: %@, callStackSymbols: %@",
++            moduleName,
++            methodNameStr.c_str(),
++            exception.name,
++            exception.reason,
++            exception.callStackSymbols);
++      }
+     } @finally {
+       [retainedObjectsForInvocation removeAllObjects];
+     }

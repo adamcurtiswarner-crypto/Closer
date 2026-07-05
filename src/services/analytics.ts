@@ -68,7 +68,8 @@ type AnalyticsEvent =
   | 'milestone_created'
   | 'milestone_viewed'
   | 'prompt_reaction_added'
-  | 'follow_up_skipped';
+  | 'follow_up_skipped'
+  | 'safety_resources_shown';
 
 interface EventContext {
   user_id?: string;

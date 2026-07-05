@@ -261,7 +261,9 @@ describe('ordering (a): trigger reads AFTER client incremented response_count', 
     expect(evaluateFollowUp).toHaveBeenCalledWith(
       ASSIGNMENT_ID,
       expect.objectContaining({ couple_id: COUPLE_ID }),
-      expect.arrayContaining([{ response_score: null }]),
+      expect.arrayContaining([
+        expect.objectContaining({ response_score: null, response_text: 'a thoughtful answer' }),
+      ]),
       USER_B
     );
 

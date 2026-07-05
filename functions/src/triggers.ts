@@ -200,6 +200,9 @@ export const onResponseSubmitted = functions.firestore
             assignment,
             responsesSnapshot.docs.map((doc) => ({
               response_score: doc.data().response_score,
+              // response_text feeds the safety suppression check only —
+              // it is never logged or persisted by follow-up evaluation.
+              response_text: doc.data().response_text,
             })),
             response.user_id
           );

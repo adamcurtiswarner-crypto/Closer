@@ -35,6 +35,7 @@ import {
 import { useSubmitResponse } from '@/hooks/usePrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { Icon } from '@/components/Icon';
+import { SafetyResources } from '@/components/SafetyResources';
 import { logEvent } from '@/services/analytics';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
@@ -50,6 +51,8 @@ export default function ExploreScreen() {
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
   const [responseText, setResponseText] = useState('');
   const [viewingAssignmentId, setViewingAssignmentId] = useState<string | null>(null);
+  // Safety off-ramp: set once per submission whose text matched the safety lexicon
+  const [showSafetyResources, setShowSafetyResources] = useState(false);
 
   const { user } = useAuth();
   const { data: prompts, isLoading } = usePromptsByCategory(selectedCategory);
@@ -87,7 +90,7 @@ export default function ExploreScreen() {
     hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     try {
-      await submitResponse.mutateAsync({
+      const result = await submitResponse.mutateAsync({
         assignmentId: activeAssignmentId,
         responseText,
       });
@@ -95,6 +98,7 @@ export default function ExploreScreen() {
       setActivePrompt(null);
       setActiveAssignmentId(null);
       setResponseText('');
+      if (result.safetyMatch) setShowSafetyResources(true);
     } catch {
       Alert.alert('Could not save your response', 'Please check your connection and try again.');
     }
@@ -185,6 +189,10 @@ export default function ExploreScreen() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+        <SafetyResources
+          visible={showSafetyResources}
+          onClose={() => setShowSafetyResources(false)}
+        />
       </SafeAreaView>
     );
   }
@@ -339,6 +347,10 @@ export default function ExploreScreen() {
           })
         )}
       </ScrollView>
+      <SafetyResources
+        visible={showSafetyResources}
+        onClose={() => setShowSafetyResources(false)}
+      />
     </SafeAreaView>
   );
 }

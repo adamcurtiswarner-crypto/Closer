@@ -22,6 +22,7 @@ import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import { uploadResponsePhoto } from '@/services/imageUpload';
 import { DEFAULT_SCALE_CONFIG, isValidScore } from '@/utils/scale';
+import { containsCrisisLanguage } from '@/utils/safetyLexicon';
 import type {
   AssignmentKind,
   ResponseFormat,
@@ -457,6 +458,12 @@ export function useSubmitResponse() {
         throw new Error('Score must be a whole number between 1 and 10');
       }
 
+      // Safety off-ramp: check the user's OWN text (never the partner's)
+      // so the call site can quietly offer resources after submit. Runs
+      // here so scale notes, text responses, and offline-queued submissions
+      // are all covered by the same seam. Local only — nothing is logged.
+      const safetyMatch = containsCrisisLanguage(responseText);
+
       // Check if offline — queue the response
       const netState = await NetInfo.fetch();
       if (!netState.isConnected) {
@@ -464,7 +471,13 @@ export function useSubmitResponse() {
         const queue = raw ? JSON.parse(raw) : [];
         queue.push({ assignmentId, responseText, imageUri, responseScore });
         await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
-        return { responseId: 'offline-queued', isComplete: false, isOffline: true };
+        return {
+          responseId: 'offline-queued',
+          isComplete: false,
+          isOffline: true,
+          hasPhoto: false,
+          safetyMatch,
+        };
       }
 
       // Upload photo if provided
@@ -522,7 +535,13 @@ export function useSubmitResponse() {
 
       await updateDoc(assignmentRef, updates);
 
-      return { responseId: responseDoc.id, isComplete: newResponseCount === 2, hasPhoto: !!imageUrl };
+      return {
+        responseId: responseDoc.id,
+        isComplete: newResponseCount === 2,
+        isOffline: false,
+        hasPhoto: !!imageUrl,
+        safetyMatch,
+      };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });

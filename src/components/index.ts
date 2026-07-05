@@ -59,6 +59,7 @@ export { PulseIndicator } from './PulseIndicator';
 
 // Resources
 export { ResourceCard } from './ResourceCard';
+export { SafetyResources } from './SafetyResources';
 
 // Chat
 export { ChatBubble } from './ChatBubble';

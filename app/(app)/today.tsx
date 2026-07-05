@@ -29,6 +29,7 @@ import {
   RespondingScreen,
   TodayBottomSections,
   ConversationStarterModal,
+  SafetyResources,
   ScalePromptCard,
   FollowUpContextLine,
   FollowUpSkip,
@@ -132,6 +133,9 @@ export default function TodayScreen() {
   const [stageDismissed, setStageDismissed] = useState(true); // Start true to avoid flash
   const [showConversationModal, setShowConversationModal] = useState(false);
   const [conversationStarterText, setConversationStarterText] = useState('');
+  // Safety off-ramp: set once per submission whose text matched the safety
+  // lexicon; dismissing it is the end of it — no re-show, no follow-up.
+  const [showSafetyResources, setShowSafetyResources] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem('stage_prompt_dismissed').then(val => {
@@ -335,13 +339,14 @@ export default function TodayScreen() {
     setTyping(false);
     const imageUri = selectedImage || undefined;
     try {
-      await submitResponse.mutateAsync({
+      const result = await submitResponse.mutateAsync({
         assignmentId: assignment.id,
         responseText,
         imageUri,
       });
       setIsResponding(false);
       setSelectedImage(null);
+      if (result.safetyMatch) setShowSafetyResources(true);
     } catch (err) {
       logger.error('Error submitting response:', err);
       Alert.alert('Could not save your response', 'Please check your connection and try again.');
@@ -359,11 +364,12 @@ export default function TodayScreen() {
     hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     try {
-      await submitResponse.mutateAsync({
+      const result = await submitResponse.mutateAsync({
         assignmentId: assignment.id,
         responseText: scaleNote.trim(),
         responseScore: scaleValue,
       });
+      if (result.safetyMatch) setShowSafetyResources(true);
     } catch (err) {
       logger.error('Error submitting score:', err);
       Alert.alert('Could not save your response', 'Please check your connection and try again.');
@@ -458,18 +464,24 @@ export default function TodayScreen() {
   // ─── Responding ───
   if (mode === 'responding') {
     return (
-      <RespondingScreen
-        promptText={assignment!.promptText}
-        contextText={followUpContextText}
-        responseText={responseText}
-        onChangeText={handleTextChange}
-        onSubmit={handleSubmit}
-        onCancel={() => { setIsResponding(false); setResponseText(''); }}
-        onAddPhoto={handleAddPhoto}
-        selectedImage={selectedImage}
-        onRemovePhoto={() => setSelectedImage(null)}
-        isPending={submitResponse.isPending}
-      />
+      <>
+        <RespondingScreen
+          promptText={assignment!.promptText}
+          contextText={followUpContextText}
+          responseText={responseText}
+          onChangeText={handleTextChange}
+          onSubmit={handleSubmit}
+          onCancel={() => { setIsResponding(false); setResponseText(''); }}
+          onAddPhoto={handleAddPhoto}
+          selectedImage={selectedImage}
+          onRemovePhoto={() => setSelectedImage(null)}
+          isPending={submitResponse.isPending}
+        />
+        <SafetyResources
+          visible={showSafetyResources}
+          onClose={() => setShowSafetyResources(false)}
+        />
+      </>
     );
   }
 
@@ -583,6 +595,10 @@ export default function TodayScreen() {
           visible={showConversationModal}
           onClose={() => setShowConversationModal(false)}
           starterText={conversationStarterText}
+        />
+        <SafetyResources
+          visible={showSafetyResources}
+          onClose={() => setShowSafetyResources(false)}
         />
       </SafeAreaView>
     );
@@ -720,6 +736,10 @@ export default function TodayScreen() {
           onClose={() => setShowConversationModal(false)}
           starterText={conversationStarterText}
         />
+        <SafetyResources
+          visible={showSafetyResources}
+          onClose={() => setShowSafetyResources(false)}
+        />
       </SafeAreaView>
     );
   }
@@ -790,6 +810,10 @@ export default function TodayScreen() {
         visible={showConversationModal}
         onClose={() => setShowConversationModal(false)}
         starterText={conversationStarterText}
+      />
+      <SafetyResources
+        visible={showSafetyResources}
+        onClose={() => setShowSafetyResources(false)}
       />
     </SafeAreaView>
   );

@@ -84,7 +84,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
                 <Text style={styles.planBadge}>Best Value</Text>
                 <Text style={styles.planPrice}>$49.99/year</Text>
                 <Text style={styles.planSubprice}>$4.17/month</Text>
-                <Text style={styles.planTrial}>7-day free trial</Text>
+                <Text style={styles.planTrial}>14-day free trial</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.planCard, selectedPlan === 'monthly' && styles.planCardSelected]}

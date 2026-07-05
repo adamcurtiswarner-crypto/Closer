@@ -8,6 +8,7 @@ import {
   FollowUpBranch,
   FollowUpTemplate,
   ScaleConfig,
+  containsCrisisLanguage,
   sendPushNotification,
   logEvent,
   reportError,
@@ -301,11 +302,27 @@ async function createFollowUpAssignment(params: CreateFollowUpParams): Promise<v
 export async function evaluateFollowUpOnCompletion(
   assignmentId: string,
   assignment: admin.firestore.DocumentData,
-  responses: Array<{ response_score?: number | null }>,
+  responses: Array<{ response_score?: number | null; response_text?: string | null }>,
   triggeredByUserId: string
 ): Promise<void> {
   const coupleId = assignment.couple_id;
   const timezone = assignment.delivery_timezone || DEFAULT_TIMEZONE;
+
+  // Safety off-ramp: if EITHER response contains crisis language, no
+  // follow-up of any kind is created — score branches AND repair step-2
+  // chaining alike. Checked before every other branch so a repair step-1
+  // completion with crisis language never chains step 2. Log a neutral
+  // event only: assignment id, no response content, ever.
+  const hasCrisisLanguage = responses.some(
+    (r) => typeof r.response_text === 'string' && containsCrisisLanguage(r.response_text)
+  );
+  if (hasCrisisLanguage) {
+    await logEvent('follow_up_suppressed_safety', triggeredByUserId, coupleId, {
+      assignment_id: assignmentId,
+    });
+    console.log(`Follow-up suppressed for assignment ${assignmentId} (safety)`);
+    return;
+  }
 
   // Chaining exception: completing repair step 1 schedules step 2 next day.
   if (isRepairStepOne(assignment)) {

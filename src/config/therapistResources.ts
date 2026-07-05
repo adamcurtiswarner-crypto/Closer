@@ -12,6 +12,8 @@ export interface TherapistResource {
   name: string;
   description: string;
   url: string;
+  /** Dialable number (tel: link) for call/text lines, when one exists. */
+  phone?: string;
   category: ResourceCategory;
   icon: string;
   isFree: boolean;
@@ -47,10 +49,21 @@ export const RESOURCE_CATEGORIES: ResourceCategoryMeta[] = [
 export const THERAPIST_RESOURCES: TherapistResource[] = [
   // Crisis Support
   {
+    id: 'lifeline_988',
+    name: '988 Suicide & Crisis Lifeline',
+    description: 'Free, confidential support any time, day or night. Call or text 988.',
+    url: 'https://988lifeline.org',
+    phone: '988',
+    category: 'crisis_support',
+    icon: '\uD83D\uDCDE',
+    isFree: true,
+  },
+  {
     id: 'ndvh',
     name: 'National Domestic Violence Hotline',
     description: '24/7 confidential support for anyone affected by domestic violence. Call, text, or chat.',
     url: 'https://www.thehotline.org',
+    phone: '18007997233',
     category: 'crisis_support',
     icon: '\uD83D\uDCDE',
     isFree: true,
