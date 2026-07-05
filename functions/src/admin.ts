@@ -308,7 +308,10 @@ export const revenueCatWebhook = functions.https.onRequest(async (req, res) => {
 
   // Validate authorization header
   const authHeader = req.headers['authorization'];
-  const expectedKey = functions.config().revenuecat?.webhook_key;
+  // Prefer env var (functions/.env, deployed with the function); legacy
+  // runtime config kept as fallback for older deploys.
+  const expectedKey =
+    process.env.REVENUECAT_WEBHOOK_KEY || functions.config().revenuecat?.webhook_key;
   if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
     res.status(401).send('Unauthorized');
     return;
