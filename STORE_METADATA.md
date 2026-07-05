@@ -62,8 +62,8 @@ Stoke Premium unlocks the full daily experience.
 - Your subscription renews automatically unless turned off at least 24 hours before the end of the current period, and your account is charged for renewal within 24 hours of the end of the current period
 - Manage or cancel anytime in your Apple ID Account Settings
 
-Terms of Use (EULA): https://getstoke.io/terms
-Privacy Policy: https://getstoke.io/privacy
+Terms of Use (EULA): https://stoke.llc/terms
+Privacy Policy: https://stoke.llc/privacy
 
 ---
 
@@ -88,12 +88,12 @@ Expect **17+** (or 12+ with "Infrequent/Mild Mature/Suggestive Themes"): the app
 Collected and linked to identity: email (account), user content (responses/notes), usage/analytics, diagnostics (Sentry). Not used for third-party advertising. Data is used for app functionality and analytics. (Confirm against your actual Firebase/Sentry/RevenueCat data flows before submitting.)
 
 ## URLs (must be live before submission — Apple loads the privacy URL)
-- Support URL: https://getstoke.io/support
-- Marketing URL: https://getstoke.io
-- Privacy Policy URL: https://getstoke.io/privacy
-- Terms of Use: use Apple's standard EULA, or host https://getstoke.io/terms
+- Support URL: https://stoke.llc/support
+- Marketing URL: https://stoke.llc
+- Privacy Policy URL: https://stoke.llc/privacy
+- Terms of Use: use Apple's standard EULA, or host https://stoke.llc/terms
 
-⚠️ getstoke.io URLs are not verified live yet — stand up at minimum a working Privacy Policy page before submitting, or Apple will reject in metadata review.
+⚠️ stoke.llc URLs are not verified live yet — stand up at minimum a working Privacy Policy page before submitting, or Apple will reject in metadata review.
 
 ---
 
