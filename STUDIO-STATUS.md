@@ -1,62 +1,57 @@
 # Stoke Studio Status
-*Last updated: 2026-07-05 — CEO review (v1 deployed to production backend; App Store steps remain)*
+*Last updated: 2026-07-05 — CEO review (design program complete; build 56 = submission candidate)*
 
 ## Founder Directive (2026-07-05)
-Adam reset the scope for the first App Store release. v1 is ONLY:
-- A prompting system with many categories where couples answer scored questions
-- A follow-up system triggered by scores: super-high scores get an "appreciation deepener", low scores get a guided-repair walkthrough
-- No other features until post-launch
+v1 = scored prompts by category + score-triggered follow-ups (deepener / repair / divergence). Everything else hidden via `src/config/features.ts`. Target: top 0.1% design quality for the category. Payments live. App Store submission next.
 
-Everything else is HIDDEN via `src/config/features.ts` flags, not deleted.
+## Where Things Stand — END OF DAY
+One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (main, pushed).
 
-## Current Sprint
-- **Focus**: v1 built, design-conformed, E2E-verified, and backend DEPLOYED to production. Next: device build + App Store submission steps
-- **Status**: GREEN on product/backend. YELLOW on submission (iOS 26 release-build crash unverified, RevenueCat unconfigured)
+### Shipped today
+1. **v1 build**: scored 1–10 prompts, follow-up engine (divergence > repair > deepener, next-day scheduling, repair chaining), 132 follow-up templates + 60 scored prompts seeded to production, 3-tab app, safety off-ramp (crisis lexicon suppresses follow-ups + resources modal)
+2. **Backend deployed**: rules/indexes/functions live on stoke-5f762; 6 hidden-feature push schedules deleted; onResponseSubmitted race fix (atomic completion create — was silently killing follow-ups in production timing)
+3. **iOS 26 launch blockers fixed and device-verified**: TurboModule patch (patch-package + buildReactNativeFromSource) and release-only Firebase Auth registration crash (initializeAuth + metro hardening; auth now persists across restarts). Confirmed on Adam's phone via TestFlight build 54
+4. **Payments end-to-end**: ASC group "Stoke Premium" — stoke_premium_annual $49.99/yr (14-day free trial, all regions) + stoke_premium_monthly $9.99/mo; RevenueCat project wired (App Store app via .p8, products, `premium` entitlement, default offering $rc_annual/$rc_monthly); SDK key in EAS prod env + .env; revenueCatWebhook secured (env secret, verified 401/200)
+5. **Design program — all three waves**, per the approved review (claude.ai/code/artifact/cbf787fc-fe1c-4955-a6db-22a43e5ac1b8):
+   - **Wave A**: two-beat reveal choreography + deepener dwell gate, slider haptics, mode crossfades, auth/welcome pill unification + ToneShapes hero, category palette discipline, paywall 3-state + "TRY 14 DAYS FREE", reaction icons de-tofued, keyboard fix, a11y groundwork
+   - **Wave B**: type scale with baked line-heights (243 styles collapsed, 0 raw fontSize in scope), contrast fixes (muted #8A8A96, 45 copy sites → secondary), spacing grid + one 20px gutter, warm semantics, single AccentBar, Dynamic Type (19 texts) + ReduceMotion (6 loops), eslint design rules (`npm run lint:design`, 0 in-scope violations)
+   - **Wave C**: invite universal link LIVE (stoke-5f762.web.app/join/CODE — AASA + branded join page on Firebase Hosting), warm one-link share message, onboarding 12→5-7 steps (value-prop first; verify-email/preferences/relationship-stage removed from path; skip trap fixed), push pre-prompt after first answer, offline submit integrity (optimistic seal + dedupe), truthful unpaired Today with invite CTA, explore/settings states + copy truths, claims softened ("Private by design")
 
-## Done Today (2026-07-05) — commits d86212d, 8ee80c1, 5d9a2b5
+### Builds
+| Build | Contents | Status |
+|---|---|---|
+| 54 | iOS 26 fixes (device verification) | On TestFlight, verified on Adam's phone |
+| 55 | + Wave A + payments enabled | On TestFlight |
+| **56** | **+ Waves B & C + universal-link entitlement — SUBMISSION CANDIDATE** | Building → auto-submits to TestFlight |
 
-### Build (d86212d)
-All six workstreams: client simplification (3 tabs: Today landing / Categories / Settings, features.ts flags), functions scope-cut (6 hidden-feature push schedules disabled, `functions/V1-SCOPE.md`), data model (scale + follow-up schema, 12-category taxonomy, rules, indexes), follow-up trigger (`functions/src/followUps.ts`: divergence gap ≥ 4 > repair min ≤ 4 > deepener both ≥ 9; deepener same-session, repair/divergence next-day scheduled + activated in delivery path replacing that day's daily; repair L2 chains next day), scored UI (ScaleSlider 1–10, optional note, side-by-side reveal, skippable follow-up cards), content (132 follow-up templates + 60 scored prompts across 12 categories, tone-lint clean). Paywall copy fixed; seed script fixed (was loading v3 from wrong dir + silently dropping fields).
+## Adam's Open Items
+1. **W-9 tax form** (ASC → Business → Add Tax Info) — Paid Apps Agreement stuck at "Pending User Info" until done; bank (Omnific Collective LLC) processing ~24h. Blocks real revenue, not sandbox
+2. **IAP review screenshots** — drag `Downloads/files (1)/iap-review-screenshot.png` into both subscription products' Review Information (clears "Missing Metadata"; required at version submission)
+3. **RevenueCat webhook** — Integrations → Webhooks → URL `https://us-central1-stoke-5f762.cloudfunctions.net/revenueCatWebhook`, Authorization `Bearer [REDACTED]`
+4. **RevenueCat email confirmation** (banner in dashboard)
+5. **On-device pass of build 56** when TestFlight processes: reveal choreography, invite link tap (universal links start working in this build), sandbox purchase, new onboarding flow
+6. Optional: point `link.getstoke.io` DNS (Squarespace) at Firebase Hosting for the pretty invite domain; ASC App Info → App Store Server Notifications URL from RevenueCat
 
-### Design conformance (8ee80c1)
-Both design agents swept every v1-visible surface against `docs/design-reference/StokeScreens.jsx` (checked into repo): zero hardcoded hexes remain, all Nunito family/weight mismatches fixed, pill buttons + eyebrow caps throughout, ScalePromptCard rebuilt as full-bleed ink hero with ToneShapes + dark-tone scale dots, Paywall as coral hero sheet, tab bar matched to reference Nav. theme.ts gained surface.ink + onDark group; brand.purpleLight migration slip fixed.
-
-### Emulator E2E + critical race fix (5d9a2b5)
-Full pipeline exercised live in Firebase emulators: seed counts verified (422 prompts / 132 templates), all branch scenarios PASS (deepener immediate, repair scheduled next-day, divergence overrides at 9/3 AND at exact gap 4, middle scores fire nothing, activation replaces daily prompt, repair chains step 2 same variant family, no over-chaining).
-**Found + fixed a launch-blocking race**: onResponseSubmitted branched on the client-maintained response_count snapshot; under production timing the first response took the completion path (1-response completions, follow-ups never firing, streak double-counts). Now branches on the queried actual response count with atomic completion `create()` idempotency (winner runs streaks/reveal/follow-up exactly once). 6 new race tests; functions at 162/162.
-
-### Production deployment (all verified)
-1. Firestore rules + indexes deployed to stoke-5f762 ✓
-2. Functions deployed with `--force`: all v1 functions updated (incl. race-fixed onResponseSubmitted + follow-up trigger); 6 hidden-feature schedules DELETED (checkStreakBreaks, deliverCheckIn, dateNightReminder, deliverMorningCheckin, deliverEveningReflection, detectChurnRisk) ✓
-3. Production content seeded and verified by query: 422 prompts (60 scale with full scale_config intact), 132 follow_up_templates ✓
-
-## What Needs Attention NOW (App Store path)
-
-| Item | Status |
-|---|---|
-| Simulator/device visual pass with human eyes (design conformed in code; needs a look on device) | NOT DONE — `npx expo run:ios` |
-| iOS 26 + RN 0.83 release-build TurboModule crash (facebook/react-native#54859) | UNVERIFIED — submission blocker |
-| RevenueCat configuration (decide trial length first: spec says 14-day, paywall copy says 7-day) | NOT CONFIGURED |
-| Push notifications end-to-end test on device (incl. new "Today's follow-up is ready.") | NOT TESTED |
-| getstoke.io live URLs | NOT VERIFIED |
-| App Store screenshots (3-tab v1 design) | NOT CAPTURED |
-| TestFlight build | STALE — needs rebuild from d86212d+ |
+## App Store Submission Checklist (remaining)
+- [ ] Screenshots for the store (capture from build 56 — 3-tab v1 design)
+- [ ] App Store copy/metadata review (STORE_METADATA.md exists — needs refresh against v1)
+- [ ] Attach both subscriptions to the version page (required with first submission)
+- [ ] Privacy nutrition labels review; `ITSAppUsesNonExemptEncryption` check
+- [ ] Sandbox purchase test on device (build 56)
+- [ ] Submit 1.0 for review
 
 ## Punch List (non-blocking)
-- Safety off-ramp (crisis-lexicon suppression of follow-ups + resources screen) — spec'd, NOT built; strongly recommended before public launch
-- Content batch 2: grow 60 → ~180 scored prompts (15/category)
-- Shared `src/components/Button.tsx` primitive still non-conformant (radius 12, Nunito-Bold+'600'); used by auth screens
-- Emulator tooling: firebase-tools proxy bug breaks admin.firestore.FieldValue in emulated triggers (E2E agent patched a scratchpad copy); long-term migrate functions to `import { FieldValue } from 'firebase-admin/firestore'`. OpenJDK 26 now installed locally for emulators
-- Seed script hardcodes emulator project id 'closer-app-dev'; add a `.firebaserc` so emulator + CLI project ids agree
-- "Explore prompts" row copy on Today vs tab named "Categories"
-- specs/types.ts schema additions live OUTSIDE this git repo (repo root is app/) — not covered by today's commits
-- 14-day curated category rotation (current: weighted-random within scale prompts; acceptable v1)
+- Content batch 2: 60 → ~180 scored prompts (12×15)
+- Hidden screens: 907 design-lint warnings — next mechanical sweep before flipping rules to error
+- Wave C phase-2 items (approved as post-launch): solo first answer while waiting; paywall product preview
+- Welcome hero: commissioned illustration decision before store screenshots final
+- uitest accounts cleanup (stoke.uitest.a/b@example.com + 26 tagged docs) when done testing
+- invite-partner "Copied" Alert → quiet inline pattern (flagged cross-agent, unowned)
 
 ## Engineering Health
-- App: tsc clean, 28 suites / 192 tests passing
-- Functions: build clean, 3 suites / 162 tests passing
-- Working tree: clean at 5d9a2b5 (main, not pushed — no remote configured check pending)
-- Expo SDK 55, Firebase 12.13.0, RN 0.83.6
+- App: tsc clean, 41 suites / 363 tests green; functions: 169 tests green
+- Design lint: 0 violations in v1-visible surface
+- main @ ff9fa71, pushed; working tree clean
 
 ## Key Metrics for v1 (post-launch)
 Pairing ≥70% in 48h; couple-complete ≥50% at D7; follow-up completion deepener ≥60% / repair ≥40% / divergence ≥50%; ≥25% of scores in trigger zones; D7 ≥40%, D30 ≥20%; trial→paid ≥8%.
