@@ -11,6 +11,8 @@ import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
+import { ToneShapes } from './ToneShapes';
+import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
 interface PaywallProps {
   visible: boolean;
@@ -43,9 +45,9 @@ export function Paywall({ visible, onClose }: PaywallProps) {
     >
       <View style={styles.overlay}>
         <View style={styles.sheet}>
-          <View style={styles.accentBar} />
-
+          {/* Hero title block — full-bleed coral with tone-on-tone shapes */}
           <View style={styles.headerArea}>
+            <ToneShapes variant="coral" />
             <Animated.Text
               entering={FadeIn.duration(400)}
               style={styles.title}
@@ -67,7 +69,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
                 entering={FadeInUp.duration(400).delay(200 + index * 80)}
                 style={styles.featureRow}
               >
-                <Icon name={feature.icon} size="sm" color="#D4522A" weight="bold" />
+                <Icon name={feature.icon} size="sm" color={colors.accent.primary} weight="bold" />
                 <Text style={styles.featureText}>{feature.text}</Text>
               </Animated.View>
             ))}
@@ -101,7 +103,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
               disabled={!activePackage || isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={colors.text.inverse} />
               ) : (
                 <Text style={styles.ctaText}>{t('paywall.startPremium', { price: selectedPlan === 'annual' ? '$49.99/year' : '$9.99/month' })}</Text>
               )}
@@ -128,40 +130,36 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: colors.surface.card,
+    borderTopLeftRadius: radius.hero,
+    borderTopRightRadius: radius.hero,
     overflow: 'hidden',
     paddingBottom: 40,
   },
-  accentBar: {
-    height: 3,
-    backgroundColor: '#D4522A',
-  },
+  // Hero title block — full-bleed coral card
   headerArea: {
-    backgroundColor: '#FDF1ED',
+    backgroundColor: colors.accent.primary,
     paddingTop: 28,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
+    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    overflow: 'hidden',
   },
   title: {
+    ...typography.display,
     fontSize: 24,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    color: colors.text.inverse,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 15,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: 'rgba(255, 255, 255, 0.72)',
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   featureList: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    marginBottom: 8,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.cardPad,
+    marginBottom: spacing.sm,
   },
   featureRow: {
     flexDirection: 'row',
@@ -170,98 +168,95 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   featureText: {
+    ...typography.body,
     fontSize: 15,
-    color: '#292524',
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.primary,
     flex: 1,
   },
   planRow: {
     flexDirection: 'row',
     gap: 12,
-    marginVertical: 16,
-    paddingHorizontal: 24,
+    marginVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   planCard: {
     flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: 16,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    padding: spacing.md,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E2DED8',
+    borderWidth: 1.5,
+    borderColor: colors.border.default,
   },
   planCardSelected: {
-    borderColor: '#D4522A',
-    backgroundColor: '#FDF1ED',
+    borderColor: colors.accent.primary,
+    backgroundColor: colors.accent.primaryLight,
   },
   planBadge: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#D4522A',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    marginBottom: 8,
+    ...typography.eyebrow,
+    color: colors.accent.primary,
+    marginBottom: spacing.sm,
   },
   planPrice: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1E1E2E',
+    fontWeight: '800',
+    fontFamily: 'Nunito-ExtraBold',
+    color: colors.text.primary,
   },
   planSubprice: {
+    ...typography.caption,
     fontSize: 12,
-    color: '#6B6B7A',
+    color: colors.text.secondary,
     marginTop: 2,
   },
   planTrial: {
     fontSize: 11,
-    color: '#D4522A',
     fontWeight: '600',
-    marginTop: 4,
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.accent.primary,
+    marginTop: spacing.xs,
   },
   sharedNote: {
+    ...typography.caption,
     fontSize: 13,
-    color: '#6B6B7A',
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
+  // CTA — full-width pill
   ctaButton: {
-    backgroundColor: '#D4522A',
-    borderRadius: 14,
+    backgroundColor: colors.accent.primary,
+    borderRadius: radius.pill,
     paddingVertical: 16,
     alignItems: 'center',
-    marginHorizontal: 24,
-    marginTop: 16,
-    shadowColor: '#D4522A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    ...shadow.accent,
   },
   disabled: {
     opacity: 0.5,
   },
   ctaText: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
+    ...typography.btn,
+    color: colors.text.inverse,
   },
   restoreButton: {
-    marginTop: 16,
+    marginTop: spacing.md,
     alignItems: 'center',
   },
   restoreText: {
-    fontSize: 14,
-    color: '#6B6B7A',
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.secondary,
   },
   closeButton: {
     marginTop: 12,
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   closeText: {
-    fontSize: 15,
-    color: '#B8B8C4',
+    ...typography.eyebrow,
+    color: colors.text.muted,
   },
 });

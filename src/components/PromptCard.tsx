@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { Icon } from './Icon';
 import type { IconName } from './Icon';
 
-// Prompt type visual config: icon, label, accent color, background tint
+// Prompt type visual config: icon, label, accent color, background tint.
+// Palette-conformant: coral primary with purple and green as the only accents.
 const PROMPT_TYPE_CONFIG: Record<string, {
   icon: IconName;
   label: string;
@@ -15,44 +17,44 @@ const PROMPT_TYPE_CONFIG: Record<string, {
   love_map_update: {
     icon: 'map-pin',
     label: 'Love Map',
-    accent: '#D4522A',
-    bgTint: '#FDF1ED',
-    bgTintDark: '#FDF1ED',
+    accent: colors.accent.primary,
+    bgTint: colors.accent.primaryLight,
+    bgTintDark: colors.accent.primaryLight,
   },
   conflict_navigation: {
     icon: 'path',
     label: 'Navigate Together',
-    accent: '#3D2870',
-    bgTint: '#faf8f5',
-    bgTintDark: '#f3efe8',
+    accent: colors.brand.purple,
+    bgTint: colors.brand.purpleLight,
+    bgTintDark: colors.brand.purpleLight,
   },
   bid_for_connection: {
     icon: 'handshake',
     label: 'Connection',
-    accent: '#D4522A',
-    bgTint: '#FDF1ED',
-    bgTintDark: '#FDF1ED',
+    accent: colors.accent.primary,
+    bgTint: colors.accent.primaryLight,
+    bgTintDark: colors.accent.primaryLight,
   },
   appreciation_expression: {
     icon: 'sparkle',
     label: 'Appreciation',
-    accent: '#b8860b',
-    bgTint: '#fdfaf3',
-    bgTintDark: '#faf5e6',
+    accent: colors.brand.green,
+    bgTint: colors.brand.greenLight,
+    bgTintDark: colors.brand.greenLight,
   },
   dream_exploration: {
     icon: 'compass',
     label: 'Dreams',
-    accent: '#7b6fa0',
-    bgTint: '#f8f6fb',
-    bgTintDark: '#f0edf6',
+    accent: colors.brand.purple,
+    bgTint: colors.brand.purpleLight,
+    bgTintDark: colors.brand.purpleLight,
   },
   repair_attempt: {
     icon: 'heart',
     label: 'Repair',
-    accent: '#c97474',
-    bgTint: '#fef5f5',
-    bgTintDark: '#fceaea',
+    accent: colors.accent.primary,
+    bgTint: colors.accent.primaryLight,
+    bgTintDark: colors.accent.primaryLight,
   },
 };
 
@@ -65,9 +67,9 @@ const DEFAULT_CONFIG: {
 } = {
   icon: 'chat-text',
   label: 'Prompt',
-  accent: '#D4522A',
-  bgTint: '#FDF1ED',
-  bgTintDark: '#FDF1ED',
+  accent: colors.accent.primary,
+  bgTint: colors.accent.primaryLight,
+  bgTintDark: colors.accent.primaryLight,
 };
 
 interface PromptCardProps {
@@ -121,7 +123,6 @@ export function PromptCard({
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Respond</Text>
-            <Icon name="arrow-right" size="sm" color="#ffffff" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -131,14 +132,10 @@ export function PromptCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
-    padding: 28,
-    paddingTop: 20,
-    shadowColor: '#1E1E2E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    borderRadius: radius.hero,
+    padding: spacing.lg + 4,
+    paddingTop: spacing.screen,
+    ...shadow.card,
     overflow: 'hidden',
   },
   accentBar: {
@@ -147,62 +144,52 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: radius.hero,
+    borderTopRightRadius: radius.hero,
   },
   badgeRow: {
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 8,
+    marginBottom: spacing.screen,
+    marginTop: spacing.sm,
   },
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 20,
+    paddingHorizontal: spacing.md - 2,
+    borderRadius: radius.pill,
     gap: 6,
   },
   typeLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    letterSpacing: 0.3,
+    ...typography.eyebrow,
+    fontSize: 10,
   },
   promptText: {
-    color: '#1E1E2E',
+    ...typography.heading,
     fontSize: 22,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    textAlign: 'center',
-    lineHeight: 32,
+    lineHeight: 30,
     letterSpacing: -0.3,
+    color: colors.text.primary,
+    textAlign: 'center',
   },
   hint: {
-    color: '#6B6B7A',
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
+    ...typography.caption,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 14,
-    lineHeight: 20,
+    marginTop: spacing.md - 2,
     fontStyle: 'italic',
   },
   button: {
-    marginTop: 28,
-    borderRadius: 14,
-    paddingVertical: 16,
-    paddingHorizontal: 28,
-    flexDirection: 'row',
+    marginTop: spacing.lg + 4,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   buttonText: {
-    color: '#ffffff',
-    textAlign: 'center',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    fontSize: 17,
-    letterSpacing: 0.2,
+    ...typography.btn,
+    color: colors.text.inverse,
   },
 });

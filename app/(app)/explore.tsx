@@ -36,6 +36,7 @@ import { useSubmitResponse } from '@/hooks/usePrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { Icon } from '@/components/Icon';
 import { logEvent } from '@/services/analytics';
+import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
 type ScreenMode = 'browse' | 'responding';
 
@@ -126,7 +127,7 @@ export default function ExploreScreen() {
               <TextInput
                 style={styles.textInput}
                 placeholder="Share your thoughts..."
-                placeholderTextColor="#B8B8C4"
+                placeholderTextColor={colors.text.muted}
                 multiline
                 textAlignVertical="top"
                 value={responseText}
@@ -176,7 +177,7 @@ export default function ExploreScreen() {
                       {submitResponse.isPending ? 'Sending...' : 'Share'}
                     </Text>
                     {!submitResponse.isPending && (
-                      <Icon name="arrow-right" size="sm" color="#ffffff" />
+                      <Icon name="arrow-right" size="sm" color={colors.text.inverse} />
                     )}
                   </TouchableOpacity>
                 </Animated.View>
@@ -193,17 +194,15 @@ export default function ExploreScreen() {
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Header */}
+      {/* Header — eyebrow + Nunito-Black headline */}
       <View style={styles.header}>
-        {router.canGoBack() ? (
+        {router.canGoBack() && (
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Icon name="arrow-left" size="md" color="#1E1E2E" />
+            <Icon name="arrow-left" size="md" color={colors.text.primary} />
           </TouchableOpacity>
-        ) : (
-          <View style={{ width: 40 }} />
         )}
+        <Text style={styles.headerEyebrow}>Browse by category</Text>
         <Text style={styles.headerTitle}>Categories</Text>
-        <View style={{ width: 40 }} />
       </View>
 
       {/* Category tabs */}
@@ -229,12 +228,12 @@ export default function ExploreScreen() {
               <Icon
                 name={cat.icon}
                 size={18}
-                color={isActive ? '#ffffff' : cat.color}
+                color={isActive ? colors.text.inverse : cat.color}
               />
               <Text
                 style={[
                   styles.categoryChipLabel,
-                  { color: isActive ? '#ffffff' : cat.color },
+                  { color: isActive ? colors.text.inverse : cat.color },
                 ]}
               >
                 {cat.label}
@@ -259,7 +258,7 @@ export default function ExploreScreen() {
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#D4522A" />
+            <ActivityIndicator size="small" color={colors.accent.primary} />
           </View>
         ) : !prompts || prompts.length === 0 ? (
           <Animated.View entering={FadeIn.duration(400)} style={styles.emptyState}>
@@ -276,7 +275,7 @@ export default function ExploreScreen() {
                 entering={FadeInUp.duration(400).delay(index * 80)}
               >
                 <View style={styles.promptCard}>
-                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || '#D4522A' }]} />
+                  <View style={[styles.promptAccent, { backgroundColor: currentCategory?.color || colors.accent.primary }]} />
                   <View style={styles.promptContent}>
                     <Text style={styles.promptText}>{prompt.text}</Text>
                     {prompt.hint && (
@@ -295,15 +294,15 @@ export default function ExploreScreen() {
                             setViewingAssignmentId(viewingAssignmentId === aid ? null : aid);
                           }}
                         >
-                          <Icon name="checks" size={14} color="#22c55e" />
-                          <Text style={[styles.statusText, { color: '#22c55e' }]}>
+                          <Icon name="checks" size={14} color={colors.semantic.success} />
+                          <Text style={[styles.statusText, { color: colors.semantic.success }]}>
                             {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id ? 'Hide' : 'View responses'}
                           </Text>
                         </TouchableOpacity>
                       ) : status === 'partial' ? (
                         <View style={styles.statusBadge}>
-                          <Icon name="hourglass" size={14} color="#d97706" />
-                          <Text style={[styles.statusText, { color: '#d97706' }]}>
+                          <Icon name="hourglass" size={14} color={colors.semantic.neutral} />
+                          <Text style={[styles.statusText, { color: colors.semantic.neutral }]}>
                             Waiting for partner
                           </Text>
                         </View>
@@ -311,7 +310,7 @@ export default function ExploreScreen() {
                         <TouchableOpacity
                           style={[
                             styles.respondButton,
-                            { backgroundColor: currentCategory?.color || '#D4522A' },
+                            { backgroundColor: currentCategory?.color || colors.accent.primary },
                           ]}
                           onPress={() => handleStartPrompt(prompt)}
                           disabled={startExplore.isPending}
@@ -345,75 +344,86 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F2EE' },
+  container: { flex: 1, backgroundColor: colors.surface.background },
   flex: { flex: 1 },
   scrollView: { flex: 1 },
 
-  // Header
+  // Header — eyebrow + Nunito-Black headline
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
-  backButton: { padding: 8 },
+  backButton: {
+    padding: spacing.sm,
+    marginLeft: -spacing.sm,
+    marginBottom: spacing.xs,
+    alignSelf: 'flex-start',
+  },
+  headerEyebrow: {
+    ...typography.eyebrow,
+    color: colors.text.muted,
+    marginBottom: spacing.sm,
+  },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.display,
+    color: colors.text.primary,
   },
 
   // Category tabs
   categoryScrollContainer: { flexShrink: 0 },
-  categoryRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 12 },
+  categoryRow: { paddingHorizontal: spacing.screen, gap: spacing.itemGap, paddingBottom: 12 },
   categoryChip: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     gap: 6,
   },
-  categoryChipLabel: { fontSize: 13, fontWeight: '500', fontFamily: 'Nunito-SemiBold' },
+  categoryChipLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    fontFamily: 'Nunito-ExtraBold',
+  },
 
   // Category description
-  categoryDesc: { paddingHorizontal: 20, paddingBottom: 12 },
-  categoryDescText: { fontSize: 14, color: '#6B6B7A', fontFamily: 'Nunito-Regular' },
+  categoryDesc: { paddingHorizontal: spacing.screen, paddingBottom: 12 },
+  categoryDescText: {
+    ...typography.body,
+    color: colors.text.secondary,
+  },
 
   // Prompt list
-  promptList: { paddingHorizontal: 16, paddingBottom: 40, gap: 12 },
+  promptList: { paddingHorizontal: spacing.screen, paddingBottom: 40, gap: 12 },
   loadingContainer: { paddingTop: 40, alignItems: 'center' },
   emptyState: { paddingTop: 40, alignItems: 'center' },
-  emptyText: { fontSize: 15, color: '#B8B8C4' },
+  emptyText: {
+    ...typography.body,
+    color: colors.text.muted,
+  },
 
   // Prompt card
   promptCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    shadowColor: '#1E1E2E',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.hero,
+    ...shadow.card,
     overflow: 'hidden',
   },
   promptAccent: { height: 3 },
-  promptContent: { padding: 20 },
+  promptContent: { padding: spacing.cardPad },
   promptText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     fontFamily: 'Nunito-SemiBold',
-    color: '#1E1E2E',
+    color: colors.text.primary,
     lineHeight: 24,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   promptHint: {
-    fontSize: 13,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
+    ...typography.caption,
+    color: colors.text.secondary,
     fontStyle: 'italic',
     marginBottom: 12,
   },
@@ -421,97 +431,116 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   depthBadge: {
-    backgroundColor: '#f5f5f0',
+    backgroundColor: colors.surface.background,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: radius.pill,
   },
-  depthText: { fontSize: 12, color: '#6B6B7A', textTransform: 'capitalize' },
+  depthText: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.secondary,
+    textTransform: 'capitalize',
+  },
 
   // Status badges
   statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  statusText: { fontSize: 13, fontWeight: '500' },
-
-  // Respond button
-  respondButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+  statusText: {
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: 'Nunito-Bold',
   },
-  respondButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600', fontFamily: 'Nunito-Bold' },
+
+  // Respond button — pill, uppercase letterspaced label
+  respondButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+  },
+  respondButtonText: {
+    ...typography.btn,
+    fontSize: 11,
+    color: colors.text.inverse,
+  },
 
   // Response viewer
   responsesSection: {
-    marginTop: 16,
-    paddingTop: 16,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: '#E2DED8',
+    borderTopColor: colors.border.default,
     gap: 12,
   },
   responseRow: {
     gap: 4,
   },
   responseAuthor: {
-    fontSize: 11,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#B8B8C4',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    ...typography.eyebrow,
+    color: colors.text.muted,
   },
   responseText: {
+    ...typography.body,
     fontSize: 15,
-    fontFamily: 'Nunito-Regular',
-    color: '#292524',
     lineHeight: 22,
+    color: colors.text.primary,
   },
 
   // Responding mode
-  respondingScroll: { padding: 20, flexGrow: 1 },
-  respondingHeader: { marginBottom: 24 },
+  respondingScroll: { padding: spacing.screen, flexGrow: 1 },
+  respondingHeader: { marginBottom: spacing.lg },
   respondingPrompt: {
-    fontSize: 20,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.heading,
+    color: colors.text.primary,
     lineHeight: 30,
     fontStyle: 'italic',
   },
   respondingHint: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    marginTop: 8,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
   },
   textInput: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    padding: spacing.md,
     fontSize: 16,
-    color: '#1E1E2E',
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+    color: colors.text.primary,
     minHeight: 160,
     textAlignVertical: 'top',
-    shadowColor: '#1E1E2E',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 1 },
+    ...shadow.cardSubtle,
   },
-  respondingFooter: { marginTop: 16 },
-  charHint: { fontSize: 13, color: '#B8B8C4', marginBottom: 12 },
+  respondingFooter: { marginTop: spacing.md },
+  charHint: {
+    ...typography.caption,
+    color: colors.text.muted,
+    marginBottom: 12,
+  },
   buttonRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  cancelButton: { paddingVertical: 14, paddingHorizontal: 16 },
-  cancelText: { fontSize: 16, color: '#6B6B7A', fontWeight: '500' },
+  cancelButton: { paddingVertical: 14, paddingHorizontal: spacing.md },
+  cancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.secondary,
+  },
   submitButton: {
-    backgroundColor: '#D4522A',
-    borderRadius: 16,
+    backgroundColor: colors.accent.primary,
+    borderRadius: radius.pill,
     paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
-  submitText: { color: '#ffffff', fontSize: 16, fontWeight: '600', fontFamily: 'Nunito-Bold' },
+  submitText: {
+    ...typography.btn,
+    color: colors.text.inverse,
+  },
   disabled: { opacity: 0.5 },
 });

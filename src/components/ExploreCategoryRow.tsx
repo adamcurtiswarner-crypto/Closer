@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { PROMPT_CATEGORIES } from '@/config/promptCategories';
 import { Icon } from '@/components/Icon';
+import { colors, radius, spacing, typography } from '@config/theme';
 import { logEvent } from '@/services/analytics';
 
 export function ExploreCategoryRow() {
@@ -19,16 +20,14 @@ export function ExploreCategoryRow() {
         {PROMPT_CATEGORIES.map((cat) => (
           <Pressable
             key={cat.type}
-            style={[styles.chip, { backgroundColor: cat.bgColor }]}
+            style={styles.chip}
             onPress={() => {
               logEvent('explore_category_tapped', { category: cat.type });
               router.push(`/(app)/explore?category=${cat.type}`);
             }}
           >
-            <Icon name={cat.icon} size={20} color={cat.color} />
-            <Text style={[styles.chipLabel, { color: cat.color }]}>
-              {cat.label}
-            </Text>
+            <Icon name={cat.icon} size={18} color={colors.accent.primary} />
+            <Text style={styles.chipLabel}>{cat.label}</Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -37,22 +36,28 @@ export function ExploreCategoryRow() {
 }
 
 const styles = StyleSheet.create({
-  container: { marginTop: 24, marginBottom: 8 },
+  container: { marginTop: spacing.lg, marginBottom: spacing.sm },
   heading: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#6b7280',
+    ...typography.eyebrow,
+    color: colors.text.muted,
     marginBottom: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.screen,
   },
-  row: { paddingHorizontal: 16, gap: 10 },
+  row: { paddingHorizontal: spacing.md, gap: 10 },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
-    borderRadius: 16,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface.card,
+    borderWidth: 1.5,
+    borderColor: colors.border.default,
     gap: 6,
   },
-  chipLabel: { fontSize: 14, fontWeight: '500' },
+  chipLabel: {
+    ...typography.h3,
+    fontSize: 11,
+    color: colors.text.secondary,
+  },
 });

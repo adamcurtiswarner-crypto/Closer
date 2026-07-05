@@ -53,6 +53,7 @@ import { logEvent } from '@/services/analytics';
 import { QueryError } from '@/components/QueryError';
 import { PromptCardSkeleton } from '@/components/Skeleton';
 import { logger } from '@/utils/logger';
+import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { FEATURES } from '@/config/features';
 import { useTranslation } from 'react-i18next';
 
@@ -479,7 +480,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
         >
           <TodayScreenHeader greeting={getGreeting(t)} {...headerProps} />
 
@@ -489,7 +490,7 @@ export default function TodayScreen() {
 
           <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.emptyCard}>
             <View style={styles.accentBar} />
-            <Icon name="coffee" size="xl" color="#D4522A" weight="light" />
+            <Icon name="coffee" size="xl" color={colors.accent.primary} weight="light" />
             <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
             <Text style={styles.emptySubtitle}>
               {nextPromptAt
@@ -537,7 +538,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
         >
           <TodayScreenHeader greeting={t('today.niceOne')} {...headerProps} />
 
@@ -554,7 +555,7 @@ export default function TodayScreen() {
             </Text>
 
             <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
-              <Icon name="lock" size="md" color="#D4522A" weight="light" />
+              <Icon name="lock" size="md" color={colors.accent.primary} weight="light" />
               <Text style={styles.sealedTitle}>Your answer is saved</Text>
               <Text style={styles.sealedSubtitle}>
                 Waiting for {partnerName ?? 'your partner'}...
@@ -565,12 +566,12 @@ export default function TodayScreen() {
 
             {isPartnerTyping && partnerTypingContext === 'prompt' ? (
               <Animated.View entering={FadeIn.duration(300)} style={styles.typingRow}>
-                <PulsingDots color="#D4522A" size={5} />
+                <PulsingDots color={colors.accent.primary} size={5} />
                 <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
               </Animated.View>
             ) : (
               <View style={styles.waitingMessageRow}>
-                <Icon name="hourglass" size={16} color="#B8B8C4" />
+                <Icon name="hourglass" size={16} color={colors.text.muted} />
                 <Text style={styles.waitingMessage}>{t('today.waitingFor', { name: partnerName })}</Text>
               </View>
             )}
@@ -594,7 +595,7 @@ export default function TodayScreen() {
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#D4522A" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
         >
           <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
 
@@ -681,7 +682,7 @@ export default function TodayScreen() {
                 onPress={() => setShowStreakDetail(!showStreakDetail)}
                 activeOpacity={0.8}
               >
-                <Icon name="flame" size="md" color="#D4522A" weight="fill" />
+                <Icon name="flame" size="md" color={colors.accent.primary} weight="fill" />
                 <Text style={styles.streakCelebrationText}>
                   {currentStreak === 1 ? t('today.streakStarted') : t('today.dayStreak', { count: currentStreak })}
                 </Text>
@@ -744,12 +745,12 @@ export default function TodayScreen() {
             >
               <View style={styles.sparkAccent} />
               <View style={styles.sparkContent}>
-                <Icon name="sparkle" size="sm" color="#D4522A" weight="fill" />
+                <Icon name="sparkle" size="sm" color={colors.accent.primary} weight="fill" />
                 <View style={styles.sparkTextWrap}>
                   <Text style={styles.sparkTitle}>Today's Spark</Text>
                   <Text style={styles.sparkSubtitle}>A quick moment to connect</Text>
                 </View>
-                <Icon name="arrow-right" size="sm" color="#B8B8C4" />
+                <Icon name="arrow-right" size="sm" color={colors.text.muted} />
               </View>
             </TouchableOpacity>
           </Animated.View>
@@ -797,7 +798,7 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   accentBar: {
     position: 'absolute',
@@ -805,7 +806,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   centered: {
     flex: 1,
@@ -822,205 +823,179 @@ const styles = StyleSheet.create({
   },
   // ─── Spark card ───
   sparkCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
     overflow: 'hidden',
-    marginBottom: 16,
-    shadowColor: '#1E1E2E',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    marginBottom: spacing.md,
+    ...shadow.cardSubtle,
   },
   sparkAccent: {
     height: 3,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   sparkContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: spacing.md,
     gap: 12,
   },
   sparkTextWrap: {
     flex: 1,
   },
   sparkTitle: {
+    ...typography.heading,
     fontSize: 15,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
     letterSpacing: -0.3,
+    color: colors.text.primary,
   },
   sparkSubtitle: {
+    ...typography.caption,
     fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    color: colors.text.secondary,
     marginTop: 2,
   },
   // ─── Loading greeting (no logo) ───
   greetingRow: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   greeting: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#1E1E2E',
+    ...typography.display,
+    color: colors.text.primary,
     letterSpacing: -0.5,
-    fontFamily: 'Nunito-Black',
   },
   dateText: {
+    ...typography.body,
     fontSize: 15,
-    color: '#6B6B7A',
+    color: colors.text.secondary,
     marginTop: 2,
-    fontFamily: 'Nunito-Regular',
   },
   // ─── Prompt ───
   promptSection: {
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   // ─── Empty / No prompt ───
   emptyCard: {
-    marginTop: 24,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 32,
+    marginTop: spacing.lg,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.hero,
+    padding: spacing.xl,
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 1,
+    ...shadow.card,
   },
   emptyTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#292524',
-    marginBottom: 8,
+    ...typography.heading,
+    color: colors.text.primary,
+    marginBottom: spacing.sm,
     textAlign: 'center',
-    fontFamily: 'Nunito-Black',
   },
   emptySubtitle: {
+    ...typography.body,
     fontSize: 15,
-    color: '#6B6B7A',
-    textAlign: 'center',
     lineHeight: 22,
-    fontFamily: 'Nunito-Regular',
+    color: colors.text.secondary,
+    textAlign: 'center',
   },
   triggerButton: {
-    marginTop: 24,
-    paddingVertical: 14,
-    paddingHorizontal: 28,
-    backgroundColor: 'transparent',
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#D4522A',
+    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.accent.primary,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   triggerButtonText: {
-    color: '#D4522A',
-    fontWeight: '600',
-    fontSize: 16,
-    fontFamily: 'Nunito-Bold',
+    ...typography.btn,
+    color: colors.text.inverse,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
   streakSection: {
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
   // ─── Waiting ───
   waitingCard: {
-    marginTop: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 24,
+    marginTop: spacing.screen,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.hero,
+    padding: spacing.lg,
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 1,
+    ...shadow.card,
   },
   waitingPrompt: {
+    ...typography.body,
     fontSize: 16,
-    color: '#6B6B7A',
+    lineHeight: 24,
+    color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
-    fontFamily: 'Nunito-Regular',
+    marginBottom: spacing.screen,
   },
   sealedCard: {
-    backgroundColor: '#FDF1ED',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: colors.accent.primaryLight,
+    borderRadius: radius.card,
+    padding: spacing.lg,
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   sealedTitle: {
+    ...typography.heading,
     fontSize: 15,
-    fontWeight: '900',
-    color: '#1E1E2E',
-    fontFamily: 'Nunito-Black',
+    color: colors.text.primary,
   },
   sealedSubtitle: {
+    ...typography.caption,
     fontSize: 13,
-    color: '#B8B8C4',
-    fontFamily: 'Nunito-Regular',
+    color: colors.text.muted,
   },
   waitingDivider: {
     height: 1,
-    backgroundColor: '#E2DED8',
-    marginVertical: 20,
+    backgroundColor: colors.border.default,
+    marginVertical: spacing.screen,
   },
   typingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   typingText: {
-    color: '#D4522A',
+    ...typography.caption,
+    fontSize: 13,
+    color: colors.accent.primary,
     fontStyle: 'italic',
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
   },
   waitingMessageRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   waitingMessage: {
-    color: '#6B6B7A',
-    fontSize: 14,
-    fontFamily: 'Nunito-Regular',
+    ...typography.caption,
+    fontSize: 13,
+    color: colors.text.secondary,
   },
   // ─── Complete ───
   completionSection: {
-    marginTop: 20,
+    marginTop: spacing.screen,
   },
   feedbackCard: {
-    marginTop: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 24,
+    marginTop: spacing.screen,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.hero,
+    padding: spacing.lg,
     alignItems: 'center',
     overflow: 'hidden',
-    shadowColor: '#1E1E2E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 1,
+    ...shadow.card,
   },
   feedbackTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6B6B7A',
-    marginBottom: 16,
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.eyebrow,
+    color: colors.text.muted,
+    marginBottom: spacing.md,
   },
   feedbackRow: {
     flexDirection: 'row',
@@ -1028,70 +1003,66 @@ const styles = StyleSheet.create({
   },
   feedbackOption: {
     paddingVertical: 12,
-    paddingHorizontal: 20,
-    backgroundColor: '#F5F2EE',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E2DED8',
+    paddingHorizontal: spacing.screen,
+    backgroundColor: colors.surface.background,
+    borderRadius: radius.choice,
+    borderWidth: 1.5,
+    borderColor: colors.border.default,
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   feedbackIconWrap: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   feedbackOptionText: {
+    ...typography.caption,
     fontSize: 13,
-    color: '#6B6B7A',
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.secondary,
   },
   feedbackThanks: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#B8B8C4',
+    ...typography.caption,
+    fontSize: 13,
+    marginTop: spacing.md,
+    color: colors.text.muted,
     textAlign: 'center',
-    fontFamily: 'Nunito-Regular',
   },
   streakCelebration: {
-    marginTop: 20,
+    marginTop: spacing.screen,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FDF1ED',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 16,
-    gap: 8,
+    backgroundColor: colors.accent.primaryLight,
+    paddingVertical: spacing.md - 2,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.pill,
+    gap: spacing.sm,
     alignSelf: 'center',
   },
   streakCelebrationText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#D4522A',
-    fontFamily: 'Nunito-Bold',
+    ...typography.h3,
+    color: colors.accent.primary,
   },
   streakDetailSection: {
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   doneRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    marginTop: 32,
-    marginBottom: 16,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
   },
   doneDot: {
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#d6d3d1',
+    backgroundColor: colors.border.default,
   },
   doneText: {
-    color: '#B8B8C4',
-    fontSize: 14,
-    fontWeight: '400',
-    fontFamily: 'Nunito-Regular',
+    ...typography.caption,
+    fontSize: 13,
+    color: colors.text.muted,
   },
 });

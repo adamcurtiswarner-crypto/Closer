@@ -11,6 +11,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { hapticNotification, NotificationFeedbackType } from '@utils/haptics';
+import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { ResponseCard } from './ResponseCard';
 import { ReactionRow } from './ReactionRow';
 import { Icon } from './Icon';
@@ -55,7 +56,7 @@ function SparkleParticle({ x, delay }: { x: number; delay: number }) {
           width: 4,
           height: 4,
           borderRadius: 2,
-          backgroundColor: '#D4522A',
+          backgroundColor: colors.accent.primary,
         },
         animatedStyle,
       ]}
@@ -122,7 +123,7 @@ export function CompletionMoment({
 
         <Animated.View entering={FadeIn.duration(400)}>
           <View style={styles.headerRow}>
-            <Icon name="sparkle" size="lg" color="#D4522A" weight="fill" />
+            <Icon name="sparkle" size="lg" color={colors.accent.primary} weight="fill" />
             <Text style={styles.header}>You both answered</Text>
           </View>
         </Animated.View>
@@ -211,15 +212,11 @@ export function CompletionMoment({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 24,
-    paddingTop: 20,
-    shadowColor: '#1E1E2E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.hero,
+    padding: spacing.lg,
+    paddingTop: spacing.screen,
+    ...shadow.card,
     overflow: 'hidden',
   },
   accentBar: {
@@ -228,30 +225,28 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    marginBottom: 16,
-    marginTop: 4,
+    marginBottom: spacing.md,
+    marginTop: spacing.xs,
   },
   header: {
-    color: '#6B6B7A',
-    fontSize: 15,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
+    ...typography.eyebrow,
+    color: colors.text.muted,
   },
   promptText: {
-    color: '#6B6B7A',
-    fontSize: 17,
-    fontFamily: 'Nunito-Regular',
-    textAlign: 'center',
-    marginBottom: 24,
-    fontStyle: 'italic',
+    ...typography.body,
+    fontSize: 16,
     lineHeight: 24,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+    fontStyle: 'italic',
   },
   responses: {},
   spacer: {
@@ -261,9 +256,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F2EE',
-    borderRadius: 14,
-    paddingVertical: 16,
+    backgroundColor: colors.surface.background,
+    borderRadius: radius.choice,
+    paddingVertical: spacing.md,
     marginBottom: 12,
   },
   scoreCol: {
@@ -274,58 +269,53 @@ const styles = StyleSheet.create({
   scoreDivider: {
     width: 1,
     height: 32,
-    backgroundColor: '#E2DED8',
+    backgroundColor: colors.border.default,
   },
   scoreName: {
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#6B6B7A',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    ...typography.eyebrow,
+    color: colors.text.muted,
   },
   scoreValue: {
+    ...typography.display,
     fontSize: 26,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
     letterSpacing: -0.5,
+    color: colors.text.primary,
   },
   midScaleLine: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
+    ...typography.caption,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: spacing.md,
+    color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: 20,
   },
   closingText: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
+    ...typography.caption,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: spacing.md,
+    color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: 20,
   },
   footerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 24,
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
   footerDot: {
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#d6d3d1',
+    backgroundColor: colors.border.default,
   },
   footer: {
-    color: '#B8B8C4',
-    fontSize: 13,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.caption,
+    fontSize: 12,
+    color: colors.text.muted,
+    letterSpacing: 0.3,
   },
 });

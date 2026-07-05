@@ -4,11 +4,13 @@ import {
   Text,
   StyleSheet,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { Button, Icon } from '@/components';
+import { Icon } from '@/components';
+import { colors, radius, spacing, typography } from '@/config/theme';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,7 +51,7 @@ export default function ReadyScreen() {
       <View style={styles.contentCentered}>
         <Animated.View entering={FadeIn.duration(400)} style={styles.headerCenter}>
           <View style={styles.checkmark}>
-            <Icon name="check" size="xl" color="#D4522A" weight="bold" />
+            <Icon name="check" size="xl" color={colors.accent.primary} weight="bold" />
           </View>
           <Text style={styles.title}>
             {t('onboarding.ready.title')}
@@ -60,7 +62,14 @@ export default function ReadyScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(200)}>
-          <Button title={t('onboarding.ready.startNow')} onPress={handleStart} />
+          <TouchableOpacity
+            style={styles.cta}
+            accessibilityRole="button"
+            activeOpacity={0.8}
+            onPress={handleStart}
+          >
+            <Text style={styles.ctaText}>{t('onboarding.ready.startNow')}</Text>
+          </TouchableOpacity>
         </Animated.View>
       </View>
     </SafeAreaView>
@@ -70,34 +79,45 @@ export default function ReadyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   contentCentered: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
     justifyContent: 'center',
   },
   headerCenter: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: spacing.xxl,
   },
   checkmark: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   title: {
+    ...typography.display,
     fontSize: 24,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    color: colors.text.primary,
     textAlign: 'center',
   },
   subtitle: {
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    color: colors.text.secondary,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   spacerSmall: {
     height: 12,
+  },
+  // Full-width pill CTA
+  cta: {
+    backgroundColor: colors.accent.primary,
+    borderRadius: radius.pill,
+    paddingVertical: 16,
+    alignItems: 'center',
+    width: '100%',
+  },
+  ctaText: {
+    ...typography.btn,
+    color: colors.text.inverse,
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { colors, spacing, typography } from '@config/theme';
 import type { FollowUpBranch } from '@/types';
 
 const BRANCH_CONTEXT: Record<FollowUpBranch, string> = {
@@ -50,15 +51,13 @@ export function FollowUpSkip({ onSkip, disabled = false }: FollowUpSkipProps) {
 const styles = StyleSheet.create({
   contextWrap: {
     marginBottom: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
   },
   contextText: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
-    fontStyle: 'italic',
+    ...typography.eyebrow,
+    color: colors.text.muted,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 15,
   },
   skipWrap: {
     marginTop: 12,
@@ -66,20 +65,19 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     minHeight: 44,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.screen,
     alignItems: 'center',
     justifyContent: 'center',
   },
   skipText: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.eyebrow,
+    fontSize: 10,
+    color: colors.text.secondary,
   },
   skipHint: {
+    ...typography.caption,
     fontSize: 12,
-    color: '#B8B8C4',
-    fontFamily: 'Nunito-Regular',
+    color: colors.text.muted,
     marginTop: 2,
   },
 });

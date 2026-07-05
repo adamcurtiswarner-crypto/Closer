@@ -6,6 +6,9 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
+import { colors, typography } from '@config/theme';
+
+type ScaleSliderTone = 'light' | 'dark';
 
 interface ScaleSliderProps {
   value: number | null;
@@ -15,9 +18,11 @@ interface ScaleSliderProps {
   min?: number;
   max?: number;
   disabled?: boolean;
+  /** 'dark' renders the row for an ink/coral hero card (low-opacity outlines) */
+  tone?: ScaleSliderTone;
 }
 
-function ScaleDot({ selected }: { selected: boolean }) {
+function ScaleDot({ selected, tone }: { selected: boolean; tone: ScaleSliderTone }) {
   const scale = useSharedValue(1);
 
   useEffect(() => {
@@ -29,7 +34,14 @@ function ScaleDot({ selected }: { selected: boolean }) {
   }));
 
   return (
-    <Animated.View style={[styles.dot, selected && styles.dotSelected, animatedStyle]} />
+    <Animated.View
+      style={[
+        styles.dot,
+        tone === 'dark' ? styles.dotDark : styles.dotLight,
+        selected && styles.dotSelected,
+        animatedStyle,
+      ]}
+    />
   );
 }
 
@@ -45,6 +57,7 @@ export function ScaleSlider({
   min = 1,
   max = 10,
   disabled = false,
+  tone = 'light',
 }: ScaleSliderProps) {
   const steps: number[] = [];
   for (let n = min; n <= max; n++) steps.push(n);
@@ -77,14 +90,18 @@ export function ScaleSlider({
             accessibilityLabel={`${n} of ${max}`}
             accessibilityState={{ selected: value === n, disabled }}
           >
-            <ScaleDot selected={value === n} />
+            <ScaleDot selected={value === n} tone={tone} />
           </TouchableOpacity>
         ))}
       </View>
 
       <View style={styles.labelsRow}>
-        <Text style={styles.endLabel}>{minLabel}</Text>
-        <Text style={styles.endLabel}>{maxLabel}</Text>
+        <Text style={[styles.endLabel, tone === 'dark' && styles.endLabelDark]}>
+          {minLabel}
+        </Text>
+        <Text style={[styles.endLabel, tone === 'dark' && styles.endLabelDark]}>
+          {maxLabel}
+        </Text>
       </View>
     </View>
   );
@@ -97,11 +114,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   valueText: {
-    fontSize: 28,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#D4522A',
-    letterSpacing: -0.5,
+    ...typography.display,
+    color: colors.accent.primary,
   },
   track: {
     flexDirection: 'row',
@@ -117,13 +131,19 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#E2DED8',
+  },
+  dotLight: {
+    backgroundColor: colors.surface.card,
+    borderColor: colors.border.default,
+  },
+  dotDark: {
+    backgroundColor: 'transparent',
+    borderColor: colors.onDark.outline,
   },
   dotSelected: {
-    backgroundColor: '#D4522A',
-    borderColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
+    borderColor: colors.accent.primary,
   },
   labelsRow: {
     flexDirection: 'row',
@@ -132,10 +152,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   endLabel: {
-    fontSize: 12,
-    color: '#6B6B7A',
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
+    ...typography.caption,
+    color: colors.text.secondary,
     letterSpacing: 0.2,
+  },
+  endLabelDark: {
+    color: colors.onDark.muted,
   },
 });

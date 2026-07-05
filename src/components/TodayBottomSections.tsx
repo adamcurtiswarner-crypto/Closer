@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { GoalTracker, AddGoalModal, WishlistCard, AddWishlistModal, ExploreCategoryRow } from '@components';
 import { DateNightCard } from '@/components/DateNightCard';
+import { spacing } from '@config/theme';
 import { FEATURES } from '@/config/features';
 
 interface TodayBottomSectionsProps {
@@ -68,6 +69,6 @@ export function TodayBottomSections({
 
 const styles = StyleSheet.create({
   section: {
-    marginTop: 24,
+    marginTop: spacing.lg,
   },
 });

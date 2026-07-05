@@ -13,6 +13,7 @@ import {
 import Animated, { FadeIn, FadeInUp, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '@components';
+import { colors, radius, spacing, typography } from '@config/theme';
 import { useTranslation } from 'react-i18next';
 
 interface RespondingScreenProps {
@@ -67,7 +68,7 @@ export function RespondingScreen({
             <TextInput
               style={styles.textInput}
               placeholder={t('today.sharePlaceholder')}
-              placeholderTextColor="#B8B8C4"
+              placeholderTextColor={colors.text.muted}
               multiline
               textAlignVertical="top"
               value={responseText}
@@ -80,12 +81,12 @@ export function RespondingScreen({
             <View style={styles.imagePreview}>
               <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
               <TouchableOpacity style={styles.removeImage} onPress={onRemovePhoto} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Icon name="x" size="xs" color="#ffffff" weight="bold" />
+                <Icon name="x" size="xs" color={colors.text.inverse} weight="bold" />
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity style={styles.attachPhotoButton} onPress={onAddPhoto}>
-              <Icon name="camera" size="md" color="#6B6B7A" />
+              <Icon name="camera" size="md" color={colors.text.secondary} />
               <Text style={styles.attachPhotoText}>{t('today.addPhoto')}</Text>
             </TouchableOpacity>
           )}
@@ -113,7 +114,6 @@ export function RespondingScreen({
                   <Text style={styles.submitText}>
                     {isPending ? t('today.sending') : t('today.share')}
                   </Text>
-                  {!isPending && <Icon name="arrow-right" size="sm" color="#ffffff" />}
                 </TouchableOpacity>
               </Animated.View>
             </View>
@@ -127,47 +127,47 @@ export function RespondingScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   flex: {
     flex: 1,
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
   },
   respondingScroll: {
-    paddingTop: 32,
-    paddingBottom: 32,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xl,
     flexGrow: 1,
   },
   respondingHeader: {
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
   contextText: {
-    fontSize: 14,
-    color: '#B8B8C4',
-    fontFamily: 'Nunito-Regular',
+    ...typography.eyebrow,
+    color: colors.text.muted,
     textAlign: 'center',
-    marginBottom: 8,
-    lineHeight: 20,
+    marginBottom: spacing.sm,
+    lineHeight: 15,
   },
   respondingPrompt: {
-    fontSize: 18,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.body,
+    fontSize: 17,
+    lineHeight: 26,
+    color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: 26,
   },
   textInput: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    padding: spacing.screen,
     fontSize: 17,
-    color: '#1E1E2E',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.primary,
     borderWidth: 1.5,
-    borderColor: '#E2DED8',
+    borderColor: colors.border.default,
     minHeight: 140,
     maxHeight: 240,
     lineHeight: 24,
@@ -178,15 +178,15 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 12,
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     alignSelf: 'flex-start',
-    backgroundColor: '#E2DED8',
-    borderRadius: 10,
+    backgroundColor: colors.border.default,
+    borderRadius: radius.input,
   },
   attachPhotoText: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontWeight: '500',
+    ...typography.caption,
+    fontSize: 13,
+    color: colors.text.secondary,
   },
   imagePreview: {
     marginTop: 12,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   previewImage: {
     width: 120,
     height: 120,
-    borderRadius: 12,
+    borderRadius: radius.input,
   },
   removeImage: {
     position: 'absolute',
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#6B6B7A',
+    backgroundColor: colors.text.secondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -213,43 +213,41 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   charHint: {
-    color: '#B8B8C4',
-    fontSize: 13,
+    ...typography.caption,
+    fontSize: 12,
+    color: colors.text.muted,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   buttonRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
   cancelButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    backgroundColor: '#E2DED8',
-    borderRadius: 14,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.screen,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelText: {
-    color: '#6B6B7A',
-    fontWeight: '600',
-    fontSize: 16,
+    ...typography.eyebrow,
+    fontSize: 10,
+    color: colors.text.secondary,
   },
   submitButton: {
     flex: 1,
-    paddingVertical: 16,
-    backgroundColor: '#D4522A',
-    borderRadius: 14,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.accent.primary,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 6,
   },
   submitText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    fontSize: 16,
+    ...typography.btn,
+    color: colors.text.inverse,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
 });

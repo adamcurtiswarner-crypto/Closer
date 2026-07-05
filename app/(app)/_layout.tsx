@@ -1,20 +1,14 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Tabs, Redirect } from 'expo-router';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { Icon } from '@/components';
 import { FEATURES } from '@/config/features';
+import { colors, radius } from '@/config/theme';
 
 const logo = require('@/assets/logo.png');
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
 
 // Today is the v1 landing tab (home is feature-flagged off)
 export const unstable_settings = {
@@ -32,9 +26,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     [state.routes, descriptors]
   );
 
-  const tabCount = visibleRoutes.length;
-  const tabWidth = SCREEN_WIDTH / tabCount;
-
   // Determine the visible tab index for the current active route
   const activeVisibleIndex = useMemo(() => {
     const activeRoute = state.routes[state.index];
@@ -42,20 +33,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     // If active route is a hidden tab, return -1
     return idx;
   }, [state.index, state.routes, visibleRoutes]);
-
-  const translateX = useSharedValue(0);
-
-  useEffect(() => {
-    if (activeVisibleIndex >= 0) {
-      translateX.value = withTiming(activeVisibleIndex * tabWidth + tabWidth / 2 - 3, {
-        duration: 250,
-      });
-    }
-  }, [activeVisibleIndex, tabWidth, translateX]);
-
-  const indicatorStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }));
 
   return (
     <View style={customTabBarStyles.container}>
@@ -65,7 +42,7 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           const isFocused = activeVisibleIndex === index;
 
           const label = options.title ?? route.name;
-          const color = isFocused ? '#D4522A' : '#B8B8C4';
+          const color = isFocused ? colors.accent.primary : colors.text.muted;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -98,14 +75,10 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               style={customTabBarStyles.tab}
             >
               <View
-                style={{
-                  width: 40,
-                  height: 30,
-                  borderRadius: 9,
-                  backgroundColor: isFocused ? '#FDF1ED' : 'transparent',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                style={[
+                  customTabBarStyles.iconPill,
+                  isFocused && customTabBarStyles.iconPillActive,
+                ]}
               >
                 {options.tabBarIcon?.({ focused: isFocused, color, size: 24 })}
               </View>
@@ -121,7 +94,6 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           );
         })}
       </View>
-      <Animated.View style={[customTabBarStyles.indicator, indicatorStyle]} />
     </View>
   );
 }
@@ -147,8 +119,8 @@ export default function AppLayout() {
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#D4522A',
-        tabBarInactiveTintColor: '#B8B8C4',
+        tabBarActiveTintColor: colors.accent.primary,
+        tabBarInactiveTintColor: colors.text.muted,
       }}
     >
       <Tabs.Screen
@@ -304,9 +276,9 @@ export default function AppLayout() {
 
 const customTabBarStyles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E2DED8',
+    backgroundColor: colors.surface.card,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.default,
     paddingTop: 8,
     height: 85,
   },
@@ -319,19 +291,23 @@ const customTabBarStyles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 4,
   },
+  // Active tab — small warm pill behind the icon (reference Nav treatment)
+  iconPill: {
+    width: 38,
+    height: 28,
+    borderRadius: radius.nav,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconPillActive: {
+    backgroundColor: colors.accent.primaryLight,
+  },
   label: {
     fontSize: 9,
-    marginTop: 4,
+    fontWeight: '800',
+    marginTop: 3,
     fontFamily: 'Nunito-ExtraBold',
-  },
-  indicator: {
-    position: 'absolute',
-    top: 4,
-    left: 0,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#D4522A',
   },
 });
 

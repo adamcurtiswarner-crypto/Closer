@@ -11,6 +11,16 @@ export const colors = {
     card: '#FFFFFF',
     warmTint: '#FDF1ED',
     warmTintDeep: '#FDF1ED',
+    ink: '#1E1E2E',
+  },
+
+  // On-ink / on-coral — tone-on-tone white opacities for hero surfaces
+  onDark: {
+    body: 'rgba(255,255,255,0.72)',
+    muted: 'rgba(255,255,255,0.5)',
+    faint: 'rgba(255,255,255,0.35)',
+    outline: 'rgba(255,255,255,0.25)',
+    field: 'rgba(255,255,255,0.08)',
   },
 
   // Text
@@ -40,8 +50,9 @@ export const colors = {
   // Brand
   brand: {
     purple: '#3D2870',
-    purpleLight: '#3D2870',
+    purpleLight: '#F3ECF6',
     green: '#7BAE7F',
+    greenLight: '#EDF4EE',
   },
 
   // Semantic

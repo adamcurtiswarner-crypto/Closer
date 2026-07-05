@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { Icon } from './Icon';
+import { colors, radius, shadow, spacing, typography } from '@config/theme';
+import { ToneShapes } from './ToneShapes';
 import { ScaleSlider } from './ScaleSlider';
 import { DEFAULT_SCALE_CONFIG } from '@/utils/scale';
 import type { ScaleConfig } from '@/types';
@@ -18,9 +19,9 @@ interface ScalePromptCardProps {
 }
 
 /**
- * Scale-format prompt: 1–10 dots with anchored end labels plus an optional
- * short note. Mirrors the PromptCard visual language so it feels like the
- * same product.
+ * Scale-format prompt: the centerpiece of the daily loop. Full-bleed ink hero
+ * card with tone-on-tone shapes, eyebrow cap, Nunito-Black question, 1–10
+ * dots with anchored end labels, an optional short note, and a pill CTA.
  */
 export function ScalePromptCard({
   promptText,
@@ -37,7 +38,11 @@ export function ScalePromptCard({
 
   return (
     <View style={styles.card}>
-      <View style={styles.accentBar} />
+      <ToneShapes variant="black" />
+
+      <Animated.View entering={FadeIn.duration(400).delay(100)}>
+        <Text style={styles.eyebrow}>Today's question</Text>
+      </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(500).delay(200)}>
         <Text style={styles.promptText}>{promptText}</Text>
@@ -52,6 +57,7 @@ export function ScalePromptCard({
           minLabel={config.minLabel}
           maxLabel={config.maxLabel}
           disabled={isPending}
+          tone="dark"
         />
       </Animated.View>
 
@@ -59,7 +65,7 @@ export function ScalePromptCard({
         <TextInput
           style={styles.noteInput}
           placeholder="A sentence about why, if you want."
-          placeholderTextColor="#B8B8C4"
+          placeholderTextColor={colors.onDark.faint}
           multiline
           textAlignVertical="top"
           value={note}
@@ -79,7 +85,6 @@ export function ScalePromptCard({
           testID="scale-submit"
         >
           <Text style={styles.buttonText}>{isPending ? 'Sending...' : 'Share'}</Text>
-          {!isPending && <Icon name="arrow-right" size="sm" color="#ffffff" />}
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -88,72 +93,53 @@ export function ScalePromptCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FDF1ED',
-    borderRadius: 20,
-    padding: 28,
-    paddingTop: 24,
-    shadowColor: '#1E1E2E',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    backgroundColor: colors.surface.ink,
+    borderRadius: radius.hero,
+    padding: spacing.cardPad,
+    paddingTop: spacing.cardPad + 4,
     overflow: 'hidden',
+    ...shadow.card,
   },
-  accentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: '#D4522A',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+  eyebrow: {
+    ...typography.eyebrow,
+    color: colors.onDark.muted,
+    marginBottom: spacing.md - 4,
   },
   promptText: {
-    color: '#1E1E2E',
+    ...typography.heading,
     fontSize: 22,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Black',
-    textAlign: 'center',
-    lineHeight: 32,
+    lineHeight: 28,
     letterSpacing: -0.3,
+    color: colors.text.inverse,
   },
   sliderSection: {
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   noteInput: {
-    marginTop: 20,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    fontSize: 16,
-    color: '#1E1E2E',
-    borderWidth: 1.5,
-    borderColor: '#E2DED8',
+    marginTop: spacing.md,
+    backgroundColor: colors.onDark.field,
+    borderRadius: radius.input,
+    padding: spacing.md,
+    fontSize: 15,
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.inverse,
     minHeight: 72,
     maxHeight: 160,
     lineHeight: 22,
   },
   button: {
-    marginTop: 24,
-    borderRadius: 14,
-    paddingVertical: 16,
-    paddingHorizontal: 28,
-    backgroundColor: '#D4522A',
-    flexDirection: 'row',
+    marginTop: spacing.lg,
+    borderRadius: radius.pill,
+    paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    backgroundColor: colors.accent.primary,
   },
   buttonText: {
-    color: '#ffffff',
-    textAlign: 'center',
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    fontSize: 17,
-    letterSpacing: 0.2,
+    ...typography.btn,
+    color: colors.text.inverse,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
 });

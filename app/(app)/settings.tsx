@@ -32,6 +32,7 @@ import { ProfileCard } from '@/components/ProfileCard';
 import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import Constants from 'expo-constants';
+import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
 const FREQUENCY_OPTIONS = [
   { label: 'Daily', value: 'daily' as const, description: 'Every day' },
@@ -219,14 +220,14 @@ export default function SettingsScreen() {
               <Text style={styles.rowLabel}>{t('settings.dailyPromptTime')}</Text>
               <View style={styles.rowRight}>
                 <Text style={styles.rowValue}>{getTimeDisplay(currentTime)}</Text>
-                <Icon name="caret-right" size="sm" color="#B8B8C4" />
+                <Icon name="caret-right" size="sm" color={colors.text.muted} />
               </View>
             </TouchableOpacity>
             <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
               <Text style={styles.rowLabel}>{t('settings.promptFrequency')}</Text>
               <View style={styles.rowRight}>
                 <Text style={styles.rowValue}>{getFrequencyDisplay(currentFrequency)}</Text>
-                <Icon name="caret-right" size="sm" color="#B8B8C4" />
+                <Icon name="caret-right" size="sm" color={colors.text.muted} />
               </View>
             </TouchableOpacity>
             <View style={styles.rowToggle}>
@@ -234,8 +235,8 @@ export default function SettingsScreen() {
               <Switch
                 value={remindMe}
                 onValueChange={handleToggleRemind}
-                trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
-                thumbColor={remindMe ? '#D4522A' : '#F5F2EE'}
+                trackColor={{ false: colors.border.default, true: colors.accent.primary }}
+                thumbColor={colors.surface.card}
               />
             </View>
             <View style={styles.rowToggle}>
@@ -243,8 +244,8 @@ export default function SettingsScreen() {
               <Switch
                 value={partnerNotify}
                 onValueChange={handleTogglePartnerNotify}
-                trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
-                thumbColor={partnerNotify ? '#D4522A' : '#F5F2EE'}
+                trackColor={{ false: colors.border.default, true: colors.accent.primary }}
+                thumbColor={colors.surface.card}
               />
             </View>
             <View style={[styles.rowToggle, styles.lastRow]}>
@@ -258,8 +259,8 @@ export default function SettingsScreen() {
                     calendarRemove.mutate();
                   }
                 }}
-                trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
-                thumbColor={calendarSynced ? '#D4522A' : '#F5F2EE'}
+                trackColor={{ false: colors.border.default, true: colors.accent.primary }}
+                thumbColor={colors.surface.card}
                 disabled={calendarSync.isPending || calendarRemove.isPending}
               />
             </View>
@@ -289,7 +290,7 @@ export default function SettingsScreen() {
                 onPress={() => router.push('/(app)/resources')}
               >
                 <Text style={styles.rowLabel}>{t('settings.findSupport')}</Text>
-                <Icon name="caret-right" size="sm" color="#B8B8C4" />
+                <Icon name="caret-right" size="sm" color={colors.text.muted} />
               </TouchableOpacity>
             </View>
           </Animated.View>
@@ -306,9 +307,9 @@ export default function SettingsScreen() {
             >
               <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
               {exportData.isPending ? (
-                <ActivityIndicator size="small" color="#D4522A" />
+                <ActivityIndicator size="small" color={colors.accent.primary} />
               ) : (
-                <Icon name="caret-right" size="sm" color="#B8B8C4" />
+                <Icon name="caret-right" size="sm" color={colors.text.muted} />
               )}
             </TouchableOpacity>
             <TouchableOpacity
@@ -316,21 +317,21 @@ export default function SettingsScreen() {
               onPress={() => setShowAnonymizeModal(true)}
             >
               <Text style={styles.rowLabel}>{t('settings.anonymize')}</Text>
-              <Icon name="caret-right" size="sm" color="#B8B8C4" />
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.row}
               onPress={() => router.push('/(app)/privacy-policy')}
             >
               <Text style={styles.rowLabel}>{t('settings.privacyPolicy')}</Text>
-              <Icon name="caret-right" size="sm" color="#B8B8C4" />
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.row}
               onPress={() => router.push('/(app)/terms-of-service' as any)}
             >
               <Text style={styles.rowLabel}>{t('settings.termsOfService')}</Text>
-              <Icon name="caret-right" size="sm" color="#B8B8C4" />
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.row, styles.lastRow]}
@@ -388,8 +389,8 @@ export default function SettingsScreen() {
                       await disableBiometric();
                     }
                   }}
-                  trackColor={{ false: '#E2DED8', true: '#f9a07a' }}
-                  thumbColor={isBiometricEnabled ? '#D4522A' : '#F5F2EE'}
+                  trackColor={{ false: colors.border.default, true: colors.accent.primary }}
+                  thumbColor={colors.surface.card}
                 />
               </View>
             )}
@@ -399,7 +400,7 @@ export default function SettingsScreen() {
             </View>
             <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
               <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>
-              <Icon name="caret-right" size="sm" color="#B8B8C4" />
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -547,7 +548,7 @@ export default function SettingsScreen() {
               value={deleteConfirmText}
               onChangeText={setDeleteConfirmText}
               placeholder="DELETE"
-              placeholderTextColor="#d6d3d1"
+              placeholderTextColor={colors.text.muted}
               autoCapitalize="characters"
               autoCorrect={false}
             />
@@ -561,7 +562,7 @@ export default function SettingsScreen() {
               disabled={deleteConfirmText !== 'DELETE' || deleteAccount.isPending}
             >
               {deleteAccount.isPending ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={colors.text.inverse} />
               ) : (
                 <Text style={styles.deleteButtonText}>{t('settings.deleteButton')}</Text>
               )}
@@ -610,7 +611,7 @@ export default function SettingsScreen() {
               disabled={anonymizeResponses.isPending}
             >
               {anonymizeResponses.isPending ? (
-                <ActivityIndicator size="small" color="#ffffff" />
+                <ActivityIndicator size="small" color={colors.text.inverse} />
               ) : (
                 <Text style={styles.deleteButtonText}>{t('settings.anonymizeButton')}</Text>
               )}
@@ -632,100 +633,103 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
+    ...typography.display,
+    color: colors.text.primary,
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
   },
+  // Section headers — eyebrow caps
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    fontFamily: 'Nunito-SemiBold',
-    color: '#6B6B7A',
-    marginTop: 24,
-    marginBottom: 8,
-    marginLeft: 4,
-    letterSpacing: 0.5,
+    ...typography.eyebrow,
+    color: colors.text.muted,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
   },
   section: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
     overflow: 'hidden',
+    ...shadow.cardSubtle,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2DED8',
+    borderBottomColor: colors.border.default,
   },
   rowToggle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2DED8',
+    borderBottomColor: colors.border.default,
   },
   lastRow: {
     borderBottomWidth: 0,
   },
   rowLabel: {
-    fontSize: 16,
-    color: '#1E1E2E',
-    fontFamily: 'Nunito-Regular',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.primary,
   },
   rowValue: {
-    fontSize: 16,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.secondary,
   },
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   premiumText: {
-    color: '#D4522A',
-    fontWeight: '600',
+    color: colors.accent.primary,
+    fontWeight: '800',
+    fontFamily: 'Nunito-ExtraBold',
   },
   dangerText: {
-    fontSize: 16,
-    color: '#f87171',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.semantic.destructive,
   },
   safety: {
-    backgroundColor: '#E2DED8',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 32,
-    marginBottom: 48,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    borderWidth: 1.5,
+    borderColor: colors.border.default,
+    padding: spacing.md,
+    marginTop: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   safetyText: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
-    lineHeight: 20,
+    ...typography.body,
+    color: colors.text.secondary,
   },
   safetyLink: {
-    fontSize: 14,
-    color: '#D4522A',
-    fontFamily: 'Nunito-SemiBold',
-    marginTop: 8,
+    ...typography.body,
+    color: colors.accent.primary,
+    fontWeight: '800',
+    fontFamily: 'Nunito-ExtraBold',
+    marginTop: spacing.sm,
   },
   // Modal styles
   modalOverlay: {
@@ -734,121 +738,123 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 24,
+    backgroundColor: colors.surface.card,
+    borderTopLeftRadius: radius.hero,
+    borderTopRightRadius: radius.hero,
+    padding: spacing.lg,
     paddingBottom: 40,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    fontFamily: 'Nunito-Black',
-    color: '#1E1E2E',
-    marginBottom: 4,
+    ...typography.heading,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   modalSubtitle: {
-    fontSize: 14,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
-    marginBottom: 20,
+    ...typography.body,
+    color: colors.text.secondary,
+    marginBottom: spacing.cardPad,
   },
   timeOption: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#F5F2EE',
+    borderRadius: radius.choice,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface.background,
   },
   timeOptionActive: {
-    backgroundColor: '#fef3ee',
-    borderWidth: 1,
-    borderColor: '#f9a07a',
+    backgroundColor: colors.accent.primaryLight,
+    borderColor: colors.accent.primary,
   },
   radio: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#d6d3d1',
+    borderColor: colors.text.muted,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioActive: {
-    borderColor: '#D4522A',
+    borderColor: colors.accent.primary,
   },
   radioInner: {
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
   timeOptionText: {
-    fontSize: 16,
-    color: '#6B6B7A',
-    fontFamily: 'Nunito-Regular',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.secondary,
   },
   timeOptionTextActive: {
-    color: '#D4522A',
-    fontWeight: '500',
+    color: colors.accent.primary,
+    fontWeight: '700',
+    fontFamily: 'Nunito-Bold',
   },
   frequencyDescription: {
-    fontSize: 13,
-    color: '#B8B8C4',
+    ...typography.caption,
+    color: colors.text.muted,
     marginTop: 2,
   },
   modalClose: {
-    marginTop: 8,
+    marginTop: spacing.sm,
     paddingVertical: 14,
     alignItems: 'center',
   },
   modalCloseText: {
-    fontSize: 16,
-    color: '#6B6B7A',
+    fontSize: 15,
+    fontWeight: '600',
+    fontFamily: 'Nunito-SemiBold',
+    color: colors.text.secondary,
   },
   deleteModalBody: {
+    ...typography.body,
     fontSize: 15,
-    color: '#6B6B7A',
     lineHeight: 22,
-    marginBottom: 20,
+    color: colors.text.secondary,
+    marginBottom: spacing.cardPad,
   },
   deleteModalLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#6B6B7A',
-    marginBottom: 8,
+    ...typography.eyebrow,
+    color: colors.text.secondary,
+    marginBottom: spacing.sm,
   },
   deleteInput: {
-    borderWidth: 1,
-    borderColor: '#E2DED8',
-    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.border.default,
+    borderRadius: radius.input,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1E1E2E',
-    marginBottom: 16,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: spacing.md,
     letterSpacing: 2,
   },
   deleteButton: {
-    backgroundColor: '#ef4444',
-    borderRadius: 12,
+    backgroundColor: colors.semantic.destructive,
+    borderRadius: radius.pill,
     paddingVertical: 14,
     alignItems: 'center',
   },
   deleteButtonDisabled: {
-    backgroundColor: '#fca5a5',
+    opacity: 0.45,
   },
   deleteButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Nunito-Bold',
-    color: '#ffffff',
+    ...typography.btn,
+    color: colors.text.inverse,
   },
   anonymizeButton: {
-    backgroundColor: '#D4522A',
-    borderRadius: 12,
+    backgroundColor: colors.accent.primary,
+    borderRadius: radius.pill,
     paddingVertical: 14,
     alignItems: 'center',
   },
