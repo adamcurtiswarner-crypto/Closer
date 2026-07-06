@@ -1,48 +1,396 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Stoke</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #F5F2EE;
-      color: #2b2622;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      text-align: center;
-    }
-    .wordmark {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #D4522A;
-      margin-bottom: 20px;
-    }
-    h1 { font-size: 24px; font-weight: 600; margin-bottom: 24px; }
-    a {
-      display: inline-block;
-      background: #D4522A;
-      color: #fff;
-      text-decoration: none;
-      font-size: 17px;
-      font-weight: 600;
-      border-radius: 14px;
-      padding: 16px 24px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stoke — One question a day, together</title>
+<meta name="description" content="Stoke helps couples tend their relationship with one question a day. Answer privately, see each other's answers, and go deeper when it matters." />
+<meta name="apple-itunes-app" content="app-id=6759679330" />
+<meta property="og:title" content="Stoke — One question a day, together" />
+<meta property="og:description" content="Tend to the moments, keep the Flame. One question a day for the two of you." />
+<meta property="og:image" content="https://stoke.llc/assets/flame.png" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://stoke.llc" />
+<link rel="icon" type="image/png" href="/assets/icon.png" />
+<link rel="apple-touch-icon" href="/assets/icon.png" />
+<style>
+/* ── Stoke design tokens (mirrors src/config/theme.ts) ─────────────── */
+@font-face{font-family:'Nunito';src:url('/assets/Nunito-Black.woff2') format('woff2');font-weight:900;font-display:swap}
+@font-face{font-family:'Nunito';src:url('/assets/Nunito-ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'Nunito';src:url('/assets/Nunito-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+:root{
+  --ground:#F5F2EE; --card:#FFFFFF; --ink:#1E1E2E; --coral:#D4522A; --coral-dk:#B03F1E;
+  --tint:#FDF1ED; --sec:#6B6B7A; --line:#E2DED8; --sage:#4E7E52; --sagebg:#EAF2EB;
+  --purple:#3D2870; --purplebg:#F3ECF6;
+  --on-ink:rgba(255,255,255,.72); --on-ink-mut:rgba(255,255,255,.5);
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--ground);color:var(--ink);font-family:'Nunito',-apple-system,'Segoe UI',system-ui,sans-serif;font-weight:600;font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:var(--coral);text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--sec)}
+h1,h2{font-weight:900;letter-spacing:-.015em;line-height:1.08;text-wrap:balance}
+h1{font-size:clamp(38px,5.5vw,60px)}
+h2{font-size:clamp(28px,3.6vw,38px)}
+.lead{color:var(--sec);font-size:clamp(17px,1.8vw,19px);max-width:56ch}
+
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--coral);color:#fff;
+  border:none;border-radius:60px;padding:16px 30px;font-family:inherit;font-size:13px;font-weight:900;
+  letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:transform .15s ease, background .15s ease}
+.pill:hover{background:var(--coral-dk);transform:translateY(-1px)}
+.pill:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+
+/* reveal-on-scroll */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none;transition:none}
+  .chip-you,.chip-them,.fu{transition:none !important}
+}
+
+/* ── Nav ── */
+nav{position:sticky;top:0;z-index:20;background:rgba(245,242,238,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;max-width:1080px;margin:0 auto}
+.nav-in img{height:34px;width:auto}
+.nav-cta{padding:11px 22px;font-size:11px}
+
+/* ── Hero ── */
+.hero{padding:64px 0 24px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.hero .eyebrow{color:var(--coral);margin-bottom:14px}
+.hero h1{margin-bottom:18px}
+.hero .lead{margin-bottom:30px}
+.hero-art{position:relative;min-height:320px}
+.hero-art .blob{position:absolute;inset:6% 2% 4% 2%;background:var(--tint);border-radius:46% 54% 52% 48% / 52% 46% 54% 48%}
+.hero-art img{position:relative;width:min(100%,520px);margin:0 auto}
+.badge{display:inline-flex}
+.badge svg{height:52px;width:auto;display:block;transition:transform .15s ease}
+.badge:hover svg{transform:translateY(-1px)}
+.hero-ctas{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.hero-note{font-size:13.5px;color:var(--sec)}
+
+/* ── Sections ── */
+section{padding:72px 0}
+.sec-head{max-width:60ch;margin-bottom:40px}
+.sec-head .eyebrow{margin-bottom:10px}
+.sec-head h2{margin-bottom:12px}
+
+/* how it works */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px 24px;position:relative;overflow:hidden}
+.step .k{font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--coral);text-transform:uppercase;margin-bottom:10px}
+.step h3{font-weight:900;font-size:19px;margin-bottom:8px}
+.step p{color:var(--sec);font-size:15.5px}
+.step .vig{margin-top:20px;border-radius:14px;padding:14px;font-size:13.5px}
+.vig.q{background:var(--ink);color:#fff;line-height:1.45;font-weight:800}
+.vig.q .ve{color:var(--on-ink-mut);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;font-weight:800}
+.vig.sealed{background:var(--tint);color:var(--coral);display:flex;gap:10px;align-items:center;font-weight:800}
+.vig.sealed .lock{width:26px;height:26px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none}
+.vig.sealed .lock svg{width:12px;height:12px}
+.vig.rev{background:var(--ground);display:flex;justify-content:space-around;text-align:center}
+.vig.rev b{display:block;font-size:26px;font-weight:900;line-height:1.1}
+.vig.rev span{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--sec);font-weight:800}
+
+/* ── Demo ── */
+.demo-card{background:var(--ink);border-radius:30px;padding:clamp(28px,4.5vw,52px);position:relative;overflow:hidden;color:#fff}
+.demo-card .shape1{position:absolute;width:440px;height:440px;border-radius:50%;background:rgba(255,255,255,.05);top:-240px;right:-100px}
+.demo-card .shape2{position:absolute;width:620px;height:120px;border-radius:70px;background:rgba(255,255,255,.045);bottom:-46px;left:-90px;transform:rotate(-13deg)}
+.demo-in{position:relative;max-width:640px;margin:0 auto}
+.demo-in .ve{color:var(--on-ink-mut);font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;margin-bottom:14px}
+.demo-q{font-weight:900;font-size:clamp(21px,2.6vw,27px);line-height:1.3;letter-spacing:-.01em;margin-bottom:30px;text-wrap:balance}
+.row-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.row-label .who{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--on-ink-mut)}
+.row-label .val{font-weight:900;font-size:22px;color:#F0956F;min-width:28px;text-align:right}
+.dots{display:flex;justify-content:space-between;gap:6px;margin-bottom:6px}
+.dot{width:100%;aspect-ratio:1;max-width:34px;border-radius:50%;border:2px solid rgba(255,255,255,.28);background:transparent;cursor:pointer;transition:transform .12s ease,background .12s ease,border-color .12s ease;padding:0}
+.dot:hover{border-color:rgba(255,255,255,.6)}
+.dot:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.dot.on{background:var(--coral);border-color:var(--coral);transform:scale(1.12)}
+.scale-ends{display:flex;justify-content:space-between;font-size:12px;color:var(--on-ink-mut);font-weight:600;margin-bottom:22px}
+.reveal-zone{min-height:170px;margin-top:6px}
+.chips{display:flex;gap:14px;justify-content:center;margin-bottom:18px}
+.chip-you,.chip-them{flex:1;max-width:200px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:18px;
+  padding:16px;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s cubic-bezier(.34,1.4,.5,1)}
+.chip-you.land,.chip-them.land{opacity:1;transform:none}
+.chips span{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-ink-mut);font-weight:800;margin-bottom:4px}
+.chips b{font-size:34px;font-weight:900;line-height:1}
+.fu{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease;border-radius:18px;padding:20px 22px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.fu.show{opacity:1;transform:none}
+.fu .tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;border-radius:40px;padding:5px 12px;margin-bottom:10px}
+.fu .tag.high{background:var(--sagebg);color:var(--sage)}
+.fu .tag.low{background:var(--tint);color:var(--coral)}
+.fu .tag.diff{background:var(--purplebg);color:var(--purple)}
+.fu .tag.mid{background:rgba(255,255,255,.14);color:var(--on-ink)}
+.fu p{font-weight:800;font-size:16.5px;line-height:1.5}
+.fu .sub{font-weight:600;font-size:13.5px;color:var(--on-ink-mut);margin-top:8px}
+.demo-hint{text-align:center;color:var(--on-ink-mut);font-size:13.5px;margin-top:16px}
+
+/* ── Categories ── */
+.chips-grid{display:flex;flex-wrap:wrap;gap:10px}
+.cat{background:var(--card);border:1.5px solid var(--line);border-radius:60px;padding:11px 20px;font-size:14px;font-weight:800;color:var(--sec)}
+.cat.hot{background:var(--tint);border-color:var(--tint);color:var(--coral)}
+
+/* ── Quiet strip ── */
+.quiet{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.quiet .q-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:30px 28px}
+.quiet h3{font-weight:900;font-size:20px;margin-bottom:8px}
+.quiet p{color:var(--sec);font-size:15.5px}
+
+/* ── Pricing ── */
+.price-card{background:var(--card);border:1px solid var(--line);border-radius:30px;padding:clamp(30px,4vw,52px);text-align:center;max-width:560px;margin:0 auto}
+.price-card .eyebrow{color:var(--coral);margin-bottom:14px}
+.price-card h2{margin-bottom:6px}
+.price-card .both{font-weight:800;font-size:16px;margin-bottom:22px}
+.price-nums{display:flex;justify-content:center;gap:14px;margin-bottom:26px;flex-wrap:wrap}
+.pn{background:var(--ground);border-radius:18px;padding:16px 22px;min-width:150px}
+.pn b{display:block;font-size:24px;font-weight:900;line-height:1.15}
+.pn span{font-size:12.5px;color:var(--sec);font-weight:600}
+.price-fine{font-size:12.5px;color:var(--sec);margin-top:18px;max-width:44ch;margin-left:auto;margin-right:auto}
+
+/* ── Footer ── */
+footer{border-top:1px solid var(--line);padding:44px 0 60px;margin-top:30px}
+.foot-in{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.foot-in img{height:30px;width:auto}
+.foot-links{display:flex;gap:26px;font-size:14px;font-weight:800}
+.foot-links a{color:var(--sec)}
+.foot-links a:hover{color:var(--coral)}
+.foot-copy{font-size:13px;color:var(--sec);margin-top:14px;max-width:72ch}
+
+@media (max-width:820px){
+  .hero{padding:40px 0 10px}
+  .hero-grid{grid-template-columns:1fr;gap:20px}
+  .hero-art{order:-1;min-height:0}
+  .hero-art img{width:min(78%,380px)}
+  .steps{grid-template-columns:1fr}
+  .quiet{grid-template-columns:1fr}
+  section{padding:52px 0}
+  .dot{border-width:1.5px}
+  .chips b{font-size:28px}
+}
+</style>
 </head>
 <body>
-  <main>
-    <div class="wordmark">Stoke</div>
-    <h1>One question a day, answered together.</h1>
-    <a href="https://apps.apple.com/app/id6759679330">Get Stoke on the App Store</a>
-  </main>
+
+<nav>
+  <div class="nav-in">
+    <img src="/assets/logo.png" alt="Stoke" />
+    <a class="pill nav-cta" href="https://apps.apple.com/app/id6759679330">Get the app</a>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <div class="hero-grid">
+    <div>
+      <p class="eyebrow rv">For couples who want to stay close</p>
+      <h1 class="rv">Tend to the moments, keep the Flame.</h1>
+      <p class="lead rv">One question a day, answered by both of you. Answer privately, see each other once you've both replied, and go a little deeper when something stands out.</p>
+      <div class="hero-ctas rv">
+        <a class="badge" href="https://apps.apple.com/app/id6759679330" aria-label="Download on the App Store">
+          <svg viewBox="0 0 180 52" xmlns="http://www.w3.org/2000/svg" role="img"><rect width="180" height="52" rx="10" fill="#1E1E2E"/><g fill="#fff"><path d="M36.6 26.6c0-3.6 3-5.4 3.1-5.5-1.7-2.5-4.3-2.8-5.2-2.8-2.2-.2-4.3 1.3-5.4 1.3-1.1 0-2.9-1.3-4.7-1.2-2.4 0-4.6 1.4-5.9 3.6-2.5 4.4-.6 10.8 1.8 14.4 1.2 1.7 2.6 3.7 4.5 3.6 1.8-.1 2.5-1.2 4.7-1.2s2.8 1.2 4.7 1.1c1.9 0 3.2-1.7 4.3-3.5 1.4-2 1.9-4 2-4.1-.1 0-3.8-1.5-3.9-5.7zM33 15.9c1-1.2 1.7-2.9 1.5-4.6-1.4.1-3.2 1-4.2 2.2-.9 1-1.8 2.8-1.5 4.4 1.6.1 3.2-.8 4.2-2z"/><text x="52" y="21" font-family="-apple-system,Segoe UI,sans-serif" font-size="10.5" fill="#fff" opacity=".8">Download on the</text><text x="52" y="39" font-family="-apple-system,Segoe UI,sans-serif" font-size="17" font-weight="600" fill="#fff">App Store</text></g></svg>
+        </a>
+        <span class="hero-note">14-day free trial · one subscription covers both partners</span>
+      </div>
+    </div>
+    <div class="hero-art rv">
+      <div class="blob" aria-hidden="true"></div>
+      <img src="/assets/flame.png" alt="Two partners tending a shared flame together" />
+    </div>
+  </div>
+</header>
+
+<section class="wrap" id="how">
+  <div class="sec-head rv">
+    <p class="eyebrow">How it works</p>
+    <h2>Three minutes a day, together</h2>
+    <p class="lead">No streak pressure, no homework. One honest moment, most days.</p>
+  </div>
+  <div class="steps">
+    <div class="step rv">
+      <p class="k">Each day</p>
+      <h3>One question arrives</h3>
+      <p>About communication, money, intimacy, the future — the parts of a life built together.</p>
+      <div class="vig q"><p class="ve">Today's question</p>How well do the two of you split the invisible work — planning, remembering, noticing?</div>
+    </div>
+    <div class="step rv">
+      <p class="k">Privately</p>
+      <h3>You each answer</h3>
+      <p>A score from 1 to 10, and a sentence if you want. Sealed until you've both replied.</p>
+      <div class="vig sealed"><span class="lock"><svg viewBox="0 0 24 24" fill="none" stroke="#D4522A" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span> Sealed until Jordan answers</div>
+    </div>
+    <div class="step rv">
+      <p class="k">Then</p>
+      <h3>See each other</h3>
+      <p>Both answers, side by side. An honest read on where you both are — no performing.</p>
+      <div class="vig rev"><div><span>You</span><b>7</b></div><div><span>Jordan</span><b>9</b></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="demo">
+  <div class="sec-head rv">
+    <p class="eyebrow">The part that makes Stoke different</p>
+    <h2>When something stands out, Stoke goes deeper</h2>
+    <p class="lead">High scores get one more question, so you can name what's working. Low scores get a gentle walkthrough. Far-apart scores get curiosity, not blame. Try it — set both of your scores.</p>
+  </div>
+  <div class="demo-card rv">
+    <div class="shape1" aria-hidden="true"></div><div class="shape2" aria-hidden="true"></div>
+    <div class="demo-in">
+      <p class="ve">Today's question</p>
+      <p class="demo-q">How much room do you each have for your own thing — hobbies, time, space?</p>
+
+      <div class="row-label"><span class="who">Your answer</span><span class="val" id="valA">–</span></div>
+      <div class="dots" id="rowA" role="radiogroup" aria-label="Your score from 1 to 10"></div>
+      <div class="scale-ends"><span>Struggling</span><span>Thriving</span></div>
+
+      <div class="row-label"><span class="who">Your partner's answer</span><span class="val" id="valB">–</span></div>
+      <div class="dots" id="rowB" role="radiogroup" aria-label="Your partner's score from 1 to 10"></div>
+      <div class="scale-ends"><span>Struggling</span><span>Thriving</span></div>
+
+      <div class="reveal-zone" aria-live="polite">
+        <div class="chips">
+          <div class="chip-you" id="chipA"><span>You</span><b id="chipAv">–</b></div>
+          <div class="chip-them" id="chipB"><span>Your partner</span><b id="chipBv">–</b></div>
+        </div>
+        <div class="fu" id="fu">
+          <span class="tag" id="fuTag"></span>
+          <p id="fuText"></p>
+          <p class="sub" id="fuSub"></p>
+        </div>
+      </div>
+      <p class="demo-hint" id="hint">Pick a score on each row to see the reveal.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="areas">
+  <div class="sec-head rv">
+    <p class="eyebrow">Twelve parts of a relationship</p>
+    <h2>The whole picture, not just date night</h2>
+    <p class="lead">Stoke moves through all twelve — and you can steer toward what matters most to you two.</p>
+  </div>
+  <div class="chips-grid rv">
+    <span class="cat hot">Communication</span><span class="cat">Intimacy</span><span class="cat hot">Affection</span>
+    <span class="cat">Money</span><span class="cat">Family</span><span class="cat">Friends</span>
+    <span class="cat hot">Fun and play</span><span class="cat">Future and dreams</span><span class="cat">Everyday life</span>
+    <span class="cat hot">Conflict and repair</span><span class="cat">Appreciation and trust</span><span class="cat">Growth and independence</span>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="quiet">
+    <div class="q-card rv">
+      <h3>Private by design</h3>
+      <p>Stoke is just for the two of you. Your answers are sealed until you've both replied, and they stay between partners — no feed, no followers, no sharing.</p>
+    </div>
+    <div class="q-card rv">
+      <h3>Tending, not therapy</h3>
+      <p>Stoke is for keeping a good relationship close, not treating a crisis. If something ever feels unsafe, Stoke quietly points you toward real support.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="pricing">
+  <div class="price-card rv">
+    <p class="eyebrow">Stoke Premium</p>
+    <h2>Try 14 days free</h2>
+    <p class="both">One subscription. Both of you.</p>
+    <div class="price-nums">
+      <div class="pn"><b>$49.99</b><span>per year · about $4.17 a month</span></div>
+      <div class="pn"><b>$9.99</b><span>per month</span></div>
+    </div>
+    <a class="pill" href="https://apps.apple.com/app/id6759679330">Start your 14 days</a>
+    <p class="price-fine">After the trial, your subscription renews automatically until cancelled. Manage anytime in your Apple ID settings.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <img src="/assets/logo.png" alt="Stoke" />
+      <div class="foot-links">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="mailto:support@stoke.llc">Support</a>
+      </div>
+    </div>
+    <p class="foot-copy">© 2026 Omnific Collective LLC. Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help — in the U.S., call or text 988, or call 1-800-799-7233.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // reveal on scroll
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.14});
+  document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+
+  // demo — real branch logic, real precedence: divergence > repair > deepener
+  var A=null,B=null,timers=[];
+  var rowA=document.getElementById('rowA'), rowB=document.getElementById('rowB');
+  function buildRow(row, setter){
+    for(var n=1;n<=10;n++){
+      (function(n){
+        var b=document.createElement('button');
+        b.className='dot'; b.type='button'; b.setAttribute('role','radio');
+        b.setAttribute('aria-label', String(n)); b.setAttribute('aria-checked','false');
+        b.addEventListener('click', function(){ setter(n); });
+        row.appendChild(b);
+      })(n);
+    }
+  }
+  function mark(row, n){
+    var dots=row.querySelectorAll('.dot');
+    dots.forEach(function(d,i){ d.classList.toggle('on', i===n-1); d.setAttribute('aria-checked', i===n-1 ? 'true':'false'); });
+  }
+  buildRow(rowA, function(n){ A=n; mark(rowA,n); document.getElementById('valA').textContent=n; maybeReveal(); });
+  buildRow(rowB, function(n){ B=n; mark(rowB,n); document.getElementById('valB').textContent=n; maybeReveal(); });
+
+  function branch(a,b){
+    if(Math.abs(a-b)>=4) return 'diff';
+    if(Math.min(a,b)<=4) return 'low';
+    if(a>=9&&b>=9) return 'high';
+    return 'mid';
+  }
+  var COPY={
+    high:{tag:'You both scored this high',cls:'high',
+      text:'“What did one of you actually do that made this a 9? Name the thing, so you can do it again.”',
+      sub:'The good stuff deserves a follow-up too.'},
+    low:{tag:'A gentle walkthrough, tomorrow',cls:'low',
+      text:'“What does the hard part look like from where you sit? Not the fix yet — just the view.”',
+      sub:'Two small steps, always skippable. You can skip this one. It’ll keep.'},
+    diff:{tag:'You two see this one differently',cls:'diff',
+      text:'“What might your partner be seeing that you don’t?”',
+      sub:'Different numbers usually mean different vantage points, not different commitment.'},
+    mid:{tag:'A steady day',cls:'mid',
+      text:'No follow-up today — sometimes noticing is enough.',
+      sub:'Try scores further apart, or both 9s, to see what Stoke does.'}
+  };
+  function maybeReveal(){
+    if(A===null||B===null) return;
+    timers.forEach(clearTimeout); timers=[];
+    var chipA=document.getElementById('chipA'), chipB=document.getElementById('chipB'), fu=document.getElementById('fu');
+    chipA.classList.remove('land'); chipB.classList.remove('land'); fu.classList.remove('show');
+    document.getElementById('chipAv').textContent=A;
+    document.getElementById('chipBv').textContent=B;
+    var c=COPY[branch(A,B)];
+    document.getElementById('fuTag').textContent=c.tag;
+    document.getElementById('fuTag').className='tag '+c.cls;
+    document.getElementById('fuText').textContent=c.text;
+    document.getElementById('fuSub').textContent=c.sub;
+    document.getElementById('hint').textContent='Change either score to try another day.';
+    if(reduced){ chipA.classList.add('land'); chipB.classList.add('land'); fu.classList.add('show'); return; }
+    timers.push(setTimeout(function(){ chipA.classList.add('land'); },120));   // your score lands
+    timers.push(setTimeout(function(){ chipB.classList.add('land'); },820));   // a held breath, then theirs
+    timers.push(setTimeout(function(){ fu.classList.add('show'); },1500));     // the follow-up
+  }
+})();
+</script>
 </body>
 </html>

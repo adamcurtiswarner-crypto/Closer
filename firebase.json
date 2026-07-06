@@ -16,7 +16,9 @@
     "public": "hosting",
     "ignore": [
       "firebase.json",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "privacy.html",
+      "terms.html"
     ],
     "headers": [
       {
