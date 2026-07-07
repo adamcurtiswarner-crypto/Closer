@@ -24,6 +24,13 @@ One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (m
 | 55 | + Wave A + payments enabled | On TestFlight |
 | **56** | **+ Waves B & C + universal-link entitlement — SUBMISSION CANDIDATE** | Building → auto-submits to TestFlight |
 
+## Done July 6
+- **Hearth (new feature, founder-approved via interactive concept mock)**: 4th tab — every completed prompt is an ember colored by its signal (coral talk-about-it / purple compare-notes / sage glowing-tended / gray steady); couch queue with read-aloud starters; mutual "we talked" ritual (both partners mark -> ember settles, partner gets a quiet nudge on first mark); category detail with score-trend sparkline; quiet monthly stats. Backend deployed (enriched completions, field-scoped rules, onCompletionDiscussed trigger, category index). App 46 suites / 418 tests; functions 211.
+- **Push delivery fixed**: client registered raw APNs tokens while server sent via FCM — all iOS pushes failed silently. Now Expo push tokens end-to-end (server deployed; client rides build 58). Partner-answered, reveal, follow-up, reminder, and Hearth nudges all use the fixed pipe.
+- **stoke.llc marketing site live** (stoke-5f762.web.app; serves stoke.llc once DNS verifies): flame hero, interactive follow-up demo, pricing, footer. Privacy/Terms drafted but NOT deployed (pending entity/email/governing-law confirmations).
+- New welcome hero (founder's flame illustration) + original tagline restored; App Store listing copy rewritten (STORE_METADATA.md); GitGuardian webhook-secret leak rotated + purged from history.
+- Builds: 57 on TestFlight (submission candidate before Hearth); **58 building now = Hearth + push fix**.
+
 ## Adam's Open Items
 1. **W-9 tax form** (ASC → Business → Add Tax Info) — Paid Apps Agreement stuck at "Pending User Info" until done; bank (Omnific Collective LLC) processing ~24h. Blocks real revenue, not sandbox
 2. **IAP review screenshots** — drag `Downloads/files (1)/iap-review-screenshot.png` into both subscription products' Review Information (clears "Missing Metadata"; required at version submission)
