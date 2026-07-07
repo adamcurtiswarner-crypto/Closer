@@ -224,6 +224,19 @@ export default function AppLayout() {
         }
       />
       <Tabs.Screen
+        name="hearth"
+        options={
+          FEATURES.hearth
+            ? {
+                title: 'Hearth',
+                tabBarIcon: ({ focused, color }) => (
+                  <Icon name="campfire" size="md" color={color} weight={focused ? 'fill' : 'light'} />
+                ),
+              }
+            : { href: null }
+        }
+      />
+      <Tabs.Screen
         name="date-nights"
         options={{
           href: null,

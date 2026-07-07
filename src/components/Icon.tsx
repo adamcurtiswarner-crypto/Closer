@@ -55,6 +55,7 @@ import {
   PlantIcon,
   SmileyIcon,
   DropIcon,
+  CampfireIcon,
 } from 'phosphor-react-native';
 import { colors, iconSize } from '@/config/theme';
 
@@ -113,6 +114,7 @@ const iconMap = {
   plant: PlantIcon,
   smiley: SmileyIcon,
   drop: DropIcon,
+  campfire: CampfireIcon,
 } as const;
 
 export type IconName = keyof typeof iconMap;

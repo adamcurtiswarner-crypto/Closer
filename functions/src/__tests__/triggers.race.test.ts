@@ -93,6 +93,10 @@ jest.mock('../shared', () => {
 });
 
 jest.mock('../followUps', () => ({
+  // Keep the real pure helpers (evaluateFollowUpBranch, extractScores, …) —
+  // hearth.computeCompletionSignal reuses them at completion time. Only the
+  // side-effecting completion hook is stubbed.
+  ...jest.requireActual('../followUps'),
   evaluateFollowUpOnCompletion: jest.fn().mockResolvedValue(undefined),
 }));
 

@@ -21,6 +21,7 @@ export const FEATURES = Object.freeze({
   engines: false, // morning-checkin, evening-reflection, surprise-mission, partner-guess, todays-spark
   resources: false,
   explore: true, // shown as the "Categories" tab
+  hearth: true, // ember grid + couch queue over prompt_completions
 } as const);
 
 export type FeatureFlag = keyof typeof FEATURES;

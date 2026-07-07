@@ -148,6 +148,29 @@ export const V1_PROMPT_CATEGORIES = [
   'growth_independence',
 ];
 
+// Human-readable labels for the 12 v1 category ids — mirrors the `label`
+// fields in src/config/promptCategories.ts (client). Used in push copy;
+// unknown/legacy categories fall back to 'it' at the call site.
+export const CATEGORY_LABELS: Record<string, string> = {
+  communication: 'Communication',
+  intimacy: 'Intimacy',
+  affection: 'Affection',
+  money: 'Money',
+  family: 'Family',
+  friends: 'Friends',
+  fun_play: 'Fun and play',
+  future_dreams: 'Future dreams',
+  everyday_life: 'Everyday life',
+  conflict_repair: 'Conflict and repair',
+  appreciation_trust: 'Appreciation and trust',
+  growth_independence: 'Growth and independence',
+};
+
+// Completion-time signal stored on prompt_completions (Hearth review feature).
+// Scale completions get one of the follow-up branches or 'steady'; text
+// completions get null.
+export type CompletionSignal = FollowUpBranch | 'steady';
+
 // ============================================
 // SAFETY LEXICON (v1 safety off-ramp)
 // ============================================

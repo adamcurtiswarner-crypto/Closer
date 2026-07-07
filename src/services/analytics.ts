@@ -72,7 +72,12 @@ type AnalyticsEvent =
   | 'safety_resources_shown'
   | 'push_preprompt_shown'
   | 'push_preprompt_accepted'
-  | 'push_preprompt_dismissed';
+  | 'push_preprompt_dismissed'
+  | 'hearth_viewed'
+  | 'talk_sheet_opened'
+  | 'marked_discussed'
+  | 'completion_tended'
+  | 'category_opened';
 
 interface EventContext {
   user_id?: string;

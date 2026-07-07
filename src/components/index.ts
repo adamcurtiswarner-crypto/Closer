@@ -119,6 +119,13 @@ export { PartnerGuess } from './PartnerGuess';
 // Decorative
 export { ToneShapes } from './ToneShapes';
 
+// Hearth
+export { HearthEmberTile, HEARTH_STATE_VISUALS } from './HearthEmberTile';
+export { HearthQueueCard } from './HearthQueueCard';
+export { HearthSparkline } from './HearthSparkline';
+export { HearthTalkSheet } from './HearthTalkSheet';
+export { HearthCategoryDetail } from './HearthCategoryDetail';
+
 // Spark
 export { TodaySpark } from './TodaySpark';
 

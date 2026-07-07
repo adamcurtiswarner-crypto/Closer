@@ -527,5 +527,42 @@
       "4": "Quite",
       "5": "Very much"
     }
+  },
+  "hearth": {
+    "eyebrow": "Your fire, so far",
+    "title": "Hearth",
+    "subSteady": "Nothing waiting — your fire is steady",
+    "subWaitingOne": "1 conversation waiting for you two",
+    "subWaiting": "{{count}} conversations waiting for you two",
+    "empty": "Your first answered question will glow here.",
+    "partnerFallback": "your partner",
+    "state": {
+      "repair": "Talk about it",
+      "divergence": "Compare notes",
+      "deepener": "Glowing",
+      "steady": "Steady",
+      "tended": "Tended · {{date}}"
+    },
+    "queueTitle": "Waiting for you two",
+    "queueMeta": "You {{mine}} · {{partner}} {{theirs}}",
+    "statsTitle": "This month",
+    "statsAnswered": "questions answered together",
+    "statsTended": "conversations tended",
+    "categorySub": "{{answered}} answered · {{tended}} tended",
+    "youChip": "You · {{score}}",
+    "partnerChip": "{{name}} · {{score}}",
+    "talkSheet": {
+      "eyebrow": "Take it to the couch",
+      "starterLabel": "Start here, together",
+      "starterDivergence": "You two see this one differently — that's information, not a problem. Each of you: what might the other be seeing that you don't?",
+      "starterRepair": "What does the hard part look like from where you sit? Not the fix yet — just the view.",
+      "starterHint": "Read it out loud. No screens after this line.",
+      "markTalked": "We talked about it",
+      "waitingForPartner": "You marked it — waiting for {{name}}",
+      "waitingSub": "They get a quiet nudge.",
+      "partnerMarkedFirst": "{{name}} marked it — were you two able to talk?",
+      "tendedTogether": "Tended, together",
+      "settleBody": "Tended. This ember settles into your hearth."
+    }
   }
 }

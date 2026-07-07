@@ -5,12 +5,14 @@ import {
   db,
   DEPTH_THRESHOLD,
   DEEP_WEEK_FLOOR,
+  DEFAULT_SCALE_CONFIG,
   initializeDepthProgress,
   sendPushNotification,
   logEvent,
   reportError,
 } from './shared';
 import { evaluateFollowUpOnCompletion } from './followUps';
+import { computeCompletionSignal } from './hearth';
 
 // ============================================
 // FIRESTORE TRIGGER: On Response Submitted
@@ -53,9 +55,23 @@ export const onResponseSubmitted = functions.firestore
       const responses = responsesSnapshot.docs.map((doc) => ({
         user_id: doc.data().user_id,
         response_text: doc.data().response_text,
+        response_score: doc.data().response_score ?? null,
         image_url: doc.data().image_url || null,
         submitted_at: doc.data().submitted_at,
       }));
+
+      // Hearth review fields — denormalized from the assignment so the
+      // client can render completions without extra reads, plus the
+      // completion-time signal (same thresholds/precedence as follow-ups).
+      const isScale = assignment.response_format === 'scale';
+      const signal = computeCompletionSignal(
+        isScale,
+        responses,
+        assignment.scale_config || DEFAULT_SCALE_CONFIG
+      );
+      // The mutual "we talked" ritual only applies to repair/divergence
+      // completions — initialize the discussed map for those alone.
+      const needsTending = signal === 'repair' || signal === 'divergence';
 
       // Calculate time between first response and completion
       const timestamps = responses
@@ -79,6 +95,11 @@ export const onResponseSubmitted = functions.firestore
           assignment_id: response.assignment_id,
           couple_id: response.couple_id,
           prompt_id: response.prompt_id,
+          category: assignment.category || null,
+          prompt_text: assignment.prompt_text || null,
+          is_scale: isScale,
+          signal,
+          ...(needsTending ? { discussed: {}, discussed_at: null } : {}),
           responses,
           time_to_complete_seconds: timeToCompleteSeconds,
           total_response_length: responsesSnapshot.docs.reduce(

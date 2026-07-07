@@ -275,11 +275,48 @@ service cloud.firestore {
     // ============================================
 
     match /prompt_completions/{completionId} {
+      // Hearth "we talked" mark: the update is confined to the `discussed`
+      // map, the writer only touches their OWN uid key, no existing keys are
+      // removed, and the written value is serverTimestamp() (== request.time).
+      //
+      // Rule-language limits (documented intentionally):
+      // - We cannot require the doc's `signal` to be repair/divergence here
+      //   without brittle field checks; the server initializes `discussed`
+      //   only for those signals, and this rule requires the field to
+      //   already exist, which closes that gap in practice.
+      // - We cannot prevent a member re-writing their own key's timestamp
+      //   (MapDiff cannot distinguish add from modify), but the value is
+      //   still forced to request.time, so it stays an honest "marked at".
+      function isDiscussedOnlyMark() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['discussed']) &&
+          ('discussed' in resource.data) &&
+          request.resource.data.discussed is map &&
+          // Only the writer's own key may change…
+          request.resource.data.discussed.diff(resource.data.discussed)
+            .affectedKeys().hasOnly([request.auth.uid]) &&
+          // …and every previously present key must be retained.
+          request.resource.data.discussed.keys()
+            .hasAll(resource.data.discussed.keys()) &&
+          // The writer's key must be present and be serverTimestamp().
+          (request.auth.uid in request.resource.data.discussed) &&
+          request.resource.data.discussed[request.auth.uid] == request.time;
+      }
+
+      // Legacy client writes: reactions (own-key toggle) and memory saves.
+      function isLegacyCompletionUpdate() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['reactions', 'updated_at', 'is_memory_saved']);
+      }
+
       allow read: if isAuthenticated() &&
         isCoupleMember(resource.data.couple_id);
       // Created by Cloud Functions only
       allow create: if false;
-      allow update: if isCoupleMember(resource.data.couple_id);
+      // Couple members may only make field-scoped updates: the Hearth
+      // "we talked" mark or the pre-existing reaction/memory-save writes.
+      allow update: if isCoupleMember(resource.data.couple_id) &&
+        (isDiscussedOnlyMark() || isLegacyCompletionUpdate());
       allow delete: if false;
     }
 

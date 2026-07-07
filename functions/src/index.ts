@@ -46,6 +46,8 @@ export {
   // deliverCheckIn,
 } from './triggers';
 
+export { onCompletionDiscussed } from './hearth';
+
 export * from './admin';
 export * from './alerting';
 
