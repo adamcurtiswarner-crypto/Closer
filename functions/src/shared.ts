@@ -329,29 +329,111 @@ export async function enforceRateLimit(
   });
 }
 
-export async function sendPushNotification(
+// Expo Push Service transport (tokens minted by getExpoPushTokenAsync on the
+// client). Raw APNs/FCM device tokens still go through admin.messaging().
+const EXPO_PUSH_TOKEN_REGEX = /^ExponentPushToken\[.+\]$/;
+const EXPO_PUSH_ENDPOINT = 'https://exp.host/--/api/v2/push/send';
+const EXPO_PUSH_CHUNK_SIZE = 100;
+
+type ExpoPushTicket =
+  | { status: 'ok'; id: string }
+  | { status: 'error'; message?: string; details?: { error?: string } };
+
+export function isExpoPushToken(token: string): boolean {
+  return EXPO_PUSH_TOKEN_REGEX.test(token);
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size));
+  }
+  return chunks;
+}
+
+async function removeInvalidPushTokens(userId: string, tokens: string[]): Promise<void> {
+  if (tokens.length === 0) return;
+  try {
+    await db.collection('users').doc(userId).update({
+      push_tokens: admin.firestore.FieldValue.arrayRemove(...tokens),
+    });
+  } catch (error) {
+    console.error('Failed to remove invalid push tokens:', error);
+  }
+}
+
+/**
+ * Send via the Expo Push Service in chunks of <= 100 messages.
+ * Tickets that come back DeviceNotRegistered trigger token cleanup,
+ * mirroring the FCM invalid-token handling.
+ */
+async function sendExpoPushNotifications(
   userId: string,
+  tokens: string[],
   notification: { title: string; body: string },
   data?: Record<string, string>
 ): Promise<void> {
-  const userDoc = await db.collection('users').doc(userId).get();
-  if (!userDoc.exists) return;
+  const tokensToRemove: string[] = [];
 
-  const userData = userDoc.data()!;
-  const tokens = userData.push_tokens || [];
+  for (const batch of chunk(tokens, EXPO_PUSH_CHUNK_SIZE)) {
+    try {
+      const response = await fetch(EXPO_PUSH_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'Accept-Encoding': 'gzip, deflate',
+        },
+        body: JSON.stringify(
+          batch.map((to) => ({
+            to,
+            title: notification.title,
+            body: notification.body,
+            sound: 'default',
+            ...(data ? { data } : {}),
+          }))
+        ),
+      });
 
-  if (tokens.length === 0) return;
+      if (!response.ok) {
+        console.error(`Expo push request failed with HTTP ${response.status}`);
+        continue;
+      }
 
-  // Tokens are stored as plain strings (FCM/APNs device tokens)
-  const messages = tokens
-    .filter((t: unknown) => typeof t === 'string' && t.length > 0)
-    .map((t: string) => ({
-      token: t,
-      notification,
-      ...(data ? { data } : {}),
-    }));
+      const result = (await response.json()) as { data?: ExpoPushTicket[] };
+      (result.data ?? []).forEach((ticket, idx) => {
+        if (
+          ticket.status === 'error' &&
+          ticket.details?.error === 'DeviceNotRegistered' &&
+          batch[idx]
+        ) {
+          tokensToRemove.push(batch[idx]);
+        }
+      });
+    } catch (error) {
+      // Don't use reportError here to avoid circular failure if Firestore is down
+      console.error('Expo push request failed:', error);
+    }
+  }
 
-  if (messages.length === 0) return;
+  await removeInvalidPushTokens(userId, tokensToRemove);
+}
+
+/**
+ * Send via FCM (legacy raw device tokens — e.g. Android FCM registration
+ * tokens stored before the Expo Push Service migration).
+ */
+async function sendFcmPushNotifications(
+  userId: string,
+  tokens: string[],
+  notification: { title: string; body: string },
+  data?: Record<string, string>
+): Promise<void> {
+  const messages = tokens.map((t) => ({
+    token: t,
+    notification,
+    ...(data ? { data } : {}),
+  }));
 
   try {
     const results = await admin.messaging().sendEach(messages);
@@ -363,14 +445,36 @@ export async function sendPushNotification(
         tokensToRemove.push(messages[idx].token);
       }
     });
-    if (tokensToRemove.length > 0) {
-      await db.collection('users').doc(userId).update({
-        push_tokens: admin.firestore.FieldValue.arrayRemove(...tokensToRemove),
-      });
-    }
+    await removeInvalidPushTokens(userId, tokensToRemove);
   } catch (error) {
     // Don't use reportError here to avoid circular failure if Firestore is down
     console.error('Push notification failed:', error);
+  }
+}
+
+export async function sendPushNotification(
+  userId: string,
+  notification: { title: string; body: string },
+  data?: Record<string, string>
+): Promise<void> {
+  const userDoc = await db.collection('users').doc(userId).get();
+  if (!userDoc.exists) return;
+
+  const userData = userDoc.data()!;
+  const tokens: string[] = (userData.push_tokens || []).filter(
+    (t: unknown): t is string => typeof t === 'string' && t.length > 0
+  );
+
+  if (tokens.length === 0) return;
+
+  const expoTokens = tokens.filter((t) => isExpoPushToken(t));
+  const fcmTokens = tokens.filter((t) => !isExpoPushToken(t));
+
+  if (expoTokens.length > 0) {
+    await sendExpoPushNotifications(userId, expoTokens, notification, data);
+  }
+  if (fcmTokens.length > 0) {
+    await sendFcmPushNotifications(userId, fcmTokens, notification, data);
   }
 }
 

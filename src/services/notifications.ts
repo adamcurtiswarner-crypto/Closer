@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import { doc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
@@ -53,6 +54,31 @@ export async function registerPushIfAlreadyGranted(userId: string): Promise<stri
 }
 
 /**
+ * Resolve the EAS project ID from the Expo config. Required by
+ * getExpoPushTokenAsync so the token is attributed to the right project.
+ */
+function getEasProjectId(): string | undefined {
+  const fromExtra = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
+  return fromExtra ?? Constants.easConfig?.projectId ?? undefined;
+}
+
+/**
+ * Fetch the Expo push token (ExponentPushToken[...]) for this device.
+ * The Expo Push Service handles the APNs/FCM transport server-side, so this
+ * one token format works for both platforms.
+ */
+async function getExpoPushToken(): Promise<string> {
+  const projectId = getEasProjectId();
+  if (!projectId) {
+    logger.warn('EAS projectId missing from Expo config; relying on default resolution');
+  }
+  const tokenData = await Notifications.getExpoPushTokenAsync(
+    projectId ? { projectId } : undefined
+  );
+  return tokenData.data;
+}
+
+/**
  * Request notification permissions and register the push token
  * with the user's Firestore document.
  */
@@ -73,33 +99,38 @@ export async function registerForPushNotifications(userId: string): Promise<stri
       return null;
     }
 
-    // Get the native device push token (FCM for Android, APNs for iOS)
-    // This is what Firebase Cloud Messaging expects
-    const tokenData = await Notifications.getDevicePushTokenAsync();
-    const token = tokenData.data;
+    // Get the Expo push token (ExponentPushToken[...]). The server sends
+    // through the Expo Push Service, which accepts only this format — raw
+    // APNs/FCM device tokens are NOT valid here.
+    const token = await getExpoPushToken();
 
-    // Save token to Firestore user document, replacing any previous token
+    // Save token to Firestore user document (additive — the server removes
+    // tokens that come back as invalid at send time)
     const userRef = doc(db, 'users', userId);
     await updateDoc(userRef, {
       push_tokens: arrayUnion(token),
       updated_at: serverTimestamp(),
     });
 
-    // Listen for token changes (rotation) and update Firestore
-    Notifications.addPushTokenListener(async ({ data: newToken }) => {
-      if (newToken && newToken !== token) {
-        try {
+    // Listen for device token rotation. The listener fires with the raw
+    // device token, so re-mint the Expo token instead of storing that value.
+    let currentToken = token;
+    Notifications.addPushTokenListener(async () => {
+      try {
+        const refreshedToken = await getExpoPushToken();
+        if (refreshedToken && refreshedToken !== currentToken) {
           await updateDoc(userRef, {
-            push_tokens: arrayUnion(newToken),
+            push_tokens: arrayUnion(refreshedToken),
             updated_at: serverTimestamp(),
           });
-          // Remove the old token
+          // Remove the token this device just replaced
           await updateDoc(userRef, {
-            push_tokens: arrayRemove(token),
+            push_tokens: arrayRemove(currentToken),
           });
-        } catch {
-          // Token refresh is best-effort
+          currentToken = refreshedToken;
         }
+      } catch {
+        // Token refresh is best-effort
       }
     });
 
