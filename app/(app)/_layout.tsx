@@ -281,7 +281,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: 'Profile',
           tabBarIcon: ({ focused, color }) => (
             <Icon name="gear" size="md" color={color} weight={focused ? 'fill' : 'light'} />
           ),

@@ -82,7 +82,7 @@
       "clipboardFilled": "Filled in from your clipboard",
       "errors": {
         "alreadyPairedTitle": "Already paired",
-        "alreadyPairedBody": "Your account is already linked to a partner. Disconnect first in Settings, then try again.",
+        "alreadyPairedBody": "Your account is already linked to a partner. Disconnect first in Profile, then try again.",
         "expiredTitle": "Code expired",
         "expiredBody": "This invite code has expired. Ask your partner to create a new one.",
         "usedTitle": "Code already used",
@@ -252,7 +252,7 @@
     "daysUntilAnniversary_other": "{{count}} days until your anniversary"
   },
   "settings": {
-    "title": "Settings",
+    "title": "Profile",
     "profile": "PROFILE",
     "notifications": "NOTIFICATIONS",
     "dailyPromptTime": "Daily prompt time",
