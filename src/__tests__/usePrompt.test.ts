@@ -56,6 +56,7 @@ import {
   mapScaleConfig,
   mapFollowUpInfo,
   selectAssignmentDoc,
+  needsDailyDelivery,
   useSubmitResponse,
   dedupeOfflineQueue,
   flushOfflineQueue,
@@ -273,6 +274,117 @@ describe('usePrompt', () => {
       ];
       expect(selectAssignmentDoc(docs, [])?.id).toBe('fu-1');
     });
+
+    describe('local-date window (query spans yesterday/today/tomorrow)', () => {
+      const TODAY = '2026-07-08';
+
+      it("prefers today's active assignment over yesterday's still-active one", () => {
+        const docs = [
+          makeDoc('y-1', { status: 'partial', assigned_date: '2026-07-07' }),
+          makeDoc('t-1', { status: 'delivered', assigned_date: TODAY }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY)?.id).toBe('t-1');
+      });
+
+      it("falls back to an active assignment on an adjacent date (timezone-skewed server dating)", () => {
+        const docs = [
+          makeDoc('tm-1', { status: 'delivered', assigned_date: '2026-07-09' }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY)?.id).toBe('tm-1');
+      });
+
+      it("prefers today's active follow-up over yesterday's active daily", () => {
+        const docs = [
+          makeDoc('y-daily', { status: 'delivered', assigned_date: '2026-07-07' }),
+          makeDoc('t-fu', {
+            status: 'delivered',
+            assigned_date: TODAY,
+            assignment_kind: 'follow_up',
+          }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY)?.id).toBe('t-fu');
+      });
+
+      it("surfaces today's completed reveal over yesterday's completed doc", () => {
+        const docs = [
+          makeDoc('y-done', { status: 'completed', assigned_date: '2026-07-07' }),
+          makeDoc('t-done', { status: 'completed', assigned_date: TODAY }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY)?.id).toBe('t-done');
+      });
+
+      it("never surfaces yesterday's expired leftovers — returns null so the new day can start", () => {
+        const docs = [
+          makeDoc('y-exp', { status: 'expired', assigned_date: '2026-07-07' }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY)).toBeNull();
+      });
+
+      it('still excludes explore assignments inside the window', () => {
+        const docs = [
+          makeDoc('e-1', { source: 'explore', status: 'partial', assigned_date: TODAY }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY)).toBeNull();
+      });
+    });
+  });
+
+  describe('needsDailyDelivery (Today auto-trigger gate)', () => {
+    const TODAY = '2026-07-08';
+    const makeDoc = (id: string, data: Record<string, any>) => ({
+      id,
+      data: () => data,
+    });
+
+    it('true when the window is empty', () => {
+      expect(needsDailyDelivery([], TODAY)).toBe(true);
+    });
+
+    it("true when only yesterday's completed/expired leftovers exist (new local day)", () => {
+      const docs = [
+        makeDoc('y-done', { status: 'completed', assigned_date: '2026-07-07' }),
+        makeDoc('y-exp', { status: 'expired', assigned_date: '2026-07-07' }),
+      ];
+      expect(needsDailyDelivery(docs, TODAY)).toBe(true);
+    });
+
+    it('false when a live daily assignment exists anywhere in the window', () => {
+      expect(
+        needsDailyDelivery(
+          [makeDoc('y-1', { status: 'partial', assigned_date: '2026-07-07' })],
+          TODAY
+        )
+      ).toBe(false);
+      expect(
+        needsDailyDelivery(
+          [makeDoc('t-1', { status: 'delivered', assigned_date: TODAY })],
+          TODAY
+        )
+      ).toBe(false);
+    });
+
+    it("false once today's assignment is completed (no re-trigger after the reveal)", () => {
+      const docs = [makeDoc('t-done', { status: 'completed', assigned_date: TODAY })];
+      expect(needsDailyDelivery(docs, TODAY)).toBe(false);
+    });
+
+    it('explore assignments never satisfy the daily rhythm', () => {
+      const docs = [
+        makeDoc('e-1', { source: 'explore', status: 'partial', assigned_date: TODAY }),
+      ];
+      expect(needsDailyDelivery(docs, TODAY)).toBe(true);
+    });
+
+    it("a scheduled next-day follow-up does not block delivery (the run activates it)", () => {
+      const docs = [
+        makeDoc('fu-1', {
+          status: 'scheduled',
+          assignment_kind: 'follow_up',
+          assigned_date: TODAY,
+        }),
+      ];
+      expect(needsDailyDelivery(docs, TODAY)).toBe(true);
+    });
   });
 
   describe('useSubmitResponse with response_score', () => {
@@ -437,6 +549,32 @@ describe('usePrompt', () => {
       const queue = JSON.parse(savedJson);
       expect(queue).toHaveLength(1);
       expect(queue[0].responseText).toBe('Second try, better words.');
+    });
+
+    it('invalidates the explore caches too, so an explore card seals after submit', async () => {
+      NetInfo.fetch.mockResolvedValue({ isConnected: true });
+      firestore.getDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ prompt_id: 'p-1', response_count: 0, source: 'explore' }),
+      });
+      firestore.addDoc.mockResolvedValue({ id: 'r-3' });
+      firestore.updateDoc.mockResolvedValue(undefined);
+
+      const { queryClient, wrapper } = createClientAndWrapper();
+      const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+      const { result } = renderHook(() => useSubmitResponse(), { wrapper });
+
+      await act(async () => {
+        await result.current.mutateAsync({
+          assignmentId: 'a-explore',
+          responseText: 'An explore answer.',
+        });
+      });
+
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['todayPrompt'] });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['exploreAssignments'] });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['exploreResponses'] });
     });
 
     it('rejects scores outside 1-10 or non-integers at the boundary', async () => {

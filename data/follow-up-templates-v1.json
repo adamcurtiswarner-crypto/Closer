@@ -14,7 +14,7 @@
     "category": "communication",
     "branch": "deepener",
     "step": 1,
-    "text": "What did your partner do lately that made them easy to talk to? Name the thing, so they know to do it again.",
+    "text": "What did {partner} do lately that made talking feel easy? Name the thing, so they know to do it again.",
     "closing_text": "Now it has a name. Easier to repeat.",
     "variant": 2,
     "active": true
@@ -94,7 +94,7 @@
     "category": "communication",
     "branch": "divergence",
     "step": 1,
-    "text": "Your numbers landed far apart. What might your partner be seeing about how you two talk that you might be missing?",
+    "text": "Your numbers landed far apart. What might {partner} be seeing about how you two talk that you might be missing?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -104,7 +104,7 @@
     "category": "communication",
     "branch": "divergence",
     "step": 1,
-    "text": "Think of a recent conversation your partner might be carrying differently than you. What might it have felt like from their side?",
+    "text": "Think of a recent conversation {partner} might be carrying differently than you. What might it have felt like from their side?",
     "closing_text": "Two people can leave the same conversation with two different weights. Both are real.",
     "variant": 2,
     "active": true
@@ -124,7 +124,7 @@
     "category": "intimacy",
     "branch": "deepener",
     "step": 1,
-    "text": "What did your partner do recently that helped you feel close? Small counts. Tell them it landed.",
+    "text": "What did {partner} do recently that helped you feel close? Small counts. Tell them it landed.",
     "closing_text": "Things that land deserve to be known.",
     "variant": 2,
     "active": true
@@ -204,7 +204,7 @@
     "category": "intimacy",
     "branch": "divergence",
     "step": 1,
-    "text": "Your numbers are far apart here. What might your partner be noticing about closeness lately that you might not be?",
+    "text": "Your numbers are far apart here. What might {partner} be noticing about closeness lately that you might not be?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -214,7 +214,7 @@
     "category": "intimacy",
     "branch": "divergence",
     "step": 1,
-    "text": "Closeness gets felt differently by different people in different weeks. What might this stretch have felt like from your partner's side?",
+    "text": "Closeness gets felt differently by different people in different weeks. What might this stretch have felt like from {partner}'s side?",
     "closing_text": "A gap in numbers is usually a gap in vantage, not in wanting.",
     "variant": 2,
     "active": true
@@ -234,7 +234,7 @@
     "category": "affection",
     "branch": "deepener",
     "step": 1,
-    "text": "What does your partner do that reads as love to you, even when it's tiny? Tell them it counts.",
+    "text": "What does {partner} do that reads as love to you, even when it's tiny? Tell them it counts.",
     "closing_text": "Now they know it counts. That's how it keeps happening.",
     "variant": 2,
     "active": true
@@ -304,7 +304,7 @@
     "category": "affection",
     "branch": "repair",
     "step": 2,
-    "text": "Name one gesture in your partner's language, rather than your own, that you could try once this week.",
+    "text": "Name one gesture in {partner}'s language, rather than your own, that you could try once this week.",
     "closing_text": "Their language, spoken once, says a lot. That's enough for now.",
     "variant": 3,
     "active": true
@@ -314,7 +314,7 @@
     "category": "affection",
     "branch": "divergence",
     "step": 1,
-    "text": "One of you is feeling the warmth more than the other right now. What might your partner be counting that you're not?",
+    "text": "One of you is feeling the warmth more than the other right now. What might {partner} be counting that you're not?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -324,7 +324,7 @@
     "category": "affection",
     "branch": "divergence",
     "step": 1,
-    "text": "Affection can be given in one language and looked for in another. What language might your partner be looking in?",
+    "text": "Affection can be given in one language and looked for in another. What language might {partner} be looking in?",
     "closing_text": "Different numbers here usually mean different languages, not different love.",
     "variant": 2,
     "active": true
@@ -344,7 +344,7 @@
     "category": "money",
     "branch": "deepener",
     "step": 1,
-    "text": "What has your partner done with money lately that you respect — earned, planned, held back, spoke up? Say so.",
+    "text": "What has {partner} done with money lately that you respect — earned, planned, held back, spoke up? Say so.",
     "closing_text": "Respect, said out loud, is rare around money. Worth repeating.",
     "variant": 2,
     "active": true
@@ -424,7 +424,7 @@
     "category": "money",
     "branch": "divergence",
     "step": 1,
-    "text": "You're reading the money picture very differently. What might your partner be looking at — a bill, a balance, a memory — that you're not?",
+    "text": "You're reading the money picture very differently. What might {partner} be looking at — a bill, a balance, a memory — that you're not?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -434,7 +434,7 @@
     "category": "money",
     "branch": "divergence",
     "step": 1,
-    "text": "Money weighs differently on different shoulders. What might feel heavy, or light, from your partner's side right now?",
+    "text": "Money weighs differently on different shoulders. What might feel heavy, or light, from {partner}'s side right now?",
     "closing_text": "A gap here usually means two different histories, not two different levels of care.",
     "variant": 2,
     "active": true
@@ -454,7 +454,7 @@
     "category": "family",
     "branch": "deepener",
     "step": 1,
-    "text": "How did your partner show up around family lately in a way you appreciated? Tell them what you saw.",
+    "text": "How did {partner} show up around family lately in a way you appreciated? Tell them what you saw.",
     "closing_text": "Being seen handling family is its own kind of thanks.",
     "variant": 2,
     "active": true
@@ -534,7 +534,7 @@
     "category": "family",
     "branch": "divergence",
     "step": 1,
-    "text": "You see the family picture differently right now. What might your partner be carrying — an obligation, an old dynamic — that's less visible to you?",
+    "text": "You see the family picture differently right now. What might {partner} be carrying — an obligation, an old dynamic — that's less visible to you?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -544,7 +544,7 @@
     "category": "family",
     "branch": "divergence",
     "step": 1,
-    "text": "It's easiest to see your own family clearly. What might your family look like from your partner's seat at the table?",
+    "text": "It's easiest to see your own family clearly. What might your family look like from {partner}'s seat at the table?",
     "closing_text": "Two vantage points, one table. Both views are real.",
     "variant": 2,
     "active": true
@@ -564,7 +564,7 @@
     "category": "friends",
     "branch": "deepener",
     "step": 1,
-    "text": "How has your partner made room for your friendships lately? Name it — that kind of generosity is easy to miss.",
+    "text": "How has {partner} made room for your friendships lately? Name it — that kind of generosity is easy to miss.",
     "closing_text": "Generosity noticed tends to continue.",
     "variant": 2,
     "active": true
@@ -644,7 +644,7 @@
     "category": "friends",
     "branch": "divergence",
     "step": 1,
-    "text": "You're reading your social life differently. What might your partner be wanting more of — or less of — that they haven't said?",
+    "text": "You're reading your social life differently. What might {partner} be wanting more of — or less of — that they haven't said?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -654,7 +654,7 @@
     "category": "friends",
     "branch": "divergence",
     "step": 1,
-    "text": "What do friendships give your partner that might be hard for them to ask for out loud?",
+    "text": "What do friendships give {partner} that might be hard for them to ask for out loud?",
     "closing_text": "Different numbers here often mean different needs for elsewhere, not less need for each other.",
     "variant": 2,
     "active": true
@@ -674,7 +674,7 @@
     "category": "fun_play",
     "branch": "deepener",
     "step": 1,
-    "text": "What did your partner do this week that made you laugh? Tell them — laughter you name tends to come back.",
+    "text": "What did {partner} do this week that made you laugh? Tell them — laughter you name tends to come back.",
     "closing_text": "Now it's on the record. That's how running jokes start.",
     "variant": 2,
     "active": true
@@ -754,7 +754,7 @@
     "category": "fun_play",
     "branch": "divergence",
     "step": 1,
-    "text": "You landed far apart on fun. What might count as fun for your partner that you might be overlooking?",
+    "text": "You landed far apart on fun. What might count as fun for {partner} that you might be overlooking?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -764,7 +764,7 @@
     "category": "fun_play",
     "branch": "divergence",
     "step": 1,
-    "text": "One of you may be laughing more than the other lately. What might this stretch have felt like from your partner's side?",
+    "text": "One of you may be laughing more than the other lately. What might this stretch have felt like from {partner}'s side?",
     "closing_text": "Different numbers usually mean different weeks, not different senses of humor.",
     "variant": 2,
     "active": true
@@ -784,7 +784,7 @@
     "category": "future_dreams",
     "branch": "deepener",
     "step": 1,
-    "text": "What has your partner done lately that made the future feel more possible — a plan, a saved dollar, a dream said out loud?",
+    "text": "What has {partner} done lately that made the future feel more possible — a plan, a saved dollar, a dream said out loud?",
     "closing_text": "Possibility is usually somebody's quiet doing. You just named whose.",
     "variant": 2,
     "active": true
@@ -864,7 +864,7 @@
     "category": "future_dreams",
     "branch": "divergence",
     "step": 1,
-    "text": "You see the road ahead differently right now. What might your partner be seeing — a worry or a hope — that you're not?",
+    "text": "You see the road ahead differently right now. What might {partner} be seeing — a worry or a hope — that you're not?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -874,7 +874,7 @@
     "category": "future_dreams",
     "branch": "divergence",
     "step": 1,
-    "text": "The future looks different at different distances. Is your partner looking closer in, or further out, than you are? Write what they might see there.",
+    "text": "The future looks different at different distances. Is {partner} looking closer in, or further out, than you are? Write what they might see there.",
     "closing_text": "Looking at different distances isn't disagreement. It's two sets of eyes on one road.",
     "variant": 2,
     "active": true
@@ -894,7 +894,7 @@
     "category": "everyday_life",
     "branch": "deepener",
     "step": 1,
-    "text": "What invisible work has your partner been doing that deserves to be visible? Name one thing.",
+    "text": "What invisible work has {partner} been doing that deserves to be visible? Name one thing.",
     "closing_text": "Invisible work, once seen, weighs half as much.",
     "variant": 2,
     "active": true
@@ -974,7 +974,7 @@
     "category": "everyday_life",
     "branch": "divergence",
     "step": 1,
-    "text": "You're living in the same household and experiencing it differently. What might your partner's day actually feel like, hour by hour?",
+    "text": "You're living in the same household and experiencing it differently. What might {partner}'s day actually feel like, hour by hour?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -984,7 +984,7 @@
     "category": "everyday_life",
     "branch": "divergence",
     "step": 1,
-    "text": "What load might weigh on your partner more than it would ever weigh on you?",
+    "text": "What load might weigh on {partner} more than it would ever weigh on you?",
     "closing_text": "Same house, different weights. Both counts are honest.",
     "variant": 2,
     "active": true
@@ -1004,7 +1004,7 @@
     "category": "conflict_repair",
     "branch": "deepener",
     "step": 1,
-    "text": "Think of the last disagreement that went well. What did your partner do that helped? Tell them.",
+    "text": "Think of the last disagreement that went well. What did {partner} do that helped? Tell them.",
     "closing_text": "What helped once will likely help again — especially now that it's been said.",
     "variant": 2,
     "active": true
@@ -1084,7 +1084,7 @@
     "category": "conflict_repair",
     "branch": "divergence",
     "step": 1,
-    "text": "You feel differently about how conflict goes between you. What might disagreements feel like from inside your partner — before, during, after?",
+    "text": "You feel differently about how conflict goes between you. What might disagreements feel like from {partner}'s side — before, during, after?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -1114,7 +1114,7 @@
     "category": "appreciation_trust",
     "branch": "deepener",
     "step": 1,
-    "text": "What does your partner do that quietly builds your trust — the reliable, unglamorous things? Name one.",
+    "text": "What does {partner} do that quietly builds your trust — the reliable, unglamorous things? Name one.",
     "closing_text": "The unglamorous things were doing the heavy lifting all along.",
     "variant": 2,
     "active": true
@@ -1184,7 +1184,7 @@
     "category": "appreciation_trust",
     "branch": "repair",
     "step": 2,
-    "text": "Catch your partner doing one thing right this week, and say so soon after. What might you watch for?",
+    "text": "Catch {partner} doing one thing right this week, and say so soon after. What might you watch for?",
     "closing_text": "Noticing is a practice. One catch is enough for now.",
     "variant": 3,
     "active": true
@@ -1194,7 +1194,7 @@
     "category": "appreciation_trust",
     "branch": "divergence",
     "step": 1,
-    "text": "You feel differently valued right now. What might your partner already be doing that they count as appreciation — and you might be missing?",
+    "text": "You feel differently valued right now. What might {partner} already be doing that they count as appreciation — and you might be missing?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -1204,7 +1204,7 @@
     "category": "appreciation_trust",
     "branch": "divergence",
     "step": 1,
-    "text": "What might feeling valued look like to your partner — and where might they be looking for it?",
+    "text": "What might feeling valued look like to {partner} — and where might they be looking for it?",
     "closing_text": "People look for value in different places. Different numbers often just mean different places.",
     "variant": 2,
     "active": true
@@ -1224,7 +1224,7 @@
     "category": "growth_independence",
     "branch": "deepener",
     "step": 1,
-    "text": "How has your partner backed the person you're becoming — a class, a habit, a quiet hour defended? Name it.",
+    "text": "How has {partner} backed the person you're becoming — a class, a habit, a quiet hour defended? Name it.",
     "closing_text": "Now it's said. Support like that grows when it's noticed.",
     "variant": 2,
     "active": true
@@ -1294,7 +1294,7 @@
     "category": "growth_independence",
     "branch": "repair",
     "step": 2,
-    "text": "Ask your partner one question this week about who they're becoming. Write the question here first.",
+    "text": "Ask {partner} one question this week about who they're becoming. Write the question here first.",
     "closing_text": "A good question is its own kind of room. That's enough for now.",
     "variant": 3,
     "active": true
@@ -1304,7 +1304,7 @@
     "category": "growth_independence",
     "branch": "divergence",
     "step": 1,
-    "text": "You feel differently about the room you each have. What might space — more of it, or less — mean to your partner right now?",
+    "text": "You feel differently about the room you each have. What might space — more of it, or less — mean to {partner} right now?",
     "closing_text": "Different numbers usually mean different vantage points, not different commitment.",
     "variant": 1,
     "active": true
@@ -1314,7 +1314,7 @@
     "category": "growth_independence",
     "branch": "divergence",
     "step": 1,
-    "text": "What might your partner be growing toward that they haven't fully said? Write your best guess, held gently.",
+    "text": "What might {partner} be growing toward that they haven't fully said? Write your best guess, held gently.",
     "closing_text": "A guess held gently is a way of paying attention. Different numbers, same direction.",
     "variant": 2,
     "active": true

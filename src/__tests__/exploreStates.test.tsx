@@ -53,8 +53,14 @@ jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: mockUser }),
 }));
 
+const mockPartnerQuery = jest.fn();
+jest.mock('@/hooks/usePartner', () => ({
+  usePartner: () => mockPartnerQuery(),
+}));
+
+const mockSubmitResponse = jest.fn();
 jest.mock('@/hooks/usePrompt', () => ({
-  useSubmitResponse: () => ({ mutateAsync: jest.fn(), isPending: false }),
+  useSubmitResponse: () => ({ mutateAsync: mockSubmitResponse, isPending: false }),
 }));
 
 const mockPromptsQuery = jest.fn();
@@ -65,10 +71,13 @@ jest.mock('@/hooks/useExplorePrompts', () => {
   class NoCoupleLinkedError extends Error {}
   return {
     NoCoupleLinkedError,
+    // Real filter logic — expired assignments behave as "never started"
+    isLiveExploreAssignment: (a: { status: string }) => a.status !== 'expired',
     usePromptsByCategory: (category: string | null) => mockPromptsQuery(category),
     useExploreAssignments: () => mockAssignmentsQuery(),
     useStartExplorePrompt: () => ({ mutateAsync: mockStartExplore, isPending: false }),
-    useExploreResponses: (assignmentId: string | null) => mockResponsesQuery(assignmentId),
+    useExploreResponses: (assignmentId: string | null, status?: string) =>
+      mockResponsesQuery(assignmentId, status),
   };
 });
 
@@ -81,6 +90,21 @@ const PROMPT = {
   type: 'daily_connection',
   emotionalDepth: 'surface',
 };
+
+function makeAssignment(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'assign-1',
+    promptId: 'prompt-1',
+    promptText: PROMPT.text,
+    promptHint: null,
+    category: 'daily_connection',
+    status: 'delivered',
+    firstResponderId: null,
+    responseCount: 0,
+    createdAt: new Date('2026-07-08T10:00:00'),
+    ...overrides,
+  };
+}
 
 function setQueries({
   prompts = { data: [PROMPT], isLoading: false, isError: false, refetch: jest.fn() },
@@ -99,6 +123,9 @@ function setQueries({
 beforeEach(() => {
   jest.clearAllMocks();
   mockUser.coupleId = 'couple-1';
+  mockPartnerQuery.mockReturnValue({
+    data: { id: 'user-2', email: 'j@example.com', displayName: 'Jordan' },
+  });
 });
 
 describe('ExploreScreen states', () => {
@@ -159,21 +186,119 @@ describe('ExploreScreen states', () => {
     });
   });
 
+  describe('no assignment yet', () => {
+    it('shows Respond, and an expired assignment counts as never started', () => {
+      setQueries({
+        assignments: { data: [makeAssignment({ status: 'expired' })] },
+      });
+      const { getByText, queryByText } = render(<ExploreScreen />);
+
+      expect(getByText('Respond')).toBeTruthy();
+      expect(queryByText('Waiting on Jordan')).toBeNull();
+    });
+  });
+
+  describe("partial — I answered (sealed-waiting)", () => {
+    const myPartial = makeAssignment({
+      status: 'partial',
+      firstResponderId: 'user-1',
+      responseCount: 1,
+    });
+
+    it('shows the waiting-on-partner state with the sealed line, no Respond button', () => {
+      setQueries({ assignments: { data: [myPartial] } });
+      const { getByText, queryByText } = render(<ExploreScreen />);
+
+      expect(getByText('Waiting on Jordan')).toBeTruthy();
+      expect(getByText('Your answer is sealed until they respond.')).toBeTruthy();
+      expect(queryByText('Respond')).toBeNull();
+      expect(queryByText('See both answers')).toBeNull();
+    });
+
+    it('tapping the waiting state reveals MY answer only', () => {
+      setQueries({
+        assignments: { data: [myPartial] },
+        responses: {
+          // The hook seals partials to the current user's own response
+          data: [
+            { id: 'r1', userId: 'user-1', text: 'My sealed answer', isCurrentUser: true, submittedAt: null },
+          ],
+          isLoading: false,
+        },
+      });
+      const { getByText, queryByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('Waiting on Jordan'));
+
+      expect(mockResponsesQuery).toHaveBeenLastCalledWith('assign-1', 'partial');
+      expect(getByText('You')).toBeTruthy();
+      expect(getByText('My sealed answer')).toBeTruthy();
+      expect(queryByText('Jordan')).toBeNull();
+    });
+
+    it('falls back to "your partner" when there is no partner display name', () => {
+      mockPartnerQuery.mockReturnValue({ data: null });
+      setQueries({ assignments: { data: [myPartial] } });
+      const { getByText } = render(<ExploreScreen />);
+
+      expect(getByText('Waiting on your partner')).toBeTruthy();
+    });
+  });
+
+  describe('partial — PARTNER answered (their question waits)', () => {
+    const partnerPartial = makeAssignment({
+      status: 'partial',
+      firstResponderId: 'user-2',
+      responseCount: 1,
+    });
+
+    it('invites me to answer with a Respond button and no hourglass dead-end', () => {
+      setQueries({ assignments: { data: [partnerPartial] } });
+      const { getByText, queryByText } = render(<ExploreScreen />);
+
+      expect(getByText('Jordan asked you this')).toBeTruthy();
+      expect(getByText('Respond')).toBeTruthy();
+      expect(queryByText('Waiting on Jordan')).toBeNull();
+    });
+
+    it('pressing Respond starts the respond flow against the existing assignment', async () => {
+      mockStartExplore.mockResolvedValue({
+        assignmentId: 'assign-1',
+        prompt: PROMPT,
+        reused: true,
+      });
+      setQueries({ assignments: { data: [partnerPartial] } });
+      const { getByText, findByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('Respond'));
+
+      // Respond editor opens on the same prompt (guard reuses assign-1)
+      expect(mockStartExplore).toHaveBeenCalledWith(PROMPT);
+      expect(await findByText(`“${PROMPT.text}”`)).toBeTruthy();
+    });
+
+    it('never shows the partner answer while partial', () => {
+      setQueries({ assignments: { data: [partnerPartial] } });
+      const { queryByText } = render(<ExploreScreen />);
+      expect(queryByText('See both answers')).toBeNull();
+    });
+  });
+
   describe('viewing a completed response', () => {
     it('shows a skeleton while responses load', () => {
       setQueries({
-        assignments: { data: [{ id: 'assign-1', promptId: 'prompt-1', status: 'completed' }] },
+        assignments: { data: [makeAssignment({ status: 'completed', responseCount: 2 })] },
         responses: { data: null, isLoading: true },
       });
       const { getByText, getByTestId } = render(<ExploreScreen />);
 
-      fireEvent.press(getByText('View responses'));
+      fireEvent.press(getByText('See both answers'));
       expect(getByTestId('explore-responses-loading')).toBeTruthy();
     });
 
-    it('shows both responses once loaded', () => {
+    it('shows both answers labeled You / partner name once loaded', () => {
       setQueries({
-        assignments: { data: [{ id: 'assign-1', promptId: 'prompt-1', status: 'completed' }] },
+        assignments: { data: [makeAssignment({ status: 'completed', responseCount: 2 })] },
         responses: {
           data: [
             { id: 'r1', userId: 'user-1', text: 'Mine', isCurrentUser: true, submittedAt: null },
@@ -184,11 +309,13 @@ describe('ExploreScreen states', () => {
       });
       const { getByText } = render(<ExploreScreen />);
 
-      fireEvent.press(getByText('View responses'));
+      fireEvent.press(getByText('See both answers'));
+      expect(mockResponsesQuery).toHaveBeenLastCalledWith('assign-1', 'completed');
       expect(getByText('You')).toBeTruthy();
       expect(getByText('Mine')).toBeTruthy();
-      expect(getByText('Partner')).toBeTruthy();
+      expect(getByText('Jordan')).toBeTruthy();
       expect(getByText('Theirs')).toBeTruthy();
+      expect(getByText('Hide')).toBeTruthy();
     });
   });
 });

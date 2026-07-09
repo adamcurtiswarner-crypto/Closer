@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -30,11 +30,15 @@ import {
   useExploreAssignments,
   useStartExplorePrompt,
   useExploreResponses,
+  isLiveExploreAssignment,
   ExplorePrompt,
+  ExploreAssignment,
   NoCoupleLinkedError,
 } from '@/hooks/useExplorePrompts';
 import { useSubmitResponse } from '@/hooks/usePrompt';
 import { useAuth } from '@/hooks/useAuth';
+import { usePartner } from '@/hooks/usePartner';
+import { usePersonalize } from '@/hooks/usePersonalize';
 import { Icon } from '@/components/Icon';
 import { QueryError } from '@/components/QueryError';
 import { Skeleton } from '@/components/Skeleton';
@@ -46,7 +50,15 @@ import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 type ScreenMode = 'browse' | 'responding';
 
 export default function ExploreScreen() {
-  const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
+  const {
+    category: initialCategory,
+    assignmentId: paramAssignmentId,
+    promptId: paramPromptId,
+  } = useLocalSearchParams<{
+    category?: string;
+    assignmentId?: string;
+    promptId?: string;
+  }>();
   const router = useRouter();
 
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || PROMPT_CATEGORIES[0].type);
@@ -62,6 +74,12 @@ export default function ExploreScreen() {
 
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { data: partner } = usePartner();
+  const partnerName = partner?.displayName || t('explore.partnerFallback');
+  // Display-time only: {partner}/{me} tokens render with real first names here,
+  // while every write (useStartExplorePrompt copies prompt_text into the
+  // assignment) keeps the canonical tokenized text.
+  const personalize = usePersonalize();
   const {
     data: prompts,
     isLoading,
@@ -71,8 +89,9 @@ export default function ExploreScreen() {
   const { data: assignments } = useExploreAssignments();
   const startExplore = useStartExplorePrompt();
   const submitResponse = useSubmitResponse();
+  const viewingAssignment = assignments?.find((a) => a.id === viewingAssignmentId) ?? null;
   const { data: viewingResponses, isLoading: responsesLoading } =
-    useExploreResponses(viewingAssignmentId);
+    useExploreResponses(viewingAssignmentId, viewingAssignment?.status);
 
   const submitScale = useSharedValue(1);
   const submitAnimStyle = useAnimatedStyle(() => ({
@@ -81,10 +100,46 @@ export default function ExploreScreen() {
 
   const currentCategory = getCategoryByType(selectedCategory);
 
-  // Check if a prompt already has an explore assignment
-  function getAssignmentForPrompt(promptId: string) {
-    return assignments?.find((a) => a.promptId === promptId);
+  // The live (non-expired) explore assignment for a prompt, if any —
+  // expired ones behave as if the prompt was never started.
+  function getAssignmentForPrompt(promptId: string): ExploreAssignment | undefined {
+    return assignments?.find((a) => a.promptId === promptId && isLiveExploreAssignment(a));
   }
+
+  // Deep-link entry (partner-question card or push tap): auto-open the
+  // target assignment once — respond flow while their question waits,
+  // both-answers view once it is complete.
+  const handledParamsRef = useRef(false);
+  useEffect(() => {
+    if (handledParamsRef.current) return;
+    if (!paramAssignmentId && !paramPromptId) return;
+    if (!assignments || !user?.id) return;
+    const target = assignments.find(
+      (a) =>
+        (paramAssignmentId ? a.id === paramAssignmentId : a.promptId === paramPromptId) &&
+        isLiveExploreAssignment(a)
+    );
+    if (!target) return;
+    handledParamsRef.current = true;
+    if (target.category) setSelectedCategory(target.category);
+    const partnerAsked =
+      target.status === 'partial' &&
+      target.firstResponderId != null &&
+      target.firstResponderId !== user.id;
+    if (partnerAsked) {
+      setActivePrompt({
+        id: target.promptId,
+        text: target.promptText,
+        hint: target.promptHint,
+        type: target.category,
+        emotionalDepth: '',
+      });
+      setActiveAssignmentId(target.id);
+      setMode('responding');
+    } else if (target.status === 'completed') {
+      setViewingAssignmentId(target.id);
+    }
+  }, [paramAssignmentId, paramPromptId, assignments, user?.id]);
 
   async function handleStartPrompt(prompt: ExplorePrompt) {
     // No couple linked — keep the user on the screen with a quiet inline
@@ -147,10 +202,10 @@ export default function ExploreScreen() {
           >
             <Animated.View entering={FadeIn.duration(300)} style={styles.respondingHeader}>
               <Text style={styles.respondingPrompt}>
-                {'\u201C'}{activePrompt.text}{'\u201D'}
+                {'\u201C'}{personalize(activePrompt.text)}{'\u201D'}
               </Text>
               {activePrompt.hint && (
-                <Text style={styles.respondingHint}>{activePrompt.hint}</Text>
+                <Text style={styles.respondingHint}>{personalize(activePrompt.hint)}</Text>
               )}
             </Animated.View>
 
@@ -305,6 +360,16 @@ export default function ExploreScreen() {
           prompts.map((prompt, index) => {
             const existing = getAssignmentForPrompt(prompt.id);
             const status = existing?.status;
+            // Who is this partial waiting on? first_responder_id is the asker.
+            const iAskedThis =
+              status === 'partial' && !!existing?.firstResponderId &&
+              existing.firstResponderId === user?.id;
+            const partnerAskedThis =
+              status === 'partial' && !!existing?.firstResponderId &&
+              existing.firstResponderId !== user?.id;
+            const isViewing = !!existing && viewingAssignmentId === existing.id;
+            const toggleViewing = () =>
+              setViewingAssignmentId(isViewing ? null : existing?.id ?? null);
 
             return (
               <Animated.View
@@ -315,9 +380,9 @@ export default function ExploreScreen() {
                   {/* No accent bar on list cards — a cue on every card is a
                       cue on none. Only a primary/hero surface carries it. */}
                   <View style={styles.promptContent}>
-                    <Text style={styles.promptText}>{prompt.text}</Text>
+                    <Text style={styles.promptText}>{personalize(prompt.text)}</Text>
                     {prompt.hint && (
-                      <Text style={styles.promptHint}>{prompt.hint}</Text>
+                      <Text style={styles.promptHint}>{personalize(prompt.hint)}</Text>
                     )}
                     {/* No depth badge — "Surface/Medium/Deep" is internal
                         taxonomy, not user vocabulary. The action stands alone. */}
@@ -325,25 +390,43 @@ export default function ExploreScreen() {
                       {status === 'completed' ? (
                         <TouchableOpacity
                           style={styles.statusBadge}
-                          onPress={() => {
-                            const existing = getAssignmentForPrompt(prompt.id);
-                            const aid = existing?.id || null;
-                            setViewingAssignmentId(viewingAssignmentId === aid ? null : aid);
-                          }}
+                          onPress={toggleViewing}
+                          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                          accessibilityRole="button"
                         >
                           <Icon name="checks" size={14} color={colors.semantic.success} />
                           <Text style={[styles.statusText, { color: colors.semantic.success }]}>
-                            {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id
-                              ? t('explore.hide')
-                              : t('explore.viewResponses')}
+                            {isViewing ? t('explore.hide') : t('explore.seeBothAnswers')}
                           </Text>
                         </TouchableOpacity>
-                      ) : status === 'partial' ? (
-                        <View style={styles.statusBadge}>
-                          <Icon name="hourglass" size={14} color={colors.semantic.neutral} />
-                          <Text style={[styles.statusText, { color: colors.semantic.neutral }]}>
-                            {t('explore.waiting')}
+                      ) : iAskedThis ? (
+                        // Sealed-waiting: tap re-reads YOUR OWN answer only —
+                        // the partner's stays sealed until you both answered.
+                        <TouchableOpacity
+                          style={styles.statusBadge}
+                          onPress={toggleViewing}
+                          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                          accessibilityRole="button"
+                        >
+                          <Icon name="hourglass" size={14} color={colors.text.secondary} />
+                          <Text style={[styles.statusText, { color: colors.text.secondary }]}>
+                            {t('explore.waitingOn', { name: partnerName })}
                           </Text>
+                        </TouchableOpacity>
+                      ) : partnerAskedThis ? (
+                        <View style={styles.askedRow}>
+                          <Text style={styles.askedText}>
+                            {t('explore.askedYouThis', { name: partnerName })}
+                          </Text>
+                          <TouchableOpacity
+                            style={styles.respondButton}
+                            onPress={() => handleStartPrompt(prompt)}
+                            disabled={startExplore.isPending}
+                          >
+                            <Text style={styles.respondButtonText} maxFontSizeMultiplier={1.4}>
+                              {t('explore.respond')}
+                            </Text>
+                          </TouchableOpacity>
                         </View>
                       ) : (
                         <TouchableOpacity
@@ -357,6 +440,9 @@ export default function ExploreScreen() {
                         </TouchableOpacity>
                       )}
                     </View>
+                    {iAskedThis && (
+                      <Text style={styles.sealedLine}>{t('explore.sealedLine')}</Text>
+                    )}
                     {/* Quiet notice on the respond action — no couple linked */}
                     {linkNoticePromptId === prompt.id && (
                       <Animated.View entering={FadeIn.duration(300)} style={styles.linkNotice}>
@@ -364,16 +450,17 @@ export default function ExploreScreen() {
                         <Text style={styles.linkNoticeText}>{t('explore.linkFirst')}</Text>
                       </Animated.View>
                     )}
-                    {/* Show responses when tapped */}
-                    {viewingAssignmentId === getAssignmentForPrompt(prompt.id)?.id &&
+                    {/* Show responses when tapped — while partial only YOUR
+                        answer is exposed (the hook enforces the seal) */}
+                    {isViewing &&
                       (responsesLoading ? (
                         <View style={styles.responsesSection} testID="explore-responses-loading">
-                          <View style={styles.responseRow}>
+                          <View style={styles.responseCard}>
                             <Skeleton width={48} height={12} />
                             <Skeleton height={16} />
                             <Skeleton height={16} width="70%" />
                           </View>
-                          <View style={styles.responseRow}>
+                          <View style={styles.responseCard}>
                             <Skeleton width={64} height={12} />
                             <Skeleton height={16} width="85%" />
                           </View>
@@ -381,9 +468,9 @@ export default function ExploreScreen() {
                       ) : viewingResponses ? (
                         <Animated.View entering={FadeIn.duration(300)} style={styles.responsesSection}>
                           {viewingResponses.map((r) => (
-                            <View key={r.id} style={styles.responseRow}>
+                            <View key={r.id} style={styles.responseCard}>
                               <Text style={styles.responseAuthor}>
-                                {r.isCurrentUser ? t('common.you') : t('explore.partnerLabel')}
+                                {r.isCurrentUser ? t('common.you') : partnerName}
                               </Text>
                               <Text style={styles.responseText}>{r.text}</Text>
                             </View>
@@ -523,6 +610,27 @@ const styles = StyleSheet.create({
     ...typography.caption,
   },
 
+  // Sealed-waiting quiet line (below the footer, my-answer prompts only)
+  sealedLine: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: spacing.sm,
+  },
+
+  // "{name} asked you this" + Respond
+  askedRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.smd,
+  },
+  askedText: {
+    ...typography.caption,
+    color: colors.accent.primary,
+    flexShrink: 1,
+  },
+
   // Respond button — coral pill, uppercase letterspaced label
   respondButton: {
     backgroundColor: colors.accent.primary,
@@ -535,7 +643,7 @@ const styles = StyleSheet.create({
     color: colors.text.inverse,
   },
 
-  // Response viewer
+  // Response viewer — two labeled answer cards (You / partner name)
   responsesSection: {
     marginTop: spacing.md,
     paddingTop: spacing.md,
@@ -543,7 +651,10 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border.default,
     gap: spacing.smd,
   },
-  responseRow: {
+  responseCard: {
+    backgroundColor: colors.surface.background,
+    borderRadius: radius.card,
+    padding: spacing.md,
     gap: spacing.xs,
   },
   responseAuthor: {

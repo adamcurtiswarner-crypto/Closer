@@ -11,6 +11,7 @@ import { router } from 'expo-router';
 import { Button } from '@/components';
 import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
+import { usePersonalize } from '@/hooks/usePersonalize';
 import { useTriggerPrompt } from '@/hooks/usePrompt';
 import { useTranslation } from 'react-i18next';
 
@@ -20,6 +21,9 @@ export default function FirstPromptScreen() {
   const triggerPrompt = useTriggerPrompt();
   const [showResponse, setShowResponse] = useState(false);
   const { t } = useTranslation();
+  // The sample prompt carries a {partner} token — render it with the partner's
+  // real first name now that the couple is linked (falls back to "your partner").
+  const personalize = usePersonalize();
 
   const handleContinue = async () => {
     // Trigger the first real prompt for this couple
@@ -43,7 +47,7 @@ export default function FirstPromptScreen() {
           {/* Sample prompt card */}
           <Animated.View entering={FadeInUp.duration(500).delay(300)} style={styles.card}>
             <Text style={styles.promptText}>
-              {t('onboarding.firstPrompt.samplePrompt')}
+              {personalize(t('onboarding.firstPrompt.samplePrompt'))}
             </Text>
           </Animated.View>
 

@@ -31,6 +31,12 @@ One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (m
 - New welcome hero (founder's flame illustration) + original tagline restored; App Store listing copy rewritten (STORE_METADATA.md); GitGuardian webhook-secret leak rotated + purged from history.
 - Builds: 57 on TestFlight (submission candidate before Hearth); **58 building now = Hearth + push fix**.
 
+## Done July 9 — founder bug/UX report
+- **Phantom notifications fixed (root causes, not symptoms)**: (1) UTC "today" rolled over at 8PM ET, re-delivering the daily prompt each evening — now user-timezone dates client+server with ±1-day dedupe window; (2) hidden-feature pushes (weekly pulse/recap + 6 callables + check-in trigger) un-exported AND deleted from prod; (3) legacy dual-transport sends killed — Expo-only with auto-prune; 10 stale tokens scrubbed (founder account had 8); (4) reminder quiet hours 8AM-9PM user-local.
+- **Explore = "send your partner a question"**: full lifecycle rebuilt — seal after answering (own answer always viewable), partner gets truthful push ("sent you a question: …") deep-linking to that prompt, "FROM {NAME}" discovery card on Today, Respond available on partner side (dead-end hourglass removed), duplicate-assignment guard, real-time updates, side-by-side reveal, completions flow into Hearth (category fix + 40 assignments backfilled). Partial explore questions never expire; explore never blocks daily delivery.
+- **Name personalization**: {partner}/{me} tokens render as real first names everywhere (fallback "your partner"/"you"); wired across Today/Explore/Hearth/onboarding + explore push bodies (server mirror util); 38 follow-up templates + 1 prompt retokenized in prod (seeds updated to match); missing prompt_responses index deployed.
+- Tests: app 51 suites / 482; functions 11 suites / 304. Functions redeployed. **Build 59 = all of the above.**
+
 ## Adam's Open Items
 1. **W-9 tax form** (ASC → Business → Add Tax Info) — Paid Apps Agreement stuck at "Pending User Info" until done; bank (Omnific Collective LLC) processing ~24h. Blocks real revenue, not sandbox
 2. **IAP review screenshots** — drag `Downloads/files (1)/iap-review-screenshot.png` into both subscription products' Review Information (clears "Missing Metadata"; required at version submission)

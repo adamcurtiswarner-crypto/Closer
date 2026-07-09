@@ -116,6 +116,10 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - Canonical type definitions: `../specs/types.ts` (outside app directory)
 - Analytics event names: `snake_case`
 
+### Personalization
+- Prompt/template text may carry `{partner}` / `{me}` tokens — render through `usePersonalize()` (client) or `functions/src/personalize.ts` (push bodies). NEVER write personalized text to Firestore; canonical text stays tokenized.
+- "Today" is the USER-LOCAL calendar day everywhere: `src/utils/localDate.ts` client-side, `assignmentDateWindow(timezone)` server-side. Never `toISOString().split('T')[0]` for a user-facing date (UTC rolls over at 8PM ET).
+
 ### Real-time & Offline
 - `useTodayPrompt` uses Firestore `onSnapshot` driving React Query cache (no polling)
 - `useChat` also uses `onSnapshot` for real-time messages
@@ -197,9 +201,9 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 
 v1 scope: several scheduled push functions are disabled in the export barrel (`functions/src/index.ts`) because their features are hidden — see `functions/V1-SCOPE.md` for the list and the deploy-time `functions:delete` commands. The follow-up trigger system lives in `functions/src/followUps.ts` (branch logic: divergence > repair > deepener) wired into `onResponseSubmitted`.
 
-- **Scheduled**: `deliverDailyPrompts` (every 15 min), `sendWeeklyRecaps` (Sun 6PM PT), `sendResponseReminders` (hourly), `deliverCheckIn` (Sun 10AM PT), `dateNightReminder` (daily 9AM PT), `computeRelationshipPulse` (Mon 3AM PT), `autoGeneratePrompts` (Mon 2AM PT), `checkStreakBreaks` (daily 4:30AM PT), `expireStalePrompts` (daily 4AM PT), `cleanupDeletedAccounts` (daily 3AM PT), `exportEventsToBigQuery` (daily 4AM PT), `detectChurnRisk`, `aggregateWeeklyMetrics`, `cleanupCoachingInsights`, `graduatePrompts`
-- **Callable**: `deleteAccount`, `exportUserData`, `anonymizeMyResponses`, `generateAIPrompts`, `triggerBigQueryExport`, `triggerPromptDelivery`, `generateCoachingInsight`, `triggerPulseComputation`, `managePrompt`, `getPromptPerformance`, `createExperiment`, `assignExperimentVariant`, `getDashboardMetrics`, `revenueCatWebhook`
-- **Triggers**: `onResponseSubmitted`, `onReactionAdded`, `onCheckInSubmitted`, `onChatMessageCreated`
+- **Scheduled** (v1 barrel): `deliverDailyPrompts` (every 15 min, tz-aware), `sendResponseReminders` (hourly, quiet hours 8AM-9PM user-local), `expireStalePrompts` (daily 4AM PT; partial explore assignments never expire), `autoGeneratePrompts`, `cleanupDeletedAccounts`, `exportEventsToBigQuery`, `aggregateWeeklyMetrics`, `cleanupCoachingInsights`, `graduatePrompts`, `checkErrorAlerts`, `cleanupErrorLogs`. Hidden-feature schedules (recaps, pulse, check-in, streaks, date nights, churn, morning/evening check-ins) are un-exported AND deleted from prod — see functions/V1-SCOPE.md before re-adding.
+- **Callable**: `deleteAccount`, `exportUserData`, `anonymizeMyResponses`, `generateAIPrompts`, `triggerBigQueryExport`, `triggerPromptDelivery`, `managePrompt`, `getPromptPerformance`, `createExperiment`, `assignExperimentVariant`, `getDashboardMetrics`, `revenueCatWebhook` (hidden-feature callables that push are un-exported — V1-SCOPE.md)
+- **Triggers**: `onResponseSubmitted` (explore-aware pushes + Hearth enrichment), `onReactionAdded`, `onChatMessageCreated`, `onCompletionDiscussed` (Hearth)
 - AI generation uses `claude-sonnet-4-5-20250929` via Anthropic API
 
 ## Testing

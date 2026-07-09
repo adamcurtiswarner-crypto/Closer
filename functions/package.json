@@ -15,6 +15,8 @@
     "seed:emulator:clear": "FIRESTORE_EMULATOR_HOST=localhost:8080 ts-node src/scripts/seedPrompts.ts --clear",
     "test": "jest --config jest.config.js",
     "setup:bigquery": "ts-node src/scripts/setupBigQuery.ts",
+    "prune:tokens": "ts-node src/scripts/pruneNonExpoTokens.ts",
+    "prune:tokens:dry-run": "ts-node src/scripts/pruneNonExpoTokens.ts --dry-run",
     "seed:sandbox": "FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 ts-node src/scripts/seedSandbox.ts",
     "seed:sandbox:production": "ts-node src/scripts/seedSandbox.ts --production",
     "seed:sandbox:backfill": "ts-node src/scripts/seedSandbox.ts --production --backfill",

@@ -5,6 +5,25 @@ import { formatInTimeZone } from 'date-fns-tz';
 import { db, APP_NAME, sendPushNotification } from './shared';
 
 // ============================================
+// PURE: Reminder Quiet Hours (unit tested directly)
+// ============================================
+
+const REMINDER_WINDOW_START_HOUR = 8; // inclusive — 8 AM local
+const REMINDER_WINDOW_END_HOUR = 21; // exclusive — 9 PM local
+
+/**
+ * Reminders may only be sent between 8 AM and 9 PM in the recipient's local
+ * time. Outside that window the reminder is skipped WITHOUT counting as sent —
+ * the hourly schedule naturally retries in the next open window.
+ */
+export function isWithinReminderWindow(localHour: number): boolean {
+  return (
+    localHour >= REMINDER_WINDOW_START_HOUR &&
+    localHour < REMINDER_WINDOW_END_HOUR
+  );
+}
+
+// ============================================
 // SCHEDULED: Weekly Recap Notification
 // ============================================
 
@@ -123,6 +142,16 @@ export const sendResponseReminders = functions.pubsub
         // Respect remind_to_respond preference (default true)
         if (userData.remind_to_respond === false) continue;
 
+        // Quiet hours: never remind outside 8 AM - 9 PM in the recipient's
+        // local time (a 7 PM delivery must not remind at 11 PM - 1 AM).
+        // Skipping does NOT count as sent — the hourly run retries later.
+        const userTimezone = userData.timezone || 'America/Los_Angeles';
+        const localHour = parseInt(
+          formatInTimeZone(now, userTimezone, 'HH'),
+          10
+        );
+        if (!isWithinReminderWindow(localHour)) continue;
+
         let shouldSend = false;
         let body = '';
 
@@ -141,11 +170,6 @@ export const sendResponseReminders = functions.pubsub
           userReminderCount === 1 &&
           hoursSinceDelivery >= 8
         ) {
-          const userTimezone = userData.timezone || 'America/Los_Angeles';
-          const localHour = parseInt(
-            formatInTimeZone(now, userTimezone, 'HH'),
-            10
-          );
           if (localHour >= 8 && localHour < 10) {
             shouldSend = true;
             // Follow-up assignments get neutral follow-up copy

@@ -306,7 +306,7 @@
     },
     {
       "id": "LM-26",
-      "text": "What's an opinion you hold loosely \u2014 you could be convinced otherwise?",
+      "text": "What's an opinion you hold loosely — you could be convinced otherwise?",
       "hint": null,
       "type": "love_map_update",
       "research_basis": "gottman_sound_house",
@@ -703,7 +703,7 @@
     {
       "id": "BC-24",
       "text": "What's a moment when you reached for me and I didn't notice?",
-      "hint": "This isn't about blame \u2014 it's about understanding",
+      "hint": "This isn't about blame — it's about understanding",
       "type": "bid_for_connection",
       "research_basis": "turning_toward",
       "emotional_depth": "deep",
@@ -739,7 +739,7 @@
     {
       "id": "BC-27",
       "text": "What's a time you felt lonely even though we were together?",
-      "hint": "Share gently \u2014 this is about growing closer",
+      "hint": "Share gently — this is about growing closer",
       "type": "bid_for_connection",
       "research_basis": "turning_toward",
       "emotional_depth": "deep",
@@ -1711,7 +1711,7 @@
     {
       "id": "RA-05",
       "text": "What's a wound from our relationship you're still healing from?",
-      "hint": "Share gently \u2014 this takes courage",
+      "hint": "Share gently — this takes courage",
       "type": "repair_attempt",
       "research_basis": "repair_attempts",
       "emotional_depth": "deep",
@@ -2011,7 +2011,7 @@
     {
       "id": "V4-006",
       "text": "What's a friendship you've let go of that you still think about sometimes?",
-      "hint": "Not necessarily with regret \u2014 maybe just with curiosity.",
+      "hint": "Not necessarily with regret — maybe just with curiosity.",
       "type": "love_map_update",
       "research_basis": "original",
       "emotional_depth": "medium",
@@ -2035,7 +2035,7 @@
     {
       "id": "V4-008",
       "text": "What kind of physical touch do you find most comforting right now? It might be different than it used to be.",
-      "hint": "This doesn't have to be about intimacy \u2014 it could be a hand on your back or sitting close.",
+      "hint": "This doesn't have to be about intimacy — it could be a hand on your back or sitting close.",
       "type": "love_map_update",
       "research_basis": "original",
       "emotional_depth": "medium",
@@ -2046,7 +2046,7 @@
     },
     {
       "id": "V4-009",
-      "text": "What's something you've been quietly curious about lately \u2014 a subject, a skill, a place?",
+      "text": "What's something you've been quietly curious about lately — a subject, a skill, a place?",
       "hint": null,
       "type": "love_map_update",
       "research_basis": "original",
@@ -2070,7 +2070,7 @@
     },
     {
       "id": "V4-011",
-      "text": "What's a part of your spiritual life \u2014 or your search for meaning \u2014 that you haven't talked about much?",
+      "text": "What's a part of your spiritual life — or your search for meaning — that you haven't talked about much?",
       "hint": "This could be about faith, nature, philosophy, or something you can't quite name.",
       "type": "love_map_update",
       "research_basis": "original",
@@ -2131,7 +2131,7 @@
     {
       "id": "V4-016",
       "text": "What's something you've learned about yourself through being in this relationship that surprised you?",
-      "hint": "It doesn't have to be dramatic \u2014 small realizations count.",
+      "hint": "It doesn't have to be dramatic — small realizations count.",
       "type": "love_map_update",
       "research_basis": "original",
       "emotional_depth": "deep",
@@ -2202,7 +2202,7 @@
     },
     {
       "id": "V4-022",
-      "text": "What's something about parenting \u2014 or the idea of parenting \u2014 that you think about differently now than you used to?",
+      "text": "What's something about parenting — or the idea of parenting — that you think about differently now than you used to?",
       "hint": "This applies whether you have kids, want them, or have decided not to.",
       "type": "love_map_update",
       "research_basis": "original",
@@ -2299,7 +2299,7 @@
     {
       "id": "V4-030",
       "text": "Is there something you've wanted to bring up with me but the moment never felt right?",
-      "hint": "It doesn't have to be heavy \u2014 sometimes small things just need an opening.",
+      "hint": "It doesn't have to be heavy — sometimes small things just need an opening.",
       "type": "bid_for_connection",
       "research_basis": "original",
       "emotional_depth": "deep",
@@ -2346,7 +2346,7 @@
     },
     {
       "id": "V4-034",
-      "text": "When you're having a hard day, what's the most helpful thing I can do \u2014 even if it seems too simple?",
+      "text": "When you're having a hard day, what's the most helpful thing I can do — even if it seems too simple?",
       "hint": null,
       "type": "bid_for_connection",
       "research_basis": "original",
@@ -2359,7 +2359,7 @@
     {
       "id": "V4-035",
       "text": "What's a new tradition or routine you think we should try together?",
-      "hint": "Weekly, monthly, seasonal \u2014 any cadence.",
+      "hint": "Weekly, monthly, seasonal — any cadence.",
       "type": "bid_for_connection",
       "research_basis": "original",
       "emotional_depth": "surface",
@@ -2515,7 +2515,7 @@
     {
       "id": "V4-048",
       "text": "What's something I bring to our relationship that you know you couldn't get from anyone else?",
-      "hint": "Think about what's uniquely mine \u2014 a quality, a way of being.",
+      "hint": "Think about what's uniquely mine — a quality, a way of being.",
       "type": "appreciation_expression",
       "research_basis": "original",
       "emotional_depth": "deep",
@@ -2563,7 +2563,7 @@
     {
       "id": "V4-052",
       "text": "What's a quality of mine that you leaned on during a particularly difficult season?",
-      "hint": "Think about patience, humor, steadiness, creativity \u2014 whatever comes to mind.",
+      "hint": "Think about patience, humor, steadiness, creativity — whatever comes to mind.",
       "type": "appreciation_expression",
       "research_basis": "original",
       "emotional_depth": "deep",
@@ -2611,7 +2611,7 @@
     {
       "id": "V4-056",
       "text": "When have you seen me be brave in a way that moved you?",
-      "hint": "Bravery can be quiet \u2014 a conversation you had, a choice you made.",
+      "hint": "Bravery can be quiet — a conversation you had, a choice you made.",
       "type": "appreciation_expression",
       "research_basis": "original",
       "emotional_depth": "deep",
@@ -2622,7 +2622,7 @@
     },
     {
       "id": "V4-057",
-      "text": "What's something I said to you \u2014 maybe a long time ago \u2014 that stuck with you in a good way?",
+      "text": "What's something I said to you — maybe a long time ago — that stuck with you in a good way?",
       "hint": null,
       "type": "appreciation_expression",
       "research_basis": "original",
@@ -2707,7 +2707,7 @@
     {
       "id": "V4-064",
       "text": "What's something tangible you'd want us to build or create together over the next few years?",
-      "hint": "A home, a project, a garden, a business \u2014 anything.",
+      "hint": "A home, a project, a garden, a business — anything.",
       "type": "appreciation_expression",
       "research_basis": "original",
       "emotional_depth": "medium",
@@ -2802,7 +2802,7 @@
     },
     {
       "id": "V4-072",
-      "text": "What's a tradition you'd like to start \u2014 weekly, monthly, or yearly \u2014 that's just ours?",
+      "text": "What's a tradition you'd like to start — weekly, monthly, or yearly — that's just ours?",
       "hint": null,
       "type": "dream_exploration",
       "research_basis": "original",
@@ -2815,7 +2815,7 @@
     {
       "id": "V4-073",
       "text": "What does your ideal relationship with your family look like ten years from now?",
-      "hint": "Your family of origin, or the family we're building \u2014 or both.",
+      "hint": "Your family of origin, or the family we're building — or both.",
       "type": "dream_exploration",
       "research_basis": "original",
       "emotional_depth": "deep",
@@ -2838,7 +2838,7 @@
     },
     {
       "id": "V4-075",
-      "text": "What's something about our social life \u2014 friendships, community \u2014 that you'd like to see change?",
+      "text": "What's something about our social life — friendships, community — that you'd like to see change?",
       "hint": null,
       "type": "dream_exploration",
       "research_basis": "original",
@@ -2875,7 +2875,7 @@
     {
       "id": "V4-078",
       "text": "What's a dream you've let go of that you sometimes wonder about?",
-      "hint": "Not with regret, necessarily \u2014 just with curiosity about the road not taken.",
+      "hint": "Not with regret, necessarily — just with curiosity about the road not taken.",
       "type": "dream_exploration",
       "research_basis": "original",
       "emotional_depth": "deep",
@@ -2910,7 +2910,7 @@
     },
     {
       "id": "V4-081",
-      "text": "What's a personal goal you have that you'd like my help with \u2014 not to fix, just to support?",
+      "text": "What's a personal goal you have that you'd like my help with — not to fix, just to support?",
       "hint": null,
       "type": "dream_exploration",
       "research_basis": "original",
@@ -2934,7 +2934,7 @@
     },
     {
       "id": "V4-083",
-      "text": "What does retirement \u2014 or the later chapter of our life \u2014 look like in your imagination?",
+      "text": "What does retirement — or the later chapter of our life — look like in your imagination?",
       "hint": null,
       "type": "dream_exploration",
       "research_basis": "original",
@@ -3030,7 +3030,7 @@
     },
     {
       "id": "V4-091",
-      "text": "What's something about our families \u2014 yours or mine \u2014 that creates friction between us?",
+      "text": "What's something about our families — yours or mine — that creates friction between us?",
       "hint": "This isn't about blame. It's about understanding the pull we each feel.",
       "type": "conflict_navigation",
       "research_basis": "original",
@@ -3102,7 +3102,7 @@
     },
     {
       "id": "V4-097",
-      "text": "When we hit a rough patch, what do you need in the first few minutes \u2014 and what makes it worse?",
+      "text": "When we hit a rough patch, what do you need in the first few minutes — and what makes it worse?",
       "hint": null,
       "type": "conflict_navigation",
       "research_basis": "original",
@@ -3211,7 +3211,7 @@
     {
       "id": "V4-106",
       "text": "Is there something from our last disagreement that still feels unfinished for you?",
-      "hint": "Not to reopen the argument \u2014 just to make sure nothing is sitting unresolved.",
+      "hint": "Not to reopen the argument — just to make sure nothing is sitting unresolved.",
       "type": "repair_attempt",
       "research_basis": "original",
       "emotional_depth": "medium",
@@ -3247,7 +3247,7 @@
     {
       "id": "V4-109",
       "text": "What's the smallest gesture that could help us reconnect after we've been distant?",
-      "hint": "Sometimes the tiniest thing \u2014 a touch, a text, a cup of coffee \u2014 is the bridge.",
+      "hint": "Sometimes the tiniest thing — a touch, a text, a cup of coffee — is the bridge.",
       "type": "repair_attempt",
       "research_basis": "original",
       "emotional_depth": "surface",
@@ -3306,7 +3306,7 @@
     },
     {
       "id": "V4-114",
-      "text": "Is there a part of you that's been hiding from me lately? Not in a bad way \u2014 just quietly retreating.",
+      "text": "Is there a part of you that's been hiding from me lately? Not in a bad way — just quietly retreating.",
       "hint": null,
       "type": "repair_attempt",
       "research_basis": "original",
@@ -3342,7 +3342,7 @@
     },
     {
       "id": "V4-117",
-      "text": "When we come back together after being apart \u2014 even just a workday \u2014 what would make that moment feel better?",
+      "text": "When we come back together after being apart — even just a workday — what would make that moment feel better?",
       "hint": null,
       "type": "repair_attempt",
       "research_basis": "original",
@@ -3378,7 +3378,7 @@
     },
     {
       "id": "V4-120",
-      "text": "What's a quiet hope you have for who we'll become together \u2014 not what we'll achieve, but who we'll be?",
+      "text": "What's a quiet hope you have for who we'll become together — not what we'll achieve, but who we'll be?",
       "hint": "Think about the qualities of your partnership, not the milestones.",
       "type": "dream_exploration",
       "research_basis": "original",
@@ -3427,7 +3427,7 @@
     {
       "id": "V4-124",
       "text": "What does closeness feel like to you on a quiet morning when neither of us has anywhere to be?",
-      "hint": "Think about what you notice \u2014 touch, silence, routine.",
+      "hint": "Think about what you notice — touch, silence, routine.",
       "type": "bid_for_connection",
       "research_basis": "original",
       "emotional_depth": "medium",
@@ -3534,7 +3534,7 @@
     },
     {
       "id": "V4-133",
-      "text": "Is there a way I reach for you \u2014 physically or emotionally \u2014 that always makes you feel safe?",
+      "text": "Is there a way I reach for you — physically or emotionally — that always makes you feel safe?",
       "hint": null,
       "type": "bid_for_connection",
       "research_basis": "original",
@@ -3546,7 +3546,7 @@
     },
     {
       "id": "V4-134",
-      "text": "What's a place from our past \u2014 an apartment, a restaurant, a stretch of road \u2014 that you'd want to revisit together?",
+      "text": "What's a place from our past — an apartment, a restaurant, a stretch of road — that you'd want to revisit together?",
       "hint": "Think about why that place still holds something for you.",
       "type": "love_map_update",
       "research_basis": "original",
@@ -3594,7 +3594,7 @@
     },
     {
       "id": "V4-138",
-      "text": "What's a lazy Sunday morning that stands out in your memory \u2014 one that felt like exactly what you needed?",
+      "text": "What's a lazy Sunday morning that stands out in your memory — one that felt like exactly what you needed?",
       "hint": null,
       "type": "appreciation_expression",
       "research_basis": "original",
@@ -3607,7 +3607,7 @@
     {
       "id": "V4-139",
       "text": "Is there something about the way we handle stress together that you think we've gotten better at over time?",
-      "hint": "It might be something subtle \u2014 a pattern you've noticed shifting.",
+      "hint": "It might be something subtle — a pattern you've noticed shifting.",
       "type": "appreciation_expression",
       "research_basis": "original",
       "emotional_depth": "medium",
@@ -3654,7 +3654,7 @@
     },
     {
       "id": "V4-143",
-      "text": "What's the best meal we've ever shared? Not the fanciest \u2014 the one that felt the most right.",
+      "text": "What's the best meal we've ever shared? Not the fanciest — the one that felt the most right.",
       "hint": null,
       "type": "love_map_update",
       "research_basis": "original",
@@ -3666,7 +3666,7 @@
     },
     {
       "id": "V4-144",
-      "text": "When something big changes in our life \u2014 a move, a loss, a new beginning \u2014 what do you need from me in those first few days?",
+      "text": "When something big changes in our life — a move, a loss, a new beginning — what do you need from me in those first few days?",
       "hint": "Think about past transitions and what helped or what you wished for.",
       "type": "conflict_navigation",
       "research_basis": "original",
@@ -3714,7 +3714,7 @@
     },
     {
       "id": "V4-148",
-      "text": "After we go out together \u2014 dinner, a movie, a walk \u2014 what part of the evening do you replay in your mind?",
+      "text": "After we go out together — dinner, a movie, a walk — what part of the evening do you replay in your mind?",
       "hint": null,
       "type": "appreciation_expression",
       "research_basis": "original",
@@ -3918,7 +3918,7 @@
     },
     {
       "id": "V4-165",
-      "text": "What's a trip we haven't taken yet that you think would be good for us \u2014 not just fun, but actually good for us?",
+      "text": "What's a trip we haven't taken yet that you think would be good for us — not just fun, but actually good for us?",
       "hint": null,
       "type": "dream_exploration",
       "research_basis": "original",
@@ -3954,7 +3954,7 @@
     },
     {
       "id": "V4-168",
-      "text": "What's something about the way we touch \u2014 a hand on the back, the way we sit on the couch \u2014 that matters to you more than I might realize?",
+      "text": "What's something about the way we touch — a hand on the back, the way we sit on the couch — that matters to you more than I might realize?",
       "hint": null,
       "type": "bid_for_connection",
       "research_basis": "original",
@@ -4099,7 +4099,7 @@
     {
       "id": "V4-180",
       "text": "When I'm far away, what's the best way for me to make you feel like I'm still right there?",
-      "hint": "A call, a text, a photo, silence \u2014 everyone's different.",
+      "hint": "A call, a text, a photo, silence — everyone's different.",
       "type": "bid_for_connection",
       "research_basis": "original",
       "emotional_depth": "medium",
@@ -4110,7 +4110,7 @@
     },
     {
       "id": "V4-181",
-      "text": "What does it feel like when we repair something between us \u2014 not during, but after, when it's actually better?",
+      "text": "What does it feel like when we repair something between us — not during, but after, when it's actually better?",
       "hint": null,
       "type": "repair_attempt",
       "research_basis": "original",
@@ -4170,7 +4170,7 @@
     },
     {
       "id": "V4-186",
-      "text": "If you had to pick one word for what our relationship feels like right now \u2014 not good or bad, just honest \u2014 what would it be?",
+      "text": "If you had to pick one word for what our relationship feels like right now — not good or bad, just honest — what would it be?",
       "hint": null,
       "type": "repair_attempt",
       "research_basis": "original",
@@ -4206,7 +4206,7 @@
     },
     {
       "id": "V4-189",
-      "text": "Is there a version of intimacy between us that has nothing to do with the physical \u2014 something that feels just as close?",
+      "text": "Is there a version of intimacy between us that has nothing to do with the physical — something that feels just as close?",
       "hint": null,
       "type": "bid_for_connection",
       "research_basis": "original",
@@ -4290,7 +4290,7 @@
     },
     {
       "id": "V4-196",
-      "text": "What's a someday plan \u2014 something we've said 'we should do that' about \u2014 that you actually want to make real?",
+      "text": "What's a someday plan — something we've said 'we should do that' about — that you actually want to make real?",
       "hint": null,
       "type": "dream_exploration",
       "research_basis": "original",
@@ -4314,7 +4314,7 @@
     },
     {
       "id": "V4-198",
-      "text": "What's a spring or summer feeling \u2014 the light, the warmth, the longer days \u2014 that makes you think of us?",
+      "text": "What's a spring or summer feeling — the light, the warmth, the longer days — that makes you think of us?",
       "hint": null,
       "type": "bid_for_connection",
       "research_basis": "original",

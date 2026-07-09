@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeInUp, ReduceMotion } from 'react-native-reanimate
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { usePersonalize } from '@/hooks/usePersonalize';
 import {
   categoryEntries,
   couchQueue,
@@ -28,8 +29,17 @@ import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 export default function HearthScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: completions = [], isLoading } = useHearth();
+  const { data: rawCompletions = [], isLoading } = useHearth();
   const markDiscussed = useMarkDiscussed();
+  const personalize = usePersonalize();
+
+  // Personalize {partner}/{me} tokens once at the data boundary — every card,
+  // detail entry, and the talk sheet below renders the personalized copy.
+  // Display-only: mutations (markDiscussed) go by id, never by text.
+  const completions = useMemo(
+    () => rawCompletions.map((c) => ({ ...c, promptText: personalize(c.promptText) })),
+    [rawCompletions, personalize]
+  );
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [talkCompletionId, setTalkCompletionId] = useState<string | null>(null);

@@ -1,7 +1,61 @@
 import * as functionsTest from 'firebase-functions-test';
+import * as barrel from '../index';
 import { getPromptRecommendation } from '../index';
 
 const test = functionsTest.default();
+
+// ============================================
+// v1 Export Barrel Scope
+// ============================================
+
+describe('v1 export barrel scope (see functions/V1-SCOPE.md)', () => {
+  // Hidden-feature functions must NOT be exported — an exported function gets
+  // deployed and pushes for surfaces the v1 app cannot show.
+  const disabledExports = [
+    'checkStreakBreaks',
+    'deliverCheckIn',
+    'dateNightReminder',
+    'deliverMorningCheckin',
+    'deliverEveningReflection',
+    'detectChurnRisk',
+    'sendWeeklyRecaps',
+    'computeRelationshipPulse',
+    'triggerPulseComputation',
+    'generateCoachingInsight',
+    'submitMorningCheckin',
+    'sendSpark',
+    'submitSparkGuess',
+    'onCheckInSubmitted',
+  ];
+
+  // The v1 daily-prompt loop must stay deployed.
+  const keptExports = [
+    'deliverDailyPrompts',
+    'triggerPromptDelivery',
+    'expireStalePrompts',
+    'graduatePrompts',
+    'sendResponseReminders',
+    'onResponseSubmitted',
+    'onReactionAdded',
+    'onChatMessageCreated',
+    'onCompletionDiscussed',
+    'deleteAccount',
+    'exportUserData',
+    'anonymizeMyResponses',
+    'cleanupDeletedAccounts',
+    'generateAIPrompts',
+    'autoGeneratePrompts',
+    'cleanupCoachingInsights',
+  ];
+
+  it.each(disabledExports)('does not export hidden-feature function: %s', (name) => {
+    expect(barrel).not.toHaveProperty(name);
+  });
+
+  it.each(keptExports)('exports v1 function: %s', (name) => {
+    expect((barrel as Record<string, unknown>)[name]).toBeDefined();
+  });
+});
 
 // Helper: simulates the frequency skip logic from deliverDailyPrompts
 function shouldSkipForFrequency(frequency: string, dayOfWeek: number): boolean {

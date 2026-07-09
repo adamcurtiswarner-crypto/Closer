@@ -443,38 +443,12 @@ async function sendExpoPushNotifications(
 }
 
 /**
- * Send via FCM (legacy raw device tokens — e.g. Android FCM registration
- * tokens stored before the Expo Push Service migration).
+ * Expo Push Service is the ONLY transport. The client registers exclusively
+ * ExponentPushToken[...] tokens; anything else in push_tokens is stale data
+ * from old builds (raw APNs/FCM registration tokens) that caused duplicate
+ * and failed sends. Non-Expo tokens are pruned from the user doc instead of
+ * being sent to.
  */
-async function sendFcmPushNotifications(
-  userId: string,
-  tokens: string[],
-  notification: { title: string; body: string },
-  data?: Record<string, string>
-): Promise<void> {
-  const messages = tokens.map((t) => ({
-    token: t,
-    notification,
-    ...(data ? { data } : {}),
-  }));
-
-  try {
-    const results = await admin.messaging().sendEach(messages);
-    // Clean up invalid tokens
-    const tokensToRemove: string[] = [];
-    results.responses.forEach((resp, idx) => {
-      if (resp.error?.code === 'messaging/registration-token-not-registered' ||
-          resp.error?.code === 'messaging/invalid-registration-token') {
-        tokensToRemove.push(messages[idx].token);
-      }
-    });
-    await removeInvalidPushTokens(userId, tokensToRemove);
-  } catch (error) {
-    // Don't use reportError here to avoid circular failure if Firestore is down
-    console.error('Push notification failed:', error);
-  }
-}
-
 export async function sendPushNotification(
   userId: string,
   notification: { title: string; body: string },
@@ -491,13 +465,13 @@ export async function sendPushNotification(
   if (tokens.length === 0) return;
 
   const expoTokens = tokens.filter((t) => isExpoPushToken(t));
-  const fcmTokens = tokens.filter((t) => !isExpoPushToken(t));
+  const staleTokens = tokens.filter((t) => !isExpoPushToken(t));
+
+  // Prune legacy non-Expo tokens — never send to them.
+  await removeInvalidPushTokens(userId, staleTokens);
 
   if (expoTokens.length > 0) {
     await sendExpoPushNotifications(userId, expoTokens, notification, data);
-  }
-  if (fcmTokens.length > 0) {
-    await sendFcmPushNotifications(userId, fcmTokens, notification, data);
   }
 }
 

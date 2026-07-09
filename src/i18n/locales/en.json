@@ -93,7 +93,7 @@
     },
     "firstPrompt": {
       "title": "Here's how it works",
-      "samplePrompt": "What's one thing your partner did this week that made your day better?",
+      "samplePrompt": "What's one thing {partner} did this week that made your day better?",
       "explanation": "Each day, you both answer privately. Then you see each other's response.",
       "showMe": "Show me",
       "theirResponse": "Their response",
@@ -201,7 +201,9 @@
     "notifHeading": "Know the moment they answer",
     "notifBody": "We'll only nudge when it matters — when {{name}} answers, and when a new question is ready.",
     "notifCta": "Turn on notifications",
-    "notNow": "Not now"
+    "notNow": "Not now",
+    "fromName": "From {{name}}",
+    "questionsWaiting": "{{count}} questions waiting"
   },
   "memories": {
     "title": "Memories",
@@ -438,9 +440,11 @@
     "eyebrow": "Browse by category",
     "title": "Categories",
     "respond": "Respond",
-    "waiting": "Waiting for partner",
-    "completed": "Completed",
-    "viewResponses": "View responses",
+    "waitingOn": "Waiting on {{name}}",
+    "sealedLine": "Your answer is sealed until they respond.",
+    "askedYouThis": "{{name}} asked you this",
+    "seeBothAnswers": "See both answers",
+    "partnerFallback": "your partner",
     "hide": "Hide",
     "emptyCategory": "No prompts in this category yet",
     "loadError": "These prompts didn't load. Check your connection and try again.",

@@ -13,6 +13,7 @@ import {
 } from './shared';
 import { evaluateFollowUpOnCompletion } from './followUps';
 import { computeCompletionSignal } from './hearth';
+import { personalizeText } from './personalize';
 
 // ============================================
 // FIRESTORE TRIGGER: On Response Submitted
@@ -26,6 +27,13 @@ function isAlreadyExistsError(err: unknown): boolean {
   const code = (err as { code?: number | string } | null)?.code;
   if (code === 6 || code === 'already-exists') return true;
   return err instanceof Error && err.message.includes('ALREADY_EXISTS');
+}
+
+/** Push bodies quote the prompt — keep them to one glanceable line. */
+export function truncatePromptText(text: string, maxLength = 60): string {
+  const trimmed = (text || '').trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  return `${trimmed.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
 export const onResponseSubmitted = functions.firestore
@@ -193,16 +201,29 @@ export const onResponseSubmitted = functions.firestore
           prompt_id: response.prompt_id,
         });
 
-        // Notify first responder that both have answered
+        // Notify first responder that both have answered. Explore prompts are
+        // "questions you sent your partner" — the completion push says so and
+        // deep-links to the explore tab (they never appear on Today). Daily
+        // prompts keep their existing copy exactly.
         const firstResponderId = assignment.first_responder_id;
         if (firstResponderId && firstResponderId !== response.user_id) {
           const secondResponderDoc = await db.collection('users').doc(response.user_id).get();
           const secondResponderName = secondResponderDoc.data()?.display_name || 'Your partner';
 
-          await sendPushNotification(firstResponderId, {
-            title: secondResponderName,
-            body: 'answered too. Tap to reveal both responses.',
-          }, { type: 'prompt' });
+          if (assignment.source === 'explore') {
+            await sendPushNotification(firstResponderId, {
+              title: secondResponderName,
+              body: 'answered your question. See both answers.',
+            }, {
+              type: 'explore_complete',
+              assignment_id: response.assignment_id,
+            });
+          } else {
+            await sendPushNotification(firstResponderId, {
+              title: secondResponderName,
+              body: 'answered too. Tap to reveal both responses.',
+            }, { type: 'prompt' });
+          }
         }
 
         // Follow-up branch evaluation (v1 scored prompts).
@@ -257,10 +278,34 @@ export const onResponseSubmitted = functions.firestore
           const responderDoc = await db.collection('users').doc(response.user_id).get();
           const responderName = responderDoc.data()?.display_name || 'Your partner';
 
-          await sendPushNotification(partnerId, {
-            title: responderName,
-            body: "answered today's prompt. Your turn \u2014 takes 2 minutes.",
-          }, { type: 'partner_responded' });
+          if (assignment.source === 'explore') {
+            // Answering an explore prompt first = sending your partner a
+            // question. Say that, quote it, and deep-link to the explore tab
+            // (explore prompts never appear on Today).
+            //
+            // The quoted prompt may carry {partner}/{me} tokens — personalize
+            // FOR THE RECIPIENT (the partner receiving the push): {partner} is
+            // the sender, {me} is the recipient. Personalize BEFORE truncating
+            // so a token never straddles the ellipsis. The assignment doc
+            // itself keeps the canonical tokenized text.
+            const recipientView = personalizeText(assignment.prompt_text || '', {
+              partnerName: responderDoc.data()?.display_name ?? null,
+              selfName: partnerData?.display_name ?? null,
+            });
+            await sendPushNotification(partnerId, {
+              title: responderName,
+              body: `sent you a question: "${truncatePromptText(recipientView)}"`,
+            }, {
+              type: 'explore_question',
+              assignment_id: response.assignment_id,
+              prompt_id: response.prompt_id,
+            });
+          } else {
+            await sendPushNotification(partnerId, {
+              title: responderName,
+              body: "answered today's prompt. Your turn \u2014 takes 2 minutes.",
+            }, { type: 'partner_responded' });
+          }
 
           await logEvent('partner_notified', response.user_id, response.couple_id, {
             notified_user_id: partnerId,

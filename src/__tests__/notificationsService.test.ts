@@ -15,6 +15,7 @@ const mockRequestPermissionsAsync = jest.fn();
 const mockGetExpoPushTokenAsync = jest.fn();
 const mockGetDevicePushTokenAsync = jest.fn();
 const mockAddPushTokenListener = jest.fn();
+const mockAddResponseListener = jest.fn((_listener: unknown) => ({ remove: jest.fn() }));
 
 jest.mock('expo-notifications', () => ({
   setNotificationHandler: jest.fn(),
@@ -25,7 +26,8 @@ jest.mock('expo-notifications', () => ({
   getDevicePushTokenAsync: () => mockGetDevicePushTokenAsync(),
   addPushTokenListener: (listener: unknown) => mockAddPushTokenListener(listener),
   addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
-  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationResponseReceivedListener: (listener: unknown) =>
+    mockAddResponseListener(listener),
   setNotificationChannelAsync: jest.fn(),
   PermissionStatus: { UNDETERMINED: 'undetermined', GRANTED: 'granted', DENIED: 'denied' },
   AndroidImportance: { HIGH: 4 },
@@ -65,9 +67,11 @@ jest.mock('@/services/analytics', () => ({
   logEvent: jest.fn(),
 }));
 
+import { router } from 'expo-router';
 import {
   registerForPushNotifications,
   registerPushIfAlreadyGranted,
+  setupNotificationHandlers,
 } from '../services/notifications';
 
 function grantPermissions(): void {
@@ -159,6 +163,46 @@ describe('registerForPushNotifications', () => {
 
     await expect(registerForPushNotifications('user-1')).resolves.toBeNull();
     expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+});
+
+describe('notification tap routing', () => {
+  function tapWith(data: Record<string, unknown>): void {
+    setupNotificationHandlers();
+    const listener = mockAddResponseListener.mock.calls.at(-1)![0] as (
+      response: unknown
+    ) => void;
+    listener({ notification: { request: { content: { data } } } });
+  }
+
+  it('routes daily prompt taps to Today', () => {
+    tapWith({ type: 'partner_responded' });
+    expect(router.push).toHaveBeenCalledWith('/(app)/today');
+  });
+
+  it('routes explore_question taps to the explore tab with respond deep-link params', () => {
+    tapWith({
+      type: 'explore_question',
+      assignment_id: 'assign-1',
+      prompt_id: 'prompt-1',
+    });
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/(app)/explore',
+      params: { assignmentId: 'assign-1', promptId: 'prompt-1' },
+    });
+  });
+
+  it('routes explore_complete taps to the explore tab with the assignment param', () => {
+    tapWith({ type: 'explore_complete', assignment_id: 'assign-1' });
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/(app)/explore',
+      params: { assignmentId: 'assign-1' },
+    });
+  });
+
+  it('falls back to a bare explore tab when deep-link params are missing or invalid', () => {
+    tapWith({ type: 'explore_question', assignment_id: 42 });
+    expect(router.push).toHaveBeenCalledWith('/(app)/explore');
   });
 });
 

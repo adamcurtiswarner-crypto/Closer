@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { format, subDays, startOfWeek, getDay } from 'date-fns';
+import { format, subDays, addDays, startOfWeek, getDay } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import {
   db,
@@ -141,39 +141,86 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
 }
 
 // ============================================
-// PRIVATE: Get Couple Timezone
+// PURE: Timezone-Local Dedupe Window (unit tested directly)
 // ============================================
 
-async function getCoupleTimezone(coupleId: string): Promise<string> {
-  const coupleDoc = await db.collection('couples').doc(coupleId).get();
-  if (!coupleDoc.exists) return 'America/Los_Angeles';
-  const memberIds = coupleDoc.data()!.member_ids || [];
-  if (memberIds.length === 0) return 'America/Los_Angeles';
-  const userDoc = await db.collection('users').doc(memberIds[0]).get();
-  return userDoc.data()?.timezone || 'America/Los_Angeles';
+export interface AssignmentDateWindow {
+  yesterday: string;
+  today: string;
+  tomorrow: string;
+}
+
+/**
+ * Computes "today" and the ±1-day dedupe window (yyyy-MM-dd) in the given
+ * timezone. Assignments are dated in the USER'S local day — never server UTC —
+ * so a couple opening the app at 8 PM ET (midnight UTC) does not get
+ * tomorrow's prompt early.
+ */
+export function assignmentDateWindow(
+  timezone: string,
+  now: Date = new Date()
+): AssignmentDateWindow {
+  const zonedNow = toZonedTime(now, timezone || 'UTC');
+  return {
+    yesterday: format(subDays(zonedNow, 1), 'yyyy-MM-dd'),
+    today: format(zonedNow, 'yyyy-MM-dd'),
+    tomorrow: format(addDays(zonedNow, 1), 'yyyy-MM-dd'),
+  };
+}
+
+/**
+ * True when any DAILY-rhythm assignment in the ±1-day window is still live
+ * (not expired). Used to skip daily delivery across timezone-shifted date
+ * boundaries — only create a new daily assignment when the window has no
+ * live daily/follow-up assignment. Explore assignments are a parallel track
+ * (partner-sent questions) and must never block the daily prompt.
+ */
+export function hasLiveAssignmentInWindow(
+  assignments: Array<{ status?: string; source?: string }>
+): boolean {
+  return assignments.some(
+    (a) => a.source !== 'explore' && a.status !== 'expired'
+  );
 }
 
 // ============================================
 // PRIVATE: Deliver Prompt to Couple
 // ============================================
 
-async function deliverPromptToCouple(coupleId: string): Promise<void> {
-  const today = format(new Date(), 'yyyy-MM-dd');
+async function deliverPromptToCouple(coupleId: string, timezone: string): Promise<void> {
+  // Compute the couple's local calendar day — the recipient's timezone is
+  // authoritative, never server UTC (midnight UTC is 8 PM US/Eastern).
+  const { yesterday, today, tomorrow } = assignmentDateWindow(timezone);
 
   // v1 follow-ups: a scheduled follow-up due today replaces the daily prompt
   // (one prompt per day rhythm). Must run before the already-delivered check.
   const activatedFollowUp = await activateDueFollowUp(coupleId, today);
   if (activatedFollowUp) return;
 
-  // Check if already delivered today
+  // Check if already delivered today (exact-match skip). Explore assignments
+  // share assigned_date but are a parallel track — never let one block the
+  // daily prompt (so no limit(1): the first doc could be an explore doc).
   const existingAssignment = await db
     .collection('prompt_assignments')
     .where('couple_id', '==', coupleId)
     .where('assigned_date', '==', today)
-    .limit(1)
     .get();
 
-  if (!existingAssignment.empty) return;
+  if (existingAssignment.docs.some((d) => d.data().source !== 'explore')) return;
+
+  // Cross-timezone dedupe hardening: partners (or past deliveries) may sit on
+  // adjacent local dates. Skip when ANY non-expired assignment exists in the
+  // tz-local [today-1, today+1] window — the client queries the same window.
+  const windowAssignments = await db
+    .collection('prompt_assignments')
+    .where('couple_id', '==', coupleId)
+    .where('assigned_date', '>=', yesterday)
+    .where('assigned_date', '<=', tomorrow)
+    .get();
+
+  if (hasLiveAssignmentInWindow(windowAssignments.docs.map((doc) => doc.data()))) {
+    return;
+  }
 
   // Get couple info
   const coupleDoc = await db.collection('couples').doc(coupleId).get();
@@ -185,9 +232,6 @@ async function deliverPromptToCouple(coupleId: string): Promise<void> {
       depth_progress: initializeDepthProgress(),
     });
   }
-
-  // Get couple timezone for selection + assignment
-  const timezone = await getCoupleTimezone(coupleId);
 
   // Select a prompt
   const prompt = await selectPromptForCouple(coupleId, timezone);
@@ -291,7 +335,9 @@ export const deliverDailyPrompts = functions.pubsub
         }
 
         try {
-          await deliverPromptToCouple(userData.couple_id);
+          // Deliver dated in this user's timezone — their notification_time
+          // window is what fired, so their local calendar day is "today".
+          await deliverPromptToCouple(userData.couple_id, userTimezone);
           deliveredCouples.add(userData.couple_id);
         } catch (err) {
           await reportError('deliverDailyPrompts', err, { coupleId: userData.couple_id });
@@ -325,7 +371,10 @@ export const triggerPromptDelivery = functions.https.onCall(async (data, context
     throw new functions.https.HttpsError('failed-precondition', 'Not linked to a partner');
   }
 
-  await deliverPromptToCouple(userData.couple_id);
+  // "Today" is the CALLER's local calendar day. Fall back to UTC when the
+  // user doc has no timezone rather than guessing a US timezone.
+  const timezone: string = userData.timezone || 'UTC';
+  await deliverPromptToCouple(userData.couple_id, timezone);
 
   return { success: true, coupleId: userData.couple_id };
 });
@@ -355,7 +404,15 @@ export const expireStalePrompts = functions.pubsub
       .where('assigned_date', '<', yesterday)
       .get();
 
-    const staleDocs = [...staleDelivered.docs, ...stalePartial.docs];
+    // A partial explore assignment is a question one partner sent and the
+    // other hasn't answered yet — it stays open indefinitely (the Today
+    // "from your partner" card keeps it discoverable). Only unanswered
+    // ('delivered') explore assignments — abandoned respond flows — expire
+    // on the normal schedule.
+    const staleDocs = [
+      ...staleDelivered.docs,
+      ...stalePartial.docs.filter((d) => d.data().source !== 'explore'),
+    ];
 
     if (staleDocs.length === 0) {
       console.log('No stale assignments to expire');

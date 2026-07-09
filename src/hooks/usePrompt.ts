@@ -18,6 +18,7 @@ import { httpsCallable } from 'firebase/functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { db, functions } from '@/config/firebase';
+import { todayLocalISO, localDateWindow } from '@utils/localDate';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import { uploadResponsePhoto } from '@/services/imageUpload';
@@ -126,10 +127,17 @@ interface AssignmentDocLike {
  * scale prompt + the immediately-delivered deepener): the daily reveal shows
  * while the daily is the only doc, then the deepener surfaces same-session
  * when it arrives via onSnapshot.
+ *
+ * The query feeds a device-local [yesterday, today, tomorrow] window (server
+ * assigns in the USER'S timezone, so adjacent local dates can differ from the
+ * device's). Within each tier, docs dated todayLocalISO() win over the rest
+ * of the window. Only yesterday's expired leftovers return null — an empty
+ * Today that lets the auto-trigger fetch the new day's prompt.
  */
 export function selectAssignmentDoc(
   docs: AssignmentDocLike[],
-  skippedIds: string[]
+  skippedIds: string[],
+  todayISO?: string
 ): AssignmentDocLike | null {
   const candidates = docs.filter((d) => {
     const data = d.data();
@@ -145,14 +153,47 @@ export function selectAssignmentDoc(
   const isActive = (d: AssignmentDocLike) =>
     d.data().status === 'delivered' || d.data().status === 'partial';
   const isFollowUp = (d: AssignmentDocLike) => d.data().assignment_kind === 'follow_up';
+  const isCompleted = (d: AssignmentDocLike) => d.data().status === 'completed';
+  // Without a reference date every candidate counts as "today" (single-day query)
+  const isToday = (d: AssignmentDocLike) =>
+    todayISO == null || d.data().assigned_date === todayISO;
 
   return (
+    candidates.find((d) => isActive(d) && isFollowUp(d) && isToday(d)) ??
+    candidates.find((d) => isActive(d) && isToday(d)) ??
     candidates.find((d) => isActive(d) && isFollowUp(d)) ??
     candidates.find(isActive) ??
-    candidates.find((d) => d.data().status === 'completed' && isFollowUp(d)) ??
-    candidates.find((d) => d.data().status === 'completed') ??
-    candidates[0]
+    candidates.find((d) => isCompleted(d) && isFollowUp(d) && isToday(d)) ??
+    candidates.find((d) => isCompleted(d) && isToday(d)) ??
+    candidates.find((d) => isCompleted(d) && isFollowUp(d)) ??
+    candidates.find(isCompleted) ??
+    // Anything left is expired — surface it only when it is today's doc
+    candidates.find(isToday) ??
+    null
   );
+}
+
+/**
+ * True when nothing in the window makes today "handled": no live
+ * (delivered/partial) daily-flow assignment, and no completed one dated
+ * today or later. Yesterday's completed/expired leftovers do NOT count —
+ * a new local day should fetch a new prompt. Explore assignments never
+ * block the daily rhythm.
+ */
+export function needsDailyDelivery(
+  docs: AssignmentDocLike[],
+  todayISO: string
+): boolean {
+  return !docs.some((d) => {
+    const data = d.data();
+    if (data.source === 'explore') return false;
+    if (data.status === 'delivered' || data.status === 'partial') return true;
+    return (
+      data.status === 'completed' &&
+      typeof data.assigned_date === 'string' &&
+      data.assigned_date >= todayISO
+    );
+  });
 }
 
 // ─── Local follow-up skip list (dismiss for the day; assignment expires server-side) ───
@@ -178,13 +219,11 @@ async function addSkippedFollowUpId(assignmentId: string): Promise<void> {
   } catch {
     entries = [];
   }
-  // Prune stale entries — skipped assignments expire server-side anyway
-  const cutoff = new Date(Date.now() - SKIPPED_RETENTION_DAYS * 86400000)
-    .toISOString()
-    .split('T')[0];
+  // Prune stale entries — skipped assignments expire server-side anyway.
+  // Device-local dates: these mark "skipped for the user's day".
+  const cutoff = todayLocalISO(new Date(Date.now() - SKIPPED_RETENTION_DAYS * 86400000));
   const pruned = entries.filter((e) => e?.date && e.date >= cutoff);
-  const today = new Date().toISOString().split('T')[0];
-  const next = [...pruned, { id: assignmentId, date: today }];
+  const next = [...pruned, { id: assignmentId, date: todayLocalISO() }];
   await AsyncStorage.setItem(SKIPPED_FOLLOW_UPS_KEY, JSON.stringify(next));
 }
 
@@ -202,6 +241,13 @@ interface TodayPrompt {
    * Cleared naturally when the flushed response arrives via onSnapshot.
    */
   isMyResponseOffline?: boolean;
+  /**
+   * True when the assignment window has no live daily-flow assignment and
+   * nothing completed for today — the Today screen may auto-trigger delivery.
+   * Computed only from a real snapshot; defaults to false so a cold cache
+   * never fires the trigger.
+   */
+  needsDailyDelivery?: boolean;
 }
 
 const EMPTY_TODAY: TodayPrompt = {
@@ -212,6 +258,7 @@ const EMPTY_TODAY: TodayPrompt = {
   isComplete: false,
   nextPromptAt: null,
   reactions: null,
+  needsDailyDelivery: false,
 };
 
 // Shared counter to force onSnapshot re-subscribe with fresh date
@@ -245,15 +292,19 @@ export function useTodayPrompt() {
       return;
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    // Device-local calendar day — never UTC. The server dates assignments in
+    // the user's timezone, and partners can sit on adjacent local dates, so
+    // query the ±1-day window and prefer docs dated today.
+    const today = todayLocalISO();
+    const dateWindow = localDateWindow();
     let unsubResponses: (() => void) | null = null;
 
-    // Listen for today's assignment
+    // Listen for assignments in the local-date window
     const assignmentsRef = collection(db, 'prompt_assignments');
     const assignmentQuery = query(
       assignmentsRef,
       where('couple_id', '==', coupleId),
-      where('assigned_date', '==', today)
+      where('assigned_date', 'in', dateWindow)
     );
 
     const unsubAssignment = onSnapshot(assignmentQuery, async (assignmentSnap) => {
@@ -263,15 +314,18 @@ export function useTodayPrompt() {
         unsubResponses = null;
       }
       // Exclude explore assignments and locally-skipped follow-ups, then pick
-      // the assignment to surface (active follow-up > active daily > completed)
+      // the assignment to surface (active follow-up > active daily > completed,
+      // today's date preferred within each tier)
       const skippedIds = await getSkippedFollowUpIds();
-      const assignmentDoc = selectAssignmentDoc(assignmentSnap.docs, skippedIds);
+      const assignmentDoc = selectAssignmentDoc(assignmentSnap.docs, skippedIds, today);
+      const needsDelivery = needsDailyDelivery(assignmentSnap.docs, today);
 
       if (!assignmentDoc) {
         queryClient.setQueryData(['todayPrompt', coupleId], {
           ...EMPTY_TODAY,
           nextPromptAt: `${today}T${notificationTime || '19:00'}:00`,
           reactions: null,
+          needsDailyDelivery: needsDelivery,
         });
         return;
       }
@@ -333,6 +387,7 @@ export function useTodayPrompt() {
           isComplete: latestStatus === 'completed',
           nextPromptAt: null,
           reactions,
+          needsDailyDelivery: needsDelivery,
         } as TodayPrompt);
       });
 
@@ -619,6 +674,11 @@ export function useSubmitResponse() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });
+      // Explore submissions flow through this same mutation — refresh the
+      // explore card state and any cached responses so the card seals
+      // instead of dropping back to "Respond".
+      queryClient.invalidateQueries({ queryKey: ['exploreAssignments'] });
+      queryClient.invalidateQueries({ queryKey: ['exploreResponses'] });
       logEvent('prompt_response_submitted', { response_id: data.responseId });
       if (data.hasPhoto) {
         logEvent('response_photo_attached', { response_id: data.responseId });

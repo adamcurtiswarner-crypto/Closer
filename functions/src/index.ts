@@ -15,10 +15,12 @@ export {
 } from './prompts';
 
 export {
-  sendWeeklyRecaps, // kept: recap references prompt completions only (v1-visible)
   sendResponseReminders,
   // v1 scope: disabled — hidden feature (see src/config/features.ts in app)
   // dateNightReminder,
+  // v1 scope: disabled — weekly recap surface is hidden; pushes "Your week
+  // together is ready." for a screen the user cannot reach in v1.
+  // sendWeeklyRecaps,
 } from './notifications';
 
 export {
@@ -34,16 +36,27 @@ export {
   // detectChurnRisk,
 } from './analytics';
 
-export * from './coaching';
+export {
+  generateAIPrompts,
+  autoGeneratePrompts,
+  cleanupCoachingInsights,
+  // v1 scope: disabled — hidden feature (see src/config/features.ts in app)
+  // All three route into the relationship-pulse pipeline, which pushes
+  // "Your weekly insight is ready." for the hidden coaching surface.
+  // computeRelationshipPulse,
+  // triggerPulseComputation,
+  // generateCoachingInsight,
+} from './coaching';
+
 export * from './users';
 
 export {
   onResponseSubmitted,
   onReactionAdded,
-  onCheckInSubmitted,
   onChatMessageCreated,
   // v1 scope: disabled — hidden feature (see src/config/features.ts in app)
   // deliverCheckIn,
+  // onCheckInSubmitted, — pushes partner check-in notifications; check-ins are hidden in v1
 } from './triggers';
 
 export { onCompletionDiscussed } from './hearth';
@@ -52,12 +65,13 @@ export * from './admin';
 export * from './alerting';
 
 export {
-  submitMorningCheckin,
-  sendSpark,
-  submitSparkGuess,
   submitReflection,
   submitMissionResponse,
   // v1 scope: disabled — hidden feature (see src/config/features.ts in app)
   // deliverMorningCheckin,
   // deliverEveningReflection,
+  // These callables push partner notifications for hidden Four Engines surfaces:
+  // submitMorningCheckin,
+  // sendSpark,
+  // submitSparkGuess,
 } from './engines';

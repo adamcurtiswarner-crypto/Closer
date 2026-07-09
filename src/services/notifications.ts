@@ -171,6 +171,30 @@ export function setupNotificationHandlers(): () => void {
     // Route to appropriate screen based on notification type
     if (type === 'prompt' || type === 'partner_responded') {
       router.push('/(app)/today');
+    } else if (type === 'explore_question' || type === 'explore_complete') {
+      // Explore prompts never appear on Today — land on the explore tab and
+      // auto-open the target: respond flow for a question waiting on you,
+      // the both-answers view once it is complete. Validate deep-link params
+      // at the boundary; a bare explore tab is the safe fallback.
+      const assignmentId =
+        typeof data?.assignment_id === 'string' && data.assignment_id.length > 0
+          ? data.assignment_id
+          : undefined;
+      const promptId =
+        typeof data?.prompt_id === 'string' && data.prompt_id.length > 0
+          ? data.prompt_id
+          : undefined;
+      if (assignmentId || promptId) {
+        router.push({
+          pathname: '/(app)/explore',
+          params: {
+            ...(assignmentId ? { assignmentId } : {}),
+            ...(promptId ? { promptId } : {}),
+          },
+        });
+      } else {
+        router.push('/(app)/explore');
+      }
     } else if (type === 'recap' || type === 'weekly_recap') {
       // Memories is feature-flagged off for v1 — fall back to today
       router.push(FEATURES.memories ? '/(app)/memories' : '/(app)/today');

@@ -1239,7 +1239,7 @@
     },
     {
       "id": "V5-APT-03",
-      "text": "How sure are you that your partner would show up, no matter what?",
+      "text": "How sure are you that {partner} would show up, no matter what?",
       "hint": null,
       "type": "appreciation_trust",
       "category": "appreciation_trust",

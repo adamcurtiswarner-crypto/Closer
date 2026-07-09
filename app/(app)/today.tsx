@@ -56,12 +56,15 @@ import {
   FollowUpContextLine,
   FollowUpSkip,
   getFollowUpContextLine,
+  PartnerQuestionCard,
 } from '@components';
 import type { RelationshipStage } from '@components';
 import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
 import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt, useSkipFollowUp } from '@/hooks/usePrompt';
+import { usePersonalize } from '@/hooks/usePersonalize';
+import { useExploreAssignments, pendingPartnerQuestions } from '@/hooks/useExplorePrompts';
 import { isMiddleScaleOutcome } from '@/utils/scale';
 import {
   isSameSessionDeepener,
@@ -208,6 +211,10 @@ export default function TodayScreen() {
 
   const skipFollowUp = useSkipFollowUp();
   const prePrompt = useNotificationPrePrompt(user?.id);
+  const { data: exploreAssignments } = useExploreAssignments();
+  // Renders {partner}/{me} tokens with real first names at display time only —
+  // canonical tokenized text stays in Firestore and in every write path.
+  const personalize = usePersonalize();
 
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
@@ -400,11 +407,17 @@ export default function TodayScreen() {
     return () => clearTimeout(timer);
   }, [deepenerId]);
 
-  // Auto-fetch today's prompt if none exists
+  // Auto-fetch today's prompt when the local-date window has no live daily
+  // assignment (and nothing already completed for today). Keyed off the
+  // snapshot-derived flag rather than mode: a leftover completed doc from
+  // yesterday can render as a reveal while today's prompt is still missing.
   const hasAutoTriggered = useRef(false);
+  const needsDelivery = todayData?.needsDailyDelivery ?? false;
   useEffect(() => {
     if (
-      mode === 'no-prompt' &&
+      needsDelivery &&
+      !isLoading &&
+      !error &&
       user?.coupleId &&
       !triggerPrompt.isPending &&
       !hasAutoTriggered.current
@@ -412,7 +425,7 @@ export default function TodayScreen() {
       hasAutoTriggered.current = true;
       triggerPrompt.mutate();
     }
-  }, [mode, user?.coupleId, triggerPrompt.isPending]);
+  }, [needsDelivery, isLoading, error, user?.coupleId, triggerPrompt.isPending]);
 
   // Log prompt_viewed when assignment first loads
   const viewedRef = useRef<string | null>(null);
@@ -496,7 +509,7 @@ export default function TodayScreen() {
       userName: user.displayName || '',
       partnerName: user.partnerName || 'Partner',
       promptStatus,
-      promptText: assignment?.promptText || '',
+      promptText: personalize(assignment?.promptText || ''),
       anniversaryDaysLeft,
       anniversaryIsToday,
     });
@@ -657,12 +670,35 @@ export default function TodayScreen() {
     </View>
   ) : null;
 
+  // Explore questions the partner answered that are waiting on you — a quiet
+  // discovery card below the day's main card. Tapping a single question opens
+  // its respond flow on the explore tab; multiple land on the tab itself.
+  const partnerQuestions = pendingPartnerQuestions(exploreAssignments, user?.id);
+  const partnerQuestionCard = partnerQuestions.length > 0 ? (
+    <PartnerQuestionCard
+      partnerName={partnerName}
+      promptText={personalize(partnerQuestions[0].promptText)}
+      questionCount={partnerQuestions.length}
+      onPress={() => {
+        hapticImpact(ImpactFeedbackStyle.Light);
+        if (partnerQuestions.length === 1) {
+          router.push({
+            pathname: '/(app)/explore',
+            params: { assignmentId: partnerQuestions[0].id },
+          });
+        } else {
+          router.push('/(app)/explore');
+        }
+      }}
+    />
+  ) : null;
+
   // ─── Responding (full-screen editor, outside the crossfade wrapper) ───
   if (mode === 'responding') {
     return (
       <>
         <RespondingScreen
-          promptText={assignment!.promptText}
+          promptText={personalize(assignment!.promptText)}
           contextText={followUpContextText}
           responseText={responseText}
           onChangeText={handleTextChange}
@@ -769,6 +805,8 @@ export default function TodayScreen() {
         )}
       </Animated.View>
 
+      {partnerQuestionCard}
+
       {stagePromptCard}
 
       {FEATURES.streaks && (currentStreak > 0 || monthCompletedCount > 0) && (
@@ -802,7 +840,7 @@ export default function TodayScreen() {
       <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
         <AccentBar />
         <Text style={styles.waitingPrompt}>
-          {'“'}{assignment!.promptText}{'”'}
+          {'“'}{personalize(assignment!.promptText)}{'”'}
         </Text>
 
         <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
@@ -838,6 +876,8 @@ export default function TodayScreen() {
         )}
       </Animated.View>
 
+      {partnerQuestionCard}
+
       {stagePromptCard}
 
       <TodayBottomSections {...bottomProps} animationBaseDelay={400} />
@@ -858,7 +898,7 @@ export default function TodayScreen() {
         <CompletionMoment
           key={revealAssignment!.id}
           assignmentId={revealAssignment!.id}
-          promptText={revealAssignment!.promptText}
+          promptText={personalize(revealAssignment!.promptText)}
           yourResponse={revealMyResponse!.responseText}
           partnerResponse={revealPartnerResponse?.responseText || ''}
           partnerName={partnerName}
@@ -885,7 +925,11 @@ export default function TodayScreen() {
               revealAssignment!.scaleConfig
             )
           }
-          closingText={isRevealFollowUp ? revealAssignment!.closingText : null}
+          closingText={
+            isRevealFollowUp && revealAssignment!.closingText
+              ? personalize(revealAssignment!.closingText)
+              : null
+          }
         />
       </Animated.View>
 
@@ -910,7 +954,7 @@ export default function TodayScreen() {
           )}
           {isScalePrompt ? (
             <ScalePromptCard
-              promptText={assignment.promptText}
+              promptText={personalize(assignment.promptText)}
               scaleConfig={assignment.scaleConfig}
               value={scaleValue}
               onChangeValue={setScaleValue}
@@ -922,8 +966,8 @@ export default function TodayScreen() {
             />
           ) : (
             <PromptCard
-              promptText={assignment.promptText}
-              promptHint={assignment.promptHint}
+              promptText={personalize(assignment.promptText)}
+              promptHint={assignment.promptHint && personalize(assignment.promptHint)}
               promptType={assignment.promptType}
               onRespond={handleRespond}
             />
@@ -931,6 +975,8 @@ export default function TodayScreen() {
           <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
         </Animated.View>
       )}
+
+      {partnerQuestionCard}
 
       {stagePromptCard}
 
@@ -1051,7 +1097,7 @@ export default function TodayScreen() {
         )}
         {isScalePrompt ? (
           <ScalePromptCard
-            promptText={assignment!.promptText}
+            promptText={personalize(assignment!.promptText)}
             scaleConfig={assignment!.scaleConfig}
             value={scaleValue}
             onChangeValue={setScaleValue}
@@ -1063,8 +1109,8 @@ export default function TodayScreen() {
           />
         ) : (
           <PromptCard
-            promptText={assignment!.promptText}
-            promptHint={assignment!.promptHint}
+            promptText={personalize(assignment!.promptText)}
+            promptHint={assignment!.promptHint && personalize(assignment!.promptHint)}
             promptType={assignment!.promptType}
             onRespond={handleRespond}
           />
@@ -1073,6 +1119,8 @@ export default function TodayScreen() {
           <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
         )}
       </Animated.View>
+
+      {partnerQuestionCard}
 
       {stagePromptCard}
 

@@ -94,6 +94,14 @@
       "collectionGroup": "prompt_responses",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "assignment_id", "order": "ASCENDING" },
+        { "fieldPath": "submitted_at", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "prompt_responses",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "couple_id", "order": "ASCENDING" },
         { "fieldPath": "created_at", "order": "DESCENDING" }
       ]

@@ -93,6 +93,7 @@ export type { RelationshipStage } from './RelationshipStagePrompt';
 export { EngagementCards } from './EngagementCards';
 export { RespondingScreen } from './RespondingScreen';
 export { TodayBottomSections } from './TodayBottomSections';
+export { PartnerQuestionCard } from './PartnerQuestionCard';
 
 // Social auth
 export { SocialAuthButtons } from './SocialAuthButtons';

@@ -1,15 +1,14 @@
 /**
- * Unit tests for sendPushNotification (shared.ts) — Expo Push Service +
- * legacy FCM transport branching.
+ * Unit tests for sendPushNotification (shared.ts) — Expo-only transport.
  *
  * Token routing contract:
  *   - Tokens matching ExponentPushToken[...] go to the Expo Push Service
  *     (https://exp.host/--/api/v2/push/send) in chunks of <= 100.
- *   - All other tokens (legacy raw FCM registration tokens) go through
- *     admin.messaging().sendEach() exactly as before.
- *   - DeviceNotRegistered Expo tickets and invalid FCM tokens are removed
- *     from the user's push_tokens array.
- *   - Transport failures never throw out of sendPushNotification.
+ *   - All other tokens are stale legacy entries (raw APNs/FCM registration
+ *     tokens from old builds). They are NEVER sent to — they are pruned from
+ *     the user's push_tokens via arrayRemove. admin.messaging() is dead.
+ *   - DeviceNotRegistered Expo tickets are removed from push_tokens.
+ *   - Transport and cleanup failures never throw out of sendPushNotification.
  */
 
 const mockSendEach = jest.fn();
@@ -104,41 +103,57 @@ describe('sendPushNotification token partitioning', () => {
     expect(mockSendEach).not.toHaveBeenCalled();
   });
 
-  it('sends non-Expo tokens through the existing FCM path untouched', async () => {
+  it('prunes non-Expo legacy tokens instead of sending to them', async () => {
     userDocWithTokens(['legacy-fcm-token-1', 'legacy-fcm-token-2']);
-    mockSendEach.mockResolvedValue({ responses: [{}, {}] });
 
     await sendPushNotification('user-1', NOTIFICATION, { type: 'prompt' });
 
     expect(mockFetch).not.toHaveBeenCalled();
-    expect(mockSendEach).toHaveBeenCalledTimes(1);
-    expect(mockSendEach).toHaveBeenCalledWith([
-      { token: 'legacy-fcm-token-1', notification: NOTIFICATION, data: { type: 'prompt' } },
-      { token: 'legacy-fcm-token-2', notification: NOTIFICATION, data: { type: 'prompt' } },
-    ]);
+    expect(mockSendEach).not.toHaveBeenCalled();
+    expect(mockUserUpdate).toHaveBeenCalledTimes(1);
+    expect(mockUserUpdate).toHaveBeenCalledWith({
+      push_tokens: {
+        __op: 'arrayRemove',
+        tokens: ['legacy-fcm-token-1', 'legacy-fcm-token-2'],
+      },
+    });
   });
 
-  it('splits mixed-token users across both transports', async () => {
+  it('sends Expo tokens and prunes legacy tokens for mixed-token users', async () => {
     userDocWithTokens([expoToken('aaa'), 'legacy-fcm-token', expoToken('bbb')]);
     mockFetch.mockResolvedValue(fetchResponse(okTickets(2)));
-    mockSendEach.mockResolvedValue({ responses: [{}] });
 
     await sendPushNotification('user-1', NOTIFICATION);
 
     const expoMessages = sentExpoMessages();
     expect(expoMessages.map((m) => m.to)).toEqual([expoToken('aaa'), expoToken('bbb')]);
-    expect(mockSendEach).toHaveBeenCalledWith([
-      { token: 'legacy-fcm-token', notification: NOTIFICATION },
-    ]);
+    expect(mockSendEach).not.toHaveBeenCalled();
+    expect(mockUserUpdate).toHaveBeenCalledWith({
+      push_tokens: { __op: 'arrayRemove', tokens: ['legacy-fcm-token'] },
+    });
   });
 
-  it('filters out empty and non-string token entries', async () => {
+  it('never uses the FCM transport regardless of token shape', async () => {
+    userDocWithTokens([
+      'a'.repeat(64), // raw APNs hex
+      'fcm-registration-token:APA91b',
+      expoToken('live'),
+    ]);
+
+    await sendPushNotification('user-1', NOTIFICATION);
+
+    expect(mockSendEach).not.toHaveBeenCalled();
+    expect(sentExpoMessages().map((m) => m.to)).toEqual([expoToken('live')]);
+  });
+
+  it('filters out empty and non-string token entries without pruning writes', async () => {
     userDocWithTokens(['', null, 42, expoToken('aaa')]);
 
     await sendPushNotification('user-1', NOTIFICATION);
 
     expect(sentExpoMessages().map((m) => m.to)).toEqual([expoToken('aaa')]);
     expect(mockSendEach).not.toHaveBeenCalled();
+    expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
   it('does nothing when the user has no tokens or does not exist', async () => {
@@ -241,40 +256,32 @@ describe('DeviceNotRegistered cleanup', () => {
     expect(mockUserUpdate).not.toHaveBeenCalled();
   });
 
-  it('cleans up invalid tokens on both transports for mixed-token users', async () => {
+  it('prunes legacy tokens and removes dead Expo tokens independently', async () => {
     userDocWithTokens([expoToken('dead'), 'dead-fcm-token']);
     mockFetch.mockResolvedValue(
       fetchResponse({
         data: [{ status: 'error', details: { error: 'DeviceNotRegistered' } }],
       })
     );
-    mockSendEach.mockResolvedValue({
-      responses: [{ error: { code: 'messaging/registration-token-not-registered' } }],
-    });
 
     await sendPushNotification('user-1', NOTIFICATION);
 
-    expect(mockUserUpdate).toHaveBeenCalledWith({
-      push_tokens: { __op: 'arrayRemove', tokens: [expoToken('dead')] },
-    });
+    expect(mockSendEach).not.toHaveBeenCalled();
     expect(mockUserUpdate).toHaveBeenCalledWith({
       push_tokens: { __op: 'arrayRemove', tokens: ['dead-fcm-token'] },
     });
+    expect(mockUserUpdate).toHaveBeenCalledWith({
+      push_tokens: { __op: 'arrayRemove', tokens: [expoToken('dead')] },
+    });
   });
 
-  it('keeps the FCM invalid-token cleanup untouched for non-expo tokens', async () => {
-    userDocWithTokens(['valid-fcm', 'invalid-fcm']);
-    mockSendEach.mockResolvedValue({
-      responses: [{}, { error: { code: 'messaging/invalid-registration-token' } }],
-    });
+  it('still sends to Expo tokens when the legacy prune write fails', async () => {
+    userDocWithTokens(['stale-legacy', expoToken('live')]);
+    mockUserUpdate.mockRejectedValue(new Error('firestore down'));
 
-    await sendPushNotification('user-1', NOTIFICATION);
+    await expect(sendPushNotification('user-1', NOTIFICATION)).resolves.toBeUndefined();
 
-    expect(mockFetch).not.toHaveBeenCalled();
-    expect(mockUserUpdate).toHaveBeenCalledTimes(1);
-    expect(mockUserUpdate).toHaveBeenCalledWith({
-      push_tokens: { __op: 'arrayRemove', tokens: ['invalid-fcm'] },
-    });
+    expect(sentExpoMessages().map((m) => m.to)).toEqual([expoToken('live')]);
   });
 });
 
@@ -313,11 +320,13 @@ describe('error posture — sendPushNotification never throws', () => {
     });
   });
 
-  it('swallows FCM transport failures', async () => {
+  it('swallows legacy-token prune failures', async () => {
     userDocWithTokens(['legacy-fcm-token']);
-    mockSendEach.mockRejectedValue(new Error('fcm down'));
+    mockUserUpdate.mockRejectedValue(new Error('firestore down'));
 
     await expect(sendPushNotification('user-1', NOTIFICATION)).resolves.toBeUndefined();
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(mockSendEach).not.toHaveBeenCalled();
   });
 
   it('swallows Firestore cleanup failures', async () => {
