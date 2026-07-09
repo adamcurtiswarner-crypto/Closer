@@ -326,6 +326,60 @@ describe('usePrompt', () => {
         ];
         expect(selectAssignmentDoc(docs, [], TODAY)).toBeNull();
       });
+
+      it("never lets yesterday's completed reveal wear today's header (skip fallback returns null)", () => {
+        // The founder-couple desync: today's follow-up was set aside, the only
+        // other doc in the window is yesterday's completed follow-up. Old
+        // behavior surfaced it under today's date; now the day reads as fresh.
+        const docs = [
+          makeDoc('y-done', {
+            status: 'completed',
+            assigned_date: '2026-07-07',
+            assignment_kind: 'follow_up',
+          }),
+          makeDoc('t-fu', {
+            status: 'partial',
+            assigned_date: TODAY,
+            assignment_kind: 'follow_up',
+          }),
+        ];
+        expect(selectAssignmentDoc(docs, ['t-fu'], TODAY)).toBeNull();
+      });
+
+      it("still surfaces a completed doc dated tomorrow (timezone-skewed partner)", () => {
+        const docs = [
+          makeDoc('tm-done', { status: 'completed', assigned_date: '2026-07-09' }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY)?.id).toBe('tm-done');
+      });
+    });
+
+    describe('server-visible skip (skipped_by map)', () => {
+      const TODAY = '2026-07-08';
+
+      it('filters a follow-up the user set aside on ANOTHER device', () => {
+        const docs = [
+          makeDoc('fu-1', {
+            status: 'partial',
+            assigned_date: TODAY,
+            assignment_kind: 'follow_up',
+            skipped_by: { 'me-1': {} },
+          }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY, 'me-1')).toBeNull();
+      });
+
+      it("does NOT filter when only the PARTNER set it aside — I can still answer", () => {
+        const docs = [
+          makeDoc('fu-1', {
+            status: 'partial',
+            assigned_date: TODAY,
+            assignment_kind: 'follow_up',
+            skipped_by: { 'partner-1': {} },
+          }),
+        ];
+        expect(selectAssignmentDoc(docs, [], TODAY, 'me-1')?.id).toBe('fu-1');
+      });
     });
   });
 

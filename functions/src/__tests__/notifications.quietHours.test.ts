@@ -88,3 +88,16 @@ describe('isReminderEligibleAssignment — explore never nags', () => {
     expect(isReminderEligibleAssignment({})).toBe(true);
   });
 });
+
+describe('isUserSetAside — skipped follow-ups never remind', () => {
+  const { isUserSetAside } = require('../notifications');
+
+  it('is true for a user present in skipped_by', () => {
+    expect(isUserSetAside({ skipped_by: { 'user-a': {} } }, 'user-a')).toBe(true);
+  });
+
+  it('is false for the other member and for assignments without skips', () => {
+    expect(isUserSetAside({ skipped_by: { 'user-a': {} } }, 'user-b')).toBe(false);
+    expect(isUserSetAside({}, 'user-a')).toBe(false);
+  });
+});

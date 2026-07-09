@@ -35,6 +35,17 @@ export function isReminderEligibleAssignment(assignment: {
   return assignment.source !== 'explore';
 }
 
+/**
+ * True when this user set the assignment aside for today (follow-up skip,
+ * written to skipped_by by the client). Set-aside users are never reminded.
+ */
+export function isUserSetAside(
+  assignment: { skipped_by?: Record<string, unknown> },
+  userId: string
+): boolean {
+  return Boolean(assignment.skipped_by && assignment.skipped_by[userId]);
+}
+
 // ============================================
 // SCHEDULED: Weekly Recap Notification
 // ============================================
@@ -142,6 +153,10 @@ export const sendResponseReminders = functions.pubsub
 
       for (const userId of memberIds) {
         if (respondedUserIds.has(userId)) continue;
+
+        // Set aside for today (follow-up skip) — never remind. The prompt's
+        // own copy promises "it'll keep"; nagging breaks that promise.
+        if (isUserSetAside(assignment, userId)) continue;
 
         const userReminderCount = remindersSentMap[userId] || 0;
 

@@ -204,7 +204,8 @@
     "notifCta": "Turn on notifications",
     "notNow": "Not now",
     "fromName": "From {{name}}",
-    "questionsWaiting": "{{count}} questions waiting"
+    "questionsWaiting": "{{count}} questions waiting",
+    "partnerSetAside": "{{name}} set this one aside for today — it'll keep. Your answer is saved."
   },
   "memories": {
     "title": "Memories",

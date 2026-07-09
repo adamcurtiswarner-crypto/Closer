@@ -827,6 +827,12 @@ export default function TodayScreen() {
     </ScrollView>
   );
 
+  // The partner set today's follow-up aside (server-visible skip) — show the
+  // truth instead of an indefinite "we'll let you know" waiting line.
+  const partnerSetAside =
+    assignment?.assignmentKind === 'follow_up' &&
+    (assignment.skippedBy ?? []).some((id) => id !== user?.id);
+
   const renderWaiting = () => (
     <ScrollView
       style={styles.scrollView}
@@ -855,7 +861,17 @@ export default function TodayScreen() {
 
         <View style={styles.waitingDivider} />
 
-        {isPartnerTyping && partnerTypingContext === 'prompt' ? (
+        {partnerSetAside ? (
+          <Animated.View
+            entering={FadeIn.duration(300)}
+            style={styles.waitingMessageRow}
+          >
+            <Icon name="hourglass" size={16} color={colors.text.muted} />
+            <Text style={styles.waitingMessage}>
+              {t('today.partnerSetAside', { name: partnerName ?? t('explore.partnerFallback') })}
+            </Text>
+          </Animated.View>
+        ) : isPartnerTyping && partnerTypingContext === 'prompt' ? (
           <Animated.View
             entering={FadeIn.duration(300)}
             exiting={FadeOut.duration(200)}

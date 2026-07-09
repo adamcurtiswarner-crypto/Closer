@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
@@ -17,6 +17,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
+import { AppState } from 'react-native';
 import { db, functions } from '@/config/firebase';
 import { todayLocalISO, localDateWindow } from '@utils/localDate';
 import { useAuth } from './useAuth';
@@ -51,6 +52,8 @@ interface PromptAssignment {
   scaleConfig: ScaleConfig | null;
   followUp: FollowUpAssignmentInfo | null;
   closingText: string | null;
+  /** User ids who set this follow-up aside for today (server-visible skip). */
+  skippedBy: string[];
 }
 
 interface PromptResponse {
@@ -105,6 +108,7 @@ export function mapAssignment(id: string, data: Record<string, any>): PromptAssi
     scaleConfig: mapScaleConfig(data.scale_config),
     followUp: assignmentKind === 'follow_up' ? mapFollowUpInfo(data.follow_up) : null,
     closingText: data.closing_text ?? null,
+    skippedBy: data.skipped_by ? Object.keys(data.skipped_by) : [],
   };
 }
 
@@ -137,7 +141,8 @@ interface AssignmentDocLike {
 export function selectAssignmentDoc(
   docs: AssignmentDocLike[],
   skippedIds: string[],
-  todayISO?: string
+  todayISO?: string,
+  myUserId?: string
 ): AssignmentDocLike | null {
   const candidates = docs.filter((d) => {
     const data = d.data();
@@ -145,7 +150,12 @@ export function selectAssignmentDoc(
     // Next-day follow-ups (repair/divergence) are 'scheduled' until the
     // delivery run activates them — never surface those early
     if (data.status === 'scheduled') return false;
-    if (data.assignment_kind === 'follow_up' && skippedIds.includes(d.id)) return false;
+    if (data.assignment_kind === 'follow_up') {
+      // Set aside for today — locally (AsyncStorage, instant/offline) or
+      // server-visibly (skipped_by map, synced across devices)
+      if (skippedIds.includes(d.id)) return false;
+      if (myUserId && data.skipped_by && data.skipped_by[myUserId]) return false;
+    }
     return true;
   });
   if (candidates.length === 0) return null;
@@ -157,16 +167,19 @@ export function selectAssignmentDoc(
   // Without a reference date every candidate counts as "today" (single-day query)
   const isToday = (d: AssignmentDocLike) =>
     todayISO == null || d.data().assigned_date === todayISO;
+  // Completed docs may surface for today or a timezone-shifted tomorrow, but
+  // never for a PAST date — yesterday's reveal must not wear today's header
+  // (it reads as "we're not synced"). A fresh local day gets a fresh prompt.
+  const isTodayOrLater = (d: AssignmentDocLike) =>
+    todayISO == null || d.data().assigned_date >= todayISO;
 
   return (
     candidates.find((d) => isActive(d) && isFollowUp(d) && isToday(d)) ??
     candidates.find((d) => isActive(d) && isToday(d)) ??
     candidates.find((d) => isActive(d) && isFollowUp(d)) ??
     candidates.find(isActive) ??
-    candidates.find((d) => isCompleted(d) && isFollowUp(d) && isToday(d)) ??
-    candidates.find((d) => isCompleted(d) && isToday(d)) ??
-    candidates.find((d) => isCompleted(d) && isFollowUp(d)) ??
-    candidates.find(isCompleted) ??
+    candidates.find((d) => isCompleted(d) && isFollowUp(d) && isTodayOrLater(d)) ??
+    candidates.find((d) => isCompleted(d) && isTodayOrLater(d)) ??
     // Anything left is expired — surface it only when it is today's doc
     candidates.find(isToday) ??
     null
@@ -285,6 +298,29 @@ export function useTodayPrompt() {
     return () => { promptRefreshListeners.delete(listener); };
   }, []);
 
+  // Day rollover: the snapshot query is pinned to the local date captured at
+  // subscribe time, so an app left open (or resumed from background) past
+  // midnight would keep serving yesterday. Re-subscribe when the local
+  // calendar day changes — checked once a minute and on foreground.
+  const subscribedDayRef = useRef(todayLocalISO());
+  useEffect(() => {
+    const rolloverCheck = () => {
+      const day = todayLocalISO();
+      if (day !== subscribedDayRef.current) {
+        subscribedDayRef.current = day;
+        bumpPromptRefresh();
+      }
+    };
+    const interval = setInterval(rolloverCheck, 60_000);
+    const appStateSub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') rolloverCheck();
+    });
+    return () => {
+      clearInterval(interval);
+      appStateSub.remove();
+    };
+  }, []);
+
   // Set up real-time listeners
   useEffect(() => {
     if (!coupleId || !userId) {
@@ -296,6 +332,7 @@ export function useTodayPrompt() {
     // the user's timezone, and partners can sit on adjacent local dates, so
     // query the ±1-day window and prefer docs dated today.
     const today = todayLocalISO();
+    subscribedDayRef.current = today;
     const dateWindow = localDateWindow();
     let unsubResponses: (() => void) | null = null;
 
@@ -317,7 +354,7 @@ export function useTodayPrompt() {
       // the assignment to surface (active follow-up > active daily > completed,
       // today's date preferred within each tier)
       const skippedIds = await getSkippedFollowUpIds();
-      const assignmentDoc = selectAssignmentDoc(assignmentSnap.docs, skippedIds, today);
+      const assignmentDoc = selectAssignmentDoc(assignmentSnap.docs, skippedIds, today, userId);
       const needsDelivery = needsDailyDelivery(assignmentSnap.docs, today);
 
       if (!assignmentDoc) {
@@ -696,9 +733,26 @@ export function useSubmitResponse() {
  * machinery expire it server-side — no writes, no nagging, no penalty.
  */
 export function useSkipFollowUp() {
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async ({ assignmentId }: { assignmentId: string }) => {
+      // Local first — instant filtering, works offline
       await addSkippedFollowUpId(assignmentId);
+      // Then server-visible: the partner's client shows "set aside for
+      // today" instead of an indefinite waiting state, and response
+      // reminders stop for this user. Best-effort — the local skip
+      // already covers this device if the write fails.
+      if (user?.id) {
+        try {
+          await updateDoc(doc(db, 'prompt_assignments', assignmentId), {
+            [`skipped_by.${user.id}`]: serverTimestamp(),
+            updated_at: serverTimestamp(),
+          });
+        } catch {
+          // Offline or rules hiccup — local skip still applies
+        }
+      }
       return { assignmentId };
     },
     onSuccess: (data) => {
