@@ -570,5 +570,15 @@
       "tendedTogether": "Tended, together",
       "settleBody": "Tended. This ember settles into your hearth."
     }
+  },
+  "reactions": {
+    "love": "Love",
+    "spark": "Spark",
+    "smile": "Smile",
+    "moved": "Moved",
+    "partnerHeart": "{{name}} loved this",
+    "partnerFire": "{{name}} felt the spark",
+    "partnerLaughing": "{{name}} smiled at this",
+    "partnerTeary": "{{name}} was moved"
   }
 }

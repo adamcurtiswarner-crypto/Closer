@@ -1,17 +1,20 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { REACTIONS, type ReactionType, type ReactionIconName } from '@/hooks/useReaction';
 import { Icon } from './Icon';
-import { colors, spacing } from '@/config/theme';
+import { colors, spacing, typography } from '@/config/theme';
 
-// VoiceOver names for each reaction (and its lowercase noun for the partner line)
-const REACTION_A11Y: Record<ReactionType, { label: string; noun: string }> = {
-  heart: { label: 'Heart', noun: 'heart' },
-  fire: { label: 'Flame', noun: 'flame' },
-  laughing: { label: 'Smile', noun: 'smile' },
-  teary: { label: 'Tear', noun: 'tear' },
+// Visible caption + partner-line i18n keys per reaction. The captions make
+// the row legible at a glance (Love / Spark / Smile / Moved) — founder call
+// 2026-07-09; icons alone read as a guessing game.
+const REACTION_COPY: Record<ReactionType, { captionKey: string; partnerKey: string }> = {
+  heart: { captionKey: 'reactions.love', partnerKey: 'reactions.partnerHeart' },
+  fire: { captionKey: 'reactions.spark', partnerKey: 'reactions.partnerFire' },
+  laughing: { captionKey: 'reactions.smile', partnerKey: 'reactions.partnerLaughing' },
+  teary: { captionKey: 'reactions.moved', partnerKey: 'reactions.partnerTeary' },
 };
 
 interface ReactionRowProps {
@@ -19,18 +22,20 @@ interface ReactionRowProps {
   partnerReaction: ReactionType | null;
   onReact: (reaction: ReactionType | null) => void;
   disabled?: boolean;
-  /** Used for the partner-reaction accessibility label */
+  /** Used for the partner-reaction line ("Masha felt the spark") */
   partnerName?: string;
 }
 
 function ReactionButton({
   icon,
   type,
+  caption,
   isSelected,
   onPress,
 }: {
   icon: ReactionIconName;
   type: ReactionType;
+  caption: string;
   isSelected: boolean;
   onPress: () => void;
 }) {
@@ -53,8 +58,9 @@ function ReactionButton({
       onPress={handlePress}
       activeOpacity={0.7}
       accessibilityRole="button"
-      accessibilityLabel={REACTION_A11Y[type].label}
+      accessibilityLabel={caption}
       accessibilityState={{ selected: isSelected }}
+      style={styles.reactionCol}
     >
       <Animated.View
         style={[
@@ -70,6 +76,12 @@ function ReactionButton({
           weight={isSelected ? 'fill' : 'regular'}
         />
       </Animated.View>
+      <Text
+        style={[styles.caption, isSelected && styles.captionSelected]}
+        maxFontSizeMultiplier={1.4}
+      >
+        {caption}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -81,6 +93,12 @@ export function ReactionRow({
   disabled,
   partnerName,
 }: ReactionRowProps) {
+  const { t } = useTranslation();
+  const partnerCopy = partnerReaction ? REACTION_COPY[partnerReaction] : null;
+  const partnerLine = partnerCopy
+    ? t(partnerCopy.partnerKey, { name: partnerName ?? t('explore.partnerFallback') })
+    : null;
+
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
       <View style={styles.row}>
@@ -89,6 +107,7 @@ export function ReactionRow({
             key={r.type}
             icon={r.icon}
             type={r.type}
+            caption={t(REACTION_COPY[r.type].captionKey)}
             isSelected={myReaction === r.type}
             onPress={() => {
               if (disabled) return;
@@ -97,14 +116,12 @@ export function ReactionRow({
           />
         ))}
       </View>
-      {partnerReaction && (
+      {partnerReaction && partnerLine && (
         <Animated.View
           entering={FadeIn.duration(300)}
           style={styles.partnerReaction}
           accessible
-          accessibilityLabel={`${partnerName ?? 'Partner'} reacted with a ${
-            REACTION_A11Y[partnerReaction]?.noun ?? 'heart'
-          }`}
+          accessibilityLabel={partnerLine}
         >
           <Icon
             name={REACTIONS.find((r) => r.type === partnerReaction)?.icon ?? 'heart'}
@@ -112,6 +129,9 @@ export function ReactionRow({
             color={colors.accent.primary}
             weight="fill"
           />
+          <Text style={styles.partnerLine} maxFontSizeMultiplier={1.4}>
+            {partnerLine}
+          </Text>
         </Animated.View>
       )}
     </Animated.View>
@@ -127,6 +147,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.smd,
   },
+  reactionCol: {
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   reactionBtn: {
     width: 44,
     height: 44,
@@ -140,9 +164,23 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: colors.accent.primary,
   },
+  caption: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  captionSelected: {
+    color: colors.accent.primary,
+  },
   partnerReaction: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: spacing.xs,
     marginTop: spacing.sm,
     paddingRight: spacing.xs,
+  },
+  partnerLine: {
+    ...typography.caption,
+    color: colors.text.secondary,
   },
 });
