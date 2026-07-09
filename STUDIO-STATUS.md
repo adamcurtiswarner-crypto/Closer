@@ -31,6 +31,22 @@ One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (m
 - New welcome hero (founder's flame illustration) + original tagline restored; App Store listing copy rewritten (STORE_METADATA.md); GitGuardian webhook-secret leak rotated + purged from history.
 - Builds: 57 on TestFlight (submission candidate before Hearth); **58 building now = Hearth + push fix**.
 
+## 2026-07-09 WORTHINESS REVIEW — GATES THE LAUNCH
+Full synthesis: docs/reviews/2026-07-09-worthiness-review.md (8 department audits; CEO-verified findings).
+**SEV-0 (all must clear before TestFlight resumes):**
+1. Content death spiral — depth progression permanently locks every answered category; pool exhausts ~2 weeks → same prompt daily forever (VERIFIED in prod; founder couple at ~6 eligible prompts) [S]
+2. Storage rules open — any authed user can read/write any couple's photos (VERIFIED) [S]
+3. Breakup model — ex retains permanent access (member_ids never cleared); deletion leaves embedded answer copies; client unlink rules-broken [M]
+4. Invite enumeration → partner impersonation [S]
+5. Reveal race — simultaneous answers strand assignment at 'partial' forever; duplicate-response paths → deterministic IDs + server-authoritative status [M]
+6. Offline answers silently lost (rules-blocked flush query + silent catch) [S]
+7. Reminders never fire for default 19:00 users (quiet-hours window math) [S]
+8. Paywall unreachable — FOUNDER DECISION on the paywall moment (recommend trial-at-pairing; daily question free forever; follow-ups+Hearth+Explore-send premium) [M]
+9. RevenueCat webhook fails open on missing env [S]
+**SEV-1 pre-launch:** pairing-moment design (both sides), Explore reveal = CompletionMoment, invite chain rewrite (first-person msg, ?from wiring, og:image, domain decision), join-page rebuild, 7-screenshot store narrative + listing surgery (Hearth/Explore missing entirely), reviewer one-device path (+ FREEZE uitest cleanup), privacy policy accuracy (add Expo; fix deletion claim), support floor (inbox + in-app contact + /support), rules test suite + two-client harness + tz/DST matrix, observability (reportError wrappers, non-push alert channel, Sentry DSN→EAS, canary), scheduler timeouts, note-field emphasis, response/assignment field-scoping.
+**Founder decisions pending:** paywall moment · invite domain (stoke.llc vs getstoke.io) · beta wave during review (recommended YES, manual release) · ex-partner data policy · W-9/legal/IAP items.
+**Org:** all 8 head charters were stale → .claude/agents/heads/CURRENT-STATE.md is now authoritative; canonical tests 487 app / 308 functions; "422 prompts" claim retired (60 live); "AES-256" claim purged (no encryption code exists).
+
 ## Done July 9 — founder bug/UX report
 - **Phantom notifications fixed (root causes, not symptoms)**: (1) UTC "today" rolled over at 8PM ET, re-delivering the daily prompt each evening — now user-timezone dates client+server with ±1-day dedupe window; (2) hidden-feature pushes (weekly pulse/recap + 6 callables + check-in trigger) un-exported AND deleted from prod; (3) legacy dual-transport sends killed — Expo-only with auto-prune; 10 stale tokens scrubbed (founder account had 8); (4) reminder quiet hours 8AM-9PM user-local.
 - **Explore = "send your partner a question"**: full lifecycle rebuilt — seal after answering (own answer always viewable), partner gets truthful push ("sent you a question: …") deep-linking to that prompt, "FROM {NAME}" discovery card on Today, Respond available on partner side (dead-end hourglass removed), duplicate-assignment guard, real-time updates, side-by-side reveal, completions flow into Hearth (category fix + 40 assignments backfilled). Partial explore questions never expire; explore never blocks daily delivery.
@@ -62,7 +78,7 @@ One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (m
 - invite-partner "Copied" Alert → quiet inline pattern (flagged cross-agent, unowned)
 
 ## Engineering Health
-- App: tsc clean, 41 suites / 363 tests green; functions: 169 tests green
+- App: tsc clean, 51 suites / 487 tests green; functions: 11 suites / 308 green (canonical 2026-07-09)
 - Design lint: 0 violations in v1-visible surface
 - main @ ff9fa71, pushed; working tree clean
 

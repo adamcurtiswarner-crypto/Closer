@@ -149,12 +149,11 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 
 ## Design
 
-### Colors
-- Primary accent: `#c97454` (warm rust)
-- Secondary: `#8b7355` (warm brown)
-- Success: `#22c55e`
-- Warm tint: `#fef7f4`
-- Brand purple: `#490f5f` (goals only)
+### Colors (src/config/theme.ts is the ONLY truth — do not trust docs)
+- Primary accent: `#D4522A` (coral)
+- Secondary: `#3D2870` (purple)
+- Success: `#4E7E52` (sage)
+- Warm tint: `#FDF1ED`; background `#F5F2EE`; ink `#1E1E2E`
 
 ### Brand Voice
 - **Warm, Quiet, Direct** — never cute, clinical, or urgent
@@ -166,11 +165,9 @@ Configured in tsconfig.json, babel.config.js, and jest.config.js:
 - Celebrate quietly: "Another moment saved" not "Great job!"
 
 ### Typography
-- Headings: `Alexandria-SemiBold` with `fontWeight: '600'`
-- Body: `Inter-Regular` with `fontWeight: '400'`
-- Labels: `Inter-Medium` with `fontWeight: '500'`
-- Emphasis: `Inter-SemiBold` with `fontWeight: '600'`
-- CRITICAL: fontWeight must match fontFamily (e.g., SemiBold = '600', not '700' or 'bold')
+- 100% Nunito (Black / ExtraBold / SemiBold) via the typography scale in theme.ts — Alexandria and Inter are retired
+- Use `typography.*` tokens (baked line-heights); never raw fontSize/fontFamily (design lint enforces)
+- CRITICAL: fontWeight must match fontFamily
 
 ## Firestore Collections
 
@@ -210,7 +207,7 @@ v1 scope: several scheduled push functions are disabled in the export barrel (`f
 
 - Framework: Jest + React Native Testing Library
 - Preset: `@react-native/jest-preset` (not `react-native` — changed in RN 0.85)
-- Tests: `src/__tests__/` (24 suites, 140 tests), `functions/__tests__/`
+- Tests: `src/__tests__/` (51 suites / 487 tests) and `functions/src/__tests__/` (11 suites / 308 tests) — counts as of 2026-07-09
 - Mocks: `src/__mocks__/` (react-native-purchases, netinfo, async-storage, react-native-reanimated, react-native-worklets, sentry, google-signin, expo-apple-authentication)
 - `babel-jest` transform; `ts-jest` for functions
 

@@ -1,29 +1,34 @@
-# Stoke Sprint Backlog
+# Stoke — Task Board
+*Rewritten 2026-07-09 by CEO to mirror the worthiness review. Old feature-roadmap content was stale and contradicted PRODUCT-DIRECTION.md. Source of truth for findings: docs/reviews/2026-07-09-worthiness-review.md.*
 
-## Stabilization (done)
-- [x] Fix Firestore security rules for goals/wishlist subcollections
-- [x] Fix 3 src/ TypeScript errors (analytics events + test comparison)
-- [x] Fix subscription Firestore rule (couple_id field mismatch)
+## GATE 1 — SEV-0 fixes (before TestFlight resumes)
+- [ ] Content death spiral: exempt scale prompts from depth progression + LRU-random fallback (functions/src/prompts.ts, triggers.ts)
+- [ ] storage.rules: couple-membership on every couple-scoped path
+- [ ] Breakup model: isCoupleMember checks status; unlink → callable; purge embedded copies in completions/memories (+ BigQuery)
+- [ ] couple_invites: kill collection listing; accept via callable/code-keyed get
+- [ ] Reveal race: server-authoritative assignment status + distinct-uid count; deterministic response IDs; single-flight offline flush
+- [ ] Offline flush query: add couple_id filter; un-silence catch
+- [ ] Reminders: widen reminder-1 window (quiet hours defer); reminder-2 at count ≤1; reportError wrapper
+- [ ] Paywall moment — FOUNDER DECISION, then wire
+- [ ] revenueCatWebhook fail-closed
+- [ ] runWith timeouts on all schedulers
 
-## Up Next: Feature #3 — Date Night Planner
-- [ ] Brainstorm + design doc (brainstorming skill)
-- [ ] Implementation plan (writing-plans skill)
-- [ ] Build (subagent-driven development)
-- [ ] Test + review
-- [ ] Ship
+## GATE 2 — SEV-1 pre-launch (parallel where possible)
+- [ ] Pairing-moment design (both sides) · Explore reveal = CompletionMoment · first-reveal beat · inline onboarding errors · copy pass
+- [ ] Invite chain: first-person share msg, ?from wiring, og:image, domain decision (FOUNDER), join.html skeptical-partner rebuild
+- [ ] Store: 7-screenshot narrative, listing surgery (add Hearth/Explore, first-3-lines, keyword swap), reviewer one-device path, FREEZE uitest cleanup
+- [ ] Trust: privacy policy accuracy (add Expo; deletion claim), nutrition labels (incl. Sensitive Info), support@ + in-app Contact + /support page
+- [ ] Test seams: rules test suite (~30 query shapes), two-client emulator harness (5 flows), tz/DST shared matrix + jest TZ pin, manual device checklist, webhook tests
+- [ ] Observability: reportError on core trigger/reminders, non-push alert channel, Sentry DSN → EAS env, client_error events, synthetic canary
+- [ ] Note-field default emphasis; field-scope response/assignment updates
 
-## Operational Health
-- [ ] Integrate Sentry crash reporting (@sentry/react-native)
-- [ ] Set up Cloud Functions error alerting (Google Cloud Monitoring)
-- [ ] Deploy updated Firestore security rules to production
+## GATE 3 — Ship
+- [ ] Build 61+ cut → founder two-phone pass → screenshots → ASC assembly → submit (manual release) → 10-20-couple beta during review → release on exit criteria
 
-## Tech Debt
-- [ ] Decide admin dashboard fate (fix 294 errors or exclude from tsconfig)
-- [ ] Decompose Engagement Engine design doc into 3-4 independent sprints
-- [ ] Add app_version tracking to analytics events
-
-## Future Roadmap (not yet planned)
-- Feature #4: Relationship Courses
-- Feature #5: AI Relationship Coach
-- Feature #6: Weekly Check-ins (partially designed in Engagement Engine)
-- Feature #7: Shared Photo Album
+## Post-launch 30 days (ordered)
+1. Content batch 2 (60→180) + Explore depth + separate pools + Explore deepeners + no-repeat guard
+2. Waiting-states → agency (v1.5 #1)
+3. Scheduler bucketing; error-storm cap
+4. Server-enforced reveal gating
+5. Mixed-OS bridge decision
+6. "The app that notices" copy test
