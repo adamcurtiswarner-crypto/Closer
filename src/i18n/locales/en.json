@@ -20,7 +20,8 @@
     "notSetYet": "Not set yet",
     "setYours": "Set yours",
     "addedByYou": "Added by you",
-    "addedBy": "Added by {{name}}"
+    "addedBy": "Added by {{name}}",
+    "tryAgain": "Try again"
   },
   "auth": {
     "welcome": {
@@ -459,7 +460,8 @@
     "startErrorTitle": "Unable to start",
     "startErrorBody": "Something went wrong. Please try again.",
     "saveErrorTitle": "Could not save your response",
-    "saveErrorBody": "Please check your connection and try again."
+    "saveErrorBody": "Please check your connection and try again.",
+    "answersLoadFailed": "Couldn't load the answers."
   },
   "dateNights": {
     "title": "Date Nights",

@@ -13,7 +13,7 @@ import {
   sendEmailVerification,
   User as FirebaseUser,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
@@ -98,6 +98,21 @@ function useAuthInternal(): AuthState & AuthActions {
 
       if (userSnap.exists()) {
         const data = userSnap.data();
+
+        // Timezone self-heal: the server schedules deliveries/reminders and
+        // computes "today" from users.timezone, so a stale value (captured on
+        // an old device or never set) shifts the whole daily rhythm. When the
+        // device disagrees with the stored value, the device wins.
+        const deviceTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (deviceTimezone && data.timezone !== deviceTimezone) {
+          updateDoc(userRef, {
+            timezone: deviceTimezone,
+            updated_at: serverTimestamp(),
+          }).catch((error: unknown) => {
+            logger.warn('Timezone self-heal failed:', error);
+          });
+        }
+
         return {
           id: fbUser.uid,
           email: data.email,
@@ -105,7 +120,7 @@ function useAuthInternal(): AuthState & AuthActions {
           partnerName: data.partner_name,
           coupleId: data.couple_id,
           notificationTime: data.notification_time || '19:00',
-          timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timezone: deviceTimezone || data.timezone,
           toneCalibration: data.tone_calibration || 'solid',
           isOnboarded: data.is_onboarded || false,
           photoUrl: data.photo_url || null,

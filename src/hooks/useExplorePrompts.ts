@@ -7,7 +7,6 @@ import {
   getDocs,
   addDoc,
   serverTimestamp,
-  orderBy,
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -273,24 +272,34 @@ export function useExploreResponses(
     queryFn: async () => {
       if (!assignmentId || !user?.coupleId) return null;
 
+      // The couple_id filter is load-bearing: security rules authorize
+      // prompt_responses reads via isCoupleMember(resource.data.couple_id),
+      // and Firestore can only prove a QUERY safe when couple_id is pinned
+      // in the filters — without it every read is permission-denied.
+      // Sorted client-side (two docs) instead of orderBy, matching the
+      // daily-flow listener and avoiding a composite index.
       const ref = collection(db, 'prompt_responses');
       const q = query(
         ref,
-        where('assignment_id', '==', assignmentId),
-        orderBy('submitted_at', 'asc')
+        where('couple_id', '==', user.coupleId),
+        where('assignment_id', '==', assignmentId)
       );
       const snap = await getDocs(q);
 
-      const responses: ExploreResponse[] = snap.docs.map((d) => {
-        const data = d.data();
-        return {
-          id: d.id,
-          userId: data.user_id as string,
-          text: data.response_text,
-          isCurrentUser: data.user_id === user.id,
-          submittedAt: data.submitted_at?.toDate() || null,
-        };
-      });
+      const responses: ExploreResponse[] = snap.docs
+        .map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            userId: data.user_id as string,
+            text: data.response_text,
+            isCurrentUser: data.user_id === user.id,
+            submittedAt: data.submitted_at?.toDate() || null,
+          };
+        })
+        .sort(
+          (a, b) => (a.submittedAt?.getTime() ?? 0) - (b.submittedAt?.getTime() ?? 0)
+        );
 
       // Sealed until completed: expose only MY response while partial
       return isComplete ? responses : responses.filter((r) => r.isCurrentUser);

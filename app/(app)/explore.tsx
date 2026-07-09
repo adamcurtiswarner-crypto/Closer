@@ -90,8 +90,12 @@ export default function ExploreScreen() {
   const startExplore = useStartExplorePrompt();
   const submitResponse = useSubmitResponse();
   const viewingAssignment = assignments?.find((a) => a.id === viewingAssignmentId) ?? null;
-  const { data: viewingResponses, isLoading: responsesLoading } =
-    useExploreResponses(viewingAssignmentId, viewingAssignment?.status);
+  const {
+    data: viewingResponses,
+    isLoading: responsesLoading,
+    isError: responsesFailed,
+    refetch: refetchResponses,
+  } = useExploreResponses(viewingAssignmentId, viewingAssignment?.status);
 
   const submitScale = useSharedValue(1);
   const submitAnimStyle = useAnimatedStyle(() => ({
@@ -465,6 +469,19 @@ export default function ExploreScreen() {
                             <Skeleton height={16} width="85%" />
                           </View>
                         </View>
+                      ) : responsesFailed ? (
+                        <View style={styles.responsesSection}>
+                          <Text style={styles.responsesErrorText}>
+                            {t('explore.answersLoadFailed')}
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => refetchResponses()}
+                            accessibilityRole="button"
+                            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                          >
+                            <Text style={styles.responsesRetryText}>{t('common.tryAgain')}</Text>
+                          </TouchableOpacity>
+                        </View>
                       ) : viewingResponses ? (
                         <Animated.View entering={FadeIn.duration(300)} style={styles.responsesSection}>
                           {viewingResponses.map((r) => (
@@ -615,6 +632,17 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.text.secondary,
     marginTop: spacing.sm,
+  },
+
+  // Answers failed to load — quiet inline notice + retry
+  responsesErrorText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  responsesRetryText: {
+    ...typography.bodySm,
+    color: colors.accent.primary,
+    marginTop: spacing.xs,
   },
 
   // "{name} asked you this" + Respond

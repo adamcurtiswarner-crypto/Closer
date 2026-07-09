@@ -75,3 +75,16 @@ describe('quiet hours applied to the recipient local hour', () => {
 afterAll(() => {
   test.cleanup();
 });
+
+describe('isReminderEligibleAssignment — explore never nags', () => {
+  const { isReminderEligibleAssignment } = require('../notifications');
+
+  it('excludes explore assignments (abandoned or partner-sent)', () => {
+    expect(isReminderEligibleAssignment({ source: 'explore' })).toBe(false);
+  });
+
+  it('includes daily and follow-up assignments', () => {
+    expect(isReminderEligibleAssignment({ source: 'daily' })).toBe(true);
+    expect(isReminderEligibleAssignment({})).toBe(true);
+  });
+});

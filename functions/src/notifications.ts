@@ -23,6 +23,18 @@ export function isWithinReminderWindow(localHour: number): boolean {
   );
 }
 
+/**
+ * Only daily-rhythm assignments (daily prompts and follow-ups) get response
+ * reminders. Explore assignments are partner-sent questions — browsing one
+ * and not answering must never nag; their discovery surface is the Today
+ * "from your partner" card and the one send-time push.
+ */
+export function isReminderEligibleAssignment(assignment: {
+  source?: string;
+}): boolean {
+  return assignment.source !== 'explore';
+}
+
 // ============================================
 // SCHEDULED: Weekly Recap Notification
 // ============================================
@@ -104,6 +116,7 @@ export const sendResponseReminders = functions.pubsub
 
     for (const assignmentDoc of pendingAssignments) {
       const assignment = assignmentDoc.data();
+      if (!isReminderEligibleAssignment(assignment)) continue;
       const deliveredAt = assignment.delivered_at?.toDate?.();
       if (!deliveredAt) continue;
 
