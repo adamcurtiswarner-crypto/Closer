@@ -1,5 +1,5 @@
 # Stoke Studio Status
-*Last updated: 2026-07-05 — CEO review (design program complete; build 56 = submission candidate)*
+*Last updated: 2026-07-10 — Gates 1+2 complete; build 61 (launch candidate) SUBMITTED to TestFlight; founder two-phone pass next. Board: 628 app / 445 functions / 24 rules / 18 flow tests.*
 
 ## Founder Directive (2026-07-05)
 v1 = scored prompts by category + score-triggered follow-ups (deepener / repair / divergence). Everything else hidden via `src/config/features.ts`. Target: top 0.1% design quality for the category. Payments live. App Store submission next.
