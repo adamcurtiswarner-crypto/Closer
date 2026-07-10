@@ -1,10 +1,11 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 
 // ─── Mocks ───
 
+const mockSearchParams = jest.fn(() => ({} as Record<string, string>));
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => mockSearchParams(),
   useRouter: () => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() }),
   Stack: { Screen: () => null },
 }));
@@ -17,7 +18,20 @@ jest.mock('react-native-safe-area-context', () => {
 jest.mock('@utils/haptics', () => ({
   hapticImpact: jest.fn(),
   hapticNotification: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
   NotificationFeedbackType: { Success: 'success', Warning: 'warning' },
+}));
+
+// Reveal reactions write through useReaction (completion doc id = assignment id)
+const mockReact = jest.fn();
+jest.mock('@/hooks/useReaction', () => ({
+  REACTIONS: [
+    { type: 'heart', icon: 'heart' },
+    { type: 'fire', icon: 'flame' },
+    { type: 'laughing', icon: 'smiley' },
+    { type: 'teary', icon: 'drop' },
+  ],
+  useReaction: () => ({ mutate: mockReact, isPending: false }),
 }));
 
 jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
@@ -84,6 +98,7 @@ jest.mock('@/hooks/usePrompt', () => ({
 const mockPromptsQuery = jest.fn();
 const mockAssignmentsQuery = jest.fn();
 const mockResponsesQuery = jest.fn();
+const mockReactionsQuery = jest.fn();
 const mockStartExplore = jest.fn();
 jest.mock('@/hooks/useExplorePrompts', () => {
   class NoCoupleLinkedError extends Error {}
@@ -96,6 +111,8 @@ jest.mock('@/hooks/useExplorePrompts', () => {
     useStartExplorePrompt: () => ({ mutateAsync: mockStartExplore, isPending: false }),
     useExploreResponses: (assignmentId: string | null, status?: string) =>
       mockResponsesQuery(assignmentId, status),
+    useCompletionReactions: (assignmentId: string | null) =>
+      mockReactionsQuery(assignmentId),
   };
 });
 
@@ -128,18 +145,22 @@ function setQueries({
   prompts = { data: [PROMPT], isLoading: false, isError: false, refetch: jest.fn() },
   assignments = { data: [] },
   responses = { data: null, isLoading: false },
+  reactions = { data: null },
 }: {
   prompts?: object;
   assignments?: object;
   responses?: object;
+  reactions?: object;
 } = {}) {
   mockPromptsQuery.mockReturnValue(prompts);
   mockAssignmentsQuery.mockReturnValue(assignments);
   mockResponsesQuery.mockReturnValue(responses);
+  mockReactionsQuery.mockReturnValue(reactions);
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSearchParams.mockReturnValue({});
   mockUser.coupleId = 'couple-1';
   mockPartnerQuery.mockReturnValue({
     data: { id: 'user-2', email: 'j@example.com', displayName: 'Jordan' },
@@ -249,7 +270,7 @@ describe('ExploreScreen states', () => {
 
       fireEvent.press(getByText('Waiting on Jordan'));
 
-      expect(mockResponsesQuery).toHaveBeenLastCalledWith('assign-1', 'partial');
+      expect(mockResponsesQuery).toHaveBeenCalledWith('assign-1', 'partial');
       expect(getByText('You')).toBeTruthy();
       expect(getByText('My sealed answer')).toBeTruthy();
       expect(queryByText('Jordan')).toBeNull();
@@ -354,38 +375,130 @@ describe('ExploreScreen states', () => {
     });
   });
 
-  describe('viewing a completed response', () => {
-    it('shows a skeleton while responses load', () => {
+  describe('completed — the reveal ceremony (CompletionMoment sheet)', () => {
+    const completed = makeAssignment({ status: 'completed', responseCount: 2 });
+    const bothResponses = {
+      data: [
+        { id: 'r1', userId: 'user-1', text: 'Mine', isCurrentUser: true, submittedAt: null },
+        { id: 'r2', userId: 'user-2', text: 'Theirs', isCurrentUser: false, submittedAt: null },
+      ],
+      isLoading: false,
+    };
+
+    it('shows a quiet loading state in the reveal sheet while answers load', () => {
       setQueries({
-        assignments: { data: [makeAssignment({ status: 'completed', responseCount: 2 })] },
+        assignments: { data: [completed] },
         responses: { data: null, isLoading: true },
       });
       const { getByText, getByTestId } = render(<ExploreScreen />);
 
       fireEvent.press(getByText('See both answers'));
-      expect(getByTestId('explore-responses-loading')).toBeTruthy();
+      expect(getByTestId('explore-reveal-loading')).toBeTruthy();
     });
 
-    it('shows both answers labeled You / partner name once loaded', () => {
+    it('opens the CompletionMoment reveal with both answers and the partner name', async () => {
       setQueries({
-        assignments: { data: [makeAssignment({ status: 'completed', responseCount: 2 })] },
-        responses: {
-          data: [
-            { id: 'r1', userId: 'user-1', text: 'Mine', isCurrentUser: true, submittedAt: null },
-            { id: 'r2', userId: 'user-2', text: 'Theirs', isCurrentUser: false, submittedAt: null },
-          ],
-          isLoading: false,
-        },
+        assignments: { data: [completed] },
+        responses: bothResponses,
       });
-      const { getByText } = render(<ExploreScreen />);
+      const { getByText, findByText } = render(<ExploreScreen />);
 
       fireEvent.press(getByText('See both answers'));
-      expect(mockResponsesQuery).toHaveBeenLastCalledWith('assign-1', 'completed');
+      await act(async () => {});
+
+      // Responses are fetched for the completed assignment (seal is open)
+      expect(mockResponsesQuery).toHaveBeenCalledWith('assign-1', 'completed');
+      // The reveal ceremony card — same component as the daily reveal
+      expect(await findByText('You both answered')).toBeTruthy();
+      expect(getByText(`“${PROMPT.text}”`)).toBeTruthy();
       expect(getByText('You')).toBeTruthy();
       expect(getByText('Mine')).toBeTruthy();
       expect(getByText('Jordan')).toBeTruthy();
       expect(getByText('Theirs')).toBeTruthy();
-      expect(getByText('Hide')).toBeTruthy();
+    });
+
+    it('choreography is gated per assignment via the reveal_seen key', async () => {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      setQueries({
+        assignments: { data: [completed] },
+        responses: bothResponses,
+      });
+      const { getByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('See both answers'));
+      await act(async () => {});
+
+      // First open marks this assignment's reveal as seen — revisits flatten
+      expect(AsyncStorage.getItem).toHaveBeenCalledWith('reveal_seen_assign-1');
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('reveal_seen_assign-1', 'true');
+    });
+
+    it('keeps the card compact after viewing — no inline accordion, sheet closes back to the badge', async () => {
+      setQueries({
+        assignments: { data: [completed] },
+        responses: bothResponses,
+      });
+      const { getByText, getByTestId, queryByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('See both answers'));
+      await act(async () => {});
+      fireEvent.press(getByTestId('explore-reveal-close'));
+
+      // Card returns to its compact state — answers never render inline
+      expect(getByText('See both answers')).toBeTruthy();
+      expect(queryByText('Mine')).toBeNull();
+      expect(queryByText('Theirs')).toBeNull();
+    });
+
+    it('wires reactions to the completion doc (doc id = assignment id)', async () => {
+      setQueries({
+        assignments: { data: [completed] },
+        responses: bothResponses,
+        reactions: { data: { 'user-2': 'fire' } },
+      });
+      const { getByText, findByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('See both answers'));
+      await act(async () => {});
+
+      // Reactions were read for this assignment's completion doc
+      expect(mockReactionsQuery).toHaveBeenCalledWith('assign-1');
+      // The partner's existing reaction shows on the row
+      expect(await findByText('Jordan felt the spark')).toBeTruthy();
+
+      // Tapping a reaction writes through useReaction with the assignment id
+      fireEvent.press(getByText('Love'));
+      expect(mockReact).toHaveBeenCalledWith({
+        assignmentId: 'assign-1',
+        reaction: 'heart',
+        promptType: 'daily_connection',
+      });
+    });
+
+    it('surfaces a quiet retry when the answers fail to load', async () => {
+      const refetch = jest.fn();
+      setQueries({
+        assignments: { data: [completed] },
+        responses: { data: null, isLoading: false, isError: true, refetch },
+      });
+      const { getByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('See both answers'));
+      expect(getByText("Couldn't load the answers.")).toBeTruthy();
+      fireEvent.press(getByText('Try again'));
+      expect(refetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('deep-linking to a completed assignment opens the reveal sheet directly', async () => {
+      mockSearchParams.mockReturnValue({ assignmentId: 'assign-1' });
+      setQueries({
+        assignments: { data: [completed] },
+        responses: bothResponses,
+      });
+      const { findByText } = render(<ExploreScreen />);
+      await act(async () => {});
+
+      expect(await findByText('You both answered')).toBeTruthy();
     });
   });
 });

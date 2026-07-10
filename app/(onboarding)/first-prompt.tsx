@@ -15,7 +15,7 @@ import { usePersonalize } from '@/hooks/usePersonalize';
 import { useTriggerPrompt } from '@/hooks/usePrompt';
 import { useTranslation } from 'react-i18next';
 
-import { colors, shadow, spacing, typography } from '@/config/theme';
+import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 export default function FirstPromptScreen() {
   const { user } = useAuth();
   const triggerPrompt = useTriggerPrompt();
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.surface.card,
-    borderRadius: 16,
+    borderRadius: radius.card,
     padding: spacing.lg,
     ...shadow.cardSubtle,
     borderWidth: 1,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   showButton: {
     backgroundColor: colors.accent.primary,
-    borderRadius: 12,
+    borderRadius: radius.md,
     paddingVertical: spacing.smd,
     paddingHorizontal: spacing.lg,
     alignSelf: 'center',
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   responseCard: {
     backgroundColor: colors.surface.warmTint,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.md,
   },
   responseLabel: {

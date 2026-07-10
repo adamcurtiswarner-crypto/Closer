@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Support — Stoke</title>
+<meta name="description" content="Help with pairing codes, subscriptions, notifications, and your data in Stoke." />
+<link rel="icon" type="image/png" href="/assets/icon.png" />
+<style>
+/* Stoke design tokens (mirrors hosting/index.html / src/config/theme.ts) */
+@font-face{font-family:'Nunito';src:url('/assets/Nunito-Black.woff2') format('woff2');font-weight:900;font-display:swap}
+@font-face{font-family:'Nunito';src:url('/assets/Nunito-ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'Nunito';src:url('/assets/Nunito-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+:root{
+  --ground:#F5F2EE; --card:#FFFFFF; --ink:#1E1E2E; --coral:#D4522A; --coral-dk:#B03F1E;
+  --tint:#FDF1ED; --sec:#6B6B7A; --line:#E2DED8;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);
+  font-family:'Nunito',-apple-system,'Segoe UI',system-ui,sans-serif;
+  font-weight:600;font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:720px;margin:0 auto;padding:48px 22px 96px}
+.logo{height:32px;width:auto;margin-bottom:26px}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin-bottom:8px}
+h1{font-weight:900;font-size:clamp(30px,5vw,38px);line-height:1.1;letter-spacing:-.015em;margin-bottom:10px}
+.lead{color:var(--sec);font-size:17px;margin-bottom:36px;max-width:56ch}
+a{color:var(--coral);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.faq{background:var(--card);border:1px solid var(--line);border-radius:20px;
+  padding:24px 26px;margin-bottom:14px;box-shadow:0 4px 12px rgba(30,30,46,.06)}
+.faq h2{font-weight:900;font-size:19px;line-height:1.25;margin-bottom:8px;letter-spacing:-.005em}
+.faq p{color:var(--sec);font-size:15.5px}
+.faq p + p{margin-top:8px}
+.faq b{color:var(--ink);font-weight:800}
+
+.contact{background:var(--tint);border-radius:20px;padding:30px 28px;margin-top:34px;text-align:center}
+.contact h2{font-weight:900;font-size:21px;margin-bottom:6px}
+.contact p{color:var(--sec);font-size:15.5px;margin-bottom:18px}
+.pill{display:inline-flex;align-items:center;justify-content:center;background:var(--coral);color:#fff;
+  border-radius:60px;padding:15px 30px;font-size:13px;font-weight:900;letter-spacing:.12em;
+  text-transform:uppercase;transition:background .15s ease}
+.pill:hover{background:var(--coral-dk);text-decoration:none}
+
+.foot{margin-top:48px;border-top:1px solid var(--line);padding-top:16px;color:var(--sec);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/"><img class="logo" src="/assets/logo.png" alt="Stoke" /></a>
+  <p class="eyebrow">Support</p>
+  <h1>How can we help?</h1>
+  <p class="lead">Quick answers to the things people ask most. If yours isn't here, email us — a person reads every message.</p>
+
+  <div class="faq">
+    <h2>My pairing code isn't working</h2>
+    <p>Invite codes are six characters — letters and the digits 2 through 9 — and each code <b>expires after 7 days</b> and links one couple. If the app says the code is invalid or expired, ask your partner to open Stoke and share a fresh invite; a new code takes a few seconds to make.</p>
+    <p>Still stuck? Check for easy mix-ups first: the letter O is never in a code (nor are 0 and 1), and the code must be entered exactly as sent.</p>
+  </div>
+
+  <div class="faq">
+    <h2>My subscription isn't showing (restore a purchase)</h2>
+    <p>Stoke Premium bills through your Apple ID, and <b>one subscription covers both partners</b>. If you subscribed but the app shows Free, open the upgrade screen and tap <b>Restore purchases</b>, and make sure your device is signed in with the Apple ID that made the purchase.</p>
+    <p>If your partner is the subscriber, Premium reaches you automatically once you're paired — there's nothing for you to buy.</p>
+  </div>
+
+  <div class="faq">
+    <h2>My partner left Stoke</h2>
+    <p>If your partner deletes their account, we let you know and the pairing ends. Your account and your own answers stay yours. When you're ready, you can pair again with a new invite code — with the same person on a fresh account, or someone new.</p>
+  </div>
+
+  <div class="faq">
+    <h2>Delete my data</h2>
+    <p>In the app, go to <b>Profile → Privacy &amp; Data → Delete account</b>. Your account is deactivated immediately and your data is permanently removed within 30 days. If you want a copy first, use <b>Export my data</b> on the same screen (available once every 24 hours).</p>
+    <p>You can also <b>anonymize your written responses</b> without deleting your account — same screen.</p>
+  </div>
+
+  <div class="faq">
+    <h2>Notifications aren't arriving</h2>
+    <p>First check iOS Settings → Notifications → Stoke and make sure notifications are allowed. Then in the app, check <b>Profile → Notifications</b> — your daily prompt time and the reminder toggles live there.</p>
+    <p>Two quiet-by-design things to know: reminders only send between <b>8am and 9pm your local time</b>, and Stoke never nags — if a day slips, it'll keep.</p>
+  </div>
+
+  <div class="contact">
+    <h2>Anything else</h2>
+    <p>Tell us what's happening and what device you're on — we'll take it from there.</p>
+    <a class="pill" href="mailto:support@stoke.llc?subject=Stoke%20support">Email support@stoke.llc</a>
+  </div>
+
+  <p class="foot">© 2026 Omnific Collective LLC. Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help — in the U.S., call or text 988, or call 1-800-799-7233.</p>
+</div>
+</body>
+</html>

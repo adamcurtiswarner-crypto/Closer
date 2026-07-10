@@ -10,6 +10,9 @@
  * which wraps this config in `firebase emulators:exec` so emulators start
  * and stop around the suite.
  */
+// Machine-independent dates: same TZ pin as jest.config.js.
+process.env.TZ = 'UTC';
+
 module.exports = {
   testEnvironment: 'node',
   transform: {

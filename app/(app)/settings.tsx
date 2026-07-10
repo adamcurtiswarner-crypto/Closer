@@ -8,6 +8,7 @@ import {
   Alert,
   Linking,
   Modal,
+  Platform,
   TextInput,
   ActivityIndicator,
   Share,
@@ -28,6 +29,7 @@ import { ReauthModal } from '@/components/ReauthModal';
 import { logger } from '@/utils/logger';
 import { PartnershipSection, Icon } from '@/components';
 import { FEATURES } from '@/config/features';
+import { getSupportEmailUrl, SUPPORT_EMAIL } from '@/config/app';
 import { ProfileCard } from '@/components/ProfileCard';
 import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
@@ -159,6 +161,21 @@ export default function SettingsScreen() {
       );
     } catch (error) {
       Alert.alert(t('common.error'), t('settings.anonymizeFailed'));
+    }
+  };
+
+  const handleContactUs = async () => {
+    // Pre-fills only app version and platform — no user identifiers beyond
+    // whatever the user chooses to write themselves.
+    const url = getSupportEmailUrl(
+      Constants.expoConfig?.version || 'unknown',
+      Platform.OS
+    );
+    try {
+      await Linking.openURL(url);
+    } catch (error) {
+      logger.error('Error opening support email:', error);
+      Alert.alert(t('common.error'), t('settings.contactFailed', { email: SUPPORT_EMAIL }));
     }
   };
 
@@ -395,6 +412,10 @@ export default function SettingsScreen() {
               <Text style={styles.rowLabel}>{t('settings.version')}</Text>
               <Text style={styles.rowValue}>{Constants.expoConfig?.version || '1.0.0'}</Text>
             </View>
+            <TouchableOpacity style={styles.row} onPress={handleContactUs}>
+              <Text style={styles.rowLabel}>{t('settings.contactUs')}</Text>
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
+            </TouchableOpacity>
             <TouchableOpacity style={[styles.row, styles.lastRow]} onPress={handleSignOut}>
               <Text style={styles.rowLabel}>{t('settings.signOut')}</Text>
               <Icon name="caret-right" size="sm" color={colors.text.muted} />

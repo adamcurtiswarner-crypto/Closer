@@ -22,6 +22,7 @@ import { FEATURES } from '@/config/features';
 import { useSubscription } from '@/hooks/useSubscription';
 import { currentMonthOnly, premiumGates } from '@/utils/premiumGates';
 import { Icon } from '@/components/Icon';
+import { Skeleton } from '@/components/Skeleton';
 import { HearthEmberTile } from '@/components/HearthEmberTile';
 import { HearthGateCard } from '@/components/HearthGateCard';
 import { HearthQueueCard } from '@/components/HearthQueueCard';
@@ -164,13 +165,29 @@ export default function HearthScreen() {
           </Text>
         </View>
 
-        {completions.length === 0 && !isLoading ? (
+        {isLoading ? (
+          // Quiet loading — neutral shimmer tiles, never the 12 dead "Steady"
+          // embers flashing before the data (or the empty state) settles in.
+          <View style={styles.grid} testID="hearth-loading">
+            {Array.from({ length: 6 }, (_, i) => (
+              <View key={i} style={styles.tileWrap}>
+                <Skeleton height={96} borderRadius={radius.card} />
+              </View>
+            ))}
+          </View>
+        ) : completions.length === 0 ? (
+          // Zero completions: the first-ember promise is the hero — no grid
+          // of unlit tiles contradicting it. The ember is drawn unlit (muted).
           <Animated.View
             entering={FadeIn.duration(400).reduceMotion(ReduceMotion.System)}
             style={styles.emptyCard}
+            testID="hearth-empty"
           >
-            <Icon name="campfire" size="lg" color={colors.accent.primary} />
-            <Text style={styles.emptyText}>{t('hearth.empty')}</Text>
+            <View style={styles.emptyEmber}>
+              <Icon name="campfire" size="xl" color={colors.text.muted} weight="light" />
+            </View>
+            <Text style={styles.emptyTitle}>{t('hearth.empty')}</Text>
+            <Text style={styles.emptySub}>{t('hearth.emptySub')}</Text>
           </Animated.View>
         ) : (
           <>
@@ -350,18 +367,33 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
 
-  // Empty state
+  // Empty state — the first-ember promise as the hero of the screen
   emptyCard: {
     marginHorizontal: spacing.screen,
+    marginTop: spacing.md,
     backgroundColor: colors.surface.warmTint,
     borderRadius: radius.hero,
-    padding: spacing.lg,
+    padding: spacing.xl,
     alignItems: 'center',
     gap: spacing.smd,
   },
-  emptyText: {
-    ...typography.body,
+  emptyEmber: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.surface.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  emptyTitle: {
+    ...typography.heading,
     color: colors.text.primary,
+    textAlign: 'center',
+  },
+  emptySub: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
     textAlign: 'center',
   },
 });

@@ -17,6 +17,11 @@
     "ignore": [
       "firebase.json",
       "**/node_modules/**",
+      // privacy.html and terms.html stay EXCLUDED from hosting deploys until the
+      // founder's legal confirmations land — remove the two lines below (and this
+      // comment) at that point. support.html is intentionally NOT ignored and
+      // deploys normally. (firebase-tools parses this file with cjson, so these
+      // comments are safe.)
       "privacy.html",
       "terms.html"
     ],
@@ -43,6 +48,10 @@
       {
         "source": "/privacy",
         "destination": "/privacy.html"
+      },
+      {
+        "source": "/support",
+        "destination": "/support.html"
       },
       {
         "source": "/join/**",

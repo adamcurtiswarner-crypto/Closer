@@ -16,31 +16,39 @@ import Animated, {
   ReduceMotion,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { Button, Icon } from '@/components';
+import { Button, Icon, PairingMoment } from '@/components';
+import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
+import { usePartner } from '@/hooks/usePartner';
 import { useTranslation } from 'react-i18next';
 
 import { colors, spacing, typography } from '@/config/theme';
 export default function WaitingPartnerScreen() {
+  const { user } = useAuth();
   const { data: couple, refetch } = useCouple();
+  // Resolves once the couple flips active — feeds the pairing moment's names.
+  const { data: partner } = usePartner();
+  const [partnerJoined, setPartnerJoined] = React.useState(false);
   const { t } = useTranslation();
 
-  // If partner joined, redirect
+  // The moment the partner joins, mark it — the waiting screen gives way to
+  // the pairing moment instead of silently swapping routes.
   React.useEffect(() => {
     if (couple?.status === 'active') {
-      router.replace('/(onboarding)/tone-calibration');
+      setPartnerJoined(true);
     }
-  }, [couple]);
+  }, [couple?.status]);
 
-  // Poll for updates
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Poll for updates while still waiting
   React.useEffect(() => {
+    if (partnerJoined) return;
     const interval = setInterval(() => {
       refetch();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerJoined]);
 
   const pulseOpacity = useSharedValue(1);
 
@@ -60,6 +68,17 @@ export default function WaitingPartnerScreen() {
   const pulseStyle = useAnimatedStyle(() => ({
     opacity: pulseOpacity.value,
   }));
+
+  // The pairing moment — both names, the flame, one quiet beat — then on.
+  if (partnerJoined) {
+    return (
+      <PairingMoment
+        myName={user?.displayName}
+        partnerName={partner?.displayName}
+        onDone={() => router.replace('/(onboarding)/tone-calibration')}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>

@@ -31,6 +31,14 @@ One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (m
 - New welcome hero (founder's flame illustration) + original tagline restored; App Store listing copy rewritten (STORE_METADATA.md); GitGuardian webhook-secret leak rotated + purged from history.
 - Builds: 57 on TestFlight (submission candidate before Hearth); **58 building now = Hearth + push fix**.
 
+## GATE 2 COMPLETE (2026-07-10)
+- Pairing moment designed both sides ("The fire is lit." + one Success haptic); all onboarding system alerts → inline states; radius tokens fixed
+- Explore reveal = full CompletionMoment ceremony w/ reactions (pageSheet); first-ever reveal beat ("The first of many"); Hearth cold-start warmth; feedback re-ask fixed (data-derived); note field default w/ per-category placeholders
+- Invite chain: first-person share message, ?from wired (sanitized), og:image, join.html rebuilt for the skeptical partner ("Nothing's wrong."); privacy.html truthful (Expo added, deletion claim now matches code); support.html + in-app Contact row (hosting deploy still gated on founder legal confirmations)
+- Store package: listing surgery (Hearth/Explore in, differentiator in first 3 lines, keyword swap), one-device reviewer path + seedReviewerCouple.ts (re-run each review morning), screenshot shot-list, nutrition labels (Sensitive Info declared), 3.1.2 checklist; uitest cleanup FROZEN
+- Seams: two-client emulator harness (5 flows, npm run test:flows), shared tz/DST matrix both sides + TZ-pinned jest, hourly canary exercising the real completion pipeline (reportError on failure), client permission-denied telemetry, onResponseSubmitted reportError wrapper, pre-submission device checklist. Contract pinned: seal is client-side only (server gating = post-launch item)
+- Functions redeployed (32); hosting NOT deployed (legal gate)
+
 ## 2026-07-09 WORTHINESS REVIEW — GATES THE LAUNCH
 Full synthesis: docs/reviews/2026-07-09-worthiness-review.md (8 department audits; CEO-verified findings).
 **SEV-0 — ALL CLEARED 2026-07-09 night (client fixes ride the next build; server/rules LIVE in prod):**

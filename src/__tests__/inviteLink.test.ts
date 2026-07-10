@@ -27,6 +27,41 @@ describe('buildInviteLink', () => {
   it('uses the exported canonical domain', () => {
     expect(buildInviteLink('XYZ789')).toBe(`https://${INVITE_LINK_DOMAIN}/join/XYZ789`);
   });
+
+  describe('from param (join-page personalization)', () => {
+    it('appends the inviter name as a query param', () => {
+      expect(buildInviteLink('ABC123', 'Sam')).toBe(
+        'https://stoke-5f762.web.app/join/ABC123?from=Sam'
+      );
+    });
+
+    it('URL-encodes names with special characters', () => {
+      expect(buildInviteLink('ABC123', 'Zoë')).toBe(
+        'https://stoke-5f762.web.app/join/ABC123?from=Zo%C3%AB'
+      );
+      expect(buildInviteLink('ABC123', 'Mary Anne')).toBe(
+        'https://stoke-5f762.web.app/join/ABC123?from=Mary%20Anne'
+      );
+      expect(buildInviteLink('ABC123', 'a&b=c')).toBe(
+        'https://stoke-5f762.web.app/join/ABC123?from=a%26b%3Dc'
+      );
+    });
+
+    it('trims the name before encoding', () => {
+      expect(buildInviteLink('ABC123', '  Sam  ')).toBe(
+        'https://stoke-5f762.web.app/join/ABC123?from=Sam'
+      );
+    });
+
+    it.each([
+      [undefined],
+      [null],
+      [''],
+      ['   '],
+    ])('omits the param when the name is %p', (from) => {
+      expect(buildInviteLink('ABC123', from)).toBe('https://stoke-5f762.web.app/join/ABC123');
+    });
+  });
 });
 
 describe('extractInviteCode', () => {

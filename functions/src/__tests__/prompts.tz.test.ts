@@ -13,6 +13,7 @@
 import * as functionsTest from 'firebase-functions-test';
 import { assignmentDateWindow, hasLiveAssignmentInWindow } from '../prompts';
 import { findDueScheduledFollowUp } from '../followUps';
+import { TZ_SCENARIOS, wallClockAt } from './fixtures/tzMatrix';
 
 const test = functionsTest.default();
 
@@ -126,6 +127,87 @@ describe('hasLiveAssignmentInWindow — ±1-day dedupe', () => {
       (a) => a.assigned_date >= window.yesterday && a.assigned_date <= window.tomorrow
     );
     expect(hasLiveAssignmentInWindow(inWindow)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Shared tz/DST scenario matrix — the SERVER half of the client/server
+// contract. The same fixture table drives the client-side assertions in
+// src/__tests__/localDate.test.ts (localDateWindow). For any instant, the
+// server's assignmentDateWindow(tz) must agree with the matrix's expected
+// local date, and windows for cross-timezone partners must intersect so a
+// prompt dated in one partner's timezone stays visible to the other.
+//
+// The client's localDateWindow(deviceNow) is exactly the ±1-day window
+// around the device-local calendar day — the same shape as
+// assignmentDateWindow — so `clientWindowFor` mirrors it here (the client
+// package cannot be imported across the npm boundary; the shared fixture
+// table keeps the two suites asserting the same expectations).
+// ---------------------------------------------------------------------------
+
+describe('tz/DST scenario matrix (shared with src localDate.test.ts)', () => {
+  /** Mirror of the client's localDateWindow() for a device in `tz`. */
+  const clientWindowFor = (instantUtc: string, tz: string): [string, string, string] => {
+    const localISO = (d: Date): string => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+    const deviceNow = wallClockAt(instantUtc, tz);
+    const dayMs = 86400000;
+    return [
+      localISO(new Date(deviceNow.getTime() - dayMs)),
+      localISO(deviceNow),
+      localISO(new Date(deviceNow.getTime() + dayMs)),
+    ];
+  };
+
+  it.each(TZ_SCENARIOS.map((s) => [s.name, s] as const))(
+    '%s — server tz-local today matches the matrix',
+    (_name, scenario) => {
+      const window = assignmentDateWindow(scenario.timezone, new Date(scenario.instantUtc));
+      expect(window.today).toBe(scenario.expectedLocalDate);
+      // Window is contiguous around today.
+      expect(window.yesterday < window.today && window.today < window.tomorrow).toBe(true);
+    }
+  );
+
+  it.each(
+    TZ_SCENARIOS.filter((s) => s.partnerTimezone).map((s) => [s.name, s] as const)
+  )('%s — server windows for both partners intersect', (_name, scenario) => {
+    const mine = assignmentDateWindow(scenario.timezone, new Date(scenario.instantUtc));
+    const partners = assignmentDateWindow(
+      scenario.partnerTimezone!,
+      new Date(scenario.instantUtc)
+    );
+
+    // An assignment dated "today" in either partner's timezone must fall
+    // inside the OTHER partner's dedupe window (no double delivery, no
+    // invisible assignment).
+    expect(partners.today >= mine.yesterday && partners.today <= mine.tomorrow).toBe(true);
+    expect(mine.today >= partners.yesterday && mine.today <= partners.tomorrow).toBe(true);
+    expect(partners.today).toBe(scenario.expectedPartnerLocalDate);
+  });
+
+  it.each(TZ_SCENARIOS.map((s) => [s.name, s] as const))(
+    '%s — client window and server window intersect for the same instant',
+    (_name, scenario) => {
+      const server = assignmentDateWindow(scenario.timezone, new Date(scenario.instantUtc));
+      const client = clientWindowFor(scenario.instantUtc, scenario.timezone);
+
+      // Same device+user timezone: the two "today"s must be identical, and
+      // each side's today must sit inside the other's window.
+      expect(client[1]).toBe(server.today);
+      expect(client).toContain(server.today);
+      expect(server.today >= client[0] && server.today <= client[2]).toBe(true);
+      expect(client[1] >= server.yesterday && client[1] <= server.tomorrow).toBe(true);
+    }
+  );
+
+  it('jest runs with TZ pinned to UTC (machine-independence guard)', () => {
+    expect(process.env.TZ).toBe('UTC');
+    expect(new Date().getTimezoneOffset()).toBe(0);
   });
 });
 

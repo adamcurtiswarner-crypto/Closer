@@ -922,7 +922,7 @@ export default function TodayScreen() {
       keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent.primary} />}
     >
-      <TodayScreenHeader greeting={t('today.beautiful')} {...headerProps} />
+      <TodayScreenHeader greeting={t('today.wellDone')} {...headerProps} />
 
       <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.completionSection}>
         <CompletionMoment
@@ -1003,6 +1003,7 @@ export default function TodayScreen() {
                   onNoteFocus={handleDeepenerNoteFocus}
                   onSubmit={handleScaleSubmit}
                   isPending={submitResponse.isPending}
+                  category={assignment.promptType || null}
                 />
               ) : (
                 <PromptCard
@@ -1024,8 +1025,10 @@ export default function TodayScreen() {
 
       <EngagementCards {...engagementProps} />
 
-      {/* Emotional Feedback */}
-      {revealMyResponse && !feedbackGiven && (
+      {/* Emotional Feedback — asked once per assignment. The answer lives on
+          the response doc (emotional_response), so a remount never re-asks;
+          feedbackGiven only covers the beat before the snapshot settles. */}
+      {revealMyResponse && !feedbackGiven && revealMyResponse.emotionalResponse == null && (
         <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.feedbackCard}>
           <Text style={styles.feedbackTitle}>{t('today.howDidThisFeel')}</Text>
           <View style={styles.feedbackRow}>
@@ -1158,6 +1161,7 @@ export default function TodayScreen() {
                 onNoteFocus={handlePromptNoteFocus}
                 onSubmit={handleScaleSubmit}
                 isPending={submitResponse.isPending}
+                category={assignment!.promptType || null}
               />
             ) : (
               <PromptCard

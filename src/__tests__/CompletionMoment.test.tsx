@@ -1,8 +1,40 @@
 import React from 'react';
 import { render, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CompletionMoment } from '../components/CompletionMoment';
+import {
+  CompletionMoment,
+  FIRST_REVEAL_LIFETIME_KEY,
+  FIRST_EVER_EXTRA_HOLD_MS,
+} from '../components/CompletionMoment';
 import { hapticImpact } from '@utils/haptics';
+
+// Resolve t() against the real en.json so tests assert shipped copy
+jest.mock('react-i18next', () => {
+  const en = require('../i18n/locales/en.json');
+  const lookup = (key: string): unknown =>
+    key.split('.').reduce<any>((obj, part) => (obj ? obj[part] : undefined), en);
+  return {
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) => {
+        let value = lookup(key);
+        if (typeof value !== 'string') return key;
+        if (options) {
+          Object.entries(options).forEach(([name, v]) => {
+            value = (value as string).replace(`{{${name}}}`, String(v));
+          });
+        }
+        return value;
+      },
+    }),
+  };
+});
+
+/** Seed AsyncStorage.getItem responses by key; unknown keys resolve null. */
+function seedStorage(store: Record<string, string>) {
+  (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+    Promise.resolve(store[key] ?? null)
+  );
+}
 
 jest.mock('@utils/haptics', () => ({
   hapticImpact: jest.fn(),
@@ -186,7 +218,9 @@ describe('CompletionMoment', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+      // A couple with reveal history — the lifetime first-of-many beat is
+      // covered separately below.
+      seedStorage({ [FIRST_REVEAL_LIFETIME_KEY]: 'true' });
     });
 
     it('marks the reveal as seen on first mount', async () => {
@@ -215,7 +249,7 @@ describe('CompletionMoment', () => {
     });
 
     it('revisits are silent: no haptics and no re-marking of reveal_seen', async () => {
-      (AsyncStorage.getItem as jest.Mock).mockResolvedValue('true');
+      seedStorage({ reveal_seen_a3: 'true', [FIRST_REVEAL_LIFETIME_KEY]: 'true' });
       const { getByTestId } = render(
         <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="a3" />
       );
@@ -236,6 +270,96 @@ describe('CompletionMoment', () => {
       unmount();
       act(() => { jest.advanceTimersByTime(5000); });
       expect(hapticImpact).not.toHaveBeenCalled();
+    });
+
+    it('shows the standard quiet footer once the lifetime flag is set', async () => {
+      const { getByText } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="a5" />
+      );
+      await act(async () => {});
+      expect(getByText('Another moment saved')).toBeTruthy();
+    });
+  });
+
+  describe('first-ever reveal (lifetime @stoke_first_reveal_seen flag)', () => {
+    const scaleProps = {
+      promptText: 'How connected did you feel this week?',
+      yourResponse: 'Felt close after our walk.',
+      partnerResponse: 'The weekend helped.',
+      partnerName: 'Alex',
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      // Nothing seen yet — brand-new couple, first completed reveal ever
+      seedStorage({});
+    });
+
+    it('shows "The first of many" and marks the lifetime flag', async () => {
+      const { getByText, queryByText } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="f1" />
+      );
+      await act(async () => {});
+      expect(getByText('The first of many')).toBeTruthy();
+      expect(queryByText('Another moment saved')).toBeNull();
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(FIRST_REVEAL_LIFETIME_KEY, 'true');
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('reveal_seen_f1', 'true');
+    });
+
+    it('holds the breath one extra beat: Medium haptic lands late by the extra hold', async () => {
+      render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="f2" />
+      );
+      await act(async () => {});
+
+      // Your-score beat is unchanged
+      act(() => { jest.advanceTimersByTime(500); });
+      expect(hapticImpact).toHaveBeenCalledTimes(1);
+      expect(hapticImpact).toHaveBeenLastCalledWith('light');
+
+      // The usual 800ms held breath passes — the partner beat has NOT landed yet
+      act(() => { jest.advanceTimersByTime(800); });
+      expect(hapticImpact).toHaveBeenCalledTimes(1);
+
+      // The extra held beat ends — now the only Medium haptic of the day fires
+      act(() => { jest.advanceTimersByTime(FIRST_EVER_EXTRA_HOLD_MS); });
+      expect(hapticImpact).toHaveBeenCalledTimes(2);
+      expect(hapticImpact).toHaveBeenLastCalledWith('medium');
+    });
+
+    it('every reveal after the first uses the standard footer and timing', async () => {
+      seedStorage({ [FIRST_REVEAL_LIFETIME_KEY]: 'true' });
+      const { getByText, queryByText } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="f3" />
+      );
+      await act(async () => {});
+      expect(getByText('Another moment saved')).toBeTruthy();
+      expect(queryByText('The first of many')).toBeNull();
+      // The lifetime flag is never re-written
+      expect(AsyncStorage.setItem).not.toHaveBeenCalledWith(FIRST_REVEAL_LIFETIME_KEY, 'true');
+
+      act(() => { jest.advanceTimersByTime(1300); });
+      expect(hapticImpact).toHaveBeenCalledTimes(2);
+      expect(hapticImpact).toHaveBeenLastCalledWith('medium');
+    });
+
+    it('a REVISIT of an already-seen reveal never claims first-of-many (flags untouched)', async () => {
+      seedStorage({ reveal_seen_f4: 'true' });
+      const { getByText } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="f4" />
+      );
+      await act(async () => {});
+      expect(getByText('Another moment saved')).toBeTruthy();
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+    });
+
+    it('previews without an assignmentId never trigger the lifetime beat', async () => {
+      const { getByText } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} />
+      );
+      await act(async () => {});
+      expect(getByText('Another moment saved')).toBeTruthy();
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
     });
   });
 });

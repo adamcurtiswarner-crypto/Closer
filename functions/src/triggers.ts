@@ -39,12 +39,37 @@ export function truncatePromptText(text: string, maxLength = 60): string {
 export const onResponseSubmitted = functions.firestore
   .document('prompt_responses/{responseId}')
   .onCreate(async (snap, _context) => {
+    // Observability floor: the whole handler is wrapped so ANY failure lands
+    // in error_logs via reportError — and is NOT rethrown (an event retry on
+    // a poisoned doc would fail identically; alerting reads error_logs).
+    try {
+      return await handleResponseSubmitted(snap);
+    } catch (err) {
+      const d = snap.data() || {};
+      await reportError('onResponseSubmitted', err, {
+        userId: d.user_id,
+        coupleId: d.couple_id,
+        extra: { assignmentId: d.assignment_id },
+      });
+      return null;
+    }
+  });
+
+async function handleResponseSubmitted(
+  snap: functions.firestore.QueryDocumentSnapshot
+): Promise<null> {
     const response = snap.data();
-    if (response.status !== 'submitted') return;
+    if (response.status !== 'submitted') return null;
 
     const assignmentRef = db.collection('prompt_assignments').doc(response.assignment_id);
     const assignmentDoc = await assignmentRef.get();
     const assignment = assignmentDoc.data()!;
+
+    // Canary responses (functions/src/canary.ts) exercise the REAL pipeline —
+    // completion create + assignment status repair below run for them — but
+    // must never touch a human: no pushes, no couple stats/streaks/Hearth
+    // bookkeeping, no follow-up creation, no analytics events.
+    const isCanary = assignment.source === 'canary';
 
     // Derive the truth from the source: the client (useSubmitResponse) creates
     // the response doc and then immediately increments the assignment's
@@ -166,7 +191,7 @@ export const onResponseSubmitted = functions.firestore
         });
       }
 
-      if (completionCreated) {
+      if (completionCreated && !isCanary) {
         // Update couple stats + streaks
         const streakCoupleDoc = await db.collection('couples').doc(response.couple_id).get();
         const streakCoupleData = streakCoupleDoc.data() || {};
@@ -327,7 +352,7 @@ export const onResponseSubmitted = functions.firestore
         (id: string) => id !== response.user_id
       );
 
-      if (partnerId && responsesSnapshot.size === 1) {
+      if (!isCanary && partnerId && responsesSnapshot.size === 1) {
         // Check partner's notification preference (default true)
         const partnerDoc = await db.collection('users').doc(partnerId).get();
         const partnerData = partnerDoc.data();
@@ -372,14 +397,16 @@ export const onResponseSubmitted = functions.firestore
     }
 
     // Log response event
-    await logEvent('prompt_response_submitted', response.user_id, response.couple_id, {
-      assignment_id: response.assignment_id,
-      prompt_id: response.prompt_id,
-      response_length: response.response_length || 0,
-    });
+    if (!isCanary) {
+      await logEvent('prompt_response_submitted', response.user_id, response.couple_id, {
+        assignment_id: response.assignment_id,
+        prompt_id: response.prompt_id,
+        response_length: response.response_length || 0,
+      });
+    }
 
     return null;
-  });
+}
 
 // ============================================
 // TRIGGER: Reaction Push Notification

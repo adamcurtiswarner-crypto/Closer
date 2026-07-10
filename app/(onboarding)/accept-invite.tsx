@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Text,
   TextInput,
-  Alert,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -11,19 +10,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { Button } from '@/components';
+import { Button, PairingMoment } from '@/components';
+import { useAuth } from '@/hooks/useAuth';
 import { useAcceptInvite } from '@/hooks/useCouple';
+import { usePartner } from '@/hooks/usePartner';
 import { clearPendingInviteCode } from '@/hooks/useDeepLink';
 import { matchClipboardInvite } from '@/utils/inviteCode';
 import { logger } from '@/utils/logger';
 import { useTranslation } from 'react-i18next';
 
-import { colors, spacing, typography } from '@/config/theme';
+import { colors, radius, spacing, typography } from '@/config/theme';
+
+interface InviteError {
+  title: string;
+  body: string;
+}
+
 export default function AcceptInviteScreen() {
   const { code: codeParam } = useLocalSearchParams<{ code?: string }>();
   const [code, setCode] = useState('');
   const [clipboardFilled, setClipboardFilled] = useState(false);
+  const [inviteError, setInviteError] = useState<InviteError | null>(null);
+  const [justPaired, setJustPaired] = useState(false);
+  const { user } = useAuth();
   const acceptInvite = useAcceptInvite();
+  // Resolves once the couple flips active — feeds the pairing moment's names.
+  const { data: partner } = usePartner();
   const hasAutoSubmitted = useRef(false);
   const hasCheckedClipboard = useRef(false);
   const { t } = useTranslation();
@@ -78,51 +90,71 @@ export default function AcceptInviteScreen() {
     }
   }, [code, codeParam, acceptInvite.isPending]);
 
+  // Map the acceptInvite callable's error messages to designed inline copy.
+  // The HttpsError strings are kept in lockstep with these substring checks
+  // (see functions/src/invites.ts) — match on message, present inline.
+  const errorForMessage = (message: string): InviteError => {
+    if (message.includes('Already in a couple')) {
+      return {
+        title: t('onboarding.acceptInvite.errors.alreadyPairedTitle'),
+        body: t('onboarding.acceptInvite.errors.alreadyPairedBody'),
+      };
+    }
+    if (message.includes('expired')) {
+      return {
+        title: t('onboarding.acceptInvite.errors.expiredTitle'),
+        body: t('onboarding.acceptInvite.errors.expiredBody'),
+      };
+    }
+    if (message.includes('already been used')) {
+      return {
+        title: t('onboarding.acceptInvite.errors.usedTitle'),
+        body: t('onboarding.acceptInvite.errors.usedBody'),
+      };
+    }
+    if (message.includes('your own invite')) {
+      return {
+        title: t('onboarding.acceptInvite.errors.ownCodeTitle'),
+        body: t('onboarding.acceptInvite.errors.ownCodeBody'),
+      };
+    }
+    return {
+      title: t('onboarding.acceptInvite.invalidCode'),
+      body: t('onboarding.acceptInvite.invalidCodeBody'),
+    };
+  };
+
   const handleAccept = async () => {
     if (code.length !== 6) {
-      Alert.alert(t('common.error'), t('onboarding.acceptInvite.enterSixChar'));
+      setInviteError({
+        title: t('onboarding.acceptInvite.invalidCode'),
+        body: t('onboarding.acceptInvite.enterSixChar'),
+      });
       return;
     }
 
+    setInviteError(null);
     try {
       await acceptInvite.mutateAsync(code.toUpperCase());
       await clearPendingInviteCode();
-      router.replace('/(onboarding)/tone-calibration');
-    } catch (error: any) {
+      setJustPaired(true);
+    } catch (error: unknown) {
       hasAutoSubmitted.current = false; // Allow retry
-      const message = error?.message || '';
-
-      // Show specific error messages for known cases. Acceptance now runs
-      // through the acceptInvite callable; its HttpsError messages are kept
-      // in lockstep with these substring checks (see functions/src/invites.ts).
-      if (message.includes('Already in a couple')) {
-        Alert.alert(
-          t('onboarding.acceptInvite.errors.alreadyPairedTitle'),
-          t('onboarding.acceptInvite.errors.alreadyPairedBody')
-        );
-      } else if (message.includes('expired')) {
-        Alert.alert(
-          t('onboarding.acceptInvite.errors.expiredTitle'),
-          t('onboarding.acceptInvite.errors.expiredBody')
-        );
-      } else if (message.includes('already been used')) {
-        Alert.alert(
-          t('onboarding.acceptInvite.errors.usedTitle'),
-          t('onboarding.acceptInvite.errors.usedBody')
-        );
-      } else if (message.includes('your own invite')) {
-        Alert.alert(
-          t('onboarding.acceptInvite.errors.ownCodeTitle'),
-          t('onboarding.acceptInvite.errors.ownCodeBody')
-        );
-      } else {
-        Alert.alert(
-          t('onboarding.acceptInvite.invalidCode'),
-          t('onboarding.acceptInvite.invalidCodeBody')
-        );
-      }
+      const message = error instanceof Error ? error.message : '';
+      setInviteError(errorForMessage(message));
     }
   };
+
+  // The pairing moment — both names, the flame, one quiet beat — then on.
+  if (justPaired) {
+    return (
+      <PairingMoment
+        myName={user?.displayName}
+        partnerName={partner?.displayName}
+        onDone={() => router.replace('/(onboarding)/tone-calibration')}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -139,6 +171,13 @@ export default function AcceptInviteScreen() {
           </Text>
         </Animated.View>
 
+        {inviteError && (
+          <Animated.View entering={FadeIn.duration(300)} style={styles.errorCard}>
+            <Text style={styles.errorTitle}>{inviteError.title}</Text>
+            <Text style={styles.errorBody}>{inviteError.body}</Text>
+          </Animated.View>
+        )}
+
         <Animated.View entering={FadeInUp.duration(400).delay(200)}>
           <TextInput
             style={styles.codeInput}
@@ -147,6 +186,7 @@ export default function AcceptInviteScreen() {
             value={code}
             onChangeText={(text) => {
               setClipboardFilled(false);
+              setInviteError(null);
               setCode(text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6));
             }}
             autoCapitalize="characters"
@@ -206,9 +246,26 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: spacing.sm,
   },
+  errorCard: {
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  errorTitle: {
+    ...typography.bodySm,
+    color: colors.text.primary,
+  },
+  errorBody: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+  },
   codeInput: {
     backgroundColor: colors.surface.card,
-    borderRadius: 16,
+    borderRadius: radius.card,
     padding: spacing.lg,
     textAlign: 'center',
     ...typography.code,

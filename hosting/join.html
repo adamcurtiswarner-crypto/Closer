@@ -6,120 +6,96 @@
   <meta name="robots" content="noindex">
   <title>You&rsquo;re invited to Stoke</title>
   <meta property="og:title" content="You're invited to Stoke">
-  <meta property="og:description" content="One question a day, answered together.">
+  <meta property="og:description" content="One question a day, answered by both of you. Free for you — one subscription covers both partners.">
+  <meta property="og:image" content="https://stoke-5f762.web.app/assets/flame.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1295">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="You're invited to Stoke">
+  <meta name="twitter:description" content="One question a day, answered by both of you. Free for you — one subscription covers both partners.">
+  <meta name="twitter:image" content="https://stoke-5f762.web.app/assets/flame.png">
   <style>
-    :root {
-      --bg: #F5F2EE;
-      --ink: #2b2622;
-      --ink-soft: #6f675f;
-      --coral: #D4522A;
-      --coral-dark: #b3654a;
-      --card: #ffffff;
-      --border: #e5ded6;
+    /* Stoke design tokens (mirrors hosting/index.html / src/config/theme.ts) */
+    @font-face{font-family:'Nunito';src:url('/assets/Nunito-Black.woff2') format('woff2');font-weight:900;font-display:swap}
+    @font-face{font-family:'Nunito';src:url('/assets/Nunito-ExtraBold.woff2') format('woff2');font-weight:800;font-display:swap}
+    @font-face{font-family:'Nunito';src:url('/assets/Nunito-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+    :root{
+      --ground:#F5F2EE; --card:#FFFFFF; --ink:#1E1E2E; --coral:#D4522A; --coral-dk:#B03F1E;
+      --tint:#FDF1ED; --sec:#6B6B7A; --line:#E2DED8;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      -webkit-font-smoothing: antialiased;
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      background:var(--ground);color:var(--ink);
+      font-family:'Nunito',-apple-system,'Segoe UI',system-ui,sans-serif;
+      font-weight:600;font-size:16px;line-height:1.55;
+      -webkit-font-smoothing:antialiased;
+      display:flex;justify-content:center;padding:40px 22px 64px;
     }
-    .wrap { max-width: 400px; width: 100%; text-align: center; }
-    .wordmark {
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--coral);
-      margin-bottom: 28px;
+    .wrap{max-width:440px;width:100%;text-align:center}
+    .logo{height:32px;width:auto;margin:0 auto 26px}
+    h1{font-weight:900;font-size:clamp(26px,7vw,31px);line-height:1.14;letter-spacing:-.01em;margin-bottom:12px;text-wrap:balance}
+    .reframe{color:var(--sec);font-size:16.5px;margin-bottom:28px;text-wrap:balance}
+    .reframe b{color:var(--ink);font-weight:800}
+
+    .code-card{
+      background:var(--card);border:1px solid var(--line);border-radius:20px;
+      padding:22px 20px 18px;margin-bottom:10px;
+      box-shadow:0 4px 12px rgba(30,30,46,.06);
     }
-    h1 {
-      font-size: 26px;
-      font-weight: 600;
-      line-height: 1.3;
-      margin-bottom: 10px;
+    .code-label{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--sec);margin-bottom:8px}
+    .code{
+      font-family:ui-monospace,"SF Mono",Menlo,monospace;
+      font-size:36px;font-weight:600;letter-spacing:.12em;margin-bottom:14px;word-break:break-all;
     }
-    .sub {
-      font-size: 16px;
-      line-height: 1.5;
-      color: var(--ink-soft);
-      margin-bottom: 32px;
+    .copy-btn{
+      appearance:none;border:1.5px solid var(--line);background:var(--ground);color:var(--ink);
+      font-family:inherit;font-size:14.5px;font-weight:800;border-radius:60px;
+      padding:11px 26px;min-height:44px;cursor:pointer;
     }
-    .code-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 24px 20px 20px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(43, 38, 34, 0.06);
+    .copy-btn.copied{border-color:var(--coral);color:var(--coral);background:var(--tint)}
+    .hint{font-size:13px;color:var(--sec);margin-bottom:24px}
+
+    .store-btn{
+      display:block;background:var(--coral);color:#fff;text-decoration:none;
+      font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
+      border-radius:60px;padding:17px 24px;margin-bottom:14px;
+      transition:background .15s ease;
     }
-    .code-label {
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--ink-soft);
-      margin-bottom: 10px;
+    .store-btn:hover,.store-btn:active{background:var(--coral-dk)}
+    .open-app{display:inline-block;font-size:15px;font-weight:800;color:var(--coral);text-decoration:none;padding:10px;min-height:44px}
+
+    /* Sample question, rendered like the app's prompt card */
+    .sample{
+      position:relative;background:var(--card);border:1px solid var(--line);border-radius:20px;
+      padding:20px 22px 20px 25px;margin:30px 0 26px;text-align:left;overflow:hidden;
+      box-shadow:0 4px 12px rgba(30,30,46,.06);
     }
-    .code {
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      font-size: 36px;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      color: var(--ink);
-      margin-bottom: 16px;
-      word-break: break-all;
+    .sample::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--coral)}
+    .sample .eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--coral);margin-bottom:8px}
+    .sample p{font-weight:800;font-size:18.5px;line-height:1.4;letter-spacing:-.005em}
+    .sample .meta{font-size:12.5px;font-weight:600;color:var(--sec);margin-top:10px}
+
+    .facts{list-style:none;text-align:left;margin-bottom:8px}
+    .facts li{
+      display:flex;gap:11px;align-items:flex-start;
+      padding:11px 2px;border-bottom:1px solid var(--line);
+      font-size:15px;color:var(--sec);
     }
-    .copy-btn {
-      appearance: none;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--ink);
-      font-size: 15px;
-      font-weight: 500;
-      border-radius: 12px;
-      padding: 12px 24px;
-      min-height: 44px;
-      cursor: pointer;
-    }
-    .copy-btn.copied { border-color: var(--coral); color: var(--coral); }
-    .hint {
-      font-size: 13px;
-      color: var(--ink-soft);
-      margin-bottom: 28px;
-    }
-    .store-btn {
-      display: block;
-      background: var(--coral);
-      color: #fff;
-      text-decoration: none;
-      font-size: 17px;
-      font-weight: 600;
-      border-radius: 14px;
-      padding: 16px 24px;
-      margin-bottom: 16px;
-    }
-    .store-btn:active { background: var(--coral-dark); }
-    .open-app {
-      display: inline-block;
-      font-size: 15px;
-      color: var(--coral);
-      text-decoration: none;
-      padding: 10px;
-      min-height: 44px;
-    }
+    .facts li:last-child{border-bottom:0}
+    .facts b{color:var(--ink);font-weight:800}
+    .facts .fl{flex:none;width:22px;height:22px;border-radius:50%;background:var(--tint);display:grid;place-items:center;margin-top:1px}
+    .facts .fl svg{width:11px;height:11px}
+
+    .foot{margin-top:34px;font-size:12.5px;color:var(--sec)}
   </style>
 </head>
 <body>
   <main class="wrap">
-    <div class="wordmark">Stoke</div>
+    <img class="logo" src="/assets/logo.png" alt="Stoke">
+
     <h1 id="headline">You&rsquo;re invited to Stoke</h1>
-    <p class="sub">One question a day, answered together.</p>
+    <p class="reframe"><b>Nothing&rsquo;s wrong.</b> It&rsquo;s one question a day you both answer — a way to stay close, not a fix for something broken.</p>
 
     <div class="code-card" id="code-card" hidden>
       <div class="code-label">Your invite code</div>
@@ -130,6 +106,29 @@
 
     <a class="store-btn" href="https://apps.apple.com/app/id6759679330">Get Stoke on the App Store</a>
     <a class="open-app" id="open-app" hidden>Already have the app? Open Stoke</a>
+
+    <div class="sample" aria-label="A sample question from the app">
+      <p class="eyebrow">Today&rsquo;s question</p>
+      <p>What&rsquo;s something small that&rsquo;s been on your mind lately?</p>
+      <p class="meta">Your answer stays sealed until you&rsquo;ve both replied.</p>
+    </div>
+
+    <ul class="facts">
+      <li>
+        <span class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="#D4522A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+        <span><b>Free for you.</b> One subscription covers you both — your partner already has it handled.</span>
+      </li>
+      <li>
+        <span class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="#D4522A" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
+        <span><b>About three minutes a day.</b> One question, a score, a sentence if you want.</span>
+      </li>
+      <li>
+        <span class="fl"><svg viewBox="0 0 24 24" fill="none" stroke="#D4522A" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span>
+        <span><b>Between the two of you.</b> No feed, no followers — your answers stay private to your relationship.</span>
+      </li>
+    </ul>
+
+    <p class="foot">© 2026 Omnific Collective LLC</p>
   </main>
 
   <script>
@@ -137,10 +136,15 @@
       var match = window.location.pathname.match(/\/join\/([A-Za-z0-9]{6})\/?$/);
       var code = match ? match[1].toUpperCase() : null;
 
+      // Optional ?from={inviter first name}. Rendered ONLY via textContent —
+      // never as HTML — so a crafted param cannot inject markup. Trimmed,
+      // control characters stripped, capped at 40 chars.
       var params = new URLSearchParams(window.location.search);
-      var from = (params.get('from') || '').trim().slice(0, 40);
+      var from = (params.get('from') || '')
+        .replace(/[\u0000-\u001F\u007F<>]/g, '')
+        .trim()
+        .slice(0, 40);
       if (from) {
-        // textContent — never injected as HTML
         document.getElementById('headline').textContent = from + ' invited you to Stoke';
       }
 

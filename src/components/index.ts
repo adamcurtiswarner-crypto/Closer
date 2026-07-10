@@ -135,6 +135,9 @@ export { TodaySpark } from './TodaySpark';
 // Morning Check-in
 export { MorningCheckin } from './MorningCheckin';
 
+// Onboarding — the pairing moment (both sides of the link)
+export { PairingMoment } from './PairingMoment';
+
 // Engine screens
 export { EveningReflection } from './EveningReflection';
 export { SurpriseMission } from './SurpriseMission';

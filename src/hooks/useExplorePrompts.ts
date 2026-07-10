@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
+  doc,
+  getDoc,
   query,
   where,
   getDocs,
@@ -169,7 +171,7 @@ export function useExploreAssignments() {
         queryClient.setQueryData(['exploreAssignments', coupleId], assignments);
       },
       (error) => {
-        logger.warn('Explore assignments listener failed:', error);
+        logger.reportQueryDenied('useExploreAssignments.listener', error);
       }
     );
 
@@ -249,6 +251,31 @@ export function useStartExplorePrompt() {
         });
       }
     },
+  });
+}
+
+/**
+ * Reactions on a completed assignment — read from the completion doc, whose
+ * id IS the assignment id (same convention as the daily flow). Feeds the
+ * explore reveal's ReactionRow; writes go through useReaction, which
+ * invalidates ['completionReactions'] so this settles after a tap.
+ */
+export function useCompletionReactions(assignmentId: string | null) {
+  const { user } = useAuth();
+
+  return useQuery<Record<string, string> | null>({
+    queryKey: ['completionReactions', assignmentId],
+    queryFn: async () => {
+      if (!assignmentId) return null;
+      try {
+        const snap = await getDoc(doc(db, 'prompt_completions', assignmentId));
+        return snap.exists() ? snap.data().reactions ?? null : null;
+      } catch {
+        // Reactions are non-critical — the reveal renders without them
+        return null;
+      }
+    },
+    enabled: !!assignmentId && !!user?.coupleId,
   });
 }
 

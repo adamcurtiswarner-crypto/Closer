@@ -24,9 +24,15 @@ const UNIVERSAL_LINK_REGEX = new RegExp(
 /**
  * Builds the canonical invite link for a code, e.g.
  * https://stoke-5f762.web.app/join/ABC123
+ *
+ * When `from` (the inviter's first name) is provided, it is appended as a
+ * URL-encoded query param — join.html renders "{Name} invited you to Stoke"
+ * from it. Omitted when missing or blank so the link stays clean.
  */
-export function buildInviteLink(code: string): string {
-  return `https://${INVITE_LINK_DOMAIN}/join/${code.trim().toUpperCase()}`;
+export function buildInviteLink(code: string, from?: string | null): string {
+  const base = `https://${INVITE_LINK_DOMAIN}/join/${code.trim().toUpperCase()}`;
+  const name = from?.trim();
+  return name ? `${base}?from=${encodeURIComponent(name)}` : base;
 }
 
 /**

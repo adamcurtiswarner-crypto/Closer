@@ -5,6 +5,11 @@
 // undeploy an already-deployed function — see functions/V1-SCOPE.md for the
 // firebase functions:delete commands that must run at deploy time.
 
+// MUST stay first: emulator-only repair of admin.firestore statics dropped
+// by the firebase-tools runtime proxy (no-op in production). See the file
+// header for the full story.
+import './emulatorShim';
+
 export {
   deliverDailyPrompts,
   triggerPromptDelivery,
@@ -62,6 +67,10 @@ export {
 } from './triggers';
 
 export { onCompletionDiscussed } from './hearth';
+
+// Hourly synthetic-couple canary: exercises the real response -> completion
+// pipeline in a shadow couple and reports failures to error_logs.
+export { canaryPipelineCheck } from './canary';
 
 export * from './admin';
 export * from './alerting';

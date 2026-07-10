@@ -1,3 +1,9 @@
+// Pin the timezone BEFORE jest boots so date tests are machine-independent
+// (they used to pass on US-timezone laptops and fail on UTC CI boxes). Set
+// here — not in setupFiles — so every worker process inherits it before any
+// Date is constructed. The tz/DST matrix tests assert this pin.
+process.env.TZ = 'UTC';
+
 module.exports = {
   preset: '@react-native/jest-preset',
 
@@ -35,6 +41,11 @@ module.exports = {
     '<rootDir>/functions/',
     '<rootDir>/.worktrees/',
     '<rootDir>/src/__tests__/rules/',
+    // Shared test fixtures — not suites themselves.
+    '<rootDir>/src/__tests__/fixtures/',
+    // Emulator-backed two-client flow harness; runs via `npm run test:flows`
+    // (see jest.flows.config.js).
+    '<rootDir>/src/__tests__/flows/',
   ],
   fakeTimers: { enableGlobally: true },
 };

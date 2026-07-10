@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { ToneShapes } from './ToneShapes';
 import { ScaleSlider } from './ScaleSlider';
@@ -18,6 +19,13 @@ interface ScalePromptCardProps {
   onNoteFocus?: () => void;
   onSubmit: () => void;
   isPending: boolean;
+  /**
+   * Prompt category (assignment promptType). When a per-category placeholder
+   * exists at today.notePlaceholders.<category> it replaces the default
+   * today.notePlaceholder nudge. The note stays optional either way — no
+   * validation, no nagging.
+   */
+  category?: string | null;
 }
 
 /**
@@ -35,9 +43,21 @@ export function ScalePromptCard({
   onNoteFocus,
   onSubmit,
   isPending,
+  category,
 }: ScalePromptCardProps) {
+  const { t } = useTranslation();
   const config = scaleConfig ?? DEFAULT_SCALE_CONFIG;
   const canSubmit = value !== null && !isPending;
+
+  // The optional note is where the reveal, reactions, follow-ups, and Hearth
+  // starters get their material — nudge gently with a per-category placeholder
+  // when one exists (i18next returns the key itself for missing keys).
+  const categoryKey = category ? `today.notePlaceholders.${category}` : null;
+  const categoryPlaceholder = categoryKey ? t(categoryKey) : null;
+  const notePlaceholder =
+    categoryPlaceholder && categoryPlaceholder !== categoryKey
+      ? categoryPlaceholder
+      : t('today.notePlaceholder');
 
   return (
     <View style={styles.card}>
@@ -67,7 +87,7 @@ export function ScalePromptCard({
       <Animated.View entering={FadeIn.duration(400).delay(500)}>
         <TextInput
           style={styles.noteInput}
-          placeholder="A sentence about why, if you want."
+          placeholder={notePlaceholder}
           placeholderTextColor={colors.onDark.faint}
           multiline
           textAlignVertical="top"

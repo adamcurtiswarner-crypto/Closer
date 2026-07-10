@@ -11,6 +11,22 @@ jest.mock('@utils/haptics', () => ({
   NotificationFeedbackType: { Success: 'success' },
 }));
 
+// Resolve t() against the real en.json so tests assert shipped copy;
+// missing keys return the key itself (i18next's default behavior).
+jest.mock('react-i18next', () => {
+  const en = require('../i18n/locales/en.json');
+  const lookup = (key: string): unknown =>
+    key.split('.').reduce<any>((obj, part) => (obj ? obj[part] : undefined), en);
+  return {
+    useTranslation: () => ({
+      t: (key: string) => {
+        const value = lookup(key);
+        return typeof value === 'string' ? value : key;
+      },
+    }),
+  };
+});
+
 describe('ScalePromptCard', () => {
   const scaleConfig: ScaleConfig = {
     min: 1,
@@ -57,9 +73,43 @@ describe('ScalePromptCard', () => {
     expect(getByText('Thriving')).toBeTruthy();
   });
 
-  it('renders the optional note input with the quiet placeholder', () => {
-    const { getByPlaceholderText } = render(<ScalePromptCard {...defaultProps} />);
-    expect(getByPlaceholderText('A sentence about why, if you want.')).toBeTruthy();
+  it('renders the note field visible by default with the gentle nudge placeholder', () => {
+    const { getByPlaceholderText, getByTestId } = render(
+      <ScalePromptCard {...defaultProps} />
+    );
+    // Visible (not behind a tap) and carrying the default i18n nudge
+    expect(getByTestId('scale-note-input')).toBeTruthy();
+    expect(
+      getByPlaceholderText("What's one moment behind that number?")
+    ).toBeTruthy();
+  });
+
+  it('uses the per-category placeholder when one exists in i18n', () => {
+    const { getByPlaceholderText } = render(
+      <ScalePromptCard {...defaultProps} category="communication" />
+    );
+    expect(
+      getByPlaceholderText('What conversation is behind that number?')
+    ).toBeTruthy();
+  });
+
+  it('falls back to the default placeholder for categories without an override', () => {
+    const { getByPlaceholderText } = render(
+      <ScalePromptCard {...defaultProps} category="everyday_life" />
+    );
+    expect(
+      getByPlaceholderText("What's one moment behind that number?")
+    ).toBeTruthy();
+  });
+
+  it('the note stays optional — submit works with a score and an empty note', () => {
+    const { getByTestId, queryByText } = render(
+      <ScalePromptCard {...defaultProps} value={6} note="" />
+    );
+    fireEvent.press(getByTestId('scale-submit'));
+    expect(defaultProps.onSubmit).toHaveBeenCalledTimes(1);
+    // No validation nagging anywhere on the card
+    expect(queryByText(/required/i)).toBeNull();
   });
 
   it('reports slider selection through onChangeValue', () => {

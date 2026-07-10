@@ -55,6 +55,7 @@ jest.mock('@/utils/logger', () => ({
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
+    reportQueryDenied: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -65,6 +66,8 @@ import {
   mapAssignment,
   mapScaleConfig,
   mapFollowUpInfo,
+  mapResponse,
+  mapEmotionalResponse,
   selectAssignmentDoc,
   needsDailyDelivery,
   useSubmitResponse,
@@ -231,6 +234,39 @@ describe('usePrompt', () => {
     it('mapFollowUpInfo returns null for missing or invalid data', () => {
       expect(mapFollowUpInfo(null)).toBeNull();
       expect(mapFollowUpInfo({})).toBeNull();
+    });
+
+    it('mapResponse carries emotional_response through the read boundary', () => {
+      const response = mapResponse('r-1', {
+        response_text: 'A note',
+        image_url: null,
+        submitted_at: null,
+        status: 'submitted',
+        response_score: 7,
+        emotional_response: 'positive',
+      });
+      expect(response.emotionalResponse).toBe('positive');
+      expect(response.responseScore).toBe(7);
+      expect(response.responseText).toBe('A note');
+    });
+
+    it('mapResponse defaults emotional_response to null (legacy docs / unanswered)', () => {
+      const response = mapResponse('r-2', {
+        response_text: 'A note',
+        status: 'submitted',
+      });
+      expect(response.emotionalResponse).toBeNull();
+      expect(response.responseScore).toBeNull();
+      expect(response.imageUrl).toBeNull();
+    });
+
+    it('mapEmotionalResponse rejects unknown values at the boundary', () => {
+      expect(mapEmotionalResponse('positive')).toBe('positive');
+      expect(mapEmotionalResponse('neutral')).toBe('neutral');
+      expect(mapEmotionalResponse('negative')).toBe('negative');
+      expect(mapEmotionalResponse('great')).toBeNull();
+      expect(mapEmotionalResponse(undefined)).toBeNull();
+      expect(mapEmotionalResponse(3)).toBeNull();
     });
   });
 
@@ -940,8 +976,13 @@ describe('usePrompt', () => {
 
       await expect(flushOfflineQueue('user-1', 'couple-1')).resolves.toBeUndefined();
 
-      expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(expect.any(Error));
+      // Routed through reportQueryDenied: logs like logger.error AND — for
+      // permission-denied failures — writes a sanitized client_error event.
+      expect(logger.reportQueryDenied).toHaveBeenCalledTimes(1);
+      expect(logger.reportQueryDenied).toHaveBeenCalledWith(
+        'usePrompt.flushOfflineQueue',
+        expect.any(Error)
+      );
       // Queue must survive for the next reconnect retry
       expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
       expect(firestore.setDoc).not.toHaveBeenCalled();

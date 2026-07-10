@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
@@ -16,7 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button, Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 
-import { colors, spacing, typography } from '@/config/theme';
+import { colors, radius, spacing, typography } from '@/config/theme';
 
 // Skippable — prompt selection falls back to the 'solid' default
 // written at sign-up (see useAuth), so no answer is required here.
@@ -30,11 +29,13 @@ export default function ToneCalibrationScreen() {
   const { user, refreshUser } = useAuth();
   const [selectedTone, setSelectedTone] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const { t } = useTranslation();
 
   const handleContinue = async () => {
     if (!user?.id || !selectedTone) return;
     setIsSaving(true);
+    setSaveError(false);
     try {
       const userRef = doc(db, 'users', user.id);
       await updateDoc(userRef, {
@@ -45,7 +46,7 @@ export default function ToneCalibrationScreen() {
       router.push('/(onboarding)/first-prompt');
     } catch (error) {
       logger.error('Error saving tone calibration:', error);
-      Alert.alert('Could not save', 'Please check your connection and try again.');
+      setSaveError(true);
     } finally {
       setIsSaving(false);
     }
@@ -112,6 +113,17 @@ export default function ToneCalibrationScreen() {
 
         <View style={styles.spacer} />
 
+        {saveError && (
+          <Animated.View entering={FadeIn.duration(300)} style={styles.errorCard}>
+            <Text style={styles.errorTitle}>
+              {t('onboarding.toneCalibration.saveErrorTitle')}
+            </Text>
+            <Text style={styles.errorBody}>
+              {t('onboarding.toneCalibration.saveErrorBody')}
+            </Text>
+          </Animated.View>
+        )}
+
         <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.buttonContainer}>
           <Button
             title={isSaving ? t('common.saving') : t('common.continue')}
@@ -155,7 +167,7 @@ const styles = StyleSheet.create({
   },
   optionCard: {
     padding: spacing.md,
-    borderRadius: 12,
+    borderRadius: radius.md,
     marginBottom: spacing.smd,
   },
   optionCardSelected: {
@@ -194,6 +206,23 @@ const styles = StyleSheet.create({
   },
   spacer: {
     flex: 1,
+  },
+  errorCard: {
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  errorTitle: {
+    ...typography.bodySm,
+    color: colors.text.primary,
+  },
+  errorBody: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
   },
   buttonContainer: {
     marginBottom: spacing.xl,

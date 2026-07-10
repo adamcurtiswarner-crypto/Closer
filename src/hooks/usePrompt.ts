@@ -57,6 +57,8 @@ interface PromptAssignment {
   skippedBy: string[];
 }
 
+export type EmotionalResponse = 'positive' | 'neutral' | 'negative';
+
 interface PromptResponse {
   id: string;
   responseText: string;
@@ -64,6 +66,11 @@ interface PromptResponse {
   submittedAt: Date | null;
   status: 'draft' | 'submitted';
   responseScore: number | null;
+  /**
+   * "How did this feel?" answer already recorded on the response doc —
+   * the source of truth that stops the Today screen re-asking on remount.
+   */
+  emotionalResponse: EmotionalResponse | null;
 }
 
 // ─── Read-boundary mapping (Firestore snake_case → app camelCase) ───
@@ -88,6 +95,22 @@ export function mapFollowUpInfo(raw: Record<string, any> | null | undefined): Fo
     step: raw.step === 2 ? 2 : 1,
     parentAssignmentId: raw.parent_assignment_id ?? '',
     templateId: raw.template_id ?? '',
+  };
+}
+
+export function mapEmotionalResponse(raw: unknown): EmotionalResponse | null {
+  return raw === 'positive' || raw === 'neutral' || raw === 'negative' ? raw : null;
+}
+
+export function mapResponse(id: string, data: Record<string, any>): PromptResponse {
+  return {
+    id,
+    responseText: data.response_text,
+    imageUrl: data.image_url || null,
+    submittedAt: data.submitted_at?.toDate() || null,
+    status: data.status,
+    responseScore: typeof data.response_score === 'number' ? data.response_score : null,
+    emotionalResponse: mapEmotionalResponse(data.emotional_response),
   };
 }
 
@@ -385,14 +408,7 @@ export function useTodayPrompt() {
 
         for (const responseDoc of responsesSnap.docs) {
           const data = responseDoc.data();
-          const response: PromptResponse = {
-            id: responseDoc.id,
-            responseText: data.response_text,
-            imageUrl: data.image_url || null,
-            submittedAt: data.submitted_at?.toDate() || null,
-            status: data.status,
-            responseScore: typeof data.response_score === 'number' ? data.response_score : null,
-          };
+          const response = mapResponse(responseDoc.id, data);
 
           if (data.user_id === userId) {
             myResponse = response;
@@ -595,9 +611,7 @@ async function performOfflineQueueFlush(userId: string, coupleId: string): Promi
     // Never crash the app from a background flush — the queue stays in
     // AsyncStorage and the next reconnect retries. But never swallow it
     // either: an answer stuck on-device is a data-loss signal (Sentry).
-    logger.error(
-      error instanceof Error ? error : new Error(`Offline queue flush failed: ${String(error)}`)
-    );
+    logger.reportQueryDenied('usePrompt.flushOfflineQueue', error);
   }
 }
 
@@ -672,6 +686,7 @@ export function useSubmitResponse() {
               submittedAt: new Date(),
               status: 'submitted',
               responseScore: responseScore ?? null,
+              emotionalResponse: null,
             },
             isComplete: false,
             isMyResponseOffline: true,

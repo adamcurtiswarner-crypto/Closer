@@ -48,6 +48,8 @@ export function useReaction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });
+      // Explore reveals read reactions via useCompletionReactions
+      queryClient.invalidateQueries({ queryKey: ['completionReactions'] });
     },
   });
 }

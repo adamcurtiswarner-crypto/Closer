@@ -244,7 +244,7 @@ export function useHearth() {
         queryClient.setQueryData(['hearth', coupleId], completions);
       },
       (error) => {
-        logger.warn('Hearth completions listener failed:', error);
+        logger.reportQueryDenied('useHearth.listener', error);
       }
     );
 

@@ -11,6 +11,7 @@ import Animated, {
   withSequence,
 } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { revealSeenKey } from '@/utils/revealGate';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
@@ -34,6 +35,16 @@ const REVEAL_T = {
   REACTIONS: 2950,
   FOOTER: 3300,
 } as const;
+
+/**
+ * Lifetime flag: the couple's FIRST completed reveal on this device (daily or
+ * explore — both render through this component). That one reveal gets one
+ * extra held beat before the partner's side lands, and the footer reads
+ * "The first of many" instead of "Another moment saved".
+ */
+export const FIRST_REVEAL_LIFETIME_KEY = '@stoke_first_reveal_seen';
+/** The extra held breath on the first-ever reveal (added at the partner beat). */
+export const FIRST_EVER_EXTRA_HOLD_MS = 600;
 
 const EYEBROW_FADE_MS = 350;
 const PROMPT_FADE_MS = 450;
@@ -89,12 +100,16 @@ export function CompletionMoment({
   closingText = null,
   assignmentId,
 }: CompletionMomentProps) {
+  const { t } = useTranslation();
   const hasScores = yourScore != null && partnerScore != null;
 
   // null = still resolving the reveal_seen flag (one microtask when assignmentId given)
   const [isFirstReveal, setIsFirstReveal] = useState<boolean | null>(
     assignmentId ? null : true
   );
+  // The couple's first-ever reveal on this device (lifetime AsyncStorage flag).
+  // Only real reveals (assignmentId given) can be first-ever.
+  const [isFirstEver, setIsFirstEver] = useState(false);
 
   const cardScale = useSharedValue(0.97);
   const accentOpacity = useSharedValue(1);
@@ -123,7 +138,11 @@ export function CompletionMoment({
       placeholderOpacity.value = 0;
     };
 
-    const runChoreography = () => {
+    // First-ever reveals hold the breath one beat longer: everything from the
+    // partner beat onward shifts by extraHold (0 on every reveal after that).
+    const runChoreography = (extraHold: number) => {
+      const partnerBeat = REVEAL_T.PARTNER_SCORE + extraHold;
+
       // t=0: card settles in — no mount haptic; the beats carry the feeling.
       cardScale.value = withSpring(1, CARD_SPRING);
 
@@ -133,24 +152,16 @@ export function CompletionMoment({
         yourScoreTY.value = withDelay(REVEAL_T.YOUR_SCORE, withSpring(0, YOUR_SCORE_SPRING));
         yourScoreScale.value = withDelay(REVEAL_T.YOUR_SCORE, withSpring(1, YOUR_SCORE_SPRING));
 
-        // t=1300: the partner score lands (identical for matching and divergent
-        // scores) + the only Medium haptic in the whole day.
-        partnerScoreOpacity.value = withDelay(
-          REVEAL_T.PARTNER_SCORE,
-          withSpring(1, PARTNER_SCORE_SPRING)
-        );
-        partnerScoreTY.value = withDelay(REVEAL_T.PARTNER_SCORE, withSpring(0, PARTNER_SCORE_SPRING));
-        partnerScoreScale.value = withDelay(
-          REVEAL_T.PARTNER_SCORE,
-          withSpring(1, PARTNER_SCORE_SPRING)
-        );
-        placeholderOpacity.value = withDelay(
-          REVEAL_T.PARTNER_SCORE,
-          withTiming(0, { duration: 200 })
-        );
+        // t=1300 (+extra hold on the first-ever reveal): the partner score
+        // lands (identical for matching and divergent scores) + the only
+        // Medium haptic in the whole day.
+        partnerScoreOpacity.value = withDelay(partnerBeat, withSpring(1, PARTNER_SCORE_SPRING));
+        partnerScoreTY.value = withDelay(partnerBeat, withSpring(0, PARTNER_SCORE_SPRING));
+        partnerScoreScale.value = withDelay(partnerBeat, withSpring(1, PARTNER_SCORE_SPRING));
+        placeholderOpacity.value = withDelay(partnerBeat, withTiming(0, { duration: 200 }));
         // Single quiet accent-bar pulse at the partner-score beat.
         accentOpacity.value = withDelay(
-          REVEAL_T.PARTNER_SCORE,
+          partnerBeat,
           withSequence(withTiming(0.55, { duration: 300 }), withTiming(1, { duration: 600 }))
         );
       } else {
@@ -162,28 +173,41 @@ export function CompletionMoment({
         setTimeout(() => hapticImpact(ImpactFeedbackStyle.Light), REVEAL_T.YOUR_SCORE)
       );
       timers.push(
-        setTimeout(() => hapticImpact(ImpactFeedbackStyle.Medium), REVEAL_T.PARTNER_SCORE)
+        setTimeout(() => hapticImpact(ImpactFeedbackStyle.Medium), partnerBeat)
       );
     };
 
     const resolve = async () => {
       let first = true;
+      let firstEver = false;
       if (assignmentId) {
         try {
-          first = (await AsyncStorage.getItem(revealSeenKey(assignmentId))) !== 'true';
+          const [seenRaw, lifetimeRaw] = await Promise.all([
+            AsyncStorage.getItem(revealSeenKey(assignmentId)),
+            AsyncStorage.getItem(FIRST_REVEAL_LIFETIME_KEY),
+          ]);
+          first = seenRaw !== 'true';
+          firstEver = first && lifetimeRaw !== 'true';
         } catch {
           first = true;
+          firstEver = false;
         }
         if (cancelled) return;
+        setIsFirstEver(firstEver);
         setIsFirstReveal(first);
         if (first) {
           AsyncStorage.setItem(revealSeenKey(assignmentId), 'true').catch(() => {
             // Non-critical — worst case the reveal choreographs once more.
           });
         }
+        if (firstEver) {
+          AsyncStorage.setItem(FIRST_REVEAL_LIFETIME_KEY, 'true').catch(() => {
+            // Non-critical — worst case the first-of-many beat plays once more.
+          });
+        }
       }
       if (first) {
-        runChoreography();
+        runChoreography(firstEver ? FIRST_EVER_EXTRA_HOLD_MS : 0);
       } else {
         settleFlat();
       }
@@ -220,10 +244,15 @@ export function CompletionMoment({
   const resolved = isFirstReveal !== null;
   const flat = isFirstReveal === false;
 
+  // Everything from the partner beat onward shifts by the first-ever hold.
+  const extraHold = isFirstEver ? FIRST_EVER_EXTRA_HOLD_MS : 0;
+  const afterHold = (delay: number) =>
+    delay >= REVEAL_T.PARTNER_SCORE ? delay + extraHold : delay;
+
   const enterFade = (delay: number, duration: number) =>
-    flat ? FadeIn.duration(REVISIT_FADE_MS) : FadeIn.duration(duration).delay(delay);
+    flat ? FadeIn.duration(REVISIT_FADE_MS) : FadeIn.duration(duration).delay(afterHold(delay));
   const enterUp = (delay: number, duration: number) =>
-    flat ? FadeIn.duration(REVISIT_FADE_MS) : FadeInUp.duration(duration).delay(delay);
+    flat ? FadeIn.duration(REVISIT_FADE_MS) : FadeInUp.duration(duration).delay(afterHold(delay));
 
   // Text reveals reuse the two score beats for the response cards themselves.
   const yourBodyDelay = hasScores ? REVEAL_T.YOUR_NOTE : REVEAL_T.YOUR_SCORE;
@@ -340,7 +369,9 @@ export function CompletionMoment({
             <Animated.View entering={enterFade(REVEAL_T.FOOTER, FOOTER_FADE_MS)}>
               <View style={styles.footerRow}>
                 <View style={styles.footerDot} />
-                <Text style={styles.footer}>Another moment saved</Text>
+                <Text style={styles.footer}>
+                  {isFirstEver ? t('today.firstOfMany') : t('today.anotherMomentSaved')}
+                </Text>
                 <View style={styles.footerDot} />
               </View>
             </Animated.View>

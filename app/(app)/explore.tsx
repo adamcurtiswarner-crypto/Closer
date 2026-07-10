@@ -5,6 +5,7 @@ import {
   ScrollView,
   TextInput,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   StyleSheet,
   TouchableOpacity,
@@ -30,12 +31,14 @@ import {
   useExploreAssignments,
   useStartExplorePrompt,
   useExploreResponses,
+  useCompletionReactions,
   isLiveExploreAssignment,
   ExplorePrompt,
   ExploreAssignment,
   NoCoupleLinkedError,
 } from '@/hooks/useExplorePrompts';
 import { useSubmitResponse } from '@/hooks/usePrompt';
+import { useReaction, type ReactionType } from '@/hooks/useReaction';
 import { useAuth } from '@/hooks/useAuth';
 import { usePartner } from '@/hooks/usePartner';
 import { usePersonalize } from '@/hooks/usePersonalize';
@@ -43,6 +46,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { FEATURES } from '@/config/features';
 import { premiumGates } from '@/utils/premiumGates';
 import { Icon } from '@/components/Icon';
+import { CompletionMoment } from '@/components/CompletionMoment';
 import { Paywall } from '@/components/Paywall';
 import { QueryError } from '@/components/QueryError';
 import { Skeleton } from '@/components/Skeleton';
@@ -70,7 +74,11 @@ export default function ExploreScreen() {
   const [activePrompt, setActivePrompt] = useState<ExplorePrompt | null>(null);
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
   const [responseText, setResponseText] = useState('');
+  // Sealed-waiting re-read of MY OWN answer (partial assignments only) —
+  // completed assignments open the reveal sheet instead.
   const [viewingAssignmentId, setViewingAssignmentId] = useState<string | null>(null);
+  // Completed assignment currently open in the reveal sheet (CompletionMoment).
+  const [revealAssignmentId, setRevealAssignmentId] = useState<string | null>(null);
   // Safety off-ramp: set once per submission whose text matched the safety lexicon
   const [showSafetyResources, setShowSafetyResources] = useState(false);
   // Quiet inline notice on the respond action when no couple is linked yet
@@ -104,6 +112,27 @@ export default function ExploreScreen() {
     isError: responsesFailed,
     refetch: refetchResponses,
   } = useExploreResponses(viewingAssignmentId, viewingAssignment?.status);
+
+  // ─── Reveal sheet data (completed assignments get the CompletionMoment) ───
+  const revealAssignment = assignments?.find((a) => a.id === revealAssignmentId) ?? null;
+  const {
+    data: revealResponses,
+    isLoading: revealLoading,
+    isError: revealFailed,
+    refetch: refetchReveal,
+  } = useExploreResponses(revealAssignmentId, revealAssignment?.status);
+  // Completion doc id = assignment id — same convention as the daily reveal.
+  const { data: revealReactions } = useCompletionReactions(revealAssignmentId);
+  const reaction = useReaction();
+  const myRevealResponse = revealResponses?.find((r) => r.isCurrentUser) ?? null;
+  const partnerRevealResponse = revealResponses?.find((r) => !r.isCurrentUser) ?? null;
+  const myReaction = user?.id
+    ? ((revealReactions?.[user.id] ?? null) as ReactionType | null)
+    : null;
+  const partnerReaction = user?.id
+    ? ((Object.entries(revealReactions ?? {}).find(([k]) => k !== user.id)?.[1] ??
+        null) as ReactionType | null)
+    : null;
 
   const submitScale = useSharedValue(1);
   const submitAnimStyle = useAnimatedStyle(() => ({
@@ -149,7 +178,7 @@ export default function ExploreScreen() {
       setActiveAssignmentId(target.id);
       setMode('responding');
     } else if (target.status === 'completed') {
-      setViewingAssignmentId(target.id);
+      setRevealAssignmentId(target.id);
     }
   }, [paramAssignmentId, paramPromptId, assignments, user?.id]);
 
@@ -396,6 +425,8 @@ export default function ExploreScreen() {
             const partnerAskedThis =
               status === 'partial' && !!existing?.firstResponderId &&
               existing.firstResponderId !== user?.id;
+            // Sealed-waiting inline re-read (my own answer only, partials).
+            // Completed cards stay compact — they open the reveal sheet.
             const isViewing = !!existing && viewingAssignmentId === existing.id;
             const toggleViewing = () =>
               setViewingAssignmentId(isViewing ? null : existing?.id ?? null);
@@ -419,13 +450,13 @@ export default function ExploreScreen() {
                       {status === 'completed' ? (
                         <TouchableOpacity
                           style={styles.statusBadge}
-                          onPress={toggleViewing}
+                          onPress={() => setRevealAssignmentId(existing?.id ?? null)}
                           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                           accessibilityRole="button"
                         >
                           <Icon name="checks" size={14} color={colors.semantic.success} />
                           <Text style={[styles.statusText, { color: colors.semantic.success }]}>
-                            {isViewing ? t('explore.hide') : t('explore.seeBothAnswers')}
+                            {t('explore.seeBothAnswers')}
                           </Text>
                         </TouchableOpacity>
                       ) : iAskedThis ? (
@@ -479,9 +510,11 @@ export default function ExploreScreen() {
                         <Text style={styles.linkNoticeText}>{t('explore.linkFirst')}</Text>
                       </Animated.View>
                     )}
-                    {/* Show responses when tapped — while partial only YOUR
-                        answer is exposed (the hook enforces the seal) */}
+                    {/* Sealed-waiting re-read — while partial only YOUR
+                        answer is exposed (the hook enforces the seal).
+                        Completed answers open in the reveal sheet instead. */}
                     {isViewing &&
+                      iAskedThis &&
                       (responsesLoading ? (
                         <View style={styles.responsesSection} testID="explore-responses-loading">
                           <View style={styles.responseCard}>
@@ -526,6 +559,76 @@ export default function ExploreScreen() {
           })
         )}
       </ScrollView>
+
+      {/* ─── Reveal sheet: a completed explore question gets the same
+          two-beat CompletionMoment ceremony as the daily reveal. Full
+          choreography plays on the first open per assignment (reveal_seen
+          key inside CompletionMoment); revisits settle flat. ─── */}
+      <Modal
+        visible={revealAssignment != null}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setRevealAssignmentId(null)}
+      >
+        <View style={styles.revealSheet}>
+          <View style={styles.revealHeader}>
+            <TouchableOpacity
+              onPress={() => setRevealAssignmentId(null)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityRole="button"
+              testID="explore-reveal-close"
+            >
+              <Text style={styles.revealDone} maxFontSizeMultiplier={1.4}>
+                {t('common.done')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView contentContainerStyle={styles.revealScroll}>
+            {revealAssignment &&
+              (revealLoading ? (
+                <View style={styles.revealLoading} testID="explore-reveal-loading">
+                  <Skeleton width={120} height={12} />
+                  <Skeleton height={18} />
+                  <Skeleton height={18} width="80%" />
+                  <Skeleton height={64} borderRadius={12} />
+                  <Skeleton height={64} borderRadius={12} />
+                </View>
+              ) : revealFailed ? (
+                <View style={styles.revealLoading}>
+                  <Text style={styles.responsesErrorText}>
+                    {t('explore.answersLoadFailed')}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => refetchReveal()}
+                    accessibilityRole="button"
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  >
+                    <Text style={styles.responsesRetryText}>{t('common.tryAgain')}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <CompletionMoment
+                  key={revealAssignment.id}
+                  assignmentId={revealAssignment.id}
+                  promptText={personalize(revealAssignment.promptText)}
+                  yourResponse={myRevealResponse?.text ?? ''}
+                  partnerResponse={partnerRevealResponse?.text ?? ''}
+                  partnerName={partnerName}
+                  myReaction={myReaction}
+                  partnerReaction={partnerReaction}
+                  onReact={(r) =>
+                    reaction.mutate({
+                      assignmentId: revealAssignment.id,
+                      reaction: r,
+                      promptType: revealAssignment.category,
+                    })
+                  }
+                />
+              ))}
+          </ScrollView>
+        </View>
+      </Modal>
+
       <SafetyResources
         visible={showSafetyResources}
         onClose={() => setShowSafetyResources(false)}
@@ -722,6 +825,33 @@ const styles = StyleSheet.create({
   responseText: {
     ...typography.body,
     color: colors.text.primary,
+  },
+
+  // Reveal sheet (completed assignments — CompletionMoment ceremony)
+  revealSheet: {
+    flex: 1,
+    backgroundColor: colors.surface.background,
+  },
+  revealHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.md,
+  },
+  revealDone: {
+    ...typography.body,
+    color: colors.accent.primary,
+  },
+  revealScroll: {
+    padding: spacing.screen,
+    paddingBottom: spacing.xl,
+  },
+  revealLoading: {
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.hero,
+    padding: spacing.lg,
+    gap: spacing.smd,
+    ...shadow.card,
   },
 
   // Responding mode

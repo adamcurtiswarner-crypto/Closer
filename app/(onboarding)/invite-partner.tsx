@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -19,9 +19,13 @@ import { useCreateInvite, usePendingInvite } from '@/hooks/useCouple';
 import { completeOnboarding } from '@/utils/onboarding';
 import { getShareMessage } from '@/config/app';
 import { copyInviteToClipboard } from '@/utils/inviteLink';
+import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { useTranslation } from 'react-i18next';
 
-import { colors, spacing, typography } from '@/config/theme';
+import { colors, radius, spacing, typography } from '@/config/theme';
+
+// How long the quiet "Copied" confirmation lingers before fading back
+const COPIED_VISIBLE_MS = 2000;
 
 type ResendState = 'idle' | 'sending' | 'sent';
 
@@ -85,7 +89,16 @@ export default function InvitePartnerScreen() {
   const [shareMessage, setShareMessage] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isSkipping, setIsSkipping] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { t } = useTranslation();
+
+  // Clear any pending copied-state fade on unmount
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    };
+  }, []);
 
   // Sync state when pending invite loads asynchronously
   useEffect(() => {
@@ -107,10 +120,19 @@ export default function InvitePartnerScreen() {
     }
   };
 
+  // Quiet inline confirmation — no system alert for a success this small.
   const handleCopyCode = async () => {
-    if (inviteCode) {
-      await Clipboard.setStringAsync(inviteCode);
-      Alert.alert(t('common.copied'), t('onboarding.invitePartner.inviteCopied'));
+    const activeCode = inviteCode || pendingInvite?.code;
+    if (!activeCode) return;
+    try {
+      await Clipboard.setStringAsync(activeCode);
+      hapticImpact(ImpactFeedbackStyle.Light);
+      setCopied(true);
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+      copiedTimer.current = setTimeout(() => setCopied(false), COPIED_VISIBLE_MS);
+    } catch (error) {
+      // Clipboard access is best-effort; the Share button still works
+      logger.warn('Could not copy invite code:', error);
     }
   };
 
@@ -188,9 +210,19 @@ export default function InvitePartnerScreen() {
               <Text style={styles.codeText}>
                 {code}
               </Text>
-              <Text style={styles.tapToCopy}>
-                {t('onboarding.invitePartner.tapToCopy')}
-              </Text>
+              {copied ? (
+                <Animated.Text
+                  key="copied"
+                  entering={FadeIn.duration(200)}
+                  style={styles.copiedText}
+                >
+                  {t('common.copied')}
+                </Animated.Text>
+              ) : (
+                <Text style={styles.tapToCopy}>
+                  {t('onboarding.invitePartner.tapToCopy')}
+                </Text>
+              )}
             </TouchableOpacity>
           </Animated.View>
 
@@ -311,7 +343,7 @@ const styles = StyleSheet.create({
   },
   codeCard: {
     backgroundColor: colors.surface.card,
-    borderRadius: 16,
+    borderRadius: radius.card,
     padding: spacing.lg,
     alignItems: 'center',
     borderWidth: 1,
@@ -325,6 +357,11 @@ const styles = StyleSheet.create({
   tapToCopy: {
     ...typography.bodySm,
     color: colors.text.secondary,
+    marginTop: spacing.sm,
+  },
+  copiedText: {
+    ...typography.bodySm,
+    color: colors.semantic.success,
     marginTop: spacing.sm,
   },
   validDays: {
@@ -356,7 +393,7 @@ const styles = StyleSheet.create({
   },
   errorCard: {
     backgroundColor: colors.surface.card,
-    borderRadius: 16,
+    borderRadius: radius.card,
     borderWidth: 1,
     borderColor: colors.border.default,
     padding: spacing.md,

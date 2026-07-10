@@ -128,6 +128,13 @@
       "verifyResendErrorTitle": "Could not resend",
       "verifyResendErrorBody": "Please try again later."
     },
+    "pairingMoment": {
+      "names": "{{nameA}} & {{nameB}}",
+      "fireLit": "The fire is lit.",
+      "you": "You",
+      "yourPartner": "your partner",
+      "continueA11y": "Continue"
+    },
     "toneCalibration": {
       "title": "How are you two doing?",
       "subtitle": "This helps us start in the right place.",
@@ -136,7 +143,9 @@
       "okay": "We're okay",
       "okayDescription": "But feel a bit distant lately",
       "struggling": "We're struggling to connect",
-      "strugglingDescription": "Want to be more intentional"
+      "strugglingDescription": "Want to be more intentional",
+      "saveErrorTitle": "Could not save",
+      "saveErrorBody": "Check your connection and try again."
     },
     "ready": {
       "title": "You're all set",
@@ -147,7 +156,7 @@
     },
     "valueProp": {
       "title": "Stay connected in\njust 5 minutes a day",
-      "subtitle": "One thoughtful question, answered together.\nThat's all it takes to keep the spark alive.",
+      "subtitle": "One thoughtful question, answered together.\nThat's all it takes to stay close.",
       "featureDaily": "One prompt a day, made for the two of you",
       "featurePrivate": "Private by design — just you and your partner",
       "featureCouples": "Built for long-term couples"
@@ -176,7 +185,14 @@
     "share": "Share",
     "sending": "Sending...",
     "niceOne": "Nice one",
-    "beautiful": "Well done",
+    "wellDone": "Well done",
+    "anotherMomentSaved": "Another moment saved",
+    "firstOfMany": "The first of many",
+    "notePlaceholder": "What's one moment behind that number?",
+    "notePlaceholders": {
+      "communication": "What conversation is behind that number?",
+      "intimacy": "One moment behind that number, if you want."
+    },
     "yourResponse": "Your response",
     "waitingFor": "Waiting for {{name}}...",
     "answerSaved": "Your answer is saved",
@@ -303,6 +319,8 @@
     "anonymizeFailed": "Couldn't anonymize your responses. Please try again.",
     "privacyPolicy": "Privacy policy",
     "termsOfService": "Terms of service",
+    "contactUs": "Contact us",
+    "contactFailed": "Couldn't open your mail app. You can email us at {{email}}.",
     "safetyText": "Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.",
     "safetyLink": "National Domestic Violence Hotline",
     "errorUpdateTime": "Couldn't update your prompt time. Please try again.",
@@ -448,7 +466,7 @@
     "seeBothAnswers": "See both answers",
     "partnerFallback": "your partner",
     "hide": "Hide",
-    "emptyCategory": "No prompts in this category yet",
+    "emptyCategory": "No questions here yet — more are on the way.",
     "loadError": "These prompts didn't load. Check your connection and try again.",
     "linkFirst": "Link with your partner first — questions are answered together.",
     "placeholder": "Share your thoughts...",
@@ -542,6 +560,7 @@
     "subWaitingOne": "1 conversation waiting for you two",
     "subWaiting": "{{count}} conversations waiting for you two",
     "empty": "Your first answered question will glow here.",
+    "emptySub": "It starts with today's question.",
     "partnerFallback": "your partner",
     "state": {
       "repair": "Talk about it",
