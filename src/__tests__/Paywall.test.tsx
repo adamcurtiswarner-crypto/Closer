@@ -1,6 +1,9 @@
+jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
+
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import { Paywall } from '../components/Paywall';
+import { logEvent } from '@/services/analytics';
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -159,6 +162,38 @@ describe('Paywall', () => {
       const { getByText } = render(<Paywall visible onClose={onClose} />);
 
       fireEvent.press(getByText('Not now'));
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('analytics', () => {
+    it('logs paywall_shown with its source when presented', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      render(<Paywall visible onClose={jest.fn()} source="pairing_complete" />);
+
+      expect(logEvent).toHaveBeenCalledWith('paywall_shown', {
+        source: 'pairing_complete',
+      });
+    });
+
+    it('does not log paywall_shown while hidden', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      render(<Paywall visible={false} onClose={jest.fn()} source="follow_up" />);
+
+      expect(logEvent).not.toHaveBeenCalled();
+    });
+
+    it('logs paywall_dismissed on not now and still closes', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      const onClose = jest.fn();
+      const { getByText } = render(
+        <Paywall visible onClose={onClose} source="explore_send" />
+      );
+
+      fireEvent.press(getByText('Not now'));
+      expect(logEvent).toHaveBeenCalledWith('paywall_dismissed', {
+        source: 'explore_send',
+      });
       expect(onClose).toHaveBeenCalled();
     });
   });

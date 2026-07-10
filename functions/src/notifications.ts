@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { format, subDays } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
-import { db, APP_NAME, sendPushNotification } from './shared';
+import { db, APP_NAME, sendPushNotification, reportError } from './shared';
 
 // ============================================
 // PURE: Reminder Quiet Hours (unit tested directly)
@@ -47,11 +47,121 @@ export function isUserSetAside(
 }
 
 // ============================================
+// PURE: Reminder State Machine (unit tested directly)
+// ============================================
+
+const HOURS_UNTIL_FIRST_REMINDER = 4; // reminder 1 eligibility
+const HOURS_UNTIL_NEXT_MORNING = 13; // a 7 PM delivery hits 13h at 8 AM next day
+const MORNING_BAND_START_HOUR = 8; // inclusive — reminder-2 band
+const MORNING_BAND_END_HOUR = 10; // exclusive
+
+const REMINDER_1_BODY = 'Still time to respond today.';
+const REMINDER_2_BODY_PROMPT = "Yesterday's prompt is still open.";
+const REMINDER_2_BODY_FOLLOW_UP = "Yesterday's follow-up is still open.";
+
+export interface ReminderEvaluationInput {
+  /** Hours elapsed since the assignment was delivered. */
+  hoursSinceDelivery: number;
+  /** Current hour (0-23) in the recipient's local timezone. */
+  localHour: number;
+  /** Reminders already sent to this user for this assignment (0, 1, or 2). */
+  remindersSent: number;
+  /** Follow-up assignments get the neutral follow-up copy variant. */
+  isFollowUp: boolean;
+}
+
+export interface ReminderEvaluation {
+  send: boolean;
+  /** Push body when send is true, null otherwise. */
+  body: string | null;
+  /**
+   * New reminders_sent total to persist when send is true. A next-morning
+   * nudge sent to a user with 0 prior reminders counts as BOTH reminders
+   * (countsAs = 2) so the user never gets two back-to-back morning pushes.
+   */
+  countsAs: number;
+}
+
+/**
+ * Reminder state machine — pure, no I/O.
+ *
+ * Semantics (max 2 reminders per assignment per user, never two on the same
+ * run, never inside quiet hours — quiet hours DEFER, they never kill):
+ *
+ * - Reminder 1: >= 4h since delivery, 0 reminders sent, inside the 8 AM-9 PM
+ *   window. No upper ceiling — a 7 PM delivery whose 4-6h window falls in
+ *   quiet hours reminds at 8 AM the next morning instead of never.
+ * - Morning consolidation: if reminder 1 is landing "next morning" — 13+
+ *   hours after delivery, OR after a local midnight has passed since
+ *   delivery (hoursSinceDelivery > localHour) — it is sent with the
+ *   reminder-2 copy and counts as both reminders. Without the midnight test
+ *   an 8 PM delivery would send reminder 1 at 8 AM (12h) and reminder 2 at
+ *   9 AM (13h): exactly the double-morning stacking this exists to prevent.
+ * - Reminder 2 proper: exactly 1 reminder sent, >= 13h since delivery,
+ *   local hour in [8, 10). Combined with the count-0 consolidation branch,
+ *   every count <= 1 state can reach the morning nudge.
+ */
+export function evaluateReminder(
+  input: ReminderEvaluationInput
+): ReminderEvaluation {
+  const { hoursSinceDelivery, localHour, remindersSent, isFollowUp } = input;
+  const noSend: ReminderEvaluation = {
+    send: false,
+    body: null,
+    countsAs: remindersSent,
+  };
+
+  // Max 2 reminders per assignment per user.
+  if (remindersSent >= 2) return noSend;
+
+  // Quiet hours: defer, never send. Not counting a skipped reminder means
+  // the hourly schedule retries in the next open window.
+  if (!isWithinReminderWindow(localHour)) return noSend;
+
+  const morningBody = isFollowUp
+    ? REMINDER_2_BODY_FOLLOW_UP
+    : REMINDER_2_BODY_PROMPT;
+
+  // "Next morning": 13+ hours since delivery, or a local midnight has
+  // passed (delivery yesterday evening, reminder deferred to this morning).
+  const isNextMorning =
+    hoursSinceDelivery >= HOURS_UNTIL_NEXT_MORNING ||
+    hoursSinceDelivery > localHour;
+
+  if (remindersSent === 0) {
+    if (hoursSinceDelivery < HOURS_UNTIL_FIRST_REMINDER) return noSend;
+
+    if (isNextMorning) {
+      // First reminder is only landing the day after delivery (e.g. default
+      // 7 PM delivery deferred past quiet hours). Send the morning copy once
+      // and count it as BOTH reminders — at most one morning nudge, never
+      // two back-to-back.
+      return { send: true, body: morningBody, countsAs: 2 };
+    }
+
+    // Same-day reminder 1: >= 4h after delivery, no ceiling.
+    return { send: true, body: REMINDER_1_BODY, countsAs: 1 };
+  }
+
+  // remindersSent === 1: proper reminder 2, next morning, 8-10 AM band only.
+  if (
+    hoursSinceDelivery >= HOURS_UNTIL_NEXT_MORNING &&
+    localHour >= MORNING_BAND_START_HOUR &&
+    localHour < MORNING_BAND_END_HOUR
+  ) {
+    return { send: true, body: morningBody, countsAs: 2 };
+  }
+
+  return noSend;
+}
+
+// ============================================
 // SCHEDULED: Weekly Recap Notification
 // ============================================
 
-export const sendWeeklyRecaps = functions.pubsub
-  .schedule('every sunday 18:00')
+export const sendWeeklyRecaps = functions
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .pubsub.schedule('every sunday 18:00')
   .timeZone('America/Los_Angeles')
   .onRun(async (_context) => {
     const weekString = format(new Date(), "yyyy-'W'ww");
@@ -88,143 +198,140 @@ export const sendWeeklyRecaps = functions.pubsub
 // SCHEDULED: Send Response Reminders
 // ============================================
 
-export const sendResponseReminders = functions.pubsub
-  .schedule('every 1 hours')
+export const sendResponseReminders = functions
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .pubsub.schedule('every 1 hours')
   .onRun(async () => {
-    const now = new Date();
-    const today = format(now, 'yyyy-MM-dd');
-    const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
+    try {
+      const now = new Date();
+      const today = format(now, 'yyyy-MM-dd');
+      const yesterday = format(subDays(now, 1), 'yyyy-MM-dd');
 
-    // Query pending assignments from today AND yesterday (for morning reminders)
-    const [todayDelivered, todayPartial, yesterdayDelivered, yesterdayPartial] =
-      await Promise.all([
-        db.collection('prompt_assignments')
-          .where('status', '==', 'delivered')
-          .where('assigned_date', '==', today)
-          .get(),
-        db.collection('prompt_assignments')
-          .where('status', '==', 'partial')
-          .where('assigned_date', '==', today)
-          .get(),
-        db.collection('prompt_assignments')
-          .where('status', '==', 'delivered')
-          .where('assigned_date', '==', yesterday)
-          .get(),
-        db.collection('prompt_assignments')
-          .where('status', '==', 'partial')
-          .where('assigned_date', '==', yesterday)
-          .get(),
-      ]);
+      // Query pending assignments from today AND yesterday (for morning reminders)
+      const [todayDelivered, todayPartial, yesterdayDelivered, yesterdayPartial] =
+        await Promise.all([
+          db.collection('prompt_assignments')
+            .where('status', '==', 'delivered')
+            .where('assigned_date', '==', today)
+            .get(),
+          db.collection('prompt_assignments')
+            .where('status', '==', 'partial')
+            .where('assigned_date', '==', today)
+            .get(),
+          db.collection('prompt_assignments')
+            .where('status', '==', 'delivered')
+            .where('assigned_date', '==', yesterday)
+            .get(),
+          db.collection('prompt_assignments')
+            .where('status', '==', 'partial')
+            .where('assigned_date', '==', yesterday)
+            .get(),
+        ]);
 
-    const pendingAssignments = [
-      ...todayDelivered.docs,
-      ...todayPartial.docs,
-      ...yesterdayDelivered.docs,
-      ...yesterdayPartial.docs,
-    ];
+      const pendingAssignments = [
+        ...todayDelivered.docs,
+        ...todayPartial.docs,
+        ...yesterdayDelivered.docs,
+        ...yesterdayPartial.docs,
+      ];
 
-    let remindersSent = 0;
+      let remindersSent = 0;
 
-    for (const assignmentDoc of pendingAssignments) {
-      const assignment = assignmentDoc.data();
-      if (!isReminderEligibleAssignment(assignment)) continue;
-      const deliveredAt = assignment.delivered_at?.toDate?.();
-      if (!deliveredAt) continue;
+      for (const assignmentDoc of pendingAssignments) {
+        // Per-assignment isolation: one malformed doc must not kill the
+        // whole run (and with it every other couple's reminders).
+        try {
+          const assignment = assignmentDoc.data();
+          if (!isReminderEligibleAssignment(assignment)) continue;
+          const deliveredAt = assignment.delivered_at?.toDate?.();
+          if (!deliveredAt) continue;
 
-      const remindersSentMap: Record<string, number> =
-        assignment.reminders_sent || {};
+          const remindersSentMap: Record<string, number> =
+            assignment.reminders_sent || {};
 
-      // Get couple members
-      const coupleDoc = await db.collection('couples').doc(assignment.couple_id).get();
-      if (!coupleDoc.exists) continue;
-      const memberIds: string[] = coupleDoc.data()!.member_ids;
+          // Get couple members
+          const coupleDoc = await db
+            .collection('couples')
+            .doc(assignment.couple_id)
+            .get();
+          if (!coupleDoc.exists) continue;
+          const memberIds: string[] = coupleDoc.data()!.member_ids;
 
-      // Find who has already responded
-      const responsesSnapshot = await db
-        .collection('prompt_responses')
-        .where('assignment_id', '==', assignmentDoc.id)
-        .get();
-      const respondedUserIds = new Set(
-        responsesSnapshot.docs.map((d) => d.data().user_id)
-      );
+          // Find who has already responded
+          const responsesSnapshot = await db
+            .collection('prompt_responses')
+            .where('assignment_id', '==', assignmentDoc.id)
+            .get();
+          const respondedUserIds = new Set(
+            responsesSnapshot.docs.map((d) => d.data().user_id)
+          );
 
-      const hoursSinceDelivery =
-        (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
+          const hoursSinceDelivery =
+            (now.getTime() - deliveredAt.getTime()) / (1000 * 60 * 60);
 
-      for (const userId of memberIds) {
-        if (respondedUserIds.has(userId)) continue;
+          for (const userId of memberIds) {
+            if (respondedUserIds.has(userId)) continue;
 
-        // Set aside for today (follow-up skip) — never remind. The prompt's
-        // own copy promises "it'll keep"; nagging breaks that promise.
-        if (isUserSetAside(assignment, userId)) continue;
+            // Set aside for today (follow-up skip) — never remind. The prompt's
+            // own copy promises "it'll keep"; nagging breaks that promise.
+            if (isUserSetAside(assignment, userId)) continue;
 
-        const userReminderCount = remindersSentMap[userId] || 0;
+            const userReminderCount = remindersSentMap[userId] || 0;
 
-        // Max 2 reminders per user per assignment
-        if (userReminderCount >= 2) continue;
+            // Max 2 reminders per user per assignment (cheap pre-check;
+            // evaluateReminder enforces it too).
+            if (userReminderCount >= 2) continue;
 
-        const userDoc = await db.collection('users').doc(userId).get();
-        if (!userDoc.exists) continue;
-        const userData = userDoc.data()!;
+            const userDoc = await db.collection('users').doc(userId).get();
+            if (!userDoc.exists) continue;
+            const userData = userDoc.data()!;
 
-        // Respect remind_to_respond preference (default true)
-        if (userData.remind_to_respond === false) continue;
+            // Respect remind_to_respond preference (default true)
+            if (userData.remind_to_respond === false) continue;
 
-        // Quiet hours: never remind outside 8 AM - 9 PM in the recipient's
-        // local time (a 7 PM delivery must not remind at 11 PM - 1 AM).
-        // Skipping does NOT count as sent — the hourly run retries later.
-        const userTimezone = userData.timezone || 'America/Los_Angeles';
-        const localHour = parseInt(
-          formatInTimeZone(now, userTimezone, 'HH'),
-          10
-        );
-        if (!isWithinReminderWindow(localHour)) continue;
+            const userTimezone = userData.timezone || 'America/Los_Angeles';
+            const localHour = parseInt(
+              formatInTimeZone(now, userTimezone, 'HH'),
+              10
+            );
 
-        let shouldSend = false;
-        let body = '';
+            // Pure state machine decides: quiet hours defer (never kill),
+            // reminder 1 has no ceiling, next-morning sends consolidate to a
+            // single nudge, max 2 per assignment per user.
+            const evaluation = evaluateReminder({
+              hoursSinceDelivery,
+              localHour,
+              remindersSent: userReminderCount,
+              isFollowUp: assignment.assignment_kind === 'follow_up',
+            });
 
-        // Reminder 1: 4-6 hours after delivery
-        if (
-          userReminderCount < 1 &&
-          hoursSinceDelivery >= 4 &&
-          hoursSinceDelivery < 6
-        ) {
-          shouldSend = true;
-          body = 'Still time to respond today.';
-        }
+            if (!evaluation.send || !evaluation.body) continue;
 
-        // Reminder 2: Next morning, 8-10 AM in user's local timezone
-        if (
-          userReminderCount === 1 &&
-          hoursSinceDelivery >= 8
-        ) {
-          if (localHour >= 8 && localHour < 10) {
-            shouldSend = true;
-            // Follow-up assignments get neutral follow-up copy
-            body = assignment.assignment_kind === 'follow_up'
-              ? "Yesterday's follow-up is still open."
-              : "Yesterday's prompt is still open.";
+            await sendPushNotification(userId, {
+              title: APP_NAME,
+              body: evaluation.body,
+            }, { type: 'prompt' });
+
+            // Atomically track the reminder(s) sent for this user
+            await assignmentDoc.ref.update({
+              [`reminders_sent.${userId}`]: evaluation.countsAs,
+              updated_at: admin.firestore.FieldValue.serverTimestamp(),
+            });
+
+            remindersSent++;
           }
-        }
-
-        if (shouldSend) {
-          await sendPushNotification(userId, {
-            title: APP_NAME,
-            body,
-          }, { type: 'prompt' });
-
-          // Atomically track the reminder sent for this user
-          await assignmentDoc.ref.update({
-            [`reminders_sent.${userId}`]: userReminderCount + 1,
-            updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        } catch (assignmentError) {
+          await reportError('sendResponseReminders', assignmentError, {
+            extra: { assignmentId: assignmentDoc.id },
           });
-
-          remindersSent++;
+          continue;
         }
       }
-    }
 
-    console.log(`Sent ${remindersSent} response reminders`);
+      console.log(`Sent ${remindersSent} response reminders`);
+    } catch (error) {
+      await reportError('sendResponseReminders', error);
+    }
     return null;
   });
 
@@ -232,8 +339,9 @@ export const sendResponseReminders = functions.pubsub
 // SCHEDULED: Date Night Reminders
 // ============================================
 
-export const dateNightReminder = functions.pubsub
-  .schedule('every day 09:00')
+export const dateNightReminder = functions
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .pubsub.schedule('every day 09:00')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
     const couplesSnapshot = await db

@@ -2,16 +2,16 @@
 *Rewritten 2026-07-09 by CEO to mirror the worthiness review. Old feature-roadmap content was stale and contradicted PRODUCT-DIRECTION.md. Source of truth for findings: docs/reviews/2026-07-09-worthiness-review.md.*
 
 ## GATE 1 — SEV-0 fixes (before TestFlight resumes)
-- [ ] Content death spiral: exempt scale prompts from depth progression + LRU-random fallback (functions/src/prompts.ts, triggers.ts)
-- [ ] storage.rules: couple-membership on every couple-scoped path
-- [ ] Breakup model: isCoupleMember checks status; unlink → callable; purge embedded copies in completions/memories (+ BigQuery)
-- [ ] couple_invites: kill collection listing; accept via callable/code-keyed get
-- [ ] Reveal race: server-authoritative assignment status + distinct-uid count; deterministic response IDs; single-flight offline flush
-- [ ] Offline flush query: add couple_id filter; un-silence catch
-- [ ] Reminders: widen reminder-1 window (quiet hours defer); reminder-2 at count ≤1; reportError wrapper
-- [ ] Paywall moment — FOUNDER DECISION, then wire
-- [ ] revenueCatWebhook fail-closed
-- [ ] runWith timeouts on all schedulers
+- [x] Content death spiral: exempt scale prompts from depth progression + LRU-random fallback (functions/src/prompts.ts, triggers.ts)
+- [x] storage.rules: couple-membership on every couple-scoped path
+- [x] Breakup model: isCoupleMember checks status; unlink → callable; purge embedded copies in completions/memories (+ BigQuery)
+- [x] couple_invites: kill collection listing; accept via callable/code-keyed get
+- [x] Reveal race: server-authoritative assignment status + distinct-uid count; deterministic response IDs; single-flight offline flush
+- [x] Offline flush query: add couple_id filter; un-silence catch
+- [x] Reminders: widen reminder-1 window (quiet hours defer); reminder-2 at count ≤1; reportError wrapper
+- [x] Paywall moment (recommendation wired behind FEATURES.premiumGates=true — one flag to change) — FOUNDER DECISION, then wire
+- [x] revenueCatWebhook fail-closed
+- [x] runWith timeouts on all schedulers
 
 ## GATE 2 — SEV-1 pre-launch (parallel where possible)
 - [ ] Pairing-moment design (both sides) · Explore reveal = CompletionMoment · first-reveal beat · inline onboarding errors · copy pass

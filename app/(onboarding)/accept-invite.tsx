@@ -92,7 +92,9 @@ export default function AcceptInviteScreen() {
       hasAutoSubmitted.current = false; // Allow retry
       const message = error?.message || '';
 
-      // Show specific error messages for known cases
+      // Show specific error messages for known cases. Acceptance now runs
+      // through the acceptInvite callable; its HttpsError messages are kept
+      // in lockstep with these substring checks (see functions/src/invites.ts).
       if (message.includes('Already in a couple')) {
         Alert.alert(
           t('onboarding.acceptInvite.errors.alreadyPairedTitle'),

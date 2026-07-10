@@ -55,8 +55,10 @@ import {
   ScalePromptCard,
   FollowUpContextLine,
   FollowUpSkip,
+  FollowUpLockedCard,
   getFollowUpContextLine,
   PartnerQuestionCard,
+  Paywall,
 } from '@components';
 import type { RelationshipStage } from '@components';
 import { StreakRing } from '@/components/StreakRing';
@@ -86,6 +88,7 @@ import { UnpairedTodayCard } from '@/components/UnpairedTodayCard';
 import { NotificationPrePrompt } from '@/components/NotificationPrePrompt';
 import { useNotificationPrePrompt } from '@/hooks/useNotificationPrePrompt';
 import { logger } from '@/utils/logger';
+import { premiumGates } from '@/utils/premiumGates';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { FEATURES } from '@/config/features';
 import { useTranslation } from 'react-i18next';
@@ -206,7 +209,7 @@ export default function TodayScreen() {
   const { data: couple } = useCouple();
   const { hasPendingCheckIn, submitCheckIn, dismissCheckIn } = useCheckIn();
   const { latestInsight, dismissInsight, markActedOn } = useCoachingInsight();
-  const { isPremium } = useSubscription();
+  const { isPremium, isLoading: premiumLoading } = useSubscription();
   const { t } = useTranslation();
 
   const skipFollowUp = useSkipFollowUp();
@@ -235,6 +238,9 @@ export default function TodayScreen() {
   // Safety off-ramp: set once per submission whose text matched the safety
   // lexicon; dismissing it is the end of it — no re-show, no follow-up.
   const [showSafetyResources, setShowSafetyResources] = useState(false);
+  // Premium gate (SEV-0 #8): the daily loop is always free; the follow-up
+  // QUESTION is premium. Opened from the locked follow-up card only.
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Stage prompt is offered at most 3 times before it quietly stops asking.
   useEffect(() => {
@@ -322,6 +328,14 @@ export default function TodayScreen() {
   const followUpContextText = isFollowUp && assignment?.followUp
     ? getFollowUpContextLine(assignment.followUp.branch)
     : null;
+  // Follow-up gate: context stays visible, the question locks (never the
+  // daily prompt — dailyPromptLocked is hard-wired false in premiumGates).
+  const gates = premiumGates({
+    gatesEnabled: FEATURES.premiumGates,
+    isPremium,
+    isPremiumLoading: premiumLoading,
+  });
+  const followUpLocked = isFollowUp && gates.followUpLocked;
 
   // ─── Reveal dwell gate (P0) ───
   // When both partners answer a scored prompt, the server immediately creates
@@ -965,28 +979,40 @@ export default function TodayScreen() {
             };
           }}
         >
-          {assignment.followUp && (
-            <FollowUpContextLine branch={assignment.followUp.branch} />
-          )}
-          {isScalePrompt ? (
-            <ScalePromptCard
+          {gates.followUpLocked ? (
+            // Same-session deepener, free couple: the reveal above stays,
+            // the follow-up lands locked. Skipping stays free below.
+            <FollowUpLockedCard
+              branch={assignment.followUp?.branch}
               promptText={personalize(assignment.promptText)}
-              scaleConfig={assignment.scaleConfig}
-              value={scaleValue}
-              onChangeValue={setScaleValue}
-              note={scaleNote}
-              onChangeNote={setScaleNote}
-              onNoteFocus={handleDeepenerNoteFocus}
-              onSubmit={handleScaleSubmit}
-              isPending={submitResponse.isPending}
+              onSeePremium={() => setShowPaywall(true)}
             />
           ) : (
-            <PromptCard
-              promptText={personalize(assignment.promptText)}
-              promptHint={assignment.promptHint && personalize(assignment.promptHint)}
-              promptType={assignment.promptType}
-              onRespond={handleRespond}
-            />
+            <>
+              {assignment.followUp && (
+                <FollowUpContextLine branch={assignment.followUp.branch} />
+              )}
+              {isScalePrompt ? (
+                <ScalePromptCard
+                  promptText={personalize(assignment.promptText)}
+                  scaleConfig={assignment.scaleConfig}
+                  value={scaleValue}
+                  onChangeValue={setScaleValue}
+                  note={scaleNote}
+                  onChangeNote={setScaleNote}
+                  onNoteFocus={handleDeepenerNoteFocus}
+                  onSubmit={handleScaleSubmit}
+                  isPending={submitResponse.isPending}
+                />
+              ) : (
+                <PromptCard
+                  promptText={personalize(assignment.promptText)}
+                  promptHint={assignment.promptHint && personalize(assignment.promptHint)}
+                  promptType={assignment.promptType}
+                  onRespond={handleRespond}
+                />
+              )}
+            </>
           )}
           <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
         </Animated.View>
@@ -1108,28 +1134,40 @@ export default function TodayScreen() {
       )}
 
       <Animated.View entering={FadeInUp.duration(600).delay(300)} style={styles.promptSection}>
-        {isFollowUp && assignment!.followUp && (
-          <FollowUpContextLine branch={assignment!.followUp.branch} />
-        )}
-        {isScalePrompt ? (
-          <ScalePromptCard
+        {followUpLocked ? (
+          // Locked follow-up (free couple, premiumGates on): the context
+          // line stays, the question blurs. Skipping below remains free.
+          <FollowUpLockedCard
+            branch={assignment!.followUp?.branch}
             promptText={personalize(assignment!.promptText)}
-            scaleConfig={assignment!.scaleConfig}
-            value={scaleValue}
-            onChangeValue={setScaleValue}
-            note={scaleNote}
-            onChangeNote={setScaleNote}
-            onNoteFocus={handlePromptNoteFocus}
-            onSubmit={handleScaleSubmit}
-            isPending={submitResponse.isPending}
+            onSeePremium={() => setShowPaywall(true)}
           />
         ) : (
-          <PromptCard
-            promptText={personalize(assignment!.promptText)}
-            promptHint={assignment!.promptHint && personalize(assignment!.promptHint)}
-            promptType={assignment!.promptType}
-            onRespond={handleRespond}
-          />
+          <>
+            {isFollowUp && assignment!.followUp && (
+              <FollowUpContextLine branch={assignment!.followUp.branch} />
+            )}
+            {isScalePrompt ? (
+              <ScalePromptCard
+                promptText={personalize(assignment!.promptText)}
+                scaleConfig={assignment!.scaleConfig}
+                value={scaleValue}
+                onChangeValue={setScaleValue}
+                note={scaleNote}
+                onChangeNote={setScaleNote}
+                onNoteFocus={handlePromptNoteFocus}
+                onSubmit={handleScaleSubmit}
+                isPending={submitResponse.isPending}
+              />
+            ) : (
+              <PromptCard
+                promptText={personalize(assignment!.promptText)}
+                promptHint={assignment!.promptHint && personalize(assignment!.promptHint)}
+                promptType={assignment!.promptType}
+                onRespond={handleRespond}
+              />
+            )}
+          </>
         )}
         {isFollowUp && (
           <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
@@ -1180,6 +1218,11 @@ export default function TodayScreen() {
         partnerName={partnerName}
         onAccept={prePrompt.accept}
         onDismiss={prePrompt.dismiss}
+      />
+      <Paywall
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        source="follow_up"
       />
     </SafeAreaView>
   );

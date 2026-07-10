@@ -39,7 +39,11 @@ import { useSubmitResponse } from '@/hooks/usePrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { usePartner } from '@/hooks/usePartner';
 import { usePersonalize } from '@/hooks/usePersonalize';
+import { useSubscription } from '@/hooks/useSubscription';
+import { FEATURES } from '@/config/features';
+import { premiumGates } from '@/utils/premiumGates';
 import { Icon } from '@/components/Icon';
+import { Paywall } from '@/components/Paywall';
 import { QueryError } from '@/components/QueryError';
 import { Skeleton } from '@/components/Skeleton';
 import { SafetyResources } from '@/components/SafetyResources';
@@ -71,9 +75,13 @@ export default function ExploreScreen() {
   const [showSafetyResources, setShowSafetyResources] = useState(false);
   // Quiet inline notice on the respond action when no couple is linked yet
   const [linkNoticePromptId, setLinkNoticePromptId] = useState<string | null>(null);
+  // Premium gate (SEV-0 #8): browsing is free, ANSWERING a question the
+  // partner sent is always free; initiating a send is premium.
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { isPremium, isLoading: premiumLoading } = useSubscription();
   const { data: partner } = usePartner();
   const partnerName = partner?.displayName || t('explore.partnerFallback');
   // Display-time only: {partner}/{me} tokens render with real first names here,
@@ -150,6 +158,23 @@ export default function ExploreScreen() {
     // notice on this card instead of throwing a raw alert at them.
     if (!user?.coupleId) {
       setLinkNoticePromptId(prompt.id);
+      return;
+    }
+    // Premium gate: initiating a send is premium; answering a question the
+    // partner already sent (they responded first) is always free.
+    const existing = getAssignmentForPrompt(prompt.id);
+    const partnerAskedThis =
+      existing?.status === 'partial' &&
+      existing.firstResponderId != null &&
+      existing.firstResponderId !== user.id;
+    const sendLocked = premiumGates({
+      gatesEnabled: FEATURES.premiumGates,
+      isPremium,
+      isPremiumLoading: premiumLoading,
+    }).exploreSendLocked;
+    if (!partnerAskedThis && sendLocked) {
+      logEvent('gate_hit', { surface: 'explore_send' });
+      setShowPaywall(true);
       return;
     }
     hapticImpact();
@@ -504,6 +529,11 @@ export default function ExploreScreen() {
       <SafetyResources
         visible={showSafetyResources}
         onClose={() => setShowSafetyResources(false)}
+      />
+      <Paywall
+        visible={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        source="explore_send"
       />
     </SafeAreaView>
   );

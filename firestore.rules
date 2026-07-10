@@ -14,9 +14,21 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    function isCoupleMember(coupleId) {
+    // Membership regardless of couple status. Used ONLY where a member must
+    // still see/operate on their own pending or dissolved couple (the couple
+    // doc itself: reading status, cancelling a pending invite's couple).
+    function isCoupleMemberAnyStatus(coupleId) {
       return isAuthenticated() &&
         request.auth.uid in get(/databases/$(database)/documents/couples/$(coupleId)).data.member_ids;
+    }
+
+    // Default membership check for all couple-scoped data: membership AND an
+    // ACTIVE couple. After a breakup (status 'deleted') or before pairing
+    // completes, ex/pre-members lose access to the couple's content.
+    function isCoupleMember(coupleId) {
+      return isAuthenticated() &&
+        request.auth.uid in get(/databases/$(database)/documents/couples/$(coupleId)).data.member_ids &&
+        get(/databases/$(database)/documents/couples/$(coupleId)).data.status == 'active';
     }
 
     function isAdmin() {
@@ -44,17 +56,20 @@ service cloud.firestore {
     // ============================================
 
     match /couples/{coupleId} {
-      // Members can read; pending couples readable for invite acceptance
-      allow read: if isCoupleMember(coupleId) ||
+      // Members can read their couple in ANY status (the client checks
+      // status on stale couple_ids); pending couples stay readable for the
+      // invite-acceptance flow.
+      allow read: if isCoupleMemberAnyStatus(coupleId) ||
         (isAuthenticated() && resource.data.status == 'pending');
       allow create: if isAuthenticated() &&
         request.auth.uid in request.resource.data.member_ids;
-      // Members can update; non-members can join a pending couple
-      allow update: if isCoupleMember(coupleId) ||
-        (isAuthenticated() &&
-         resource.data.status == 'pending' &&
-         request.resource.data.status == 'active' &&
-         request.auth.uid in request.resource.data.member_ids);
+      // Members can update pending/active couples (cancel invite, frequency,
+      // anniversary, chat metadata) but can never change membership from the
+      // client. Joining a pending couple happens ONLY via the acceptInvite
+      // callable; dissolved couples are frozen.
+      allow update: if isCoupleMemberAnyStatus(coupleId) &&
+        resource.data.status in ['pending', 'active'] &&
+        request.resource.data.member_ids == resource.data.member_ids;
       allow delete: if false;
     }
 
@@ -203,16 +218,21 @@ service cloud.firestore {
     // ============================================
 
     match /couple_invites/{inviteId} {
-      allow read: if isAuthenticated();
+      // Only the inviter can read their own invite (the invite-partner
+      // screen queries where inviter_id == uid && status == 'pending', which
+      // this constraint proves). Nobody can list or fetch someone else's
+      // invite — acceptance goes through the acceptInvite callable, closing
+      // the enumeration hole where any authed user could list all pending
+      // invites and accept a stranger's.
+      allow read: if isAuthenticated() &&
+        resource.data.inviter_id == request.auth.uid;
       allow create: if isAuthenticated() &&
         request.resource.data.inviter_id == request.auth.uid;
-      // Inviter can update their own invite (cancel)
-      // Non-inviter can only accept a pending invite
+      // Inviter can update their own invite (cancel / mark expired) but
+      // cannot reassign it. Acceptance is server-side only.
       allow update: if isAuthenticated() &&
-        (resource.data.inviter_id == request.auth.uid ||
-         (resource.data.status == 'pending' &&
-          request.auth.uid != resource.data.inviter_id &&
-          request.resource.data.status == 'accepted'));
+        resource.data.inviter_id == request.auth.uid &&
+        request.resource.data.inviter_id == resource.data.inviter_id;
       allow delete: if false;
     }
 

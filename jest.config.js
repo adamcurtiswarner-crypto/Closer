@@ -27,6 +27,14 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   testMatch: ['**/__tests__/**/*.(ts|tsx)', '**/*.(test|spec).(ts|tsx)'],
-  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/functions/', '<rootDir>/.worktrees/'],
+  // src/__tests__/rules/ holds emulator-backed security-rules tests; they
+  // need the Firebase emulators and run via `npm run test:rules` instead
+  // (see jest.rules.config.js).
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/functions/',
+    '<rootDir>/.worktrees/',
+    '<rootDir>/src/__tests__/rules/',
+  ],
   fakeTimers: { enableGlobally: true },
 };

@@ -9,10 +9,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { Icon } from '@/components';
+import { Icon, Paywall } from '@/components';
 import { colors, radius, spacing, typography } from '@/config/theme';
+import { FEATURES } from '@/config/features';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { completeOnboarding } from '@/utils/onboarding';
+import { shouldShowPairingPaywall } from '@/utils/premiumGates';
+import { hasSeenPairingPaywall, markPairingPaywallSeen } from '@/utils/paywallSeen';
 import { logger } from '@/utils/logger';
 import { useTranslation } from 'react-i18next';
 
@@ -29,10 +33,15 @@ const TIME_OPTIONS = [
 
 export default function ReadyScreen() {
   const { user, refreshUser } = useAuth();
+  const { isPremium, isLoading: premiumLoading } = useSubscription();
   const [selectedTime, setSelectedTime] = useState(
     user?.notificationTime || DEFAULT_PROMPT_TIME
   );
   const [isSaving, setIsSaving] = useState(false);
+  // The trial moment (SEV-0 #8): the paywall shows once, softly, after
+  // pairing completes — never to an already-premium couple, and "Not now"
+  // proceeds into the app without friction.
+  const [showTrialPaywall, setShowTrialPaywall] = useState(false);
   const { t } = useTranslation();
 
   const timeLabel =
@@ -44,6 +53,23 @@ export default function ReadyScreen() {
     try {
       await completeOnboarding(user.id, { notificationTime: selectedTime });
       await refreshUser();
+
+      const alreadySeen = await hasSeenPairingPaywall(user.id);
+      if (
+        shouldShowPairingPaywall({
+          gatesEnabled: FEATURES.premiumGates,
+          isPremium,
+          isPremiumLoading: premiumLoading,
+          alreadySeen,
+        })
+      ) {
+        // Mark before showing so it can never show twice, then let the
+        // sheet's close (Not now or after purchase) carry them into Today.
+        void markPairingPaywallSeen(user.id);
+        setShowTrialPaywall(true);
+        return;
+      }
+
       router.replace('/(app)/today');
     } catch (error) {
       logger.error('Could not complete onboarding:', error);
@@ -51,6 +77,11 @@ export default function ReadyScreen() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleTrialPaywallClose = () => {
+    setShowTrialPaywall(false);
+    router.replace('/(app)/today');
   };
 
   return (
@@ -107,6 +138,12 @@ export default function ReadyScreen() {
           </TouchableOpacity>
         </Animated.View>
       </View>
+
+      <Paywall
+        visible={showTrialPaywall}
+        onClose={handleTrialPaywallClose}
+        source="pairing_complete"
+      />
     </SafeAreaView>
   );
 }

@@ -24,6 +24,24 @@ jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
 jest.mock('@/components/Icon', () => ({ Icon: () => null }));
 jest.mock('@/components/SafetyResources', () => ({ SafetyResources: () => null }));
 
+// Couple-scoped entitlement — controllable per test (default: free couple)
+const mockSubscription = jest.fn();
+jest.mock('@/hooks/useSubscription', () => ({
+  useSubscription: () => mockSubscription(),
+}));
+
+// Paywall stub that surfaces visibility + source without the real sheet
+jest.mock('@/components/Paywall', () => {
+  const React = require('react');
+  const { Text } = require('react-native');
+  return {
+    Paywall: ({ visible, source }: { visible: boolean; source?: string }) =>
+      visible
+        ? React.createElement(Text, { testID: 'paywall' }, `paywall:${source}`)
+        : null,
+  };
+});
+
 // Resolve t() against the real en.json so tests assert shipped copy
 jest.mock('react-i18next', () => {
   const en = require('../i18n/locales/en.json');
@@ -126,6 +144,7 @@ beforeEach(() => {
   mockPartnerQuery.mockReturnValue({
     data: { id: 'user-2', email: 'j@example.com', displayName: 'Jordan' },
   });
+  mockSubscription.mockReturnValue({ isPremium: false, isLoading: false });
 });
 
 describe('ExploreScreen states', () => {
@@ -281,6 +300,57 @@ describe('ExploreScreen states', () => {
       setQueries({ assignments: { data: [partnerPartial] } });
       const { queryByText } = render(<ExploreScreen />);
       expect(queryByText('See both answers')).toBeNull();
+    });
+  });
+
+  describe('premium gate on sending (premiumGates on)', () => {
+    it('free couple tapping Respond on a fresh prompt opens the paywall, not the editor', () => {
+      const { logEvent } = require('@/services/analytics');
+      setQueries();
+      const { getByText, getByTestId, queryByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('Respond'));
+
+      expect(getByTestId('paywall')).toBeTruthy();
+      expect(getByText('paywall:explore_send')).toBeTruthy();
+      expect(mockStartExplore).not.toHaveBeenCalled();
+      expect(queryByText('Ready to share')).toBeNull();
+      expect(logEvent).toHaveBeenCalledWith('gate_hit', { surface: 'explore_send' });
+    });
+
+    it('ANSWERING a question the partner sent stays free — no paywall for the recipient', async () => {
+      mockStartExplore.mockResolvedValue({ assignmentId: 'assign-1', reused: true });
+      setQueries({
+        assignments: {
+          data: [
+            makeAssignment({
+              status: 'partial',
+              firstResponderId: 'user-2',
+              responseCount: 1,
+            }),
+          ],
+        },
+      });
+      const { getByText, findByText, queryByTestId } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('Respond'));
+
+      expect(queryByTestId('paywall')).toBeNull();
+      expect(mockStartExplore).toHaveBeenCalledWith(PROMPT);
+      expect(await findByText(`“${PROMPT.text}”`)).toBeTruthy();
+    });
+
+    it('a premium couple sends freely', async () => {
+      mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+      mockStartExplore.mockResolvedValue({ assignmentId: 'assign-1', reused: false });
+      setQueries();
+      const { getByText, findByText, queryByTestId } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('Respond'));
+
+      expect(queryByTestId('paywall')).toBeNull();
+      expect(mockStartExplore).toHaveBeenCalledWith(PROMPT);
+      expect(await findByText(`“${PROMPT.text}”`)).toBeTruthy();
     });
   });
 

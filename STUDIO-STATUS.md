@@ -33,7 +33,7 @@ One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (m
 
 ## 2026-07-09 WORTHINESS REVIEW — GATES THE LAUNCH
 Full synthesis: docs/reviews/2026-07-09-worthiness-review.md (8 department audits; CEO-verified findings).
-**SEV-0 (all must clear before TestFlight resumes):**
+**SEV-0 — ALL CLEARED 2026-07-09 night (client fixes ride the next build; server/rules LIVE in prod):**
 1. Content death spiral — depth progression permanently locks every answered category; pool exhausts ~2 weeks → same prompt daily forever (VERIFIED in prod; founder couple at ~6 eligible prompts) [S]
 2. Storage rules open — any authed user can read/write any couple's photos (VERIFIED) [S]
 3. Breakup model — ex retains permanent access (member_ids never cleared); deletion leaves embedded answer copies; client unlink rules-broken [M]

@@ -43,6 +43,8 @@ describe('v1 export barrel scope (see functions/V1-SCOPE.md)', () => {
     'exportUserData',
     'anonymizeMyResponses',
     'cleanupDeletedAccounts',
+    'unlinkCouple',
+    'acceptInvite',
     'generateAIPrompts',
     'autoGeneratePrompts',
     'cleanupCoachingInsights',

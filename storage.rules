@@ -2,55 +2,59 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // User profile photos: any authenticated user can read.
-    // Only the owner can write their own avatar.
+    // Storage rules cannot read Firestore, so couple membership is proven
+    // via the `coupleId` custom auth claim. Cloud Functions set it when a
+    // couple activates (acceptInvite) and clear it on unlink/delete
+    // (unlinkCouple, deleteAccount). Existing users are migrated by
+    // functions/src/scripts/backfillCoupleClaims.ts. Claims reach the
+    // client on ID token refresh: immediately via getIdToken(true) after
+    // pairing, or within ~1 hour on natural token expiry.
+    function isCoupleMember(coupleId) {
+      return request.auth != null && request.auth.token.coupleId == coupleId;
+    }
+
+    function isValidImage() {
+      return request.resource.size < 10 * 1024 * 1024
+             && request.resource.contentType.matches('image/.*');
+    }
+
+    // User profile photos: any authenticated user can read (profile photos
+    // are shown to partners before/around pairing). Only the owner writes.
     match /avatars/{userId}/{fileName} {
       allow read: if request.auth != null;
       allow write: if request.auth != null
-                   && request.auth.uid == userId;
+                   && request.auth.uid == userId
+                   && isValidImage();
     }
 
-    // Partner photos: scoped by coupleId.
-    // Only couple members can read/write (verified via upload path).
+    // Partner photos: couple members only.
     match /partner-photos/{coupleId}/{fileName} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-                   && request.resource.size < 10 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+      allow read: if isCoupleMember(coupleId);
+      allow write: if isCoupleMember(coupleId) && isValidImage();
     }
 
-    // Prompt response photos: scoped by coupleId.
-    // Size limited to 10MB, images only.
+    // Prompt response photos: couple members only.
     match /responses/{coupleId}/{assignmentId}/{fileName} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-                   && request.resource.size < 10 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+      allow read: if isCoupleMember(coupleId);
+      allow write: if isCoupleMember(coupleId) && isValidImage();
     }
 
-    // Chat images: scoped by coupleId.
-    // Size limited to 10MB, images only.
+    // Chat images: couple members only.
     match /chat/{coupleId}/{fileName} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-                   && request.resource.size < 10 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+      allow read: if isCoupleMember(coupleId);
+      allow write: if isCoupleMember(coupleId) && isValidImage();
     }
 
-    // Album photos: scoped by coupleId.
+    // Album photos: couple members only.
     match /photos/{coupleId}/{fileName} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-                   && request.resource.size < 10 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+      allow read: if isCoupleMember(coupleId);
+      allow write: if isCoupleMember(coupleId) && isValidImage();
     }
 
-    // Milestone photos: scoped by coupleId.
+    // Milestone photos: couple members only.
     match /milestones/{coupleId}/{fileName} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-                   && request.resource.size < 10 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+      allow read: if isCoupleMember(coupleId);
+      allow write: if isCoupleMember(coupleId) && isValidImage();
     }
 
     // Deny everything else

@@ -10,13 +10,14 @@ import {
   query,
   where,
   serverTimestamp,
-  runTransaction,
 } from 'firebase/firestore';
+import { getIdToken, getIdTokenResult } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '@/config/firebase';
+import { auth, db, functions } from '@/config/firebase';
 import { getShareMessage } from '@/config/app';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
+import { logger } from '@/utils/logger';
 
 interface Couple {
   id: string;
@@ -55,6 +56,38 @@ function generateInviteCode(): string {
   return code;
 }
 
+// Storage security rules verify couple membership via the `coupleId` custom
+// auth claim, set server-side when the couple activates and cleared on
+// unlink/delete. Claims only reach the client on ID token refresh, so after
+// any pairing change we force one (natural propagation takes up to ~1 hour).
+// Best-effort: a failed refresh just means Storage access catches up on the
+// next natural token refresh.
+async function refreshCoupleClaim(): Promise<void> {
+  try {
+    if (auth.currentUser) {
+      await getIdToken(auth.currentUser, true);
+    }
+  } catch (error) {
+    logger.warn('Could not force-refresh ID token for couple claim:', error);
+  }
+}
+
+// Self-heal for the inviter (and any stale session): if the couple is active
+// but the cached ID token doesn't carry its coupleId claim yet, refresh the
+// token. getIdTokenResult reads the cached token, so this is cheap when the
+// claim already matches.
+async function ensureCoupleClaim(coupleId: string): Promise<void> {
+  try {
+    if (!auth.currentUser) return;
+    const tokenResult = await getIdTokenResult(auth.currentUser);
+    if (tokenResult.claims.coupleId !== coupleId) {
+      await getIdToken(auth.currentUser, true);
+    }
+  } catch (error) {
+    logger.warn('Could not verify couple claim on ID token:', error);
+  }
+}
+
 export function useCouple() {
   const { user } = useAuth();
 
@@ -69,6 +102,14 @@ export function useCouple() {
       if (!coupleSnap.exists()) return null;
 
       const data = coupleSnap.data();
+
+      // Fire-and-forget: make sure this session's ID token carries the
+      // active couple's claim (covers the inviter, whose claim is set by
+      // the partner's acceptInvite call on another device).
+      if (data.status === 'active') {
+        void ensureCoupleClaim(coupleSnap.id);
+      }
+
       return {
         id: coupleSnap.id,
         memberIds: data.member_ids,
@@ -217,81 +258,22 @@ export function useAcceptInvite() {
     mutationFn: async (inviteCode: string): Promise<{ coupleId: string }> => {
       if (!user?.id) throw new Error('Not authenticated');
 
-      // Check if existing coupleId points to an active couple
-      if (user.coupleId) {
-        const existingCouple = await getDoc(doc(db, 'couples', user.coupleId));
-        if (existingCouple.exists() && existingCouple.data().status === 'active') {
-          throw new Error('Already in a couple');
-        }
-        // Stale couple — clear it
-        await updateDoc(doc(db, 'users', user.id), {
-          couple_id: null,
-          updated_at: serverTimestamp(),
-        });
-      }
+      // Invite acceptance is server-side: security rules deny clients any
+      // read/update of invites they didn't create (enumeration fix), and the
+      // callable performs the whole join atomically with the Admin SDK. Its
+      // error messages intentionally match the strings the accept-invite
+      // screen maps to its error copies ('Already in a couple', 'expired',
+      // 'already been used', 'your own invite', 'Invalid invite code').
+      const accept = httpsCallable<{ code: string }, { coupleId: string }>(
+        functions,
+        'acceptInvite'
+      );
+      const result = await accept({ code: inviteCode.toUpperCase() });
+      const coupleId = result.data.coupleId;
 
-      const code = inviteCode.toUpperCase();
-      const inviteRef = doc(db, 'couple_invites', code);
-      const userRef = doc(db, 'users', user.id);
-
-      const coupleId = await runTransaction(db, async (transaction) => {
-        // 1. Read invite doc
-        const inviteSnap = await transaction.get(inviteRef);
-        if (!inviteSnap.exists()) {
-          throw new Error('Invalid invite code');
-        }
-
-        const inviteData = inviteSnap.data();
-
-        // 2. Validate invite state
-        if (inviteData.status !== 'pending') {
-          throw new Error('This invite has already been used');
-        }
-
-        if (inviteData.expires_at.toDate() < new Date()) {
-          throw new Error('This invite has expired');
-        }
-
-        if (inviteData.inviter_id === user.id) {
-          throw new Error("You can't accept your own invite");
-        }
-
-        // 3. Read couple doc
-        const cId = inviteData.couple_id;
-        const coupleRef = doc(db, 'couples', cId);
-        const coupleSnap = await transaction.get(coupleRef);
-        const coupleData = coupleSnap.data();
-
-        if (!coupleData || coupleData.member_ids.length !== 1) {
-          throw new Error('Invalid couple state for acceptance');
-        }
-
-        // 4. Write invite: mark accepted
-        transaction.update(inviteRef, {
-          status: 'accepted',
-          accepted_at: serverTimestamp(),
-          accepted_by: user.id,
-        });
-
-        // 5. Write couple: add member, activate
-        transaction.update(coupleRef, {
-          member_ids: [...coupleData.member_ids, user.id],
-          member_emails: [...(coupleData.member_emails || []), user.email],
-          status: 'active',
-          linked_at: serverTimestamp(),
-          updated_at: serverTimestamp(),
-          cohort_week: getISOWeek(),
-        });
-
-        // 6. Write user: set couple_id
-        transaction.update(userRef, {
-          couple_id: cId,
-          updated_at: serverTimestamp(),
-        });
-
-        return cId;
-      });
-
+      // Pairing set a coupleId custom claim server-side — pick it up now so
+      // Storage rules admit this device immediately.
+      await refreshCoupleClaim();
       await refreshUser();
 
       return { coupleId };
@@ -303,16 +285,6 @@ export function useAcceptInvite() {
   });
 }
 
-// Helper to get ISO week string
-function getISOWeek(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const firstDayOfYear = new Date(year, 0, 1);
-  const pastDaysOfYear = (now.getTime() - firstDayOfYear.getTime()) / 86400000;
-  const weekNumber = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
-  return `${year}-W${weekNumber.toString().padStart(2, '0')}`;
-}
-
 export function useDisconnectPartner() {
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
@@ -321,44 +293,17 @@ export function useDisconnectPartner() {
     mutationFn: async (): Promise<void> => {
       if (!user?.id || !user?.coupleId) throw new Error('Not in a couple');
 
-      const coupleRef = doc(db, 'couples', user.coupleId);
-      const coupleSnap = await getDoc(coupleRef);
+      // Unlink is server-side: users docs are owner-write-only, so a client
+      // could only ever clear its OWN couple_id and left the partner
+      // half-linked. The callable dissolves the couple, clears BOTH users'
+      // couple_id and coupleId claims, cancels pending invites, and quietly
+      // notifies the partner.
+      const unlink = httpsCallable<void, { success: boolean }>(functions, 'unlinkCouple');
+      await unlink();
 
-      if (!coupleSnap.exists()) throw new Error('Couple not found');
-
-      const coupleData = coupleSnap.data();
-      const memberIds: string[] = coupleData.member_ids || [];
-
-      // Update couple status to deleted
-      await updateDoc(coupleRef, {
-        status: 'deleted',
-        updated_at: serverTimestamp(),
-      });
-
-      // Clear couple_id from all members
-      for (const memberId of memberIds) {
-        const memberRef = doc(db, 'users', memberId);
-        await updateDoc(memberRef, {
-          couple_id: null,
-          updated_at: serverTimestamp(),
-        });
-      }
-
-      // Cancel any pending invites for this couple
-      const invitesRef = collection(db, 'couple_invites');
-      const inviteQuery = query(
-        invitesRef,
-        where('couple_id', '==', user.coupleId),
-        where('status', '==', 'pending')
-      );
-      const inviteSnap = await getDocs(inviteQuery);
-
-      for (const inviteDoc of inviteSnap.docs) {
-        await updateDoc(doc(db, 'couple_invites', inviteDoc.id), {
-          status: 'cancelled',
-        });
-      }
-
+      // Our coupleId claim was cleared server-side — drop it from this
+      // device's token now.
+      await refreshCoupleClaim();
       await refreshUser();
     },
     onSuccess: () => {

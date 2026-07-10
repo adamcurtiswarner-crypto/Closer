@@ -55,12 +55,30 @@ export const onResponseSubmitted = functions.firestore
       .collection('prompt_responses')
       .where('assignment_id', '==', response.assignment_id)
       .get();
-    const submittedCount = responsesSnapshot.size;
+
+    // Completion requires responses from DISTINCT partners. Duplicate
+    // submissions from one user (client retry, offline-queue replay) used to
+    // count as 2 and "complete" the prompt with one person's answer twice.
+    // Dedupe to one response per user — earliest submission wins — and branch
+    // on the distinct count.
+    const toMillis = (value: unknown): number => {
+      const t = (value as { toDate?: () => Date } | null)?.toDate?.() ?? value;
+      return t instanceof Date ? t.getTime() : 0;
+    };
+    const responseDocByUser = new Map<string, (typeof responsesSnapshot.docs)[number]>();
+    for (const doc of [...responsesSnapshot.docs].sort(
+      (a, b) => toMillis(a.data().submitted_at) - toMillis(b.data().submitted_at)
+    )) {
+      const uid = doc.data().user_id;
+      if (!responseDocByUser.has(uid)) responseDocByUser.set(uid, doc);
+    }
+    const distinctResponseDocs = [...responseDocByUser.values()];
+    const distinctCount = responseDocByUser.size;
 
     // Check if this completes the prompt
-    if (submittedCount >= 2) {
+    if (distinctCount >= 2) {
       // Both partners have responded - create completion
-      const responses = responsesSnapshot.docs.map((doc) => ({
+      const responses = distinctResponseDocs.map((doc) => ({
         user_id: doc.data().user_id,
         response_text: doc.data().response_text,
         response_score: doc.data().response_score ?? null,
@@ -110,7 +128,7 @@ export const onResponseSubmitted = functions.firestore
           ...(needsTending ? { discussed: {}, discussed_at: null } : {}),
           responses,
           time_to_complete_seconds: timeToCompleteSeconds,
-          total_response_length: responsesSnapshot.docs.reduce(
+          total_response_length: distinctResponseDocs.reduce(
             (sum, d) => sum + (d.data().response_length || 0),
             0
           ),
@@ -127,6 +145,25 @@ export const onResponseSubmitted = functions.firestore
         console.log(
           `Completion already exists for assignment ${response.assignment_id}, skipping duplicate completion processing`
         );
+      }
+
+      // Finalize the assignment doc — the reveal gates on assignment status.
+      // When two clients race (both read response_count 0, both write
+      // 1/'partial'), the assignment strands at 'partial' forever while the
+      // completion doc exists and the reveal never opens. This server-side
+      // back-write is the authoritative repair. It is idempotent (skipped
+      // when the pre-read status is already 'completed') and deliberately
+      // runs on BOTH the create-winner and ALREADY_EXISTS paths, so an event
+      // redelivery can still repair an assignment stranded by a crash between
+      // the completion create and this update.
+      if (assignment.status !== 'completed') {
+        await assignmentRef.update({
+          status: 'completed',
+          response_count: distinctCount,
+          completed_at: admin.firestore.FieldValue.serverTimestamp(),
+          second_response_at: admin.firestore.FieldValue.serverTimestamp(),
+          updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        });
       }
 
       if (completionCreated) {
@@ -157,9 +194,16 @@ export const onResponseSubmitted = functions.firestore
           last_streak_date: today,
         });
 
-        // Advance depth progression
+        // Advance depth progression — LEGACY TEXT PROMPTS ONLY. Selection
+        // (prompts.ts isPromptEligible) exempts scale prompts from depth
+        // gating entirely, so recording their completions here could never
+        // affect selection. Decision: skip the bookkeeping for scale prompts
+        // rather than record-but-ignore — selection is the only consumer of
+        // depth_progress, and skipping avoids a pointless couple-doc write
+        // per completion. (Follow-up assignments already self-skip: their
+        // prompt_id is a template id with no /prompts doc.)
         const promptDoc = await db.collection('prompts').doc(response.prompt_id).get();
-        if (promptDoc.exists) {
+        if (promptDoc.exists && promptDoc.data()!.response_format !== 'scale') {
           const promptData = promptDoc.data()!;
           const promptType = promptData.type;
           const promptDepth = promptData.emotional_depth || 'surface';
@@ -256,21 +300,34 @@ export const onResponseSubmitted = functions.firestore
           });
         }
       }
-    } else if (submittedCount === 1) {
-      // First response - track first responder and notify partner.
-      // Guarded on the actual count so a late-firing duplicate of this event
-      // (after the partner has responded) cannot re-send the nudge.
-      await assignmentRef.update({
-        first_responder_id: response.user_id,
-      });
+    } else if (distinctCount === 1) {
+      // Exactly one partner has responded - track first responder and repair
+      // the assignment if the client's status write was lost or raced: one
+      // distinct response means the assignment is at least 'partial', never
+      // still 'delivered'.
+      const firstResponderId = distinctResponseDocs[0].data().user_id;
+      const assignmentUpdates: Record<string, unknown> = {
+        first_responder_id: firstResponderId,
+      };
+      if (assignment.status === 'delivered') {
+        assignmentUpdates.status = 'partial';
+        assignmentUpdates.response_count = 1;
+        assignmentUpdates.updated_at = admin.firestore.FieldValue.serverTimestamp();
+      }
+      await assignmentRef.update(assignmentUpdates);
 
+      // Notify the partner only for the genuinely-first response DOC
+      // (exactly one doc exists). A duplicate submission from the same user
+      // (2+ docs, 1 distinct user) must not re-send the nudge; a late-firing
+      // duplicate of this event after the partner responded routes to the
+      // completion branch above.
       const coupleDoc = await db.collection('couples').doc(response.couple_id).get();
       const coupleData = coupleDoc.data()!;
       const partnerId = coupleData.member_ids.find(
         (id: string) => id !== response.user_id
       );
 
-      if (partnerId) {
+      if (partnerId && responsesSnapshot.size === 1) {
         // Check partner's notification preference (default true)
         const partnerDoc = await db.collection('users').doc(partnerId).get();
         const partnerData = partnerDoc.data();

@@ -13,11 +13,22 @@ import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
 import { Skeleton } from './Skeleton';
 import { ToneShapes } from './ToneShapes';
+import { logEvent } from '@/services/analytics';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
+
+/** Where the sheet was opened from — carried on paywall analytics events. */
+export type PaywallSource =
+  | 'pairing_complete'
+  | 'follow_up'
+  | 'hearth_history'
+  | 'explore_send'
+  | 'settings'
+  | 'unspecified';
 
 interface PaywallProps {
   visible: boolean;
   onClose: () => void;
+  source?: PaywallSource;
 }
 
 type PlanId = 'annual' | 'monthly';
@@ -41,12 +52,23 @@ const PREMIUM_FEATURES = [
   { icon: 'heart' as const, key: 'paywall.features.privacy' },
 ];
 
-export function Paywall({ visible, onClose }: PaywallProps) {
+export function Paywall({ visible, onClose, source = 'unspecified' }: PaywallProps) {
   const { offering, offeringError, refreshOffering, purchase, restore, isLoading } =
     useSubscription();
   const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('annual');
   const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      logEvent('paywall_shown', { source });
+    }
+  }, [visible, source]);
+
+  const handleDismiss = () => {
+    logEvent('paywall_dismissed', { source });
+    onClose();
+  };
 
   const annualPackage = offering?.annual ?? null;
   const monthlyPackage = offering?.monthly ?? null;
@@ -82,7 +104,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={handleDismiss}
     >
       <View style={styles.overlay}>
         <View style={styles.sheet}>
@@ -206,7 +228,7 @@ export function Paywall({ visible, onClose }: PaywallProps) {
 
           <TouchableOpacity
             style={styles.closeButton}
-            onPress={onClose}
+            onPress={handleDismiss}
             accessibilityRole="button"
           >
             <Text style={styles.closeText}>{t('paywall.notNow')}</Text>

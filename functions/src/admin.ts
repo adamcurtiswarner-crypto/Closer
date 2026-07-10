@@ -312,7 +312,20 @@ export const revenueCatWebhook = functions.https.onRequest(async (req, res) => {
   // runtime config kept as fallback for older deploys.
   const expectedKey =
     process.env.REVENUECAT_WEBHOOK_KEY || functions.config().revenuecat?.webhook_key;
-  if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
+
+  // FAIL CLOSED: a missing/empty webhook key must never accept forged
+  // events. Reject with 500 (our misconfiguration, not the caller's) and
+  // alert via error_logs so it gets fixed instead of silently failing open.
+  if (!expectedKey) {
+    await reportError(
+      'revenueCatWebhook',
+      new Error('REVENUECAT_WEBHOOK_KEY is not configured — rejecting webhook (fail closed)')
+    );
+    res.status(500).send('Webhook not configured');
+    return;
+  }
+
+  if (authHeader !== `Bearer ${expectedKey}`) {
     res.status(401).send('Unauthorized');
     return;
   }

@@ -83,8 +83,9 @@ async function exportEventsBatch(cutoffDate: Date): Promise<{ exported: number; 
 // SCHEDULED: Weekly Metrics Aggregation
 // ============================================
 
-export const aggregateWeeklyMetrics = functions.pubsub
-  .schedule('every day 03:00')
+export const aggregateWeeklyMetrics = functions
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .pubsub.schedule('every day 03:00')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
     // Update prompt metrics
@@ -453,8 +454,9 @@ export const createExperiment = functions.https.onCall(async (data, context) => 
 // SCHEDULED: Export Events to BigQuery (Daily 4 AM PT)
 // ============================================
 
-export const exportEventsToBigQuery = functions.pubsub
-  .schedule('every day 04:00')
+export const exportEventsToBigQuery = functions
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .pubsub.schedule('every day 04:00')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
     const cutoffDate = subDays(new Date(), 90);
@@ -497,8 +499,9 @@ export const triggerBigQueryExport = functions.https.onCall(async (data, context
 // SCHEDULED: Detect Churn Risk (Daily 5 AM PT)
 // ============================================
 
-export const detectChurnRisk = functions.pubsub
-  .schedule('every day 05:00')
+export const detectChurnRisk = functions
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .pubsub.schedule('every day 05:00')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
     const now = new Date();

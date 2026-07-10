@@ -11,8 +11,11 @@ import { db, sendPushNotification } from './shared';
  * to all admin users. Runs every 5 minutes so Adam knows about failures
  * within minutes, not when a user complains.
  */
-export const checkErrorAlerts = functions.pubsub
-  .schedule('every 5 minutes')
+// timeoutSeconds stays under the 5-minute schedule interval so runs never
+// overlap; the query is bounded (limit 50) and needs no extra memory.
+export const checkErrorAlerts = functions
+  .runWith({ timeoutSeconds: 240 })
+  .pubsub.schedule('every 5 minutes')
   .onRun(async () => {
     // Find error logs that haven't been alerted yet
     const unalertedSnap = await db
@@ -66,8 +69,9 @@ export const checkErrorAlerts = functions.pubsub
 /**
  * Deletes error_logs older than 30 days to prevent unbounded growth.
  */
-export const cleanupErrorLogs = functions.pubsub
-  .schedule('every day 03:30')
+export const cleanupErrorLogs = functions
+  .runWith({ timeoutSeconds: 540, memory: '512MB' })
+  .pubsub.schedule('every day 03:30')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

@@ -18,11 +18,16 @@ import {
   type HearthCompletion,
 } from '@/hooks/useHearth';
 import { V1_PROMPT_CATEGORIES, getCategoryByType } from '@/config/promptCategories';
+import { FEATURES } from '@/config/features';
+import { useSubscription } from '@/hooks/useSubscription';
+import { currentMonthOnly, premiumGates } from '@/utils/premiumGates';
 import { Icon } from '@/components/Icon';
 import { HearthEmberTile } from '@/components/HearthEmberTile';
+import { HearthGateCard } from '@/components/HearthGateCard';
 import { HearthQueueCard } from '@/components/HearthQueueCard';
 import { HearthTalkSheet } from '@/components/HearthTalkSheet';
 import { HearthCategoryDetail } from '@/components/HearthCategoryDetail';
+import { Paywall } from '@/components/Paywall';
 import { logEvent } from '@/services/analytics';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
@@ -32,6 +37,16 @@ export default function HearthScreen() {
   const { data: rawCompletions = [], isLoading } = useHearth();
   const markDiscussed = useMarkDiscussed();
   const personalize = usePersonalize();
+  const { isPremium, isLoading: premiumLoading } = useSubscription();
+
+  // Premium gate (SEV-0 #8): free couples keep the current month — embers,
+  // talk sheet, "we talked" marks. History, trends, and the couch queue
+  // live behind the quiet gate card below the grid.
+  const historyLocked = premiumGates({
+    gatesEnabled: FEATURES.premiumGates,
+    isPremium,
+    isPremiumLoading: premiumLoading,
+  }).hearthHistoryLocked;
 
   // Personalize {partner}/{me} tokens once at the data boundary — every card,
   // detail entry, and the talk sheet below renders the personalized copy.
@@ -43,6 +58,7 @@ export default function HearthScreen() {
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [talkCompletionId, setTalkCompletionId] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
     logEvent('hearth_viewed');
@@ -51,8 +67,16 @@ export default function HearthScreen() {
   const myUid = user?.id ?? '';
   const partnerName = user?.partnerName || t('hearth.partnerFallback');
 
+  // What a free couple sees: this calendar month only. Premium (or gates
+  // off) sees everything. The queue count for the header line stays honest
+  // either way — locked things still exist and we say so.
+  const visibleCompletions = useMemo(
+    () => (historyLocked ? currentMonthOnly(completions) : completions),
+    [completions, historyLocked]
+  );
+
   const queue = useMemo(() => couchQueue(completions), [completions]);
-  const states = useMemo(() => perCategoryState(completions), [completions]);
+  const states = useMemo(() => perCategoryState(visibleCompletions), [visibleCompletions]);
   const stats = useMemo(() => monthlyStats(completions), [completions]);
 
   // The talk sheet reads the live entry from the snapshot-driven cache so
@@ -93,6 +117,14 @@ export default function HearthScreen() {
     />
   );
 
+  const paywall = (
+    <Paywall
+      visible={showPaywall}
+      onClose={() => setShowPaywall(false)}
+      source="hearth_history"
+    />
+  );
+
   // ─── Category detail mode (explore's in-screen pattern) ───
   const detailCategory = selectedCategory ? getCategoryByType(selectedCategory) : undefined;
   if (detailCategory) {
@@ -101,14 +133,17 @@ export default function HearthScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <HearthCategoryDetail
           category={detailCategory}
-          entries={categoryEntries(completions, detailCategory.type)}
-          series={trendSeries(completions, detailCategory.type)}
+          // Free couples: current-month entries only, no trend series —
+          // the "we talked" flow on those entries stays fully open.
+          entries={categoryEntries(visibleCompletions, detailCategory.type)}
+          series={historyLocked ? [] : trendSeries(completions, detailCategory.type)}
           myUid={myUid}
           partnerName={partnerName}
           onBack={() => setSelectedCategory(null)}
           onOpenTalkSheet={openTalkSheet}
         />
         {talkSheet}
+        {paywall}
       </SafeAreaView>
     );
   }
@@ -164,8 +199,16 @@ export default function HearthScreen() {
               })}
             </View>
 
+            {/* History, trends, and the couch queue live in Premium —
+                one quiet card, never a wall over the embers above. */}
+            {historyLocked && (
+              <View style={styles.section}>
+                <HearthGateCard onSeePremium={() => setShowPaywall(true)} />
+              </View>
+            )}
+
             {/* Couch queue */}
-            {queue.length > 0 && (
+            {!historyLocked && queue.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t('hearth.queueTitle')}</Text>
                 {queue.map((completion, index) => {
@@ -224,6 +267,7 @@ export default function HearthScreen() {
         )}
       </ScrollView>
       {talkSheet}
+      {paywall}
     </SafeAreaView>
   );
 }

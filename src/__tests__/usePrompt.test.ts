@@ -1,9 +1,11 @@
 jest.mock('firebase/firestore', () => ({
   collection: jest.fn(),
-  doc: jest.fn(),
+  // Return a ref carrying the doc id so deterministic-id assertions can
+  // inspect what path a setDoc/updateDoc targeted.
+  doc: jest.fn((_db: any, _coll?: string, id?: string) => ({ id })),
   getDoc: jest.fn(),
   getDocs: jest.fn(),
-  addDoc: jest.fn(),
+  setDoc: jest.fn(),
   updateDoc: jest.fn(),
   query: jest.fn(),
   where: jest.fn(),
@@ -48,6 +50,14 @@ jest.mock('@/services/imageUpload', () => ({
   uploadResponsePhoto: jest.fn(),
 }));
 
+jest.mock('@/utils/logger', () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
 import React from 'react';
 import { renderHook, act } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -60,6 +70,7 @@ import {
   useSubmitResponse,
   dedupeOfflineQueue,
   flushOfflineQueue,
+  responseDocId,
 } from '../hooks/usePrompt';
 
 function createClientAndWrapper() {
@@ -456,7 +467,8 @@ describe('usePrompt', () => {
         exists: () => true,
         data: () => ({ prompt_id: 'p-1', response_count: 0 }),
       });
-      firestore.addDoc.mockResolvedValue({ id: 'r-1' });
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+      firestore.setDoc.mockResolvedValue(undefined);
       firestore.updateDoc.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useSubmitResponse(), {
@@ -471,8 +483,8 @@ describe('usePrompt', () => {
         });
       });
 
-      expect(firestore.addDoc).toHaveBeenCalledWith(
-        undefined,
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a-1_user-1' }),
         expect.objectContaining({
           response_score: 8,
           response_text: 'A short note about why.',
@@ -486,7 +498,8 @@ describe('usePrompt', () => {
         exists: () => true,
         data: () => ({ prompt_id: 'p-1', response_count: 0 }),
       });
-      firestore.addDoc.mockResolvedValue({ id: 'r-2' });
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+      firestore.setDoc.mockResolvedValue(undefined);
       firestore.updateDoc.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useSubmitResponse(), {
@@ -500,8 +513,8 @@ describe('usePrompt', () => {
         });
       });
 
-      expect(firestore.addDoc).toHaveBeenCalledWith(
-        undefined,
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a-1_user-1' }),
         expect.objectContaining({ response_score: null })
       );
     });
@@ -611,7 +624,8 @@ describe('usePrompt', () => {
         exists: () => true,
         data: () => ({ prompt_id: 'p-1', response_count: 0, source: 'explore' }),
       });
-      firestore.addDoc.mockResolvedValue({ id: 'r-3' });
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+      firestore.setDoc.mockResolvedValue(undefined);
       firestore.updateDoc.mockResolvedValue(undefined);
 
       const { queryClient, wrapper } = createClientAndWrapper();
@@ -649,7 +663,108 @@ describe('usePrompt', () => {
           ).rejects.toThrow('Score must be a whole number between 1 and 10');
         });
       }
-      expect(firestore.addDoc).not.toHaveBeenCalled();
+      expect(firestore.setDoc).not.toHaveBeenCalled();
+    });
+
+    it('uses the deterministic response doc id and counts couple_id in the existence check', async () => {
+      NetInfo.fetch.mockResolvedValue({ isConnected: true });
+      firestore.getDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ prompt_id: 'p-1', response_count: 0 }),
+      });
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+      firestore.setDoc.mockResolvedValue(undefined);
+      firestore.updateDoc.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useSubmitResponse(), {
+        wrapper: createWrapper(),
+      });
+
+      let outcome: any;
+      await act(async () => {
+        outcome = await result.current.mutateAsync({
+          assignmentId: 'a-1',
+          responseText: 'A deterministic answer.',
+        });
+      });
+
+      // Doc id is `${assignmentId}_${userId}` — retries overwrite, never duplicate
+      expect(outcome.responseId).toBe('a-1_user-1');
+      expect(firestore.doc).toHaveBeenCalledWith({}, 'prompt_responses', 'a-1_user-1');
+      // Existence check pins couple_id — the only query shape the security
+      // rules can prove safe (isCoupleMember(resource.data.couple_id))
+      expect(firestore.where).toHaveBeenCalledWith('couple_id', '==', 'couple-1');
+      expect(firestore.where).toHaveBeenCalledWith('assignment_id', '==', 'a-1');
+      expect(firestore.where).toHaveBeenCalledWith('user_id', '==', 'user-1');
+    });
+
+    it('does NOT increment response_count again when my response already exists (retry/resubmit overwrite)', async () => {
+      NetInfo.fetch.mockResolvedValue({ isConnected: true });
+      firestore.getDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ prompt_id: 'p-1', response_count: 1, status: 'partial' }),
+      });
+      // Server already holds my response for this assignment
+      firestore.getDocs.mockResolvedValue({ empty: false, docs: [{ id: 'a-1_user-1' }] });
+      firestore.setDoc.mockResolvedValue(undefined);
+      firestore.updateDoc.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useSubmitResponse(), {
+        wrapper: createWrapper(),
+      });
+
+      let outcome: any;
+      await act(async () => {
+        outcome = await result.current.mutateAsync({
+          assignmentId: 'a-1',
+          responseText: 'Same person, second attempt.',
+        });
+      });
+
+      // Overwrites the SAME doc (no duplicate) and leaves the counter alone
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a-1_user-1' }),
+        expect.objectContaining({ response_text: 'Same person, second attempt.' })
+      );
+      expect(firestore.updateDoc).not.toHaveBeenCalled();
+      expect(outcome.responseId).toBe('a-1_user-1');
+      expect(outcome.isComplete).toBe(false);
+    });
+
+    it('reuses a legacy auto-id response doc when one exists (no second doc)', async () => {
+      NetInfo.fetch.mockResolvedValue({ isConnected: true });
+      firestore.getDoc.mockResolvedValue({
+        exists: () => true,
+        data: () => ({ prompt_id: 'p-1', response_count: 2, status: 'completed' }),
+      });
+      firestore.getDocs.mockResolvedValue({ empty: false, docs: [{ id: 'legacy-auto-id' }] });
+      firestore.setDoc.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useSubmitResponse(), {
+        wrapper: createWrapper(),
+      });
+
+      let outcome: any;
+      await act(async () => {
+        outcome = await result.current.mutateAsync({
+          assignmentId: 'a-1',
+          responseText: 'Overwrite the old doc, not a new one.',
+        });
+      });
+
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'legacy-auto-id' }),
+        expect.anything()
+      );
+      expect(firestore.updateDoc).not.toHaveBeenCalled();
+      expect(outcome.isComplete).toBe(true);
+    });
+  });
+
+  describe('responseDocId (deterministic response ids)', () => {
+    it('is `${assignmentId}_${userId}`', () => {
+      expect(responseDocId('a-1', 'user-1')).toBe('a-1_user-1');
+      expect(responseDocId('assign-xyz', 'u2')).toBe('assign-xyz_u2');
     });
   });
 
@@ -692,6 +807,7 @@ describe('usePrompt', () => {
   describe('flushOfflineQueue (at most one response per user per assignment)', () => {
     const AsyncStorage = require('@react-native-async-storage/async-storage');
     const firestore = require('firebase/firestore');
+    const { logger } = require('@/utils/logger');
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -699,29 +815,43 @@ describe('usePrompt', () => {
         exists: () => true,
         data: () => ({ prompt_id: 'p-1', response_count: 0 }),
       });
-      firestore.addDoc.mockResolvedValue({ id: 'r-1' });
+      firestore.setDoc.mockResolvedValue(undefined);
       firestore.updateDoc.mockResolvedValue(undefined);
       AsyncStorage.removeItem.mockResolvedValue(undefined);
     });
 
-    it('writes queued items once and clears the queue', async () => {
+    it('writes queued items once (deterministic id) and clears the queue', async () => {
       AsyncStorage.getItem.mockResolvedValue(
         JSON.stringify([{ assignmentId: 'a-1', responseText: 'Queued answer.' }])
       );
-      firestore.getDocs.mockResolvedValue({ empty: true });
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
 
       await flushOfflineQueue('user-1', 'couple-1');
 
-      expect(firestore.addDoc).toHaveBeenCalledTimes(1);
-      expect(firestore.addDoc).toHaveBeenCalledWith(
-        undefined,
+      expect(firestore.setDoc).toHaveBeenCalledTimes(1);
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a-1_user-1' }),
         expect.objectContaining({
           assignment_id: 'a-1',
           user_id: 'user-1',
+          couple_id: 'couple-1',
           response_text: 'Queued answer.',
         })
       );
       expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@closer_offline_responses');
+    });
+
+    it('pins couple_id in the server existence check (rules-provable query)', async () => {
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([{ assignmentId: 'a-1', responseText: 'Queued answer.' }])
+      );
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+
+      await flushOfflineQueue('user-1', 'couple-1');
+
+      expect(firestore.where).toHaveBeenCalledWith('couple_id', '==', 'couple-1');
+      expect(firestore.where).toHaveBeenCalledWith('assignment_id', '==', 'a-1');
+      expect(firestore.where).toHaveBeenCalledWith('user_id', '==', 'user-1');
     });
 
     it('dedupes WITHIN the queue before flushing — one write, latest wins', async () => {
@@ -731,13 +861,13 @@ describe('usePrompt', () => {
           { assignmentId: 'a-1', responseText: 'latest version' },
         ])
       );
-      firestore.getDocs.mockResolvedValue({ empty: true });
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
 
       await flushOfflineQueue('user-1', 'couple-1');
 
-      expect(firestore.addDoc).toHaveBeenCalledTimes(1);
-      expect(firestore.addDoc).toHaveBeenCalledWith(
-        undefined,
+      expect(firestore.setDoc).toHaveBeenCalledTimes(1);
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a-1_user-1' }),
         expect.objectContaining({ response_text: 'latest version' })
       );
     });
@@ -747,11 +877,11 @@ describe('usePrompt', () => {
         JSON.stringify([{ assignmentId: 'a-1', responseText: 'Would double-count.' }])
       );
       // Server already has a response by this user for a-1
-      firestore.getDocs.mockResolvedValue({ empty: false });
+      firestore.getDocs.mockResolvedValue({ empty: false, docs: [{ id: 'a-1_user-1' }] });
 
       await flushOfflineQueue('user-1', 'couple-1');
 
-      expect(firestore.addDoc).not.toHaveBeenCalled();
+      expect(firestore.setDoc).not.toHaveBeenCalled();
       expect(firestore.updateDoc).not.toHaveBeenCalled();
       expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@closer_offline_responses');
     });
@@ -761,8 +891,80 @@ describe('usePrompt', () => {
 
       await flushOfflineQueue('user-1', 'couple-1');
 
-      expect(firestore.addDoc).not.toHaveBeenCalled();
+      expect(firestore.setDoc).not.toHaveBeenCalled();
       expect(firestore.getDocs).not.toHaveBeenCalled();
+    });
+
+    it('single-flight: concurrent flush calls share ONE execution', async () => {
+      let resolveGetItem!: (value: string | null) => void;
+      AsyncStorage.getItem.mockImplementation(
+        () =>
+          new Promise<string | null>((resolve) => {
+            resolveGetItem = resolve;
+          })
+      );
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+
+      // Two NetInfo listeners (today + explore) firing on the same reconnect
+      const first = flushOfflineQueue('user-1', 'couple-1');
+      const second = flushOfflineQueue('user-1', 'couple-1');
+      expect(second).toBe(first);
+
+      resolveGetItem(
+        JSON.stringify([{ assignmentId: 'a-1', responseText: 'Queued answer.' }])
+      );
+      await Promise.all([first, second]);
+
+      expect(AsyncStorage.getItem).toHaveBeenCalledTimes(1);
+      expect(firestore.setDoc).toHaveBeenCalledTimes(1);
+      expect(firestore.updateDoc).toHaveBeenCalledTimes(1);
+    });
+
+    it('allows a NEW flush once the previous one settled (retry-on-reconnect)', async () => {
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([{ assignmentId: 'a-1', responseText: 'Queued answer.' }])
+      );
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+
+      await flushOfflineQueue('user-1', 'couple-1');
+      await flushOfflineQueue('user-1', 'couple-1');
+
+      expect(AsyncStorage.getItem).toHaveBeenCalledTimes(2);
+    });
+
+    it('logs flush failures via the logger instead of failing silently, and keeps the queue', async () => {
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([{ assignmentId: 'a-1', responseText: 'Stuck answer.' }])
+      );
+      firestore.getDocs.mockRejectedValue(new Error('permission-denied'));
+
+      await expect(flushOfflineQueue('user-1', 'couple-1')).resolves.toBeUndefined();
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(expect.any(Error));
+      // Queue must survive for the next reconnect retry
+      expect(AsyncStorage.removeItem).not.toHaveBeenCalled();
+      expect(firestore.setDoc).not.toHaveBeenCalled();
+    });
+
+    it('logs a failed photo upload but still submits the response without it', async () => {
+      const { uploadResponsePhoto } = require('@/services/imageUpload');
+      uploadResponsePhoto.mockRejectedValue(new Error('storage down'));
+      AsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify([
+          { assignmentId: 'a-1', responseText: 'Answer with photo.', imageUri: 'file://p.jpg' },
+        ])
+      );
+      firestore.getDocs.mockResolvedValue({ empty: true, docs: [] });
+
+      await flushOfflineQueue('user-1', 'couple-1');
+
+      expect(logger.warn).toHaveBeenCalled();
+      expect(firestore.setDoc).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'a-1_user-1' }),
+        expect.objectContaining({ image_url: null })
+      );
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@closer_offline_responses');
     });
   });
 });

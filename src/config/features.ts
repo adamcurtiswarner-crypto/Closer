@@ -22,6 +22,12 @@ export const FEATURES = Object.freeze({
   resources: false,
   explore: true, // shown as the "Categories" tab
   hearth: true, // ember grid + couch queue over prompt_completions
+  // ONE flag for the premium model (SEV-0 #8). False = the app behaves
+  // exactly as before, everything free. True = the daily prompt loop stays
+  // free forever; follow-up questions, Hearth history/trends/couch queue,
+  // and initiating Explore sends live behind Stoke Premium.
+  // Gate logic: src/utils/premiumGates.ts. Entitlement: useSubscription.
+  premiumGates: true,
 } as const);
 
 export type FeatureFlag = keyof typeof FEATURES;

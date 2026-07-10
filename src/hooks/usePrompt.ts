@@ -5,7 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  addDoc,
+  setDoc,
   updateDoc,
   query,
   where,
@@ -19,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { AppState } from 'react-native';
 import { db, functions } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { todayLocalISO, localDateWindow } from '@utils/localDate';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
@@ -472,24 +473,59 @@ export function dedupeOfflineQueue(queue: OfflineQueuedResponse[]): OfflineQueue
 }
 
 /**
- * True when this user already has a response for the assignment on the
- * server — the queued item is a duplicate (e.g. the original write landed
- * before connectivity dropped, or another device flushed first) and must be
- * dropped so response_count never double-counts one person.
+ * Deterministic response doc ID — one doc per user per assignment. A React
+ * Query retry (or a connectivity flap mid-flush) that re-runs the write
+ * overwrites the SAME doc instead of creating a duplicate, so the server's
+ * onCreate trigger fires exactly once per (assignment, user) pair.
  */
-async function hasExistingResponse(assignmentId: string, userId: string): Promise<boolean> {
+export function responseDocId(assignmentId: string, userId: string): string {
+  return `${assignmentId}_${userId}`;
+}
+
+/**
+ * Returns the id of this user's existing response for the assignment on the
+ * server, or null when none exists.
+ *
+ * The couple_id filter is load-bearing: security rules authorize
+ * prompt_responses reads via isCoupleMember(resource.data.couple_id), and
+ * Firestore can only prove a QUERY safe when couple_id is pinned in the
+ * filters — without it every read is permission-denied (this exact omission
+ * is what silently jammed the offline queue).
+ */
+async function findExistingResponseId(
+  assignmentId: string,
+  userId: string,
+  coupleId: string
+): Promise<string | null> {
   const existingQuery = query(
     collection(db, 'prompt_responses'),
+    where('couple_id', '==', coupleId),
     where('assignment_id', '==', assignmentId),
     where('user_id', '==', userId)
   );
   const existingSnap = await getDocs(existingQuery);
-  return !existingSnap.empty;
+  return existingSnap.empty ? null : existingSnap.docs[0].id;
 }
 
+// Single-flight guard: the flush is triggered from NetInfo listeners in every
+// mounted useSubmitResponse (today + explore both mount one), so a reconnect
+// fires it multiple times concurrently. All concurrent callers share one
+// in-flight flush instead of racing duplicate writes.
+let flushInFlight: Promise<void> | null = null;
+
 // Flush any queued offline responses — at most one response per user per
-// assignment ever leaves this client (dedupe within the queue + server check).
-export async function flushOfflineQueue(userId: string, coupleId: string) {
+// assignment ever leaves this client (dedupe within the queue + server check
+// + deterministic doc ids). Failures are logged, never thrown: the queue is
+// kept in AsyncStorage and retried on the next reconnect.
+export function flushOfflineQueue(userId: string, coupleId: string): Promise<void> {
+  if (flushInFlight) return flushInFlight;
+  flushInFlight = performOfflineQueueFlush(userId, coupleId).finally(() => {
+    flushInFlight = null;
+  });
+  return flushInFlight;
+}
+
+async function performOfflineQueueFlush(userId: string, coupleId: string): Promise<void> {
   try {
     const raw = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
     if (!raw) return;
@@ -506,20 +542,20 @@ export async function flushOfflineQueue(userId: string, coupleId: string) {
       const assignmentData = assignmentSnap.data();
 
       // Drop queued items already answered by this user on the server
-      if (await hasExistingResponse(item.assignmentId, userId)) continue;
+      if (await findExistingResponseId(item.assignmentId, userId, coupleId)) continue;
 
       // Upload queued photo if present
       let imageUrl: string | null = null;
       if (item.imageUri) {
         try {
           imageUrl = await uploadResponsePhoto(coupleId, item.assignmentId, userId, item.imageUri);
-        } catch {
-          // Photo upload failed — continue without it
+        } catch (photoError) {
+          logger.warn('Offline queue: photo upload failed, submitting response without it', photoError);
         }
       }
 
-      const responsesRef = collection(db, 'prompt_responses');
-      await addDoc(responsesRef, {
+      const responseRef = doc(db, 'prompt_responses', responseDocId(item.assignmentId, userId));
+      await setDoc(responseRef, {
         assignment_id: item.assignmentId,
         couple_id: coupleId,
         user_id: userId,
@@ -556,7 +592,12 @@ export async function flushOfflineQueue(userId: string, coupleId: string) {
 
     await AsyncStorage.removeItem(OFFLINE_QUEUE_KEY);
   } catch (error) {
-    // Silently fail — will retry next reconnect
+    // Never crash the app from a background flush — the queue stays in
+    // AsyncStorage and the next reconnect retries. But never swallow it
+    // either: an answer stuck on-device is a data-loss signal (Sentry).
+    logger.error(
+      error instanceof Error ? error : new Error(`Offline queue flush failed: ${String(error)}`)
+    );
   }
 }
 
@@ -662,9 +703,26 @@ export function useSubmitResponse() {
 
       const assignmentData = assignmentSnap.data();
 
-      // Create response
-      const responsesRef = collection(db, 'prompt_responses');
-      const responseDoc = await addDoc(responsesRef, {
+      // Existence check BEFORE the write (couple_id-filtered query — the only
+      // rules-provable read shape). Non-null means this submit is an
+      // overwrite: a mutation retry after the counter update threw, a queue
+      // flush that already landed, or a legacy resubmit. Overwrites reuse the
+      // existing doc id and MUST NOT increment response_count again — the
+      // same person answering twice is still one response.
+      const existingResponseId = await findExistingResponseId(
+        assignmentId,
+        user.id,
+        user.coupleId
+      );
+
+      // Deterministic id: a retry of this mutation (React Query retries
+      // mutations) rewrites the SAME doc instead of minting a duplicate.
+      const responseRef = doc(
+        db,
+        'prompt_responses',
+        existingResponseId ?? responseDocId(assignmentId, user.id)
+      );
+      await setDoc(responseRef, {
         assignment_id: assignmentId,
         couple_id: user.coupleId,
         user_id: user.id,
@@ -682,7 +740,21 @@ export function useSubmitResponse() {
         updated_at: serverTimestamp(),
       });
 
-      // Update assignment response count
+      if (existingResponseId) {
+        // Overwrite — the counter already reflects this user (or the server
+        // repair will settle it). Do not double-count one person.
+        return {
+          responseId: responseRef.id,
+          isComplete:
+            assignmentData.status === 'completed' || (assignmentData.response_count || 0) >= 2,
+          isOffline: false,
+          hasPhoto: !!imageUrl,
+          safetyMatch,
+        };
+      }
+
+      // Update assignment response count (server repairs authoritatively;
+      // this keeps the UI immediate)
       const newResponseCount = (assignmentData.response_count || 0) + 1;
       const updates: Record<string, any> = {
         response_count: newResponseCount,
@@ -702,7 +774,7 @@ export function useSubmitResponse() {
       await updateDoc(assignmentRef, updates);
 
       return {
-        responseId: responseDoc.id,
+        responseId: responseRef.id,
         isComplete: newResponseCount === 2,
         isOffline: false,
         hasPhoto: !!imageUrl,

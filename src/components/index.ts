@@ -98,8 +98,10 @@ export { PartnerQuestionCard } from './PartnerQuestionCard';
 // Social auth
 export { SocialAuthButtons } from './SocialAuthButtons';
 
-// Paywall
+// Paywall & premium gates
 export { Paywall } from './Paywall';
+export { FollowUpLockedCard } from './FollowUpLockedCard';
+export { HearthGateCard } from './HearthGateCard';
 
 // Error handling
 export { ErrorBoundary } from './ErrorBoundary';

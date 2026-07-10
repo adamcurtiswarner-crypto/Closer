@@ -50,6 +50,8 @@ export {
 
 export * from './users';
 
+export { acceptInvite } from './invites';
+
 export {
   onResponseSubmitted,
   onReactionAdded,

@@ -396,7 +396,7 @@
   },
   "paywall": {
     "title": "Stoke Premium",
-    "subtitle": "Deepen your connection with premium features.",
+    "subtitle": "The follow-ups, the history, the whole fire — for both of you.",
     "features": {
       "daily": "A new question for the two of you, every day",
       "followUps": "Follow-ups that go deeper when it matters",
@@ -581,5 +581,11 @@
     "partnerFire": "{{name}} felt the spark",
     "partnerLaughing": "{{name}} smiled at this",
     "partnerTeary": "{{name}} was moved"
+  },
+  "gates": {
+    "followUpLine": "Follow-ups are part of Stoke Premium",
+    "seePremium": "See Premium",
+    "hearthTitle": "Your full history lives in Premium",
+    "hearthBody": "This month glows right here. Past months, your trends, and the couch queue are kept for you in Premium."
   }
 }

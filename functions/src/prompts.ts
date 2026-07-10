@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { format, subDays, addDays, startOfWeek, getDay } from 'date-fns';
+import { format, subDays, addDays, startOfWeek, getDay, parseISO } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import {
   db,
@@ -15,6 +15,112 @@ import {
   reportError,
 } from './shared';
 import { activateDueFollowUp } from './followUps';
+
+// ============================================
+// PURE: Prompt Eligibility & Fallback (unit tested directly)
+// ============================================
+
+export interface PromptEligibilityContext {
+  /** prompt_ids assigned to this couple in the last 30 days */
+  recentPromptIds: readonly string[];
+  /** couple's week number since linking (1-based) */
+  weekNumber: number;
+  /** 0=Sunday … 6=Saturday, in the couple's timezone */
+  currentDayOfWeek: number;
+  /** this week's assignment count per prompt type */
+  weeklyTypeCounts: Readonly<Record<string, number>>;
+  /** couple's depth_progress map — consulted for legacy text prompts only */
+  depthProgress: Record<string, { level: string }>;
+}
+
+const DEPTH_ORDER = ['surface', 'medium', 'deep'];
+
+export function isPromptEligible(
+  promptId: string,
+  data: admin.firestore.DocumentData,
+  ctx: PromptEligibilityContext
+): boolean {
+  // Exclude recently used (30-day window)
+  if (ctx.recentPromptIds.includes(promptId)) return false;
+  // Apply week restriction
+  if (data.week_restriction && ctx.weekNumber < data.week_restriction) return false;
+  // Apply day preference
+  if (data.day_preference && !data.day_preference.includes(ctx.currentDayOfWeek)) return false;
+  // Apply max per week
+  if (data.max_per_week != null && (ctx.weeklyTypeCounts[data.type] || 0) >= data.max_per_week) return false;
+  // Depth progression applies to LEGACY TEXT PROMPTS ONLY. The v1 scored pool
+  // is 100% scale-format with ZERO 'surface'-depth prompts, so gating scale
+  // prompts on the couple's depth level — which starts at 'surface' and, with
+  // no surface prompts available to complete, can never advance — permanently
+  // locked every category the couple answered and exhausted the pool (the
+  // content death spiral). Scale prompts are therefore exempt; text prompts,
+  // if they ever return, keep the original surface → medium → deep gate.
+  if (data.response_format !== 'scale') {
+    const typeProgress = ctx.depthProgress[data.type];
+    if (typeProgress) {
+      const currentIdx = DEPTH_ORDER.indexOf(typeProgress.level);
+      const promptIdx = DEPTH_ORDER.indexOf(data.emotional_depth || 'surface');
+      if (promptIdx > currentIdx) return false;
+    }
+  }
+  return true;
+}
+
+// Recency windows (days) tried in order by the empty-pool fallback. The final
+// 1-day window is the hard floor: a prompt assigned yesterday or today is
+// never re-served while any alternative exists.
+const FALLBACK_RECENCY_WINDOWS_DAYS: readonly number[] = [30, 14, 7, 1];
+
+/**
+ * Empty-pool fallback: pick the least-recently-used prompt instead of a
+ * deterministic first document (which re-served the SAME prompt every day
+ * once the pool was exhausted). Tries a shrinking recency window — prompts
+ * unused for 30 days, then 14, then 7, then 1 — and picks randomly within
+ * the first window that has candidates. If every prompt was used within the
+ * last day, it excludes the most recently assigned and picks randomly among
+ * the least recently assigned, so the same prompt is never served two days
+ * in a row while more than one prompt exists.
+ *
+ * `lastAssignedByPromptId` maps prompt_id → most recent assigned_date
+ * (yyyy-MM-dd); prompts absent from the map are treated as never assigned.
+ */
+export function selectFallbackPrompt<T extends { id: string }>(
+  pool: readonly T[],
+  lastAssignedByPromptId: ReadonlyMap<string, string>,
+  todayLocal: string,
+  random: () => number = Math.random
+): T | null {
+  if (pool.length === 0) return null;
+  if (pool.length === 1) return pool[0];
+
+  const lastAssigned = (p: T): string => lastAssignedByPromptId.get(p.id) || '';
+  const pick = (candidates: readonly T[]): T =>
+    candidates[Math.min(Math.floor(random() * candidates.length), candidates.length - 1)];
+
+  const today = parseISO(todayLocal);
+  for (const days of FALLBACK_RECENCY_WINDOWS_DAYS) {
+    const cutoff = format(subDays(today, days), 'yyyy-MM-dd');
+    const candidates = pool.filter((p) => {
+      const last = lastAssigned(p);
+      return !last || last < cutoff;
+    });
+    if (candidates.length > 0) return pick(candidates);
+  }
+
+  // Every prompt was assigned within the last day. Drop the most recently
+  // assigned prompt(s) and pick randomly among the least recently assigned.
+  const newestDate = pool.reduce(
+    (max, p) => (lastAssigned(p) > max ? lastAssigned(p) : max),
+    ''
+  );
+  const notNewest = pool.filter((p) => lastAssigned(p) < newestDate);
+  const finalPool = notNewest.length > 0 ? notNewest : pool;
+  const oldestDate = finalPool.reduce(
+    (min, p) => (lastAssigned(p) < min ? lastAssigned(p) : min),
+    lastAssigned(finalPool[0])
+  );
+  return pick(finalPool.filter((p) => lastAssigned(p) === oldestDate));
+}
 
 // ============================================
 // PRIVATE: Select Prompt for Couple
@@ -34,9 +140,17 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
     .where('assigned_date', '>=', thirtyDaysAgo)
     .get();
 
-  const recentPromptIds = recentAssignments.docs.map(
-    (doc) => doc.data().prompt_id
-  );
+  const recentPromptIds: string[] = [];
+  // prompt_id → most recent assigned_date, for the least-recently-used fallback
+  const lastAssignedByPromptId = new Map<string, string>();
+  for (const doc of recentAssignments.docs) {
+    const { prompt_id: promptId, assigned_date: assignedDate } = doc.data();
+    recentPromptIds.push(promptId);
+    const prev = lastAssignedByPromptId.get(promptId);
+    if (!prev || assignedDate > prev) {
+      lastAssignedByPromptId.set(promptId, assignedDate);
+    }
+  }
 
   // Get this week's assignments for max_per_week filtering
   const weekStartDate = format(startOfWeek(zonedNow, { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -74,35 +188,37 @@ async function selectPromptForCouple(coupleId: string, timezone?: string): Promi
   );
   const poolDocs = scaleDocs.length > 0 ? scaleDocs : promptsSnapshot.docs;
 
-  // Filter and weight prompts
+  // Filter prompts (recency, week restriction, day preference, weekly caps,
+  // and — for legacy text prompts only — depth progression)
+  const eligibilityCtx: PromptEligibilityContext = {
+    recentPromptIds,
+    weekNumber,
+    currentDayOfWeek,
+    weeklyTypeCounts,
+    depthProgress: coupleData.depth_progress || initializeDepthProgress(),
+  };
+
   const eligiblePrompts = poolDocs
-    .filter((doc) => {
-      const data = doc.data();
-      // Exclude recently used
-      if (recentPromptIds.includes(doc.id)) return false;
-      // Apply week restriction
-      if (data.week_restriction && weekNumber < data.week_restriction) return false;
-      // Apply day preference
-      if (data.day_preference && !data.day_preference.includes(currentDayOfWeek)) return false;
-      // Apply max per week
-      if (data.max_per_week != null && (weeklyTypeCounts[data.type] || 0) >= data.max_per_week) return false;
-      // Apply depth progression
-      const depthProgress = coupleData.depth_progress || initializeDepthProgress();
-      const typeProgress = depthProgress[data.type];
-      if (typeProgress) {
-        const depthOrder = ['surface', 'medium', 'deep'];
-        const currentIdx = depthOrder.indexOf(typeProgress.level);
-        const promptIdx = depthOrder.indexOf(data.emotional_depth || 'surface');
-        if (promptIdx > currentIdx) return false;
-      }
-      return true;
-    })
+    .filter((doc) => isPromptEligible(doc.id, doc.data(), eligibilityCtx))
     .map((doc) => ({ id: doc.id, ...doc.data() }));
 
   if (eligiblePrompts.length === 0) {
-    // Fallback: use any active prompt from the pool
-    const fallback = poolDocs[0];
-    return fallback ? { id: fallback.id, ...fallback.data() } : null;
+    // Pool exhausted (every prompt used within 30 days, or blocked by
+    // day/week caps). Serve the least-recently-used prompt with a shrinking
+    // recency window — never the old deterministic poolDocs[0], which served
+    // the SAME prompt every single day. Week restriction is still honored
+    // when possible (new-couple gating matters more than variety), but never
+    // at the cost of serving nothing.
+    const pool = poolDocs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const weekEligible = pool.filter(
+      (p: admin.firestore.DocumentData & { id: string }) =>
+        !p.week_restriction || weekNumber >= p.week_restriction
+    );
+    return selectFallbackPrompt(
+      weekEligible.length > 0 ? weekEligible : pool,
+      lastAssignedByPromptId,
+      format(zonedNow, 'yyyy-MM-dd')
+    );
   }
 
   // Prefer pulse-based weights if available, fall back to tone calibration
@@ -282,7 +398,7 @@ async function deliverPromptToCouple(coupleId: string, timezone: string): Promis
 // SCHEDULED: Daily Prompt Delivery
 // ============================================
 
-export const deliverDailyPrompts = functions.pubsub
+export const deliverDailyPrompts = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every 15 minutes')
   .onRun(async () => {
     const now = new Date();
@@ -383,7 +499,7 @@ export const triggerPromptDelivery = functions.https.onCall(async (data, context
 // SCHEDULED: Expire Stale Prompts
 // ============================================
 
-export const expireStalePrompts = functions.pubsub
+export const expireStalePrompts = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every day 04:00')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
@@ -440,7 +556,7 @@ export const expireStalePrompts = functions.pubsub
 // SCHEDULED: Check Streak Breaks
 // ============================================
 
-export const checkStreakBreaks = functions.pubsub
+export const checkStreakBreaks = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every day 04:30')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
@@ -486,7 +602,7 @@ export const checkStreakBreaks = functions.pubsub
 // SCHEDULED: Graduate Prompts (Daily 3:30 AM PT)
 // ============================================
 
-export const graduatePrompts = functions.pubsub
+export const graduatePrompts = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every day 03:30')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
