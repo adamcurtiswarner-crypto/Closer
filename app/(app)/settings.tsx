@@ -33,6 +33,7 @@ import { getSupportEmailUrl, SUPPORT_EMAIL } from '@/config/app';
 import { ProfileCard } from '@/components/ProfileCard';
 import { useTranslation } from 'react-i18next';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { buildExportShareMessage, EXPORT_SHARE_TITLE } from '@/utils/exportShare';
 import Constants from 'expo-constants';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 import { TIME_OPTIONS, getTimeDisplay, resolvePromptTime } from '@/config/promptTime';
@@ -137,11 +138,13 @@ export default function SettingsScreen() {
   const handleExportData = async () => {
     try {
       const data = await exportData.mutateAsync();
-      const jsonString = JSON.stringify(data, null, 2);
-      await Share.share({
-        message: jsonString,
-        title: 'Stoke - My Data Export',
-      });
+      await Share.share(
+        {
+          message: buildExportShareMessage(data.readable, data.raw),
+          title: EXPORT_SHARE_TITLE,
+        },
+        { subject: EXPORT_SHARE_TITLE }
+      );
     } catch (error: any) {
       if (error?.code === 'functions/resource-exhausted') {
         Alert.alert(t('common.error'), t('settings.exportUnavailable'));
@@ -314,7 +317,10 @@ export default function SettingsScreen() {
               onPress={handleExportData}
               disabled={exportData.isPending}
             >
-              <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
+              <View style={styles.rowTextGroup}>
+                <Text style={styles.rowLabel}>{t('settings.exportData')}</Text>
+                <Text style={styles.rowSubtitle}>{t('settings.exportDataSubtitle')}</Text>
+              </View>
               {exportData.isPending ? (
                 <ActivityIndicator size="small" color={colors.accent.primary} />
               ) : (
@@ -325,7 +331,10 @@ export default function SettingsScreen() {
               style={styles.row}
               onPress={() => setShowAnonymizeModal(true)}
             >
-              <Text style={styles.rowLabel}>{t('settings.anonymize')}</Text>
+              <View style={styles.rowTextGroup}>
+                <Text style={styles.dangerText}>{t('settings.anonymize')}</Text>
+                <Text style={styles.rowSubtitle}>{t('settings.anonymizeSubtitle')}</Text>
+              </View>
               <Icon name="caret-right" size="sm" color={colors.text.muted} />
             </TouchableOpacity>
             <TouchableOpacity
@@ -713,6 +722,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+  },
+  // Two-line row variant (Privacy & Data): label + explanatory subtitle
+  rowTextGroup: {
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
+  rowSubtitle: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: 2,
   },
   premiumText: {
     color: colors.accent.primary,

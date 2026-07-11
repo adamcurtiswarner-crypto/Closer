@@ -2,6 +2,15 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { db, APP_NAME, sendPushNotification, logEvent, reportError } from './shared';
 import { setCoupleClaim } from './invites';
+import { personalizeText } from './personalize';
+import {
+  buildReadableExport,
+  dateKeyFromTimestamp,
+  sanitizeRawExport,
+  QUESTION_UNAVAILABLE,
+  PHOTOS_NOTE,
+  ReadableResponseItem,
+} from './exportFormat';
 
 // Shape of the embedded response copies stored on prompt_completions and
 // memory_artifacts (responses[] arrays).
@@ -271,6 +280,78 @@ export const cleanupDeletedAccounts = functions.pubsub
 // CALLABLE: Export User Data
 // ============================================
 
+/** Partner's display name for {partner}/{me} rendering (exporter = {me}). */
+async function fetchPartnerDisplayName(
+  coupleId: string | null,
+  userId: string
+): Promise<string | null> {
+  if (!coupleId) return null;
+  const coupleDoc = await db.collection('couples').doc(coupleId).get();
+  if (!coupleDoc.exists) return null;
+  const memberIds: string[] = coupleDoc.data()!.member_ids || [];
+  const partnerId = memberIds.find((id) => id !== userId);
+  if (!partnerId) return null;
+  const partnerDoc = await db.collection('users').doc(partnerId).get();
+  return partnerDoc.exists ? partnerDoc.data()!.display_name || null : null;
+}
+
+/**
+ * Joins each prompt response to its question text, server-side:
+ * 1. the response's assignment doc (prompt_text is denormalized there),
+ * 2. the prompts collection via prompt_id for any miss,
+ * 3. '(question unavailable)' last.
+ * Question text is personalized for the exporter ({me} = exporter).
+ */
+async function buildReadableResponses(
+  responses: admin.firestore.DocumentData[],
+  names: { partnerName: string | null; selfName: string | null }
+): Promise<ReadableResponseItem[]> {
+  const assignmentIds = [
+    ...new Set(responses.map((r) => r.assignment_id).filter(Boolean)),
+  ] as string[];
+  const assignmentDocs = await Promise.all(
+    assignmentIds.map((id) => db.collection('prompt_assignments').doc(id).get())
+  );
+  const assignmentsById = new Map<string, admin.firestore.DocumentData>();
+  for (const doc of assignmentDocs) {
+    if (doc.exists) assignmentsById.set(doc.id as string, doc.data()!);
+  }
+
+  // Fallback fetch from /prompts for responses whose assignment is missing
+  // or carries no prompt_text.
+  const missingPromptIds = [
+    ...new Set(
+      responses
+        .filter((r) => {
+          const assignment = r.assignment_id ? assignmentsById.get(r.assignment_id) : undefined;
+          return !assignment?.prompt_text && r.prompt_id;
+        })
+        .map((r) => r.prompt_id)
+    ),
+  ] as string[];
+  const promptDocs = await Promise.all(
+    missingPromptIds.map((id) => db.collection('prompts').doc(id).get())
+  );
+  const promptTextById = new Map<string, string>();
+  for (const doc of promptDocs) {
+    if (doc.exists && doc.data()!.text) promptTextById.set(doc.id as string, doc.data()!.text);
+  }
+
+  return responses.map((r) => {
+    const assignment = r.assignment_id ? assignmentsById.get(r.assignment_id) : undefined;
+    const rawQuestion =
+      assignment?.prompt_text || (r.prompt_id ? promptTextById.get(r.prompt_id) : undefined) || null;
+    return {
+      dateKey:
+        assignment?.assigned_date || dateKeyFromTimestamp(r.submitted_at || r.created_at),
+      question: rawQuestion ? personalizeText(rawQuestion, names) : QUESTION_UNAVAILABLE,
+      text: typeof r.response_text === 'string' ? r.response_text : '',
+      score: typeof r.response_score === 'number' ? r.response_score : null,
+      isExplore: assignment?.source === 'explore',
+    };
+  });
+}
+
 export const exportUserData = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
@@ -359,6 +440,38 @@ export const exportUserData = functions.https.onCall(async (data, context) => {
     chatMessages = chatSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   }
 
+  // Human-first document: join questions to answers, personalized for the
+  // exporter ({me} = exporter, {partner} = the other member).
+  const names = {
+    partnerName: await fetchPartnerDisplayName(userData.couple_id || null, userId),
+    selfName: (userData.display_name as string | undefined) || null,
+  };
+  const readableItems = await buildReadableResponses(responses, names);
+  const exportedAt = new Date();
+  const readable = buildReadableExport({
+    exportedAt,
+    profile: {
+      name: names.selfName,
+      email: (userData.email as string | undefined) || null,
+      joinedAt: userData.created_at?.toDate?.() || null,
+    },
+    responses: readableItems,
+  });
+
+  // Machine-readable copy: full JSON for portability, with Firestore
+  // timestamps as ISO strings and tokened storage URLs dropped.
+  const raw = sanitizeRawExport({
+    exported_at: exportedAt.toISOString(),
+    photos_note: PHOTOS_NOTE,
+    profile: profileData,
+    prompt_responses: responses,
+    events,
+    memories,
+    goals,
+    wishlist_items: wishlistItems,
+    chat_messages: chatMessages,
+  }) as Record<string, unknown>;
+
   // Mark export time
   await userRef.update({
     last_export_at: admin.firestore.FieldValue.serverTimestamp(),
@@ -367,14 +480,9 @@ export const exportUserData = functions.https.onCall(async (data, context) => {
   await logEvent('data_exported', userId, userData.couple_id || null, {});
 
   return {
-    exported_at: new Date().toISOString(),
-    profile: profileData,
-    prompt_responses: responses,
-    events,
-    memories,
-    goals,
-    wishlist_items: wishlistItems,
-    chat_messages: chatMessages,
+    exported_at: exportedAt.toISOString(),
+    readable,
+    raw,
   };
 });
 

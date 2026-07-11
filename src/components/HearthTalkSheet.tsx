@@ -142,7 +142,13 @@ export function HearthTalkSheet({
             <Text style={styles.starterText}>
               {isDivergence
                 ? t('hearth.talkSheet.starterDivergence')
-                : t('hearth.talkSheet.starterRepair')}
+                : completion.signal === 'repair'
+                  ? t('hearth.talkSheet.starterRepair')
+                  : completion.couchFlagged
+                    ? // Couch-flagged steady entries: no hard part to name —
+                      // a warm generic starter instead of the repair framing.
+                      t('hearth.talkSheet.starterFlagged')
+                    : t('hearth.talkSheet.starterRepair')}
             </Text>
             <Text style={styles.starterHint} maxFontSizeMultiplier={1.4}>
               {t('hearth.talkSheet.starterHint')}

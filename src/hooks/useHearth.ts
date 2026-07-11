@@ -45,6 +45,9 @@ export interface HearthCompletion {
   discussed: Record<string, Date>;
   /** Set server-side once BOTH partners have marked it. */
   discussedAt: Date | null;
+  /** "Keep it for the couch" — flagged into the couch queue at the reveal. */
+  couchFlagged: boolean;
+  couchFlaggedBy: string | null;
   completedAt: Date | null;
 }
 
@@ -95,6 +98,8 @@ export function mapCompletion(id: string, data: Record<string, any>): HearthComp
     ),
     discussed,
     discussedAt: toDate(data.discussed_at),
+    couchFlagged: data.couch_flagged === true,
+    couchFlaggedBy: typeof data.couch_flagged_by === 'string' ? data.couch_flagged_by : null,
     completedAt: toDate(data.completed_at),
   };
 }
@@ -105,10 +110,17 @@ export function isTended(completion: HearthCompletion): boolean {
   return completion.discussedAt != null;
 }
 
-/** Repair/divergence entries wait in the couch queue until both mark "we talked". */
+/**
+ * Repair/divergence entries — and anything a partner flagged with "Keep it
+ * for the couch" — wait in the couch queue until both mark "we talked".
+ * Queue membership is independent of ember color: a flagged steady entry
+ * stays gray on the grid but still shows up here.
+ */
 export function needsCouch(completion: HearthCompletion): boolean {
   return (
-    (completion.signal === 'repair' || completion.signal === 'divergence') &&
+    (completion.signal === 'repair' ||
+      completion.signal === 'divergence' ||
+      completion.couchFlagged) &&
     !isTended(completion)
   );
 }

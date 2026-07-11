@@ -1,3 +1,4 @@
+import { Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -21,13 +22,25 @@ async function readFileAsBytes(uri: string): Promise<Uint8Array> {
 }
 
 /**
- * Open the image picker and return the selected image URI.
- * Returns null if the user cancels.
+ * Discriminated pick result so callers can tell "user changed their mind"
+ * from "the OS said no":
+ * - `{ uri }`        — an image was selected
+ * - `{ denied: true }` — photo-library permission is not granted; callers
+ *   must surface this (showPhotoAccessDeniedAlert), never swallow it
+ * - `null`           — the user opened the picker and cancelled (no message)
  */
-export async function pickImage(): Promise<string | null> {
+export type PickImageResult = { uri: string } | { denied: true } | null;
+
+/**
+ * Open the image picker and return the selected image.
+ * Permission denial is reported distinctly — it used to be returned as
+ * `null` (indistinguishable from a cancel), which made photo updates fail
+ * silently for anyone who had denied photo access.
+ */
+export async function pickImage(): Promise<PickImageResult> {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status !== 'granted') {
-    return null;
+    return { denied: true };
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -41,7 +54,26 @@ export async function pickImage(): Promise<string | null> {
     return null;
   }
 
-  return result.assets[0].uri;
+  return { uri: result.assets[0].uri };
+}
+
+/**
+ * The one alert for a denied photo-library permission — same copy at every
+ * pickImage call site. Takes the caller's `t` so the copy lives in i18n
+ * (profile.photosAccessTitle / photosAccessBody / openSettings).
+ */
+export function showPhotoAccessDeniedAlert(t: (key: string) => string): void {
+  Alert.alert(t('profile.photosAccessTitle'), t('profile.photosAccessBody'), [
+    { text: t('common.cancel'), style: 'cancel' },
+    {
+      text: t('profile.openSettings'),
+      onPress: () => {
+        Linking.openSettings().catch((error) => {
+          logger.error('Error opening settings from photo access alert:', error);
+        });
+      },
+    },
+  ]);
 }
 
 /**

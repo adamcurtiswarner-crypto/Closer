@@ -73,6 +73,8 @@ function makeCompletion(overrides: Partial<HearthCompletion> = {}): HearthComple
     signal: 'divergence',
     discussed: {},
     discussedAt: null,
+    couchFlagged: false,
+    couchFlaggedBy: null,
     completedAt: new Date('2026-07-01'),
     ...overrides,
   };
@@ -123,6 +125,28 @@ describe('HearthTalkSheet', () => {
           { userId: 'partner', responseText: '', responseScore: 4, imageUrl: null, submittedAt: null },
         ],
       })
+    );
+    expect(getByText(/What does the hard part look like from where you sit/)).toBeTruthy();
+  });
+
+  it('shows the warm generic starter for a couch-flagged steady entry (no repair framing)', () => {
+    const { getByText, queryByText } = renderSheet(
+      makeCompletion({ signal: 'steady', couchFlagged: true, couchFlaggedBy: 'me' })
+    );
+    expect(getByText(/kept this one for the couch/)).toBeTruthy();
+    expect(queryByText(/What does the hard part look like/)).toBeNull();
+  });
+
+  it('a couch-flagged null-signal entry also gets the generic starter', () => {
+    const { getByText } = renderSheet(
+      makeCompletion({ signal: null, couchFlagged: true, couchFlaggedBy: 'partner' })
+    );
+    expect(getByText(/kept this one for the couch/)).toBeTruthy();
+  });
+
+  it('a flagged REPAIR entry keeps the repair starter (signal wins)', () => {
+    const { getByText } = renderSheet(
+      makeCompletion({ signal: 'repair', couchFlagged: true })
     );
     expect(getByText(/What does the hard part look like from where you sit/)).toBeTruthy();
   });

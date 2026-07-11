@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, {
   FadeIn,
   FadeInUp,
@@ -20,6 +20,7 @@ import { ResponseCard } from './ResponseCard';
 import { ReactionRow } from './ReactionRow';
 import { Icon } from './Icon';
 import type { ReactionType } from '@/hooks/useReaction';
+import { isCouchFlagged, useCouchFlag, useCouchFlagState } from '@/hooks/useCouchFlag';
 
 // ─── Reveal choreography timeline (ms from mount) ───
 // Two beats: YOUR side lands first, then a held breath, then the partner's.
@@ -102,6 +103,13 @@ export function CompletionMoment({
 }: CompletionMomentProps) {
   const { t } = useTranslation();
   const hasScores = yourScore != null && partnerScore != null;
+
+  // "Keep it for the couch" — only fetched when the mid-scale block renders
+  // for a real completion. Flagged by EITHER partner → quiet confirmation.
+  const couchAssignmentId = showMidScaleLine ? (assignmentId ?? null) : null;
+  const { data: couchFlagState } = useCouchFlagState(couchAssignmentId);
+  const couchFlag = useCouchFlag();
+  const keptForCouch = isCouchFlagged(couchFlagState);
 
   // null = still resolving the reveal_seen flag (one microtask when assignmentId given)
   const [isFirstReveal, setIsFirstReveal] = useState<boolean | null>(
@@ -339,13 +347,6 @@ export function CompletionMoment({
                 </Animated.View>
               )}
 
-              {/* Middle scores: a light optional line — static text, no obligation */}
-              {showMidScaleLine && (
-                <Animated.View entering={enterFade(REVEAL_T.CLOSING_LINE, CLOSING_FADE_MS)}>
-                  <Text style={styles.midScaleLine}>What would move this one point higher?</Text>
-                </Animated.View>
-              )}
-
               {/* Closing text on final-step follow-up reveals */}
               {closingText ? (
                 <Animated.View entering={enterFade(REVEAL_T.CLOSING_LINE, CLOSING_FADE_MS)}>
@@ -362,6 +363,45 @@ export function CompletionMoment({
                     partnerName={partnerName}
                     onReact={onReact}
                   />
+                </Animated.View>
+              )}
+
+              {/* Middle scores: a closing thought AFTER the reactions (so the
+                  row above never reads as answers to it), with one quiet
+                  output — keep it for the couch. */}
+              {showMidScaleLine && (
+                <Animated.View entering={enterFade(REVEAL_T.FOOTER, CLOSING_FADE_MS)}>
+                  <Text style={styles.midScaleLine}>{t('today.midScaleLine')}</Text>
+                  {assignmentId != null &&
+                    (keptForCouch ? (
+                      <View style={styles.couchKeptRow} testID="couch-kept">
+                        <Icon
+                          name="campfire"
+                          size="sm"
+                          color={colors.accent.primary}
+                          weight="fill"
+                        />
+                        <Text style={styles.couchKeptText} maxFontSizeMultiplier={1.4}>
+                          {t('today.keptForCouch')}
+                        </Text>
+                      </View>
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.couchFlagRow}
+                        onPress={() => couchFlag.mutate({ assignmentId })}
+                        disabled={couchFlag.isPending}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('today.keepForCouch')}
+                        activeOpacity={0.7}
+                        testID="couch-flag-button"
+                      >
+                        <Icon name="campfire" size="sm" color={colors.accent.primary} />
+                        <Text style={styles.couchFlagText} maxFontSizeMultiplier={1.4}>
+                          {t('today.keepForCouch')}
+                        </Text>
+                        <Icon name="caret-right" size="sm" color={colors.accent.primary} />
+                      </TouchableOpacity>
+                    ))}
                 </Animated.View>
               )}
             </View>
@@ -450,11 +490,36 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
   midScaleLine: {
+    // Closing-thought register — mirrors closingText below.
     ...typography.bodySm,
     marginTop: spacing.md,
     color: colors.text.secondary,
     fontStyle: 'italic',
     textAlign: 'center',
+  },
+  couchFlagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    minHeight: 44,
+    marginTop: spacing.xs,
+  },
+  couchFlagText: {
+    ...typography.bodySm,
+    color: colors.accent.primary,
+  },
+  couchKeptRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    minHeight: 44,
+    marginTop: spacing.xs,
+  },
+  couchKeptText: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   closingText: {
     ...typography.bodySm,

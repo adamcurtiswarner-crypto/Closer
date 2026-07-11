@@ -14,6 +14,9 @@
  * What is covered (the SEV-0 trust cluster):
  * - prompt_responses / prompt_completions: member reads allowed, stranger
  *   reads denied.
+ * - prompt_completions couch flag (isCouchFlagUpdate): members can flag,
+ *   strangers/ex-members cannot, no field smuggling, and `discussed` may
+ *   only be ADDED as an empty map when absent — never overwritten.
  * - Deleted-couple members lose access to couple-scoped data (breakup
  *   model: isCoupleMember requires status == 'active').
  * - couple_invites: listing pending invites is denied (enumeration fix);
@@ -34,6 +37,10 @@ import {
   assertFails,
   RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
+// Modular Firestore functions accept the compat instances the test contexts
+// return (official rules-unit-testing quickstart pattern) — used for writes
+// that need the serverTimestamp() sentinel.
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
 const PROJECT_ID = 'stoke-rules-test';
 const APP_ROOT = path.resolve(__dirname, '../../..');
@@ -106,6 +113,26 @@ beforeEach(async () => {
       couple_id: DELETED_COUPLE_ID,
       responses: [{ user_id: MEMBER_A, response_text: 'old' }],
     });
+    // Steady completion — created WITHOUT a `discussed` field (server only
+    // initializes it for repair/divergence signals).
+    await db.doc('prompt_completions/comp-steady').set({
+      couple_id: COUPLE_ID,
+      signal: 'steady',
+      responses: [
+        { user_id: MEMBER_A, response_text: 'a', response_score: 6 },
+        { user_id: MEMBER_B, response_text: 'b', response_score: 7 },
+      ],
+    });
+    // Repair completion with an existing (partially marked) discussed map.
+    await db.doc('prompt_completions/comp-has-discussed').set({
+      couple_id: COUPLE_ID,
+      signal: 'repair',
+      responses: [
+        { user_id: MEMBER_A, response_text: 'a', response_score: 3 },
+        { user_id: MEMBER_B, response_text: 'b', response_score: 4 },
+      ],
+      discussed: { [MEMBER_A]: new Date('2026-07-01T00:00:00Z') },
+    });
 
     await db.doc('couple_invites/ABC234').set({
       invite_code: 'ABC234',
@@ -149,6 +176,111 @@ describe('prompt_completions reads', () => {
 
   it('denies an ex-member once the couple is deleted', async () => {
     await assertFails(asUser(MEMBER_A).doc('prompt_completions/comp-deleted').get());
+  });
+});
+
+// ---------------------------------------------------------------------------
+// prompt_completions — "Keep it for the couch" (isCouchFlagUpdate)
+// ---------------------------------------------------------------------------
+
+describe('prompt_completions couch flag', () => {
+  const flagFields = (uid: string) => ({
+    couch_flagged: true,
+    couch_flagged_by: uid,
+    couch_flagged_at: serverTimestamp(),
+    updated_at: serverTimestamp(),
+  });
+
+  it('allows a member to flag a steady doc, ADDING discussed as an empty map', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), {
+        ...flagFields(MEMBER_A),
+        discussed: {},
+      })
+    );
+  });
+
+  it('allows flagging a doc that already has discussed — WITHOUT the discussed key', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-has-discussed'), {
+        ...flagFields(MEMBER_B),
+      })
+    );
+  });
+
+  it('denies a stranger flagging', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(STRANGER), 'prompt_completions/comp-steady'), {
+        ...flagFields(STRANGER),
+        discussed: {},
+      })
+    );
+  });
+
+  it('denies smuggling other fields through the flag write', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), {
+        ...flagFields(MEMBER_A),
+        discussed: {},
+        signal: 'repair',
+      })
+    );
+  });
+
+  it('denies overwriting an existing discussed map via the flag path', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-has-discussed'), {
+        ...flagFields(MEMBER_B),
+        discussed: {},
+      })
+    );
+  });
+
+  it('denies seeding discussed with content (must be empty)', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), {
+        ...flagFields(MEMBER_A),
+        discussed: { [MEMBER_B]: new Date() },
+      })
+    );
+  });
+
+  it('denies attributing the flag to the other partner', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), {
+        ...flagFields(MEMBER_B),
+        discussed: {},
+      })
+    );
+  });
+
+  it('denies unflagging (couch_flagged must be true)', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), {
+        ...flagFields(MEMBER_A),
+        couch_flagged: false,
+        discussed: {},
+      })
+    );
+  });
+
+  it('denies a client-clock couch_flagged_at (must be serverTimestamp)', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), {
+        ...flagFields(MEMBER_A),
+        couch_flagged_at: new Date(),
+        discussed: {},
+      })
+    );
+  });
+
+  it('denies an ex-member of a deleted couple flagging', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-deleted'), {
+        ...flagFields(MEMBER_A),
+        discussed: {},
+      })
+    );
   });
 });
 

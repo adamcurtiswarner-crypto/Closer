@@ -74,6 +74,8 @@ function makeCompletion(overrides: Partial<HearthCompletion> = {}): HearthComple
     signal: 'divergence',
     discussed: {},
     discussedAt: null,
+    couchFlagged: false,
+    couchFlaggedBy: null,
     completedAt: new Date('2026-07-01'),
     ...overrides,
   };
@@ -155,8 +157,21 @@ describe('useHearth', () => {
       expect(mapped.isScale).toBe(false);
       expect(mapped.discussed).toEqual({});
       expect(mapped.discussedAt).toBeNull();
+      expect(mapped.couchFlagged).toBe(false);
+      expect(mapped.couchFlaggedBy).toBeNull();
       expect(mapped.completedAt).toBeNull();
       expect(mapped.responses[0].responseScore).toBeNull();
+    });
+
+    it('maps the couch flag fields at the read boundary', () => {
+      const mapped = mapCompletion('flagged', {
+        category: 'money',
+        prompt_text: 'Q',
+        couch_flagged: true,
+        couch_flagged_by: 'user-2',
+      });
+      expect(mapped.couchFlagged).toBe(true);
+      expect(mapped.couchFlaggedBy).toBe('user-2');
     });
 
     it('tolerates a completely empty doc', () => {
@@ -189,6 +204,41 @@ describe('useHearth', () => {
         makeCompletion({
           id: 'r1',
           signal: 'repair',
+          discussed: { 'user-1': new Date('2026-07-02') },
+          discussedAt: null,
+        }),
+      ];
+      expect(couchQueue(list)).toHaveLength(1);
+    });
+
+    it('includes couch-flagged entries regardless of signal (steady stays gray, still queues)', () => {
+      const list = [
+        makeCompletion({ id: 's1', signal: 'steady', couchFlagged: true }),
+        makeCompletion({ id: 'n1', signal: null, couchFlagged: true }),
+        makeCompletion({ id: 'g1', signal: 'deepener', couchFlagged: true }),
+        makeCompletion({ id: 's2', signal: 'steady', couchFlagged: false }),
+      ];
+      expect(couchQueue(list).map((c) => c.id)).toEqual(['s1', 'n1', 'g1']);
+    });
+
+    it('the mutual "we talked" ritual retires flagged entries too', () => {
+      const list = [
+        makeCompletion({
+          id: 's1',
+          signal: 'steady',
+          couchFlagged: true,
+          discussedAt: new Date('2026-07-02'),
+        }),
+      ];
+      expect(couchQueue(list)).toHaveLength(0);
+    });
+
+    it('a flagged entry with only one "we talked" mark stays in the queue', () => {
+      const list = [
+        makeCompletion({
+          id: 's1',
+          signal: 'steady',
+          couchFlagged: true,
           discussed: { 'user-1': new Date('2026-07-02') },
           discussedAt: null,
         }),
@@ -239,6 +289,12 @@ describe('useHearth', () => {
 
     it('empty category is steady', () => {
       expect(categoryState([], NOW)).toBe('steady');
+    });
+
+    it('a couch flag never changes the ember color — steady stays steady', () => {
+      expect(
+        categoryState([makeCompletion({ signal: 'steady', couchFlagged: true })], NOW)
+      ).toBe('steady');
     });
 
     it('perCategoryState covers all 12 v1 categories', () => {

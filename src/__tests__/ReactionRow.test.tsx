@@ -133,4 +133,16 @@ describe('ReactionRow', () => {
       expect(getByText(caption)).toBeTruthy();
     }
   });
+
+  it('shows the eyebrow naming whose answer the reactions belong to', () => {
+    const { getByText } = render(
+      <ReactionRow {...defaultProps} partnerName="Alex" />
+    );
+    expect(getByText("React to Alex's answer")).toBeTruthy();
+  });
+
+  it('eyebrow falls back to "your partner" when no name is available', () => {
+    const { getByText } = render(<ReactionRow {...defaultProps} />);
+    expect(getByText("React to your partner's answer")).toBeTruthy();
+  });
 });

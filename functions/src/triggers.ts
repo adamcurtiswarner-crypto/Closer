@@ -63,6 +63,27 @@ async function handleResponseSubmitted(
 
     const assignmentRef = db.collection('prompt_assignments').doc(response.assignment_id);
     const assignmentDoc = await assignmentRef.get();
+
+    // The assignment can be legitimately gone by the time this execution
+    // starts: assignments get deleted (canary sweeps, account deletion)
+    // while a response-create event is still in flight, and Firestore
+    // triggers give no ordering guarantee. Record it for visibility and
+    // exit cleanly — there is nothing to complete against a deleted
+    // assignment, and crashing here is pure noise.
+    if (!assignmentDoc.exists) {
+      await reportError(
+        'onResponseSubmitted:assignment-missing',
+        new Error(
+          `Assignment ${response.assignment_id} was deleted before the trigger ran`
+        ),
+        {
+          userId: response.user_id,
+          coupleId: response.couple_id,
+          extra: { assignmentId: response.assignment_id },
+        }
+      );
+      return null;
+    }
     const assignment = assignmentDoc.data()!;
 
     // Canary responses (functions/src/canary.ts) exercise the REAL pipeline —

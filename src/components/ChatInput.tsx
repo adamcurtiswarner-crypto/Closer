@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { pickImage } from '@/services/imageUpload';
+import { pickImage, showPhotoAccessDeniedAlert } from '@/services/imageUpload';
 import { Icon } from './Icon';
 
 interface ChatInputProps {
@@ -31,8 +31,13 @@ export function ChatInput({ onSend, onTyping, isSending }: ChatInputProps) {
   };
 
   const handlePickImage = async () => {
-    const uri = await pickImage();
-    if (uri) setImageUri(uri);
+    const picked = await pickImage();
+    if (!picked) return; // user cancelled — say nothing
+    if ('denied' in picked) {
+      showPhotoAccessDeniedAlert(t);
+      return;
+    }
+    setImageUri(picked.uri);
   };
 
   return (

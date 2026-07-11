@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, act } from '@testing-library/react-native';
+import { render as rtlRender, act, fireEvent } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   CompletionMoment,
@@ -7,6 +8,17 @@ import {
   FIRST_EVER_EXTRA_HOLD_MS,
 } from '../components/CompletionMoment';
 import { hapticImpact } from '@utils/haptics';
+
+// CompletionMoment now owns the couch-flag hooks (React Query) — every
+// render needs a QueryClientProvider.
+function render(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
+  return rtlRender(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
+  );
+}
 
 // Resolve t() against the real en.json so tests assert shipped copy
 jest.mock('react-i18next', () => {
@@ -360,6 +372,167 @@ describe('CompletionMoment', () => {
       await act(async () => {});
       expect(getByText('Another moment saved')).toBeTruthy();
       expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('keep it for the couch (mid-scale reveal)', () => {
+    const scaleProps = {
+      promptText: 'How connected did you feel this week?',
+      yourResponse: 'Felt close after our walk.',
+      partnerResponse: 'The weekend helped.',
+      partnerName: 'Alex',
+    };
+
+    const snap = (data: Record<string, unknown>) => ({
+      exists: () => true,
+      data: () => data,
+    });
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      seedStorage({ [FIRST_REVEAL_LIFETIME_KEY]: 'true' });
+      const { doc, getDoc, updateDoc } = require('firebase/firestore');
+      (doc as jest.Mock).mockReturnValue('completion-ref');
+      (getDoc as jest.Mock).mockResolvedValue(snap({}));
+      (updateDoc as jest.Mock).mockResolvedValue(undefined);
+    });
+
+    const flush = async () => {
+      // Let the queryFn's getDoc promise settle, then run React Query's
+      // batched notify timers (globally-enabled fake timers), then settle
+      // the resulting state updates.
+      await act(async () => {});
+      await act(async () => {
+        jest.runOnlyPendingTimers();
+      });
+    };
+
+    it('renders the question as a closing thought AFTER the reaction row', async () => {
+      const { toJSON, getByText } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={6}
+          partnerScore={7}
+          showMidScaleLine
+          assignmentId="m1"
+          onReact={jest.fn()}
+        />
+      );
+      await flush();
+      expect(getByText('What would move this one point higher?')).toBeTruthy();
+      const flat = JSON.stringify(toJSON());
+      const reactionsIdx = flat.indexOf("React to Alex's answer");
+      const lineIdx = flat.indexOf('What would move this one point higher?');
+      expect(reactionsIdx).toBeGreaterThan(-1);
+      expect(lineIdx).toBeGreaterThan(reactionsIdx);
+    });
+
+    it('shows the tappable keep-for-couch row when unflagged', async () => {
+      const { getByTestId, getByText, queryByTestId } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={6}
+          partnerScore={7}
+          showMidScaleLine
+          assignmentId="m2"
+        />
+      );
+      await flush();
+      expect(getByTestId('couch-flag-button')).toBeTruthy();
+      expect(getByText('Keep it for the couch')).toBeTruthy();
+      expect(queryByTestId('couch-kept')).toBeNull();
+    });
+
+    it('tapping writes the flag — seeding discussed: {} on a doc without it — and settles into the confirmation', async () => {
+      const { getDoc, updateDoc } = require('firebase/firestore');
+      (getDoc as jest.Mock)
+        .mockResolvedValueOnce(snap({})) // initial flag-state read
+        .mockResolvedValue(snap({ couch_flagged: true, couch_flagged_by: 'user-1' }));
+
+      const { getByTestId, getByText, queryByTestId } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={6}
+          partnerScore={7}
+          showMidScaleLine
+          assignmentId="m3"
+        />
+      );
+      await flush();
+
+      fireEvent.press(getByTestId('couch-flag-button'));
+      await flush();
+
+      expect(updateDoc).toHaveBeenCalledWith(
+        'completion-ref',
+        expect.objectContaining({
+          couch_flagged: true,
+          couch_flagged_by: 'user-1',
+          discussed: {},
+        })
+      );
+      expect(getByText("Kept for the couch — it's in the Hearth.")).toBeTruthy();
+      expect(queryByTestId('couch-flag-button')).toBeNull();
+    });
+
+    it('never writes discussed when the doc already has the field', async () => {
+      const { getDoc, updateDoc } = require('firebase/firestore');
+      (getDoc as jest.Mock).mockResolvedValue(
+        snap({ discussed: {}, signal: 'steady' })
+      );
+
+      const { getByTestId } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={6}
+          partnerScore={7}
+          showMidScaleLine
+          assignmentId="m4"
+        />
+      );
+      await flush();
+      fireEvent.press(getByTestId('couch-flag-button'));
+      await flush();
+
+      const written = (updateDoc as jest.Mock).mock.calls[0][1];
+      expect(written.couch_flagged).toBe(true);
+      expect('discussed' in written).toBe(false);
+    });
+
+    it('shows the quiet confirmation when already flagged by the PARTNER', async () => {
+      const { getDoc } = require('firebase/firestore');
+      (getDoc as jest.Mock).mockResolvedValue(
+        snap({ couch_flagged: true, couch_flagged_by: 'user-2' })
+      );
+
+      const { getByText, queryByTestId, getByTestId } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={6}
+          partnerScore={7}
+          showMidScaleLine
+          assignmentId="m5"
+        />
+      );
+      await flush();
+      expect(getByTestId('couch-kept')).toBeTruthy();
+      expect(getByText("Kept for the couch — it's in the Hearth.")).toBeTruthy();
+      expect(queryByTestId('couch-flag-button')).toBeNull();
+    });
+
+    it('previews without an assignmentId show the line but no flag row', async () => {
+      const { getByText, queryByTestId } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={6}
+          partnerScore={7}
+          showMidScaleLine
+        />
+      );
+      await flush();
+      expect(getByText('What would move this one point higher?')).toBeTruthy();
+      expect(queryByTestId('couch-flag-button')).toBeNull();
+      expect(queryByTestId('couch-kept')).toBeNull();
     });
   });
 });

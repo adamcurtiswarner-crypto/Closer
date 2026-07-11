@@ -12,14 +12,12 @@ interface DeleteAccountResult {
   purge_date: string;
 }
 
-interface ExportDataResult {
+export interface ExportDataResult {
   exported_at: string;
-  profile: Record<string, any>;
-  prompt_responses: any[];
-  events: any[];
-  memories: any[];
-  goals: any[];
-  wishlist_items: any[];
+  /** Plain-text document a person can read: profile basics + dated Q&A. */
+  readable: string;
+  /** Full sanitized JSON copy (ISO timestamps, no tokened storage URLs). */
+  raw: Record<string, unknown>;
 }
 
 interface AnonymizeResult {

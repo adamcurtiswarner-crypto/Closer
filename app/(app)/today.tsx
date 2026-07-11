@@ -13,7 +13,7 @@ import {
   Modal,
 } from 'react-native';
 import { router } from 'expo-router';
-import { pickImage } from '@/services/imageUpload';
+import { pickImage, showPhotoAccessDeniedAlert } from '@/services/imageUpload';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -667,8 +667,13 @@ export default function TodayScreen() {
   };
 
   const handleAddPhoto = async () => {
-    const uri = await pickImage();
-    if (uri) setSelectedImage(uri);
+    const picked = await pickImage();
+    if (!picked) return; // user cancelled — say nothing
+    if ('denied' in picked) {
+      showPhotoAccessDeniedAlert(t);
+      return;
+    }
+    setSelectedImage(picked.uri);
   };
 
   // Scale prompts: score is required, the note is optional

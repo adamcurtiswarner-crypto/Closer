@@ -168,10 +168,49 @@ afterAll(() => {
   fft.cleanup();
 });
 
+describe('missing-assignment guard (deleted-assignment race)', () => {
+  it('returns cleanly with a dedicated error_logs entry when the assignment no longer exists', async () => {
+    // No assignment doc seeded — the deleted-assignment race (canary sweep,
+    // account deletion) that used to crash on `undefined.source` hourly.
+    const response = makeResponse(USER_A, new Date('2026-07-09T10:00:00Z'));
+    store.docs.set('prompt_responses/resp-1', response);
+
+    await expect(wrapped(makeSnap(response))).resolves.not.toThrow();
+
+    expect(reportError).toHaveBeenCalledTimes(1);
+    expect(reportError).toHaveBeenCalledWith(
+      'onResponseSubmitted:assignment-missing',
+      expect.any(Error),
+      expect.objectContaining({
+        userId: USER_A,
+        coupleId: COUPLE_ID,
+        extra: { assignmentId: ASSIGNMENT_ID },
+      })
+    );
+    // Nothing processed against a deleted assignment: no completion, no
+    // pushes, no analytics, no writes of any kind.
+    expect(store.docs.has(`prompt_completions/${ASSIGNMENT_ID}`)).toBe(false);
+    expect(sendPushNotification).not.toHaveBeenCalled();
+    expect(logEvent).not.toHaveBeenCalled();
+    expect(store.writeLog).toHaveLength(0);
+  });
+});
+
 describe('reportError wrapper (rethrow-free)', () => {
   it('reports a handler failure to error_logs and resolves instead of rethrowing', async () => {
-    // No assignment doc seeded: assignmentDoc.data()! is undefined and the
-    // handler throws on property access — the wrapper must absorb it.
+    // Assignment exists but the couple doc is missing: coupleDoc.data()! is
+    // undefined and the handler throws on `.member_ids` — the wrapper must
+    // absorb it (an event retry on a poisoned doc would fail identically).
+    store.docs.set(`prompt_assignments/${ASSIGNMENT_ID}`, {
+      couple_id: COUPLE_ID,
+      prompt_id: 'canary-prompt',
+      assignment_kind: 'daily',
+      response_format: 'scale',
+      source: 'daily',
+      status: 'delivered',
+      response_count: 0,
+      first_responder_id: null,
+    });
     const response = makeResponse(USER_A, new Date('2026-07-09T10:00:00Z'));
     store.docs.set('prompt_responses/resp-1', response);
 

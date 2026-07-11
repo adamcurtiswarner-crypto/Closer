@@ -13,8 +13,9 @@ import {
 } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@components';
-import { pickImage } from '@/services/imageUpload';
+import { pickImage, showPhotoAccessDeniedAlert } from '@/services/imageUpload';
 import { MILESTONE_CATEGORIES, type MilestoneCategory, type CreateMilestoneInput } from '@/hooks/useMilestones';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 
@@ -26,6 +27,7 @@ interface AddMilestoneModalProps {
 }
 
 export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: AddMilestoneModalProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<MilestoneCategory>('anniversary');
   const [customTitle, setCustomTitle] = useState('');
@@ -64,8 +66,13 @@ export function AddMilestoneModal({ visible, onClose, onSubmit, isSubmitting }: 
   };
 
   const handlePickImage = async () => {
-    const uri = await pickImage();
-    if (uri) setImageUri(uri);
+    const picked = await pickImage();
+    if (!picked) return; // user cancelled — say nothing
+    if ('denied' in picked) {
+      showPhotoAccessDeniedAlert(t);
+      return;
+    }
+    setImageUri(picked.uri);
   };
 
   return (

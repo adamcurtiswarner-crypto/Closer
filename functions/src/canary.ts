@@ -22,12 +22,26 @@ import { db, DEFAULT_SCALE_CONFIG, reportError } from './shared';
 //   codebase filters status == 'active', so schedulers never see it.
 // - The canary member ids have NO /users docs: deliverDailyPrompts iterates
 //   users (is_onboarded == true) so it can never deliver to this couple, and
-//   sendResponseReminders skips users whose doc doesn't exist. The canary
-//   also deletes its assignment within ~60s, before the hourly reminder run
-//   could plausibly observe it.
-// - All artifacts (assignment, responses, completion) are deleted at the end
-//   of every run, and each run starts by sweeping leftovers from any prior
-//   crashed run.
+//   sendResponseReminders skips users whose doc doesn't exist (the canary
+//   assignment also never carries delivered_at, which the reminder loop
+//   requires before considering an assignment at all).
+//
+// Cleanup design — DEFERRED SWEEP (run N's artifacts are deleted at the
+// start of run N+1, one hour later; a run never deletes its own docs):
+// - Why: onResponseSubmitted fires once per response create with no latency
+//   guarantee. Same-run cleanup raced a late-starting trigger execution —
+//   the trigger read the assignment AFTER the canary deleted it and crashed
+//   on `undefined.source` every hour in production. One hour of settle time
+//   ends that race for good; no poll-then-delay heuristic can.
+// - Why lingering artifacts (≤1h, statuses 'completed' or stuck) are safe:
+//   every metrics/recap consumer of prompt_completions iterates couples with
+//   status == 'active' (the canary couple is status 'canary');
+//   sendResponseReminders requires delivered_at + a /users doc, both absent;
+//   expireStalePrompts only touches assigned_date < yesterday. Verified
+//   against analytics.ts, admin.ts, notifications.ts, prompts.ts.
+// - triggers.ts additionally guards the assignment-deleted race for ANY
+//   deleted assignment (onResponseSubmitted:assignment-missing), so even a
+//   manual sweep mid-flight can no longer crash the pipeline.
 // ============================================
 
 export const CANARY_SOURCE = 'canary';
@@ -161,7 +175,10 @@ export async function runCanaryOnce(options: CanaryRunOptions = {}): Promise<Can
   let failure: string | null = null;
 
   try {
-    // Leftovers from a prior crashed run must not confuse this pass.
+    // Deferred cleanup: delete the PREVIOUS run's artifacts (an hour old —
+    // every trigger execution they could spawn has long settled). This run's
+    // own artifacts are intentionally left in place for the next run's sweep;
+    // deleting them here raced late-starting onResponseSubmitted executions.
     await sweepCanaryArtifacts(config.coupleId);
 
     // The shadow couple. status 'canary' (never 'active') keeps it invisible
@@ -215,18 +232,9 @@ export async function runCanaryOnce(options: CanaryRunOptions = {}): Promise<Can
     }
   } catch (err) {
     failure = err instanceof Error ? err.message : String(err);
-  } finally {
-    // Always remove the run's artifacts — even on failure — so nothing
-    // accumulates and nothing lingers for reminder/delivery schedulers.
-    try {
-      await sweepCanaryArtifacts(config.coupleId);
-    } catch (cleanupErr) {
-      await reportError('canary.cleanup', cleanupErr, {
-        coupleId: config.coupleId,
-        extra: { assignmentId },
-      });
-    }
   }
+  // No same-run cleanup on purpose — see the deferred-sweep design note in
+  // the header. This run's artifacts wait for the next run's opening sweep.
 
   const elapsedMs = Date.now() - started;
   if (failure) {

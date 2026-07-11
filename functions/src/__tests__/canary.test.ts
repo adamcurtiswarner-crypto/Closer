@@ -131,6 +131,11 @@ describe('canary artifact shapes', () => {
     expect(assignment.assignment_kind).toBe('daily');
   });
 
+  it('assignment never carries delivered_at — load-bearing: sendResponseReminders requires it, so a lingering canary assignment (deferred cleanup) is skipped', () => {
+    const assignment = buildCanaryAssignment(CONFIG, '2026-07-09');
+    expect('delivered_at' in assignment).toBe(false);
+  });
+
   it('responses are steady (7/7 — never repair/divergence) and submitted', () => {
     const response = buildCanaryResponse(ASSIGNMENT_ID, CONFIG, CONFIG.userA);
     expect(response.response_score).toBe(7);
@@ -157,8 +162,8 @@ function simulateTriggerAfter(delayMs: number): void {
   }, delayMs);
 }
 
-describe('runCanaryOnce', () => {
-  it('succeeds when the pipeline produces the completion, then deletes all artifacts', async () => {
+describe('runCanaryOnce (deferred cleanup — a run NEVER deletes its own artifacts)', () => {
+  it('succeeds when the pipeline produces the completion, leaving this run’s artifacts for the next-run sweep', async () => {
     simulateTriggerAfter(60);
 
     const result = await runCanaryOnce({
@@ -172,21 +177,19 @@ describe('runCanaryOnce', () => {
     expect(result.failure).toBeNull();
     expect(reportError).not.toHaveBeenCalled();
 
-    // Every canary artifact removed; the shadow couple doc is kept.
-    const leftover = [...store.docs.keys()].filter(
-      (path) =>
-        path.startsWith('prompt_assignments/') ||
-        path.startsWith('prompt_responses/') ||
-        path.startsWith('prompt_completions/')
-    );
-    expect(leftover).toEqual([]);
+    // Same-run cleanup raced late-starting onResponseSubmitted executions
+    // (they read the assignment AFTER deletion and crashed on `.source`).
+    // The run must leave its own artifacts in place; the next run sweeps.
+    expect(store.docs.has(`prompt_assignments/${ASSIGNMENT_ID}`)).toBe(true);
+    expect(store.docs.has(`prompt_responses/${ASSIGNMENT_ID}_${CONFIG.userA}`)).toBe(true);
+    expect(store.docs.has(`prompt_responses/${ASSIGNMENT_ID}_${CONFIG.userB}`)).toBe(true);
     expect(store.docs.get(`couples/${CONFIG.coupleId}`)).toMatchObject({
       member_ids: [CONFIG.userA, CONFIG.userB],
       status: 'canary',
     });
   });
 
-  it('reports to error_logs when the completion never appears — and still cleans up', async () => {
+  it('reports to error_logs when the completion never appears — without deleting in-flight artifacts', async () => {
     const result = await runCanaryOnce({
       config: CONFIG,
       now: NOW,
@@ -206,10 +209,26 @@ describe('runCanaryOnce', () => {
       })
     );
 
-    const leftover = [...store.docs.keys()].filter((path) =>
-      path.startsWith('prompt_')
-    );
-    expect(leftover).toEqual([]);
+    // Even a failed run defers deletion — its triggers may still be in
+    // flight (a slow trigger IS the failure mode being reported).
+    expect(store.docs.has(`prompt_assignments/${ASSIGNMENT_ID}`)).toBe(true);
+  });
+
+  it('the next run sweeps the previous run’s artifacts before writing its own', async () => {
+    simulateTriggerAfter(60);
+    await runCanaryOnce({ config: CONFIG, now: NOW, timeoutMs: 2000, pollIntervalMs: 20 });
+    expect(store.docs.has(`prompt_assignments/${ASSIGNMENT_ID}`)).toBe(true);
+
+    const laterNow = new Date('2026-07-09T13:00:00Z');
+    const laterAssignmentId = canaryAssignmentId(laterNow);
+    // Second run fails fast (no simulated trigger) — sweep still ran first.
+    await runCanaryOnce({ config: CONFIG, now: laterNow, timeoutMs: 50, pollIntervalMs: 20 });
+
+    // Run 1's artifacts gone; run 2's artifacts present, awaiting run 3.
+    expect(store.docs.has(`prompt_assignments/${ASSIGNMENT_ID}`)).toBe(false);
+    expect(store.docs.has(`prompt_completions/${ASSIGNMENT_ID}`)).toBe(false);
+    expect(store.docs.has(`prompt_responses/${ASSIGNMENT_ID}_${CONFIG.userA}`)).toBe(false);
+    expect(store.docs.has(`prompt_assignments/${laterAssignmentId}`)).toBe(true);
   });
 
   it('sweeps leftovers from a prior crashed run before starting', async () => {

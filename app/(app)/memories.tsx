@@ -28,7 +28,7 @@ import { PhotoViewer } from '@/components/PhotoViewer';
 import { MilestoneTimeline } from '@/components/MilestoneTimeline';
 import { AddMilestoneModal } from '@/components/AddMilestoneModal';
 import { Icon } from '@components';
-import { pickImage } from '@/services/imageUpload';
+import { pickImage, showPhotoAccessDeniedAlert } from '@/services/imageUpload';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -103,10 +103,13 @@ export default function MemoriesScreen() {
       setShowPaywall(true);
       return;
     }
-    const uri = await pickImage();
-    if (uri) {
-      addPhoto.mutate({ uri });
+    const picked = await pickImage();
+    if (!picked) return; // user cancelled — say nothing
+    if ('denied' in picked) {
+      showPhotoAccessDeniedAlert(t);
+      return;
     }
+    addPhoto.mutate({ uri: picked.uri });
   };
 
   return (

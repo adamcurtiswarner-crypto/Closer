@@ -329,14 +329,43 @@ service cloud.firestore {
           .hasOnly(['reactions', 'updated_at', 'is_memory_saved']);
       }
 
+      // "Keep it for the couch": a member flags the completion into the
+      // Hearth couch queue at the reveal. Confined to the couch_flagged
+      // fields (+ updated_at); the flag must be true, attributed to the
+      // writer, and stamped with serverTimestamp(). `discussed` may ONLY be
+      // ADDED as an EMPTY map when the doc has none (steady completions are
+      // created without it, and the "we talked" mark above requires the
+      // field to pre-exist) — an existing discussed map can never be
+      // modified or removed through this path.
+      function isCouchFlagUpdate() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['couch_flagged', 'couch_flagged_by', 'couch_flagged_at',
+                      'updated_at', 'discussed']) &&
+          request.resource.data.couch_flagged == true &&
+          request.resource.data.couch_flagged_by == request.auth.uid &&
+          request.resource.data.couch_flagged_at == request.time &&
+          (
+            // `discussed` untouched by this write…
+            !request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['discussed']) ||
+            // …or created empty, only when the doc lacked the field.
+            (
+              !('discussed' in resource.data) &&
+              request.resource.data.discussed is map &&
+              request.resource.data.discussed.keys().size() == 0
+            )
+          );
+      }
+
       allow read: if isAuthenticated() &&
         isCoupleMember(resource.data.couple_id);
       // Created by Cloud Functions only
       allow create: if false;
       // Couple members may only make field-scoped updates: the Hearth
-      // "we talked" mark or the pre-existing reaction/memory-save writes.
+      // "we talked" mark, the couch flag, or the pre-existing
+      // reaction/memory-save writes.
       allow update: if isCoupleMember(resource.data.couple_id) &&
-        (isDiscussedOnlyMark() || isLegacyCompletionUpdate());
+        (isDiscussedOnlyMark() || isLegacyCompletionUpdate() || isCouchFlagUpdate());
       allow delete: if false;
     }
 

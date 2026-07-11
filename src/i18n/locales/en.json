@@ -188,6 +188,9 @@
     "wellDone": "Well done",
     "anotherMomentSaved": "Another moment saved",
     "firstOfMany": "The first of many",
+    "midScaleLine": "What would move this one point higher?",
+    "keepForCouch": "Keep it for the couch",
+    "keptForCouch": "Kept for the couch — it's in the Hearth.",
     "notePlaceholder": "What's one moment behind that number?",
     "notePlaceholders": {
       "communication": "What conversation is behind that number?",
@@ -288,7 +291,9 @@
     "partnership": "PARTNERSHIP",
     "privacyData": "PRIVACY & DATA",
     "exportData": "Export my data",
+    "exportDataSubtitle": "A copy of everything you've written",
     "anonymize": "Anonymize my responses",
+    "anonymizeSubtitle": "Permanently removes your words. Cannot be undone.",
     "deleteAccount": "Delete account",
     "account": "ACCOUNT",
     "subscription": "Subscription",
@@ -314,7 +319,7 @@
     "deleteConfirmLabel": "Type DELETE to confirm",
     "deleteButton": "Delete my account",
     "anonymizeTitle": "Anonymize your responses",
-    "anonymizeBody": "This will replace all your written responses with [removed]. Your partner's responses will not be affected.\n\nThis cannot be undone.",
+    "anonymizeBody": "This permanently replaces everything you've written with [removed]. Your words cannot be recovered. Your partner's responses will not be affected.\n\nThis cannot be undone.",
     "anonymizeButton": "Anonymize my responses",
     "anonymized": "Responses anonymized",
     "anonymizedBody": "{{count}} responses have been replaced with [removed].",
@@ -363,7 +368,10 @@
     "uploadFailed": "Upload failed",
     "couldNotUpload": "Could not upload photo. Please try again.",
     "couldNotSaveAnniversary": "Could not save anniversary date.",
-    "couldNotSaveLoveLanguage": "Could not save love language."
+    "couldNotSaveLoveLanguage": "Could not save love language.",
+    "photosAccessTitle": "Photo access",
+    "photosAccessBody": "Stoke needs photo access to update pictures. You can allow it in Settings.",
+    "openSettings": "Open Settings"
   },
   "goals": {
     "title": "Goals",
@@ -587,6 +595,7 @@
       "starterLabel": "Start here, together",
       "starterDivergence": "You two see this one differently — that's information, not a problem. Each of you: what might the other be seeing that you don't?",
       "starterRepair": "What does the hard part look like from where you sit? Not the fix yet — just the view.",
+      "starterFlagged": "One of you kept this one for the couch. Start with the number: what would move it one point higher?",
       "starterHint": "Read it out loud. No screens after this line.",
       "markTalked": "We talked about it",
       "waitingForPartner": "You marked it — waiting for {{name}}",
@@ -597,6 +606,7 @@
     }
   },
   "reactions": {
+    "rowLabel": "React to {{name}}'s answer",
     "love": "Love",
     "spark": "Spark",
     "smile": "Smile",

@@ -82,6 +82,7 @@ type AnalyticsEvent =
   | 'talk_sheet_opened'
   | 'marked_discussed'
   | 'completion_tended'
+  | 'couch_flagged'
   | 'category_opened';
 
 interface EventContext {

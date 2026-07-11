@@ -34,6 +34,15 @@ jest.mock('@/hooks/useReaction', () => ({
   useReaction: () => ({ mutate: mockReact, isPending: false }),
 }));
 
+// CompletionMoment pulls in the couch-flag hooks (firebase/firestore) —
+// mocked at the module boundary like useReaction above.
+jest.mock('@/hooks/useCouchFlag', () => ({
+  isCouchFlagged: (s: { couchFlagged?: boolean } | null | undefined) =>
+    s?.couchFlagged === true,
+  useCouchFlagState: () => ({ data: null }),
+  useCouchFlag: () => ({ mutate: jest.fn(), isPending: false }),
+}));
+
 jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
 jest.mock('@/components/Icon', () => ({ Icon: () => null }));
 jest.mock('@/components/SafetyResources', () => ({ SafetyResources: () => null }));

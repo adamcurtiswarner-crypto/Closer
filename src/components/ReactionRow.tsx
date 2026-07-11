@@ -94,13 +94,19 @@ export function ReactionRow({
   partnerName,
 }: ReactionRowProps) {
   const { t } = useTranslation();
+  const displayName = partnerName ?? t('explore.partnerFallback');
   const partnerCopy = partnerReaction ? REACTION_COPY[partnerReaction] : null;
   const partnerLine = partnerCopy
-    ? t(partnerCopy.partnerKey, { name: partnerName ?? t('explore.partnerFallback') })
+    ? t(partnerCopy.partnerKey, { name: displayName })
     : null;
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
+      {/* Quiet eyebrow: the reactions answer YOUR PARTNER'S words, not the
+          line above the row — founder call 2026-07-11 (reveal clarity). */}
+      <Text style={styles.rowLabel} maxFontSizeMultiplier={1.4}>
+        {t('reactions.rowLabel', { name: displayName })}
+      </Text>
       <View style={styles.row}>
         {REACTIONS.map((r) => (
           <ReactionButton
@@ -141,6 +147,12 @@ export function ReactionRow({
 const styles = StyleSheet.create({
   container: {
     marginTop: spacing.smd,
+  },
+  rowLabel: {
+    ...typography.eyebrow,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
   },
   row: {
     flexDirection: 'row',

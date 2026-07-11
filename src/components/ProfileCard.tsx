@@ -17,7 +17,12 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple, useUpdateAnniversaryDate } from '@/hooks/useCouple';
-import { pickImage, uploadProfilePhoto, uploadPartnerPhoto } from '@/services/imageUpload';
+import {
+  pickImage,
+  showPhotoAccessDeniedAlert,
+  uploadProfilePhoto,
+  uploadPartnerPhoto,
+} from '@/services/imageUpload';
 import { getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
@@ -96,13 +101,17 @@ export function ProfileCard() {
   };
 
   const handlePickUserPhoto = async () => {
-    const uri = await pickImage();
-    if (!uri) return;
+    const picked = await pickImage();
+    if (!picked) return; // user cancelled — say nothing
+    if ('denied' in picked) {
+      showPhotoAccessDeniedAlert(t);
+      return;
+    }
 
     setUploadingUser(true);
     hapticImpact(ImpactFeedbackStyle.Light);
     try {
-      const downloadUrl = await uploadProfilePhoto(user.id, uri);
+      const downloadUrl = await uploadProfilePhoto(user.id, picked.uri);
       const userRef = doc(db, 'users', user.id);
       await updateDoc(userRef, {
         photo_url: downloadUrl,
@@ -111,7 +120,11 @@ export function ProfileCard() {
       await refreshUser();
       logEvent('profile_photo_uploaded', { type: 'user' });
     } catch (error) {
-      logger.error('Error uploading profile photo:', error);
+      // The storage error code goes into the message string because the
+      // logger's production path only captures the first argument — this is
+      // how telemetry tells a rules denial from a network drop.
+      const code = (error as { code?: string }).code ?? 'unknown';
+      logger.error(`Error uploading profile photo (code: ${code}):`, error);
       Alert.alert(t('profile.uploadFailed'), t('profile.couldNotUpload'));
     } finally {
       setUploadingUser(false);
@@ -121,13 +134,17 @@ export function ProfileCard() {
   const handlePickPartnerPhoto = async () => {
     if (!user.coupleId) return;
 
-    const uri = await pickImage();
-    if (!uri) return;
+    const picked = await pickImage();
+    if (!picked) return; // user cancelled — say nothing
+    if ('denied' in picked) {
+      showPhotoAccessDeniedAlert(t);
+      return;
+    }
 
     setUploadingPartner(true);
     hapticImpact(ImpactFeedbackStyle.Light);
     try {
-      const downloadUrl = await uploadPartnerPhoto(user.coupleId, user.id, uri);
+      const downloadUrl = await uploadPartnerPhoto(user.coupleId, user.id, picked.uri);
       const userRef = doc(db, 'users', user.id);
       await updateDoc(userRef, {
         partner_photo_url: downloadUrl,
@@ -136,7 +153,8 @@ export function ProfileCard() {
       await refreshUser();
       logEvent('profile_photo_uploaded', { type: 'partner' });
     } catch (error) {
-      logger.error('Error uploading partner photo:', error);
+      const code = (error as { code?: string }).code ?? 'unknown';
+      logger.error(`Error uploading partner photo (code: ${code}):`, error);
       Alert.alert(t('profile.uploadFailed'), t('profile.couldNotUpload'));
     } finally {
       setUploadingPartner(false);
