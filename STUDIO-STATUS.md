@@ -1,5 +1,5 @@
 # Stoke Studio Status
-*Last updated: 2026-07-10 — Build 62 ("the day always arrives" + Gates 1+2) SUBMITTED to TestFlight. Board: 657 app / 455 functions / 24 rules / 18 flows. Awaiting founder two-phone pass + founder items (W-9, legal, IAP screenshot, domain, paywall confirm).*
+*Last updated: 2026-07-11 — Build 63 cutting (founder-pass batch: reveal clarity + couch flag, photo-permission fix, human export, Hearth past-day review; Hearth backfill + canary fix already live). Board: 733 app / 470 functions / 34 rules / 18 flows.*
 
 ## Founder Directive (2026-07-05)
 v1 = scored prompts by category + score-triggered follow-ups (deepener / repair / divergence). Everything else hidden via `src/config/features.ts`. Target: top 0.1% design quality for the category. Payments live. App Store submission next.
