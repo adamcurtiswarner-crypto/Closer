@@ -70,6 +70,7 @@ function makeCompletion(overrides: Partial<HearthCompletion> = {}): HearthComple
         submittedAt: new Date('2026-07-01'),
       },
     ],
+    reactions: {},
     signal: 'divergence',
     discussed: {},
     discussedAt: null,

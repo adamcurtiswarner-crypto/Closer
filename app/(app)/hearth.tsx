@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { HearthEmberTile } from '@/components/HearthEmberTile';
 import { HearthGateCard } from '@/components/HearthGateCard';
 import { HearthQueueCard } from '@/components/HearthQueueCard';
+import { HearthRevealSheet } from '@/components/HearthRevealSheet';
 import { HearthTalkSheet } from '@/components/HearthTalkSheet';
 import { HearthCategoryDetail } from '@/components/HearthCategoryDetail';
 import { Paywall } from '@/components/Paywall';
@@ -59,6 +60,7 @@ export default function HearthScreen() {
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [talkCompletionId, setTalkCompletionId] = useState<string | null>(null);
+  const [revealCompletionId, setRevealCompletionId] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
 
   useEffect(() => {
@@ -94,6 +96,18 @@ export default function HearthScreen() {
     });
   };
 
+  // Reopen a past day's reveal. Like the talk sheet, the sheet reads the
+  // live entry from the snapshot-driven cache. The completion id IS the
+  // assignment id (the completion doc is keyed by it).
+  const revealCompletion = revealCompletionId
+    ? completions.find((c) => c.id === revealCompletionId) ?? null
+    : null;
+
+  const openReveal = (completion: HearthCompletion) => {
+    setRevealCompletionId(completion.id);
+    logEvent('hearth_reveal_opened', { assignment_id: completion.id });
+  };
+
   const openCategory = (categoryType: string) => {
     setSelectedCategory(categoryType);
     logEvent('category_opened', { category: categoryType });
@@ -115,6 +129,16 @@ export default function HearthScreen() {
       marking={markDiscussed.isPending}
       onMarkDiscussed={(completionId) => markDiscussed.mutate({ completionId })}
       onClose={() => setTalkCompletionId(null)}
+    />
+  );
+
+  const revealSheet = (
+    <HearthRevealSheet
+      visible={revealCompletion != null}
+      completion={revealCompletion}
+      myUid={myUid}
+      partnerName={partnerName}
+      onClose={() => setRevealCompletionId(null)}
     />
   );
 
@@ -142,8 +166,10 @@ export default function HearthScreen() {
           partnerName={partnerName}
           onBack={() => setSelectedCategory(null)}
           onOpenTalkSheet={openTalkSheet}
+          onOpenReveal={openReveal}
         />
         {talkSheet}
+        {revealSheet}
         {paywall}
       </SafeAreaView>
     );
@@ -250,6 +276,7 @@ export default function HearthScreen() {
                         meta={meta}
                         stateLabel={t(`hearth.state.${signal}`)}
                         onPress={() => openTalkSheet(completion)}
+                        onReadAnswers={() => openReveal(completion)}
                         testID={`hearth-queue-${completion.id}`}
                       />
                     </Animated.View>
@@ -284,6 +311,7 @@ export default function HearthScreen() {
         )}
       </ScrollView>
       {talkSheet}
+      {revealSheet}
       {paywall}
     </SafeAreaView>
   );

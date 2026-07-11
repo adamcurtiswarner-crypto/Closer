@@ -79,6 +79,7 @@ type AnalyticsEvent =
   | 'paywall_dismissed'
   | 'gate_hit'
   | 'hearth_viewed'
+  | 'hearth_reveal_opened'
   | 'talk_sheet_opened'
   | 'marked_discussed'
   | 'completion_tended'

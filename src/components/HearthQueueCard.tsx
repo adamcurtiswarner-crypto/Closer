@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
 import { HEARTH_STATE_VISUALS } from './HearthEmberTile';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
@@ -13,12 +14,15 @@ interface HearthQueueCardProps {
   /** State label — "Talk about it" / "Compare notes". */
   stateLabel: string;
   onPress: () => void;
+  /** Quiet secondary affordance — reopen the day's reveal (both answers). */
+  onReadAnswers?: () => void;
   testID?: string;
 }
 
 /**
  * One un-tended repair/divergence entry in the "Waiting for you two"
- * couch queue. Tapping opens the talk sheet.
+ * couch queue. Tapping opens the talk sheet (the primary action); a quiet
+ * "Read the answers" line underneath reopens that day's reveal.
  */
 export function HearthQueueCard({
   completion,
@@ -26,8 +30,10 @@ export function HearthQueueCard({
   meta,
   stateLabel,
   onPress,
+  onReadAnswers,
   testID,
 }: HearthQueueCardProps) {
+  const { t } = useTranslation();
   const signal = completion.signal === 'divergence' ? 'divergence' : 'repair';
   const visual = HEARTH_STATE_VISUALS[signal];
 
@@ -62,6 +68,20 @@ export function HearthQueueCard({
         )}
         <Icon name="caret-right" size="sm" color={colors.text.muted} />
       </View>
+      {onReadAnswers && (
+        <TouchableOpacity
+          style={styles.readRow}
+          onPress={onReadAnswers}
+          accessibilityRole="button"
+          accessibilityLabel={t('hearth.readAnswers')}
+          activeOpacity={0.7}
+          testID={testID ? `${testID}-read` : undefined}
+        >
+          <Text style={styles.readText} maxFontSizeMultiplier={1.4}>
+            {t('hearth.readAnswers')}
+          </Text>
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 }
@@ -105,5 +125,18 @@ const styles = StyleSheet.create({
   meta: {
     ...typography.caption,
     color: colors.text.secondary,
+  },
+  readRow: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+    marginTop: -spacing.sm,
+    marginBottom: -spacing.xs,
+  },
+  readText: {
+    // Accent text is this app's quiet "tappable" register (couch flag row,
+    // retry links) — no underline, no chrome.
+    ...typography.caption,
+    color: colors.accent.primary,
   },
 });

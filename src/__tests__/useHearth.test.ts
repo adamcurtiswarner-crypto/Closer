@@ -71,6 +71,7 @@ function makeCompletion(overrides: Partial<HearthCompletion> = {}): HearthComple
         submittedAt: new Date('2026-07-01'),
       },
     ],
+    reactions: {},
     signal: 'divergence',
     discussed: {},
     discussedAt: null,
@@ -161,6 +162,20 @@ describe('useHearth', () => {
       expect(mapped.couchFlaggedBy).toBeNull();
       expect(mapped.completedAt).toBeNull();
       expect(mapped.responses[0].responseScore).toBeNull();
+    });
+
+    it('maps reactions at the read boundary, dropping null (un-reacted) values', () => {
+      const mapped = mapCompletion('abc', {
+        category: 'money',
+        prompt_text: 'Q',
+        reactions: { 'user-1': 'heart', 'user-2': null },
+      });
+      expect(mapped.reactions).toEqual({ 'user-1': 'heart' });
+    });
+
+    it('tolerates docs with no reactions field', () => {
+      const mapped = mapCompletion('abc', { category: 'money', prompt_text: 'Q' });
+      expect(mapped.reactions).toEqual({});
     });
 
     it('maps the couch flag fields at the read boundary', () => {

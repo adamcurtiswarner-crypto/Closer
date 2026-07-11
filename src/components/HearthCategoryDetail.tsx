@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeInUp, ReduceMotion } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -29,12 +29,14 @@ interface HearthCategoryDetailProps {
   partnerName: string;
   onBack: () => void;
   onOpenTalkSheet: (completion: HearthCompletion) => void;
+  onOpenReveal: (completion: HearthCompletion) => void;
 }
 
 /**
  * In-screen category mode (explore's pattern): score-trend sparkline,
- * then the entry timeline. Cards expand to show both partners' notes
- * and scores; un-tended repair/divergence entries carry the couch pill.
+ * then the entry timeline. Tapping an entry reopens that day's reveal
+ * (both answers, the full CompletionMoment); un-tended repair/divergence
+ * entries carry the couch pill straight to the talk sheet.
  */
 export function HearthCategoryDetail({
   category,
@@ -44,9 +46,9 @@ export function HearthCategoryDetail({
   partnerName,
   onBack,
   onOpenTalkSheet,
+  onOpenReveal,
 }: HearthCategoryDetailProps) {
   const { t } = useTranslation();
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const answered = entries.length;
   const tendedCount = entries.filter(isTended).length;
@@ -90,12 +92,16 @@ export function HearthCategoryDetail({
 
         {entries.map((completion, index) => {
           const visual = HEARTH_STATE_VISUALS[visualStateFor(completion)];
-          const expanded = expandedId === completion.id;
           const showCouchPill = needsCouch(completion);
           const couchVisual =
             completion.signal === 'divergence'
               ? { bg: colors.brand.purple }
               : { bg: colors.accent.primary };
+          const { mine, theirs } = scoresFor(completion, myUid);
+          const meta =
+            mine != null && theirs != null
+              ? t('hearth.queueMeta', { mine, partner: partnerName, theirs })
+              : '';
 
           return (
             <Animated.View
@@ -104,10 +110,13 @@ export function HearthCategoryDetail({
                 .delay(Math.min(index, 6) * 80)
                 .reduceMotion(ReduceMotion.System)}
             >
+              {/* The whole card reopens that day's reveal — both answers,
+                  the full CompletionMoment, revisits flat. */}
               <TouchableOpacity
                 style={styles.entryCard}
-                onPress={() => setExpandedId(expanded ? null : completion.id)}
+                onPress={() => onOpenReveal(completion)}
                 accessibilityRole="button"
+                accessibilityLabel={t('hearth.readThisDay')}
                 activeOpacity={0.85}
                 testID={`hearth-entry-${completion.id}`}
               >
@@ -129,46 +138,30 @@ export function HearthCategoryDetail({
                   {completion.promptText}
                   {'”'}
                 </Text>
+                <View style={styles.entryFooter}>
+                  {/* Always rendered (may be empty) so the chevron keeps
+                      its right edge on text-only entries too. */}
+                  <Text style={styles.entryMeta} maxFontSizeMultiplier={1.4}>
+                    {meta}
+                  </Text>
+                  <Icon name="caret-right" size="sm" color={colors.text.muted} />
+                </View>
 
-                {expanded && (
-                  <Animated.View
-                    entering={FadeIn.duration(300).reduceMotion(ReduceMotion.System)}
-                    style={styles.notes}
-                    testID={`hearth-entry-notes-${completion.id}`}
+                {showCouchPill && (
+                  <TouchableOpacity
+                    style={[styles.couchPill, { backgroundColor: couchVisual.bg }]}
+                    onPress={() => onOpenTalkSheet(completion)}
+                    accessibilityRole="button"
+                    testID={`hearth-entry-couch-${completion.id}`}
                   >
-                    {completion.responses.map((response) => {
-                      const isMine = response.userId === myUid;
-                      return (
-                        <View key={`${completion.id}-${response.userId}`} style={styles.noteRow}>
-                          <Text style={styles.noteAuthor} maxFontSizeMultiplier={1.4}>
-                            {isMine ? t('common.you') : partnerName}
-                            {typeof response.responseScore === 'number'
-                              ? ` · ${response.responseScore}`
-                              : ''}
-                          </Text>
-                          {response.responseText.length > 0 && (
-                            <Text style={styles.noteText}>{response.responseText}</Text>
-                          )}
-                        </View>
-                      );
-                    })}
-                    {showCouchPill && (
-                      <TouchableOpacity
-                        style={[styles.couchPill, { backgroundColor: couchVisual.bg }]}
-                        onPress={() => onOpenTalkSheet(completion)}
-                        accessibilityRole="button"
-                        testID={`hearth-entry-couch-${completion.id}`}
-                      >
-                        <Text style={styles.couchPillText} maxFontSizeMultiplier={1.4}>
-                          {t(
-                            completion.signal === 'divergence'
-                              ? 'hearth.state.divergence'
-                              : 'hearth.state.repair'
-                          )}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </Animated.View>
+                    <Text style={styles.couchPillText} maxFontSizeMultiplier={1.4}>
+                      {t(
+                        completion.signal === 'divergence'
+                          ? 'hearth.state.divergence'
+                          : 'hearth.state.repair'
+                      )}
+                    </Text>
+                  </TouchableOpacity>
                 )}
               </TouchableOpacity>
             </Animated.View>
@@ -227,6 +220,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     padding: spacing.cardPad,
     gap: spacing.sm,
+    minHeight: 44,
     ...shadow.cardSubtle,
   },
   entryHeader: {
@@ -252,23 +246,15 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     fontStyle: 'italic',
   },
-  notes: {
-    marginTop: spacing.xs,
-    paddingTop: spacing.smd,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.default,
-    gap: spacing.smd,
+  entryFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
-  noteRow: {
-    gap: spacing.xs,
-  },
-  noteAuthor: {
-    ...typography.eyebrow,
+  entryMeta: {
+    ...typography.caption,
     color: colors.text.secondary,
-  },
-  noteText: {
-    ...typography.bodySm,
-    color: colors.text.primary,
+    flex: 1,
   },
   couchPill: {
     alignSelf: 'flex-start',

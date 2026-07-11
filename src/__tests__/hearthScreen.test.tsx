@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 // ─── Mocks ───
 
@@ -34,8 +34,24 @@ jest.mock('@/config/firebase', () => ({
 jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
 jest.mock('@/components/Icon', () => ({ Icon: () => null }));
 jest.mock('@/components/HearthTalkSheet', () => ({ HearthTalkSheet: () => null }));
-jest.mock('@/components/HearthCategoryDetail', () => ({ HearthCategoryDetail: () => null }));
 jest.mock('@/components/Paywall', () => ({ Paywall: () => null }));
+
+// Prop-capturing mocks — the screen's wiring into the detail view and the
+// reveal sheet is what's under test, not their internals.
+const mockCategoryDetailProps = jest.fn();
+jest.mock('@/components/HearthCategoryDetail', () => ({
+  HearthCategoryDetail: (props: Record<string, unknown>) => {
+    mockCategoryDetailProps(props);
+    return null;
+  },
+}));
+const mockRevealSheetProps = jest.fn();
+jest.mock('@/components/HearthRevealSheet', () => ({
+  HearthRevealSheet: (props: Record<string, unknown>) => {
+    mockRevealSheetProps(props);
+    return null;
+  },
+}));
 
 // Resolve t() against the real en.json so tests assert shipped copy
 jest.mock('react-i18next', () => {
@@ -86,6 +102,12 @@ jest.mock('@/hooks/useHearth', () => {
 });
 
 import HearthScreen from '../../app/(app)/hearth';
+import { logEvent } from '@/services/analytics';
+
+function lastProps(mock: jest.Mock): Record<string, any> {
+  const calls = mock.mock.calls;
+  return calls[calls.length - 1][0];
+}
 
 function makeCompletion(overrides: Record<string, unknown> = {}) {
   return {
@@ -170,5 +192,94 @@ describe('HearthScreen first-run states', () => {
 
       expect(queryByTestId('hearth-gate')).toBeNull();
     });
+  });
+});
+
+describe('HearthScreen past-day reveal wiring', () => {
+  it('the reveal sheet starts closed', () => {
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+    render(<HearthScreen />);
+
+    const sheet = lastProps(mockRevealSheetProps);
+    expect(sheet.visible).toBe(false);
+    expect(sheet.completion).toBeNull();
+  });
+
+  it('the queue card’s "Read the answers" line opens the reveal and logs it', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    mockHearthQuery.mockReturnValue({
+      data: [makeCompletion({ signal: 'repair' })],
+      isLoading: false,
+    });
+    const { getByTestId } = render(<HearthScreen />);
+
+    fireEvent.press(getByTestId('hearth-queue-c-1-read'));
+
+    expect(logEvent).toHaveBeenCalledWith('hearth_reveal_opened', {
+      assignment_id: 'c-1',
+    });
+    const sheet = lastProps(mockRevealSheetProps);
+    expect(sheet.visible).toBe(true);
+    expect(sheet.completion?.id).toBe('c-1');
+    expect(sheet.myUid).toBe('user-1');
+    expect(sheet.partnerName).toBe('Jordan');
+  });
+
+  it('the queue card body still opens the talk sheet, not the reveal', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    mockHearthQuery.mockReturnValue({
+      data: [makeCompletion({ signal: 'repair' })],
+      isLoading: false,
+    });
+    const { getByTestId } = render(<HearthScreen />);
+
+    fireEvent.press(getByTestId('hearth-queue-c-1'));
+
+    expect(logEvent).toHaveBeenCalledWith('talk_sheet_opened', {
+      completion_id: 'c-1',
+      signal: 'repair',
+    });
+    expect(lastProps(mockRevealSheetProps).visible).toBe(false);
+  });
+
+  it('category detail entries route through the same reveal opener', () => {
+    const completion = makeCompletion();
+    mockHearthQuery.mockReturnValue({ data: [completion], isLoading: false });
+    const { getByTestId } = render(<HearthScreen />);
+
+    // Enter detail mode via the ember tile, then open a day from the
+    // captured detail props (the detail view itself is prop-tested).
+    fireEvent.press(getByTestId('hearth-tile-communication'));
+    const detail = lastProps(mockCategoryDetailProps);
+
+    act(() => {
+      detail.onOpenReveal(detail.entries[0]);
+    });
+
+    expect(logEvent).toHaveBeenCalledWith('hearth_reveal_opened', {
+      assignment_id: 'c-1',
+    });
+    const sheet = lastProps(mockRevealSheetProps);
+    expect(sheet.visible).toBe(true);
+    expect(sheet.completion?.id).toBe('c-1');
+  });
+
+  it('closing the sheet settles it back to closed', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    mockHearthQuery.mockReturnValue({
+      data: [makeCompletion({ signal: 'repair' })],
+      isLoading: false,
+    });
+    const { getByTestId } = render(<HearthScreen />);
+
+    fireEvent.press(getByTestId('hearth-queue-c-1-read'));
+    expect(lastProps(mockRevealSheetProps).visible).toBe(true);
+
+    act(() => {
+      lastProps(mockRevealSheetProps).onClose();
+    });
+    const sheet = lastProps(mockRevealSheetProps);
+    expect(sheet.visible).toBe(false);
+    expect(sheet.completion).toBeNull();
   });
 });

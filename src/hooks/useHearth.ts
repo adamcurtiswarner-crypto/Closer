@@ -35,11 +35,15 @@ export interface HearthResponseEntry {
 }
 
 export interface HearthCompletion {
+  /** Doc id — which IS the assignment id (triggers.ts creates the completion
+   *  at prompt_completions/{assignment_id}; useReaction writes by it too). */
   id: string;
   category: string;
   promptText: string;
   isScale: boolean;
   responses: HearthResponseEntry[];
+  /** Per-user reactions keyed by user id (same doc field useReaction writes). */
+  reactions: Record<string, string>;
   signal: HearthSignal | null;
   /** Per-user "we talked" marks — key is the user id. */
   discussed: Record<string, Date>;
@@ -85,12 +89,22 @@ export function mapCompletion(id: string, data: Record<string, any>): HearthComp
     }
   }
 
+  // Reactions live on the completion doc (useReaction writes reactions.{uid};
+  // an un-react writes null — dropped here so consumers only see live ones).
+  const reactions: Record<string, string> = {};
+  if (data.reactions && typeof data.reactions === 'object') {
+    for (const [uid, value] of Object.entries(data.reactions)) {
+      if (typeof value === 'string') reactions[uid] = value;
+    }
+  }
+
   return {
     id,
     category: typeof data.category === 'string' ? data.category : '',
     promptText: typeof data.prompt_text === 'string' ? data.prompt_text : '',
     isScale: data.is_scale === true,
     responses,
+    reactions,
     signal: resolveSignal(
       data.signal,
       responses[0]?.responseScore ?? null,

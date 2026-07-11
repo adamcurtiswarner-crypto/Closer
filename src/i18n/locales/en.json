@@ -588,6 +588,8 @@
     "statsAnswered": "questions answered together",
     "statsTended": "conversations tended",
     "categorySub": "{{answered}} answered · {{tended}} tended",
+    "readThisDay": "Read this day",
+    "readAnswers": "Read the answers",
     "youChip": "You · {{score}}",
     "partnerChip": "{{name}} · {{score}}",
     "talkSheet": {
