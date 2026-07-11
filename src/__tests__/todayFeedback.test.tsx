@@ -70,6 +70,7 @@ jest.mock('@components', () => {
     FollowUpLockedCard: Null,
     getFollowUpContextLine: () => null,
     PartnerQuestionCard: Null,
+    OpenDayChip: Null,
     Paywall: Null,
     __esModule: true,
     // Unused in these tests but kept harmless
@@ -139,6 +140,12 @@ jest.mock('@/hooks/usePrompt', () => ({
   useSubmitFeedback: () => ({ mutate: mockSubmitFeedback, isPending: false }),
   useTriggerPrompt: () => ({ mutate: jest.fn(), isPending: false }),
   useSkipFollowUp: () => ({ mutate: jest.fn(), isPending: false }),
+  useAssignmentReveal: () => ({
+    data: null,
+    isLoading: false,
+    isError: false,
+    refetch: jest.fn(),
+  }),
 }));
 
 jest.mock('@/hooks/usePersonalize', () => ({
@@ -146,6 +153,7 @@ jest.mock('@/hooks/usePersonalize', () => ({
 }));
 jest.mock('@/hooks/useExplorePrompts', () => ({
   useExploreAssignments: () => ({ data: [] }),
+  useCompletionReactions: () => ({ data: null }),
   pendingPartnerQuestions: () => [],
 }));
 jest.mock('@/hooks/useReaction', () => ({

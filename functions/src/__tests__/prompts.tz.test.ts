@@ -11,7 +11,11 @@
  */
 
 import * as functionsTest from 'firebase-functions-test';
-import { assignmentDateWindow, hasLiveAssignmentInWindow } from '../prompts';
+import {
+  assignmentDateWindow,
+  shouldDeliverDaily,
+  DAILY_REDELIVERY_COOLDOWN_MS,
+} from '../prompts';
 import { findDueScheduledFollowUp } from '../followUps';
 import { TZ_SCENARIOS, wallClockAt } from './fixtures/tzMatrix';
 
@@ -66,67 +70,201 @@ describe('assignmentDateWindow — tz-local "today"', () => {
   });
 });
 
-describe('hasLiveAssignmentInWindow — ±1-day dedupe', () => {
-  it('is false for an empty window (delivery may proceed)', () => {
-    expect(hasLiveAssignmentInWindow([])).toBe(false);
+// ---------------------------------------------------------------------------
+// shouldDeliverDaily — "the day always arrives" (founder decision 2026-07-10).
+//
+// Replaces hasLiveAssignmentInWindow, whose OLD semantics blocked delivery
+// whenever ANY live assignment sat in the ±1-day window — so yesterday's
+// 'partial' held today's prompt hostage to the slow partner. NEW semantics:
+// deliver unless (1) a non-expired non-explore assignment is dated >= today,
+// or (2) the newest non-explore assignment was created within the last ~20h
+// (cross-timezone rollover cooldown).
+// ---------------------------------------------------------------------------
+describe('shouldDeliverDaily — the day always arrives', () => {
+  const TODAY = '2026-07-10';
+  const YESTERDAY = '2026-07-09';
+  const TOMORROW = '2026-07-11';
+  // 7 PM UTC on the local "today" — an ordinary evening delivery slot.
+  const NOW_MS = Date.parse('2026-07-10T19:00:00Z');
+  const hoursAgo = (h: number): number => NOW_MS - h * 60 * 60 * 1000;
+
+  it('delivers into an empty window', () => {
+    expect(shouldDeliverDaily([], TODAY, NOW_MS)).toBe(true);
   });
 
-  it('is false when every assignment in the window is expired', () => {
-    expect(
-      hasLiveAssignmentInWindow([{ status: 'expired' }, { status: 'expired' }])
-    ).toBe(false);
+  it("delivers over yesterday's stale partial — the founder scenario (2026-07-10)", () => {
+    // OLD behavior: yesterday's partial blocked today's prompt until the slow
+    // partner answered or it expired. NEW: the sealed day stays open, and a
+    // fresh question still arrives.
+    const assignments = [
+      { status: 'partial', source: 'daily', assigned_date: YESTERDAY, created_at: hoursAgo(24) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(true);
   });
 
-  it('is true for each live status (delivered, partial, completed, scheduled)', () => {
-    for (const status of ['delivered', 'partial', 'completed', 'scheduled']) {
-      expect(hasLiveAssignmentInWindow([{ status }])).toBe(true);
+  it("delivers over yesterday's stale delivered (neither partner answered)", () => {
+    const assignments = [
+      { status: 'delivered', source: 'daily', assigned_date: YESTERDAY, created_at: hoursAgo(22) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(true);
+  });
+
+  it('skips when yesterday-dated assignment was created only 6h ago (late-night cross-tz delivery)', () => {
+    // Rule 2 cooldown: partners' local dates straddle midnight — a prompt
+    // delivered late in one partner's local yesterday must not be followed by
+    // a second prompt a few hours later in the other partner's local today.
+    const assignments = [
+      { status: 'partial', source: 'daily', assigned_date: YESTERDAY, created_at: hoursAgo(6) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(false);
+  });
+
+  it('skips for each live status dated today (delivered, partial, completed)', () => {
+    for (const status of ['delivered', 'partial', 'completed']) {
+      const assignments = [
+        { status, source: 'daily', assigned_date: TODAY, created_at: hoursAgo(2) },
+      ];
+      expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(false);
     }
   });
 
-  it('is true when one live assignment hides among expired ones', () => {
+  it("skips for a 'scheduled' follow-up dated today (activateDueFollowUp will activate it)", () => {
+    // Even created long ago: the day is already handled by the follow-up.
+    const assignments = [
+      { status: 'scheduled', source: 'daily', assigned_date: TODAY, created_at: hoursAgo(30) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(false);
+  });
+
+  it('skips for a tz-shifted live assignment dated tomorrow', () => {
+    const assignments = [
+      { status: 'delivered', source: 'daily', assigned_date: TOMORROW, created_at: hoursAgo(1) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(false);
+  });
+
+  it("delivers when the window holds only yesterday's expired assignment", () => {
+    const assignments = [
+      { status: 'expired', source: 'daily', assigned_date: YESTERDAY, created_at: hoursAgo(40) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(true);
+  });
+
+  it('expired status never blocks via the date rule, even dated today', () => {
+    const assignments = [
+      { status: 'expired', source: 'daily', assigned_date: TODAY, created_at: hoursAgo(30) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(true);
+  });
+
+  it('the ~20h cooldown counts ANY status — even an expired doc created recently', () => {
+    // Belt-and-braces: two daily prompts must never arrive within ~20h.
+    const assignments = [
+      { status: 'expired', source: 'daily', assigned_date: YESTERDAY, created_at: hoursAgo(6) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(false);
+  });
+
+  it('explore assignments never block, whatever their shape', () => {
+    const assignments = [
+      { status: 'partial', source: 'explore', assigned_date: TODAY, created_at: hoursAgo(1) },
+      { status: 'delivered', source: 'explore', assigned_date: TODAY, created_at: hoursAgo(2) },
+      { status: 'completed', source: 'explore', assigned_date: TOMORROW, created_at: hoursAgo(0.5) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(true);
+  });
+
+  it('still skips when a live daily assignment hides among explore ones', () => {
+    const assignments = [
+      { status: 'partial', source: 'explore', assigned_date: TODAY, created_at: hoursAgo(1) },
+      { status: 'delivered', source: 'daily', assigned_date: TODAY, created_at: hoursAgo(2) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(false);
+  });
+
+  it('treats a missing created_at as old — the date rule alone decides', () => {
+    // Dated yesterday, no created_at: deliver.
     expect(
-      hasLiveAssignmentInWindow([
-        { status: 'expired' },
-        { status: 'completed' },
-        { status: 'expired' },
-      ])
+      shouldDeliverDaily(
+        [{ status: 'partial', source: 'daily', assigned_date: YESTERDAY }],
+        TODAY,
+        NOW_MS
+      )
     ).toBe(true);
-  });
-
-  it('treats a missing status as live (never double-deliver on bad data)', () => {
-    expect(hasLiveAssignmentInWindow([{}])).toBe(true);
-  });
-
-  it('ignores explore assignments — a partner-sent question never blocks the daily prompt', () => {
+    // Dated today, no created_at: still skip via the date rule.
     expect(
-      hasLiveAssignmentInWindow([
-        { status: 'partial', source: 'explore' },
-        { status: 'delivered', source: 'explore' },
-        { status: 'completed', source: 'explore' },
-      ])
+      shouldDeliverDaily(
+        [{ status: 'partial', source: 'daily', assigned_date: TODAY }],
+        TODAY,
+        NOW_MS
+      )
     ).toBe(false);
   });
 
-  it('still detects a live daily assignment alongside explore ones', () => {
+  it('treats a missing status as live when dated today (never double-deliver on bad data)', () => {
     expect(
-      hasLiveAssignmentInWindow([
-        { status: 'partial', source: 'explore' },
-        { status: 'delivered', source: 'daily' },
-      ])
-    ).toBe(true);
+      shouldDeliverDaily([{ source: 'daily', assigned_date: TODAY }], TODAY, NOW_MS)
+    ).toBe(false);
   });
 
-  it('blocks the evening re-delivery scenario: this morning\'s completed prompt is in the window', () => {
-    // Founder scenario: answered this morning (completed, dated local today).
-    // At 8:30 PM ET the old UTC "today" rolled to tomorrow and delivered again.
-    // With the tz-local window, the completed assignment is still inside
-    // [yesterday, tomorrow] and blocks a second delivery.
-    const window = assignmentDateWindow('America/New_York', new Date('2026-07-09T00:30:00Z'));
-    const assignments = [{ assigned_date: window.today, status: 'completed' }];
+  it('handles Firestore Timestamp-shaped created_at via toMillis()', () => {
+    const timestampLike = { toMillis: () => hoursAgo(3) };
+    expect(
+      shouldDeliverDaily(
+        [{ status: 'partial', source: 'daily', assigned_date: YESTERDAY, created_at: timestampLike }],
+        TODAY,
+        NOW_MS
+      )
+    ).toBe(false);
+  });
+
+  it('cooldown boundary: exactly 20h old no longer blocks; just under does', () => {
+    const base = { status: 'partial', source: 'daily', assigned_date: YESTERDAY };
+    expect(
+      shouldDeliverDaily(
+        [{ ...base, created_at: NOW_MS - DAILY_REDELIVERY_COOLDOWN_MS }],
+        TODAY,
+        NOW_MS
+      )
+    ).toBe(true);
+    expect(
+      shouldDeliverDaily(
+        [{ ...base, created_at: NOW_MS - DAILY_REDELIVERY_COOLDOWN_MS + 1 }],
+        TODAY,
+        NOW_MS
+      )
+    ).toBe(false);
+  });
+
+  it('uses the NEWEST non-explore created_at for the cooldown', () => {
+    // Yesterday's stale daily is old enough, but a follow-up created 5h ago
+    // (any non-explore doc) keeps the cooldown active.
+    const assignments = [
+      { status: 'partial', source: 'daily', assigned_date: YESTERDAY, created_at: hoursAgo(26) },
+      { status: 'expired', source: 'daily', assigned_date: YESTERDAY, created_at: hoursAgo(5) },
+    ];
+    expect(shouldDeliverDaily(assignments, TODAY, NOW_MS)).toBe(false);
+  });
+
+  it("blocks the evening re-delivery scenario: this morning's completed prompt is in the window", () => {
+    // Original phantom-push scenario: answered this morning (completed, dated
+    // local today). At 8:30 PM ET the old UTC "today" rolled to tomorrow and
+    // delivered again. With the tz-local window, the completed assignment is
+    // dated >= local today and still blocks a second delivery.
+    const instant = new Date('2026-07-09T00:30:00Z');
+    const window = assignmentDateWindow('America/New_York', instant);
+    const assignments = [
+      {
+        assigned_date: window.today,
+        status: 'completed',
+        source: 'daily',
+        created_at: instant.getTime() - 10 * 60 * 60 * 1000,
+      },
+    ];
     const inWindow = assignments.filter(
       (a) => a.assigned_date >= window.yesterday && a.assigned_date <= window.tomorrow
     );
-    expect(hasLiveAssignmentInWindow(inWindow)).toBe(true);
+    expect(shouldDeliverDaily(inWindow, window.today, instant.getTime())).toBe(false);
   });
 });
 

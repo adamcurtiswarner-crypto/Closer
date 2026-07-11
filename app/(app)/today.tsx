@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
 } from 'react-native';
 import { router } from 'expo-router';
 import { pickImage } from '@/services/imageUpload';
@@ -58,20 +59,33 @@ import {
   FollowUpLockedCard,
   getFollowUpContextLine,
   PartnerQuestionCard,
+  OpenDayChip,
   Paywall,
 } from '@components';
 import type { RelationshipStage } from '@components';
 import { StreakRing } from '@/components/StreakRing';
 import { usePresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
-import { useTodayPrompt, useSubmitResponse, useSubmitFeedback, useTriggerPrompt, useSkipFollowUp } from '@/hooks/usePrompt';
+import {
+  useTodayPrompt,
+  useSubmitResponse,
+  useSubmitFeedback,
+  useTriggerPrompt,
+  useSkipFollowUp,
+  useAssignmentReveal,
+} from '@/hooks/usePrompt';
 import { usePersonalize } from '@/hooks/usePersonalize';
-import { useExploreAssignments, pendingPartnerQuestions } from '@/hooks/useExplorePrompts';
+import {
+  useExploreAssignments,
+  useCompletionReactions,
+  pendingPartnerQuestions,
+} from '@/hooks/useExplorePrompts';
 import { isMiddleScaleOutcome } from '@/utils/scale';
 import {
   isSameSessionDeepener,
   deepenerEntranceDelay,
   shouldOfferStagePrompt,
+  revealSeenKey,
 } from '@/utils/revealGate';
 import { useReaction, type ReactionType } from '@/hooks/useReaction';
 import { useStreak } from '@/hooks/useStreak';
@@ -83,7 +97,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { updateWidgetData, buildWidgetData } from '@/services/widgetBridge';
 import { getAnniversaryCountdown } from '@/config/milestones';
 import { logEvent } from '@/services/analytics';
-import { PromptCardSkeleton } from '@/components/Skeleton';
+import { PromptCardSkeleton, Skeleton } from '@/components/Skeleton';
 import { UnpairedTodayCard } from '@/components/UnpairedTodayCard';
 import { NotificationPrePrompt } from '@/components/NotificationPrePrompt';
 import { useNotificationPrePrompt } from '@/hooks/useNotificationPrePrompt';
@@ -241,6 +255,13 @@ export default function TodayScreen() {
   // Premium gate (SEV-0 #8): the daily loop is always free; the follow-up
   // QUESTION is premium. Opened from the locked follow-up card only.
   const [showPaywall, setShowPaywall] = useState(false);
+  // Open-day chip (sealed days coexist): when true, the responding editor is
+  // answering YESTERDAY's still-open question instead of the primary.
+  const [respondingSecondary, setRespondingSecondary] = useState(false);
+  // The secondary day's finished reveal, presented as a pageSheet.
+  const [showSecondaryReveal, setShowSecondaryReveal] = useState(false);
+  // null = unknown/not applicable; the reveal chip only shows on `false`.
+  const [secondaryRevealSeen, setSecondaryRevealSeen] = useState<boolean | null>(null);
 
   // Stage prompt is offered at most 3 times before it quietly stops asking.
   useEffect(() => {
@@ -321,6 +342,9 @@ export default function TodayScreen() {
   const partnerResponse = todayData?.partnerResponse ?? null;
   const isComplete = todayData?.isComplete ?? false;
   const nextPromptAt = todayData?.nextPromptAt ?? null;
+  // The OTHER open day in the window — yesterday's partial or just-completed
+  // assignment coexisting with the primary ("the day always arrives").
+  const secondary = todayData?.secondaryAssignment ?? null;
 
   // Scored prompts & follow-ups
   const isScalePrompt = assignment?.responseFormat === 'scale';
@@ -353,6 +377,52 @@ export default function TodayScreen() {
     heldReveal != null &&
     isSameSessionDeepener(assignment, heldReveal.assignment.id);
 
+  // Which assignment the full-screen editor answers: the primary, or the
+  // secondary day routed in from the open-day chip.
+  const respondingAssignment = respondingSecondary
+    ? secondary?.assignment ?? null
+    : assignment;
+
+  // If the secondary day vanishes mid-edit (expired server-side, snapshot
+  // shifted), fall back to Today instead of editing a missing assignment.
+  useEffect(() => {
+    if (respondingSecondary && !secondary) {
+      setRespondingSecondary(false);
+      setIsResponding(false);
+    }
+  }, [respondingSecondary, secondary]);
+
+  // Reveal-seen gate for the completed secondary: the chip only offers the
+  // reveal while it is UNSEEN (same AsyncStorage key CompletionMoment sets on
+  // first mount — closing the sheet re-checks and quietly retires the chip).
+  const secondaryId = secondary?.assignment.id ?? null;
+  const secondaryComplete = secondary?.isComplete ?? false;
+  useEffect(() => {
+    let cancelled = false;
+    if (!secondaryId || !secondaryComplete) {
+      setSecondaryRevealSeen(null);
+      return;
+    }
+    if (showSecondaryReveal) return; // re-check on close, not while open
+    AsyncStorage.getItem(revealSeenKey(secondaryId))
+      .then((raw) => {
+        if (!cancelled) setSecondaryRevealSeen(raw === 'true');
+      })
+      .catch(() => {
+        // Storage failure — err toward offering the reveal
+        if (!cancelled) setSecondaryRevealSeen(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [secondaryId, secondaryComplete, showSecondaryReveal]);
+
+  // Finished-secondary reveal data: fetched only while the sheet is up.
+  const secondaryRevealId =
+    showSecondaryReveal && secondaryComplete ? secondaryId : null;
+  const secondaryRevealQuery = useAssignmentReveal(secondaryRevealId);
+  const { data: secondaryReactions } = useCompletionReactions(secondaryRevealId);
+
   type Mode = 'loading' | 'error' | 'no-prompt' | 'prompt' | 'responding' | 'waiting' | 'complete';
 
   let mode: Mode;
@@ -362,7 +432,7 @@ export default function TodayScreen() {
     mode = 'error';
   } else if (!assignment) {
     mode = 'no-prompt';
-  } else if (isResponding) {
+  } else if (isResponding && respondingAssignment) {
     mode = 'responding';
   } else if (!myResponse) {
     // Keep the just-completed reveal mounted while its same-session deepener
@@ -533,25 +603,55 @@ export default function TodayScreen() {
 
   const handleRespond = () => {
     hapticImpact();
+    setRespondingSecondary(false);
     setIsResponding(true);
     if (assignment) {
       logEvent('prompt_started', { assignment_id: assignment.id });
     }
   };
 
+  // Open-day chip: route the still-open secondary day into the responding
+  // flow — same editor, same submit path, just a different assignment id.
+  const handleOpenDayRespond = () => {
+    if (!secondary) return;
+    hapticImpact();
+    setRespondingSecondary(true);
+    setIsResponding(true);
+    logEvent('prompt_started', {
+      assignment_id: secondary.assignment.id,
+      source: 'open_day_chip',
+    });
+  };
+
+  const handleOpenDayReveal = () => {
+    if (!secondary) return;
+    hapticImpact(ImpactFeedbackStyle.Light);
+    setShowSecondaryReveal(true);
+    logEvent('open_day_reveal_opened', { assignment_id: secondary.assignment.id });
+  };
+
+  // Waiting-card agency: sending a question is something to DO while the
+  // seal holds. Explore owns the premium gate on sends — no gating here.
+  const handleWaitingCta = () => {
+    logEvent('waiting_cta_tapped');
+    router.push('/(app)/explore');
+  };
+
   const handleSubmit = async () => {
-    if (responseText.length < 10 || !assignment) return;
+    if (responseText.length < 10 || !respondingAssignment) return;
     hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     setTyping(false);
     const imageUri = selectedImage || undefined;
     try {
       const result = await submitResponse.mutateAsync({
-        assignmentId: assignment.id,
+        assignmentId: respondingAssignment.id,
         responseText,
         imageUri,
       });
       setIsResponding(false);
+      setRespondingSecondary(false);
+      setResponseText('');
       setSelectedImage(null);
       if (result.safetyMatch) {
         setShowSafetyResources(true);
@@ -707,17 +807,36 @@ export default function TodayScreen() {
     />
   ) : null;
 
+  // The open-day chip: yesterday's question still live alongside today's.
+  // Quiet row under the primary card. A completed secondary only offers its
+  // reveal while unseen — once viewed, the chip retires for good.
+  const openDayChip =
+    secondary && (!secondary.isComplete || secondaryRevealSeen === false) ? (
+      <OpenDayChip
+        iAnswered={secondary.iAnswered}
+        partnerAnswered={secondary.partnerAnswered}
+        isComplete={secondary.isComplete}
+        partnerName={partnerName}
+        onOpenResponding={handleOpenDayRespond}
+        onOpenReveal={handleOpenDayReveal}
+      />
+    ) : null;
+
   // ─── Responding (full-screen editor, outside the crossfade wrapper) ───
   if (mode === 'responding') {
     return (
       <>
         <RespondingScreen
-          promptText={personalize(assignment!.promptText)}
-          contextText={followUpContextText}
+          promptText={personalize(respondingAssignment!.promptText)}
+          contextText={respondingSecondary ? null : followUpContextText}
           responseText={responseText}
           onChangeText={handleTextChange}
           onSubmit={handleSubmit}
-          onCancel={() => { setIsResponding(false); setResponseText(''); }}
+          onCancel={() => {
+            setIsResponding(false);
+            setRespondingSecondary(false);
+            setResponseText('');
+          }}
           onAddPhoto={handleAddPhoto}
           selectedImage={selectedImage}
           onRemovePhoto={() => setSelectedImage(null)}
@@ -819,6 +938,8 @@ export default function TodayScreen() {
         )}
       </Animated.View>
 
+      {openDayChip}
+
       {partnerQuestionCard}
 
       {stagePromptCard}
@@ -904,7 +1025,25 @@ export default function TodayScreen() {
             <Text style={styles.waitingMessage}>{t('today.notifyWhenAnswered')}</Text>
           </Animated.View>
         )}
+
+        {/* Agency while the seal holds: one quiet action, gated (if at all)
+            inside Explore where the send actually happens. */}
+        <TouchableOpacity
+          style={styles.waitingCtaRow}
+          onPress={handleWaitingCta}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('today.waitingCta', { name: partnerName })}
+        >
+          <Icon name="campfire" size={16} color={colors.accent.primary} />
+          <Text style={styles.waitingCtaText}>
+            {t('today.waitingCta', { name: partnerName })}
+          </Text>
+          <Icon name="caret-right" size={14} color={colors.text.muted} />
+        </TouchableOpacity>
       </Animated.View>
+
+      {openDayChip}
 
       {partnerQuestionCard}
 
@@ -1018,6 +1157,8 @@ export default function TodayScreen() {
           <FollowUpSkip onSkip={handleSkipFollowUp} disabled={skipFollowUp.isPending} />
         </Animated.View>
       )}
+
+      {openDayChip}
 
       {partnerQuestionCard}
 
@@ -1178,6 +1319,8 @@ export default function TodayScreen() {
         )}
       </Animated.View>
 
+      {openDayChip}
+
       {partnerQuestionCard}
 
       {stagePromptCard}
@@ -1228,6 +1371,114 @@ export default function TodayScreen() {
         onClose={() => setShowPaywall(false)}
         source="follow_up"
       />
+
+      {/* ─── Open-day reveal sheet: yesterday's finished question gets the
+          same CompletionMoment ceremony, presented as a pageSheet (mirrors
+          the explore reveal). First open choreographs; revisits settle flat
+          via the shared reveal_seen key. ─── */}
+      <Modal
+        visible={showSecondaryReveal && secondary != null}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowSecondaryReveal(false)}
+      >
+        <View style={styles.revealSheet}>
+          <View style={styles.revealHeader}>
+            <TouchableOpacity
+              onPress={() => setShowSecondaryReveal(false)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.done')}
+              testID="open-day-reveal-close"
+            >
+              <Text style={styles.revealDone} maxFontSizeMultiplier={1.4}>
+                {t('common.done')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView contentContainerStyle={styles.revealScroll}>
+            {secondary &&
+              (secondaryRevealQuery.isLoading ? (
+                <View style={styles.revealLoading} testID="open-day-reveal-loading">
+                  <Skeleton width={120} height={12} />
+                  <Skeleton height={18} />
+                  <Skeleton height={18} width="80%" />
+                  <Skeleton height={64} borderRadius={12} />
+                  <Skeleton height={64} borderRadius={12} />
+                </View>
+              ) : secondaryRevealQuery.isError ? (
+                <View style={styles.revealLoading}>
+                  <Text style={styles.revealErrorText}>
+                    {t('today.openDayAnswersFailed')}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => secondaryRevealQuery.refetch()}
+                    accessibilityRole="button"
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  >
+                    <Text style={styles.revealRetryText}>{t('common.tryAgain')}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <CompletionMoment
+                  key={secondary.assignment.id}
+                  assignmentId={secondary.assignment.id}
+                  promptText={personalize(secondary.assignment.promptText)}
+                  yourResponse={secondaryRevealQuery.data?.myResponse?.responseText ?? ''}
+                  partnerResponse={
+                    secondaryRevealQuery.data?.partnerResponse?.responseText ?? ''
+                  }
+                  partnerName={partnerName}
+                  yourImageUrl={secondaryRevealQuery.data?.myResponse?.imageUrl}
+                  partnerImageUrl={secondaryRevealQuery.data?.partnerResponse?.imageUrl}
+                  myReaction={
+                    user?.id
+                      ? ((secondaryReactions?.[user.id] as ReactionType | undefined) ?? null)
+                      : null
+                  }
+                  partnerReaction={
+                    user?.id && secondaryReactions
+                      ? ((Object.entries(secondaryReactions).find(
+                          ([k]) => k !== user.id
+                        )?.[1] as ReactionType | undefined) ?? null)
+                      : null
+                  }
+                  onReact={(r) =>
+                    reaction.mutate({
+                      assignmentId: secondary.assignment.id,
+                      reaction: r,
+                      promptType: secondary.assignment.promptType,
+                    })
+                  }
+                  yourScore={
+                    secondary.assignment.responseFormat === 'scale'
+                      ? secondaryRevealQuery.data?.myResponse?.responseScore ?? null
+                      : null
+                  }
+                  partnerScore={
+                    secondary.assignment.responseFormat === 'scale'
+                      ? secondaryRevealQuery.data?.partnerResponse?.responseScore ?? null
+                      : null
+                  }
+                  showMidScaleLine={
+                    secondary.assignment.responseFormat === 'scale' &&
+                    isMiddleScaleOutcome(
+                      secondaryRevealQuery.data?.myResponse?.responseScore ?? null,
+                      secondaryRevealQuery.data?.partnerResponse?.responseScore ?? null,
+                      secondary.assignment.scaleConfig
+                    )
+                  }
+                  closingText={
+                    secondary.assignment.assignmentKind === 'follow_up' &&
+                    secondary.assignment.closingText
+                      ? personalize(secondary.assignment.closingText)
+                      : null
+                  }
+                />
+              ))}
+          </ScrollView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1393,6 +1644,54 @@ const styles = StyleSheet.create({
   waitingMessage: {
     ...typography.bodySm,
     color: colors.text.secondary,
+  },
+  // Quiet agency row on the sealed-waiting card
+  waitingCtaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    minHeight: 44,
+    marginTop: spacing.md,
+  },
+  waitingCtaText: {
+    ...typography.bodySm,
+    color: colors.accent.primary,
+  },
+  // ─── Open-day reveal sheet (mirrors the explore reveal) ───
+  revealSheet: {
+    flex: 1,
+    backgroundColor: colors.surface.background,
+  },
+  revealHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.md,
+  },
+  revealDone: {
+    ...typography.body,
+    color: colors.accent.primary,
+  },
+  revealScroll: {
+    padding: spacing.screen,
+    paddingBottom: spacing.xl,
+  },
+  revealLoading: {
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.hero,
+    padding: spacing.lg,
+    gap: spacing.smd,
+    ...shadow.card,
+  },
+  revealErrorText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  revealRetryText: {
+    ...typography.bodySm,
+    color: colors.accent.primary,
+    marginTop: spacing.xs,
   },
   // ─── Complete ───
   completionSection: {

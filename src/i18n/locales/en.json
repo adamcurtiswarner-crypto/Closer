@@ -221,7 +221,12 @@
     "notNow": "Not now",
     "fromName": "From {{name}}",
     "questionsWaiting": "{{count}} questions waiting",
-    "partnerSetAside": "{{name}} set this one aside for today — it'll keep. Your answer is saved."
+    "partnerSetAside": "{{name}} set this one aside for today — it'll keep. Your answer is saved.",
+    "waitingCta": "Send {{name}} a question while you wait",
+    "openDaySealed": "Yesterday · sealed until {{name}} answers",
+    "openDayStillOpen": "Yesterday's question is still open",
+    "openDayReveal": "Yesterday · you both answered — see it",
+    "openDayAnswersFailed": "Couldn't load the answers."
   },
   "memories": {
     "title": "Memories",

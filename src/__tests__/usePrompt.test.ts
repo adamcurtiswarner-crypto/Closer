@@ -69,6 +69,7 @@ import {
   mapResponse,
   mapEmotionalResponse,
   selectAssignmentDoc,
+  selectSecondaryAssignment,
   needsDailyDelivery,
   useSubmitResponse,
   dedupeOfflineQueue,
@@ -485,6 +486,186 @@ describe('usePrompt', () => {
         }),
       ];
       expect(needsDailyDelivery(docs, TODAY)).toBe(true);
+    });
+  });
+
+  describe('selectSecondaryAssignment (sealed days coexist)', () => {
+    const TODAY = '2026-07-08';
+    const YESTERDAY = '2026-07-07';
+    const ME = 'me-1';
+    const PARTNER = 'partner-1';
+    const makeDoc = (id: string, data: Record<string, any>) => ({
+      id,
+      data: () => data,
+    });
+    const primary = makeDoc('t-1', {
+      status: 'delivered',
+      assigned_date: TODAY,
+      prompt_text: "Today's question",
+    });
+
+    it('returns null when the window only holds the primary', () => {
+      expect(selectSecondaryAssignment([primary], 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it('returns null for an empty window', () => {
+      expect(selectSecondaryAssignment([], null, [], TODAY, ME)).toBeNull();
+    });
+
+    it('never returns the primary itself, even when it is partial', () => {
+      const docs = [
+        makeDoc('t-1', {
+          status: 'partial',
+          assigned_date: TODAY,
+          first_responder_id: ME,
+        }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it("partial where I answered first → sealed on my side (iAnswered, partner pending)", () => {
+      const docs = [
+        primary,
+        makeDoc('y-1', {
+          status: 'partial',
+          assigned_date: YESTERDAY,
+          first_responder_id: ME,
+          prompt_text: "Yesterday's question",
+        }),
+      ];
+      const result = selectSecondaryAssignment(docs, 't-1', [], TODAY, ME);
+      expect(result?.assignment.id).toBe('y-1');
+      expect(result?.iAnswered).toBe(true);
+      expect(result?.partnerAnswered).toBe(false);
+      expect(result?.isComplete).toBe(false);
+      // Read-boundary mapping applies (snake_case → camelCase)
+      expect(result?.assignment.promptText).toBe("Yesterday's question");
+    });
+
+    it('partial where the partner answered first → the question waits on me', () => {
+      const docs = [
+        primary,
+        makeDoc('y-1', {
+          status: 'partial',
+          assigned_date: YESTERDAY,
+          first_responder_id: PARTNER,
+        }),
+      ];
+      const result = selectSecondaryAssignment(docs, 't-1', [], TODAY, ME);
+      expect(result?.iAnswered).toBe(false);
+      expect(result?.partnerAnswered).toBe(true);
+      expect(result?.isComplete).toBe(false);
+    });
+
+    it('completed secondary → both answered', () => {
+      const docs = [
+        primary,
+        makeDoc('y-1', { status: 'completed', assigned_date: YESTERDAY }),
+      ];
+      const result = selectSecondaryAssignment(docs, 't-1', [], TODAY, ME);
+      expect(result?.iAnswered).toBe(true);
+      expect(result?.partnerAnswered).toBe(true);
+      expect(result?.isComplete).toBe(true);
+    });
+
+    it('expired docs never surface (the open-day chip only speaks to live days)', () => {
+      const docs = [
+        primary,
+        makeDoc('y-1', { status: 'expired', assigned_date: YESTERDAY }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it('untouched delivered leftovers never surface (nothing honest to say)', () => {
+      const docs = [
+        primary,
+        makeDoc('y-1', { status: 'delivered', assigned_date: YESTERDAY }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it('explore assignments are excluded', () => {
+      const docs = [
+        primary,
+        makeDoc('e-1', {
+          source: 'explore',
+          status: 'partial',
+          assigned_date: YESTERDAY,
+          first_responder_id: PARTNER,
+        }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it('scheduled follow-ups are excluded (not yet activated)', () => {
+      const docs = [
+        primary,
+        makeDoc('fu-1', {
+          status: 'scheduled',
+          assignment_kind: 'follow_up',
+          assigned_date: YESTERDAY,
+        }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it('locally-skipped follow-ups are excluded', () => {
+      const docs = [
+        primary,
+        makeDoc('fu-1', {
+          status: 'partial',
+          assignment_kind: 'follow_up',
+          assigned_date: YESTERDAY,
+          first_responder_id: PARTNER,
+        }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', ['fu-1'], TODAY, ME)).toBeNull();
+    });
+
+    it('server-visibly skipped follow-ups (skipped_by map) are excluded', () => {
+      const docs = [
+        primary,
+        makeDoc('fu-1', {
+          status: 'partial',
+          assignment_kind: 'follow_up',
+          assigned_date: YESTERDAY,
+          first_responder_id: PARTNER,
+          skipped_by: { [ME]: 'ts' },
+        }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it("a tomorrow-dated doc is never surfaced as an open day", () => {
+      const docs = [
+        primary,
+        makeDoc('tm-1', {
+          status: 'partial',
+          assigned_date: '2026-07-09',
+          first_responder_id: PARTNER,
+        }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it('partial without first_responder_id says nothing rather than guessing', () => {
+      const docs = [
+        primary,
+        makeDoc('y-1', { status: 'partial', assigned_date: YESTERDAY }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, ME)).toBeNull();
+    });
+
+    it('partial without a caller user id says nothing rather than guessing', () => {
+      const docs = [
+        primary,
+        makeDoc('y-1', {
+          status: 'partial',
+          assigned_date: YESTERDAY,
+          first_responder_id: PARTNER,
+        }),
+      ];
+      expect(selectSecondaryAssignment(docs, 't-1', [], TODAY, undefined)).toBeNull();
     });
   });
 

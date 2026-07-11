@@ -284,19 +284,81 @@ export function assignmentDateWindow(
   };
 }
 
+/** Shape of a window-query assignment doc as consumed by shouldDeliverDaily. */
+export interface DailyDeliveryAssignment {
+  status?: string;
+  source?: string;
+  assigned_date?: string;
+  /** Firestore Timestamp | Date | epoch ms | missing — normalized defensively */
+  created_at?: unknown;
+}
+
 /**
- * True when any DAILY-rhythm assignment in the ±1-day window is still live
- * (not expired). Used to skip daily delivery across timezone-shifted date
- * boundaries — only create a new daily assignment when the window has no
- * live daily/follow-up assignment. Explore assignments are a parallel track
- * (partner-sent questions) and must never block the daily prompt.
+ * Minimum gap between two daily deliveries to the same couple. This is the
+ * cross-timezone / midnight-rollover belt-and-braces the old ±1-day "any live
+ * assignment blocks" window provided: partners' local dates can straddle
+ * midnight, so date comparison alone could deliver twice within a few hours.
  */
-export function hasLiveAssignmentInWindow(
-  assignments: Array<{ status?: string; source?: string }>
+export const DAILY_REDELIVERY_COOLDOWN_MS = 20 * 60 * 60 * 1000;
+
+/** Normalize created_at (Firestore Timestamp | Date | epoch ms) to epoch ms; 0 = unknown/old. */
+function createdAtMs(value: unknown): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (value instanceof Date) return value.getTime();
+  if (value && typeof (value as { toMillis?: unknown }).toMillis === 'function') {
+    const ms = (value as { toMillis: () => unknown }).toMillis();
+    if (typeof ms === 'number' && Number.isFinite(ms)) return ms;
+  }
+  return 0;
+}
+
+/**
+ * "The day always arrives" delivery guard (founder decision 2026-07-10).
+ *
+ * The OLD rule skipped daily delivery whenever ANY live (non-expired,
+ * non-explore) assignment sat in the ±1-day window — so yesterday's 'partial'
+ * (one partner hadn't answered) held TODAY'S prompt hostage to the slow
+ * partner. The NEW rule: a fresh question arrives every day regardless;
+ * sealed days coexist (max 2 open — expireStalePrompts sweeps
+ * assigned_date < yesterday).
+ *
+ * Deliver = true UNLESS:
+ *  1. Any non-explore assignment that is not 'expired' has
+ *     assigned_date >= today — today's (or a timezone-shifted tomorrow's)
+ *     day is already handled. A 'scheduled' follow-up dated today counts:
+ *     activateDueFollowUp runs first and activates it.
+ *  2. The NEWEST non-explore assignment (any status, by created_at) was
+ *     created within the last DAILY_REDELIVERY_COOLDOWN_MS — a couple must
+ *     never receive two daily prompts within ~20h even when partners' local
+ *     dates straddle midnight. Missing created_at is treated as old.
+ *
+ * Yesterday's stale partial/delivered (created >= 20h ago, dated < today)
+ * does NOT block — that is the whole point. Explore assignments are a
+ * parallel track (partner-sent questions) and never block the daily prompt.
+ */
+export function shouldDeliverDaily(
+  assignments: ReadonlyArray<DailyDeliveryAssignment>,
+  todayISO: string,
+  nowMs: number
 ): boolean {
-  return assignments.some(
-    (a) => a.source !== 'explore' && a.status !== 'expired'
+  const daily = assignments.filter((a) => a.source !== 'explore');
+
+  // Rule 1: today (or a tz-shifted tomorrow) already has a non-expired day.
+  const currentDayHandled = daily.some(
+    (a) => a.status !== 'expired' && (a.assigned_date || '') >= todayISO
   );
+  if (currentDayHandled) return false;
+
+  // Rule 2: ~20h cooldown since the newest daily-track assignment was created.
+  const newestCreatedMs = daily.reduce(
+    (max, a) => Math.max(max, createdAtMs(a.created_at)),
+    0
+  );
+  if (newestCreatedMs > 0 && nowMs - newestCreatedMs < DAILY_REDELIVERY_COOLDOWN_MS) {
+    return false;
+  }
+
+  return true;
 }
 
 // ============================================
@@ -309,24 +371,17 @@ async function deliverPromptToCouple(coupleId: string, timezone: string): Promis
   const { yesterday, today, tomorrow } = assignmentDateWindow(timezone);
 
   // v1 follow-ups: a scheduled follow-up due today replaces the daily prompt
-  // (one prompt per day rhythm). Must run before the already-delivered check.
+  // (one prompt per day rhythm). Must run before the delivery guard.
   const activatedFollowUp = await activateDueFollowUp(coupleId, today);
   if (activatedFollowUp) return;
 
-  // Check if already delivered today (exact-match skip). Explore assignments
-  // share assigned_date but are a parallel track — never let one block the
-  // daily prompt (so no limit(1): the first doc could be an explore doc).
-  const existingAssignment = await db
-    .collection('prompt_assignments')
-    .where('couple_id', '==', coupleId)
-    .where('assigned_date', '==', today)
-    .get();
-
-  if (existingAssignment.docs.some((d) => d.data().source !== 'explore')) return;
-
-  // Cross-timezone dedupe hardening: partners (or past deliveries) may sit on
-  // adjacent local dates. Skip when ANY non-expired assignment exists in the
-  // tz-local [today-1, today+1] window — the client queries the same window.
+  // "The day always arrives" (founder decision 2026-07-10): query the tz-local
+  // [today-1, today+1] window — the same window the client queries — and let
+  // shouldDeliverDaily decide. It folds the old exact-match same-date skip
+  // (any non-expired assignment dated >= today blocks) with a ~20h creation
+  // cooldown for cross-timezone rollover, while yesterday's stale partial no
+  // longer holds today's prompt hostage. Explore assignments share
+  // assigned_date but are a parallel track and never block the daily prompt.
   const windowAssignments = await db
     .collection('prompt_assignments')
     .where('couple_id', '==', coupleId)
@@ -334,9 +389,12 @@ async function deliverPromptToCouple(coupleId: string, timezone: string): Promis
     .where('assigned_date', '<=', tomorrow)
     .get();
 
-  if (hasLiveAssignmentInWindow(windowAssignments.docs.map((doc) => doc.data()))) {
-    return;
-  }
+  const deliver = shouldDeliverDaily(
+    windowAssignments.docs.map((doc) => doc.data()),
+    today,
+    Date.now()
+  );
+  if (!deliver) return;
 
   // Get couple info
   const coupleDoc = await db.collection('couples').doc(coupleId).get();

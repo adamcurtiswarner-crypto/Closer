@@ -94,6 +94,8 @@ export { EngagementCards } from './EngagementCards';
 export { RespondingScreen } from './RespondingScreen';
 export { TodayBottomSections } from './TodayBottomSections';
 export { PartnerQuestionCard } from './PartnerQuestionCard';
+export { OpenDayChip, openDayChipState } from './OpenDayChip';
+export type { OpenDayChipState } from './OpenDayChip';
 
 // Social auth
 export { SocialAuthButtons } from './SocialAuthButtons';

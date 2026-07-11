@@ -37,7 +37,7 @@ const OFFLINE_QUEUE_KEY = '@closer_offline_responses';
 const SKIPPED_FOLLOW_UPS_KEY = '@closer_skipped_follow_ups';
 const SKIPPED_RETENTION_DAYS = 14;
 
-interface PromptAssignment {
+export interface PromptAssignment {
   id: string;
   coupleId: string;
   promptId: string;
@@ -59,7 +59,7 @@ interface PromptAssignment {
 
 export type EmotionalResponse = 'positive' | 'neutral' | 'negative';
 
-interface PromptResponse {
+export interface PromptResponse {
   id: string;
   responseText: string;
   imageUrl: string | null;
@@ -211,6 +211,83 @@ export function selectAssignmentDoc(
 }
 
 /**
+ * The other live daily-flow day in the window, when one exists. With sealed
+ * days coexisting ("the day always arrives"), yesterday's partial or freshly
+ * completed assignment can sit alongside today's — at most TWO daily-flow
+ * docs are ever live at once by design (yesterday + today).
+ */
+export interface SecondaryAssignmentInfo {
+  assignment: PromptAssignment;
+  iAnswered: boolean;
+  partnerAnswered: boolean;
+  isComplete: boolean;
+}
+
+/**
+ * Pick the OTHER open daily-flow assignment in the window snapshot — the one
+ * selectAssignmentDoc did NOT surface. Mirrors its filter semantics (explore,
+ * not-yet-activated 'scheduled' follow-ups, and skipped follow-ups are all
+ * excluded) with two extra exclusions: expired docs never surface here (the
+ * open-day chip only speaks to days that can still resolve), and neither do
+ * docs dated after todayISO (a timezone-shifted tomorrow is never
+ * "yesterday's open question").
+ *
+ * Answer-state is derived from the assignment doc's OWN fields — no second
+ * response listener: 'completed' means both answered; 'partial' attributes
+ * the single answer via first_responder_id. Untouched 'delivered' leftovers
+ * are excluded — the chip has nothing honest to say about a day neither
+ * partner started (the server expires those).
+ */
+export function selectSecondaryAssignment(
+  docs: AssignmentDocLike[],
+  primaryId: string | null,
+  skippedIds: string[],
+  todayISO?: string,
+  myUserId?: string
+): SecondaryAssignmentInfo | null {
+  const candidate = docs.find((d) => {
+    if (primaryId != null && d.id === primaryId) return false;
+    const data = d.data();
+    if (data.source === 'explore') return false;
+    if (data.status === 'scheduled') return false;
+    if (data.status !== 'partial' && data.status !== 'completed') return false;
+    if (data.assignment_kind === 'follow_up') {
+      if (skippedIds.includes(d.id)) return false;
+      if (myUserId && data.skipped_by && data.skipped_by[myUserId]) return false;
+    }
+    if (
+      todayISO != null &&
+      typeof data.assigned_date === 'string' &&
+      data.assigned_date > todayISO
+    ) {
+      return false;
+    }
+    return true;
+  });
+  if (!candidate) return null;
+
+  const data = candidate.data();
+  if (data.status === 'completed') {
+    return {
+      assignment: mapAssignment(candidate.id, data),
+      iAnswered: true,
+      partnerAnswered: true,
+      isComplete: true,
+    };
+  }
+  // 'partial' — attribute the one answer. Without both first_responder_id
+  // and my user id the state is unknowable; say nothing rather than guess.
+  if (!myUserId || !data.first_responder_id) return null;
+  const iAnswered = data.first_responder_id === myUserId;
+  return {
+    assignment: mapAssignment(candidate.id, data),
+    iAnswered,
+    partnerAnswered: !iAnswered,
+    isComplete: false,
+  };
+}
+
+/**
  * True when nothing in the window makes today "handled": no live
  * (delivered/partial) daily-flow assignment, and no completed one dated
  * today or later. Yesterday's completed/expired leftovers do NOT count —
@@ -273,6 +350,13 @@ interface TodayPrompt {
   nextPromptAt: string | null;
   reactions: Record<string, string> | null;
   /**
+   * The OTHER open daily-flow day in the window (sealed days coexist):
+   * yesterday's partial or just-completed assignment sitting alongside the
+   * primary. Null on 99% of days. Answer-state comes from the assignment
+   * doc's own fields — no second response listener.
+   */
+  secondaryAssignment: SecondaryAssignmentInfo | null;
+  /**
    * True when myResponse is an optimistic local write queued offline —
    * the UI shows the "saved on this phone" line instead of "sealed until".
    * Cleared naturally when the flushed response arrives via onSnapshot.
@@ -295,6 +379,7 @@ const EMPTY_TODAY: TodayPrompt = {
   isComplete: false,
   nextPromptAt: null,
   reactions: null,
+  secondaryAssignment: null,
   needsDailyDelivery: false,
 };
 
@@ -380,12 +465,20 @@ export function useTodayPrompt() {
       const skippedIds = await getSkippedFollowUpIds();
       const assignmentDoc = selectAssignmentDoc(assignmentSnap.docs, skippedIds, today, userId);
       const needsDelivery = needsDailyDelivery(assignmentSnap.docs, today);
+      const secondaryAssignment = selectSecondaryAssignment(
+        assignmentSnap.docs,
+        assignmentDoc?.id ?? null,
+        skippedIds,
+        today,
+        userId
+      );
 
       if (!assignmentDoc) {
         queryClient.setQueryData(['todayPrompt', coupleId], {
           ...EMPTY_TODAY,
           nextPromptAt: `${today}T${notificationTime || '19:00'}:00`,
           reactions: null,
+          secondaryAssignment,
           needsDailyDelivery: needsDelivery,
         });
         return;
@@ -441,6 +534,7 @@ export function useTodayPrompt() {
           isComplete: latestStatus === 'completed',
           nextPromptAt: null,
           reactions,
+          secondaryAssignment,
           needsDailyDelivery: needsDelivery,
         } as TodayPrompt);
       });
@@ -463,6 +557,52 @@ export function useTodayPrompt() {
     enabled: !!coupleId,
     // No refetchInterval — real-time updates handle this
     staleTime: Infinity,
+  });
+}
+
+export interface AssignmentRevealData {
+  myResponse: PromptResponse | null;
+  partnerResponse: PromptResponse | null;
+}
+
+/**
+ * Both responses for a COMPLETED assignment — the open-day chip's reveal
+ * sheet (yesterday's finished question) reads through here. One-shot fetch,
+ * not a listener: the assignment is already completed, nothing moves.
+ * Reactions come from useCompletionReactions (shared with the explore
+ * reveal) so a reaction tap settles through its existing invalidation.
+ *
+ * The couple_id filter is load-bearing — security rules only prove a
+ * prompt_responses query safe when couple_id is pinned in the filters.
+ */
+export function useAssignmentReveal(assignmentId: string | null) {
+  const { user } = useAuth();
+
+  return useQuery<AssignmentRevealData | null>({
+    queryKey: ['assignmentReveal', assignmentId],
+    queryFn: async () => {
+      if (!assignmentId || !user?.id || !user?.coupleId) return null;
+      const responsesQuery = query(
+        collection(db, 'prompt_responses'),
+        where('couple_id', '==', user.coupleId),
+        where('assignment_id', '==', assignmentId)
+      );
+      const snap = await getDocs(responsesQuery);
+
+      let myResponse: PromptResponse | null = null;
+      let partnerResponse: PromptResponse | null = null;
+      for (const responseDoc of snap.docs) {
+        const data = responseDoc.data();
+        const mapped = mapResponse(responseDoc.id, data);
+        if (data.user_id === user.id) {
+          myResponse = mapped;
+        } else {
+          partnerResponse = mapped;
+        }
+      }
+      return { myResponse, partnerResponse };
+    },
+    enabled: !!assignmentId && !!user?.coupleId,
   });
 }
 

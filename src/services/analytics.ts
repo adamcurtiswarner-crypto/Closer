@@ -69,6 +69,8 @@ type AnalyticsEvent =
   | 'milestone_viewed'
   | 'prompt_reaction_added'
   | 'follow_up_skipped'
+  | 'waiting_cta_tapped'
+  | 'open_day_reveal_opened'
   | 'safety_resources_shown'
   | 'push_preprompt_shown'
   | 'push_preprompt_accepted'
