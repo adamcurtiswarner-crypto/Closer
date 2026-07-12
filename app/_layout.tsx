@@ -1,5 +1,6 @@
 import '@/i18n';
 import React, { useEffect } from 'react';
+import { LogBox } from 'react-native';
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
@@ -46,6 +47,15 @@ Sentry.init({
     return event;
   },
 });
+
+// Dev-only LogBox noise filter for RevenueCat SDK logging. The custom log
+// handler in src/config/purchases.ts already downgrades SDK errors to quiet
+// warns; this catches anything the SDK emits with the "[RevenueCat]" prefix
+// through other console paths. Dev noise only — production users never see
+// LogBox, and Sentry capture is untouched (logger.error still reports).
+if (__DEV__) {
+  LogBox.ignoreLogs([/\[RevenueCat\]/]);
+}
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();

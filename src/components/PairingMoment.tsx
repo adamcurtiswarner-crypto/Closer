@@ -19,8 +19,15 @@ import { Icon } from './Icon';
 // The pairing moment — the one beat where two accounts become a couple.
 // Shown full-screen on BOTH sides of the link: the accepter right after the
 // invite goes through, and the inviter the moment their partner joins.
-// One Success haptic, a warm flame entrance, then it steps aside on its own.
-const AUTO_ADVANCE_MS = 2500;
+// One Success haptic, a warm flame entrance — then it WAITS. The live
+// two-sim rerun (2026-07-12) showed the old 2.5s auto-advance made the
+// beat missable entirely; now the whole screen is tappable, a quiet
+// "Tap to continue" line fades in after ~1.5s, and a long 10s fallback
+// advances on its own so the screen never traps anyone. Every fade honors
+// Reduce Motion via reanimated (content appears without animation); the
+// fallback timer fires either way.
+const AUTO_ADVANCE_FALLBACK_MS = 10000;
+const TAP_HINT_DELAY_MS = 1500;
 const GLOW_SIZE = 140;
 const FLAME_SIZE = 56;
 const FLAME_DELAY_MS = 150;
@@ -35,8 +42,9 @@ interface PairingMomentProps {
   partnerName?: string | null;
   /** Current user's display name — first name shown; falls back to "You". */
   myName?: string | null;
-  /** Called exactly once — after ~2.5s, or sooner on tap. */
+  /** Called exactly once — on tap, or after the long fallback. */
   onDone: () => void;
+  /** Long safety net only (default 10s) — tap is the expected exit. */
   autoAdvanceMs?: number;
 }
 
@@ -50,7 +58,7 @@ export function PairingMoment({
   partnerName,
   myName,
   onDone,
-  autoAdvanceMs = AUTO_ADVANCE_MS,
+  autoAdvanceMs = AUTO_ADVANCE_FALLBACK_MS,
 }: PairingMomentProps) {
   const { t } = useTranslation();
   const hasFinished = useRef(false);
@@ -84,6 +92,8 @@ export function PairingMoment({
       ReduceMotion.System,
     );
 
+    // Fallback only — the tap is the exit. Long enough that nobody who is
+    // looking at the screen ever sees it fire.
     const timer = setTimeout(finish, autoAdvanceMs);
     return () => clearTimeout(timer);
     // Mount-only: the moment plays once.
@@ -135,6 +145,16 @@ export function PairingMoment({
         >
           {t('onboarding.pairingMoment.fireLit')}
         </Animated.Text>
+
+        {/* Quiet affordance — fades in once the moment has landed, so the
+            first 1.5s stay pure. The whole screen is the target; this line
+            just says so. */}
+        <Animated.Text
+          entering={FadeIn.duration(450).delay(TAP_HINT_DELAY_MS).reduceMotion(ReduceMotion.System)}
+          style={styles.tapHint}
+        >
+          {t('onboarding.pairingMoment.tapToContinue')}
+        </Animated.Text>
       </Pressable>
     </SafeAreaView>
   );
@@ -170,5 +190,14 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     textAlign: 'center',
     marginTop: spacing.sm,
+  },
+  tapHint: {
+    ...typography.caption,
+    color: colors.text.muted,
+    textAlign: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: spacing.xxl,
   },
 });

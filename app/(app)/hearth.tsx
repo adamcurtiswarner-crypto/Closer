@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeInUp, ReduceMotion } from 'react-native-reanimate
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
+import { usePartnerName } from '@/hooks/usePartnerName';
 import { usePersonalize } from '@/hooks/usePersonalize';
 import {
   categoryEntries,
@@ -69,7 +70,10 @@ export default function HearthScreen() {
   }, []);
 
   const myUid = user?.id ?? '';
-  const partnerName = user?.partnerName || t('hearth.partnerFallback');
+  // The single partner-name source (partner's own display_name first, then
+  // this user's pet name, then the quiet fallback) — the live rerun showed
+  // "You 8 · your partner 3" while the partner's display_name was set.
+  const { name: partnerName } = usePartnerName();
 
   // What a free couple sees: this calendar month only. Premium (or gates
   // off) sees everything.
@@ -323,7 +327,7 @@ export default function HearthScreen() {
                     {stats.answered}
                   </Text>
                   <Text style={styles.statLabel} maxFontSizeMultiplier={1.4}>
-                    {t('hearth.statsAnswered')}
+                    {t('hearth.statsAnswered', { count: stats.answered })}
                   </Text>
                 </View>
                 <View style={styles.statBlock}>
@@ -331,7 +335,7 @@ export default function HearthScreen() {
                     {stats.tended}
                   </Text>
                   <Text style={styles.statLabel} maxFontSizeMultiplier={1.4}>
-                    {t('hearth.statsTended')}
+                    {t('hearth.statsTended', { count: stats.tended })}
                   </Text>
                 </View>
               </View>

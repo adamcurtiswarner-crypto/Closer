@@ -1,5 +1,6 @@
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { Platform } from 'react-native';
+import { logger } from '@/utils/logger';
 
 // Read at call time (not import time) so a missing key is decided against
 // the live environment — and so the keyless path stays testable.
@@ -36,6 +37,20 @@ export async function configurePurchases(userId: string): Promise<void> {
   if (!apiKey) return;
 
   if (!configured) {
+    // Purchases.configure installs a DEFAULT log handler that routes every
+    // native SDK log event to console.error("[RevenueCat] ...") — the 2-4
+    // red LogBox lines on fresh free accounts, even at LOG_LEVEL.ERROR.
+    // configure only installs that default when no handler exists, so ours
+    // must go in FIRST. Offerings/customerInfo fetch failures are expected
+    // states pre-W-9: surface WARN/ERROR quietly through logger.warn (dev
+    // console only; a no-op in release) and drop the chatty rest. Real
+    // failures still reach users through our own catch paths —
+    // useSubscription's offeringError state and the purchase/restore alerts.
+    Purchases.setLogHandler((level, message) => {
+      if (level === LOG_LEVEL.ERROR || level === LOG_LEVEL.WARN) {
+        logger.warn(`[RevenueCat] ${message}`);
+      }
+    });
     // The SDK defaults to chatty logging; offering-fetch failures on free
     // accounts are expected states, not errors worth a console line each.
     // Keep WARN in dev for visibility, ERROR-only in release.

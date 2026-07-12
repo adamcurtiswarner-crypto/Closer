@@ -79,23 +79,38 @@ describe('PairingMoment', () => {
     expect(hapticNotification).toHaveBeenCalledWith('success');
   });
 
-  it('auto-advances exactly once after 2.5s', () => {
+  it('shows the quiet tap affordance line', () => {
+    const { getByText } = render(<PairingMoment onDone={jest.fn()} />);
+    expect(getByText('Tap to continue')).toBeTruthy();
+  });
+
+  it('WAITS for the tap — the old 2.5s beat passes without advancing', () => {
     const onDone = jest.fn();
     render(<PairingMoment onDone={onDone} />);
+
+    // The live two-sim rerun showed 2.5s made the moment missable entirely.
+    act(() => {
+      jest.advanceTimersByTime(9999);
+    });
     expect(onDone).not.toHaveBeenCalled();
+  });
+
+  it('the 10s fallback advances exactly once if nobody taps', () => {
+    const onDone = jest.fn();
+    render(<PairingMoment onDone={onDone} />);
 
     act(() => {
-      jest.advanceTimersByTime(2500);
+      jest.advanceTimersByTime(10000);
     });
     expect(onDone).toHaveBeenCalledTimes(1);
 
     act(() => {
-      jest.advanceTimersByTime(5000);
+      jest.advanceTimersByTime(20000);
     });
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
-  it('advances on tap and does not double-fire when the timer lands', () => {
+  it('advances on tap and does not double-fire when the fallback lands', () => {
     const onDone = jest.fn();
     const { getByTestId } = render(<PairingMoment onDone={onDone} />);
 
@@ -103,7 +118,7 @@ describe('PairingMoment', () => {
     expect(onDone).toHaveBeenCalledTimes(1);
 
     act(() => {
-      jest.advanceTimersByTime(5000);
+      jest.advanceTimersByTime(20000);
     });
     expect(onDone).toHaveBeenCalledTimes(1);
   });
@@ -113,7 +128,7 @@ describe('PairingMoment', () => {
     const { unmount } = render(<PairingMoment onDone={onDone} />);
     unmount();
     act(() => {
-      jest.advanceTimersByTime(5000);
+      jest.advanceTimersByTime(20000);
     });
     expect(onDone).not.toHaveBeenCalled();
   });

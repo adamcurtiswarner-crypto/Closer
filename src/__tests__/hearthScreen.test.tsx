@@ -53,7 +53,8 @@ jest.mock('@/components/HearthRevealSheet', () => ({
   },
 }));
 
-// Resolve t() against the real en.json so tests assert shipped copy
+// Resolve t() against the real en.json so tests assert shipped copy —
+// including i18next v4 plural keys (key_one / key_other via options.count).
 jest.mock('react-i18next', () => {
   const en = require('../i18n/locales/en.json');
   const lookup = (key: string): unknown =>
@@ -62,6 +63,9 @@ jest.mock('react-i18next', () => {
     useTranslation: () => ({
       t: (key: string, options?: Record<string, unknown>) => {
         let value = lookup(key);
+        if (typeof value !== 'string' && typeof options?.count === 'number') {
+          value = lookup(`${key}_${options.count === 1 ? 'one' : 'other'}`);
+        }
         if (typeof value !== 'string') return key;
         if (options) {
           Object.entries(options).forEach(([name, v]) => {
@@ -78,6 +82,14 @@ jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({
     user: { id: 'user-1', coupleId: 'couple-1', partnerName: 'Jordan' },
   }),
+}));
+
+// The screen resolves the partner's name through the single source of truth
+// (partner display_name → pet name → quiet fallback), never user.partnerName
+// directly — the live rerun showed "your partner" while display_name was set.
+const mockPartnerName = jest.fn();
+jest.mock('@/hooks/usePartnerName', () => ({
+  usePartnerName: () => mockPartnerName(),
 }));
 
 jest.mock('@/hooks/usePersonalize', () => ({
@@ -130,6 +142,7 @@ function makeCompletion(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockSubscription.mockReturnValue({ isPremium: false, isLoading: false });
+  mockPartnerName.mockReturnValue({ name: 'Jordan', isFallback: false });
 });
 
 describe('HearthScreen first-run states', () => {
@@ -296,6 +309,70 @@ describe('HearthScreen tile states and tallies', () => {
     // The founder-caught contradiction: tile and queue can never disagree.
     expect(getByTestId('hearth-queue-c-1')).toBeTruthy();
     expect(queryAllByText('Talk about it')).toHaveLength(2);
+  });
+});
+
+describe('HearthScreen queue meta partner name (via usePartnerName)', () => {
+  function repairCompletion(overrides: Record<string, unknown> = {}) {
+    return makeCompletion({
+      id: 'c-meta',
+      category: 'money',
+      signal: 'repair' as const,
+      responses: [
+        { userId: 'user-1', responseText: 'a', responseScore: 2, imageUrl: null, submittedAt: null },
+        { userId: 'user-2', responseText: 'b', responseScore: 3, imageUrl: null, submittedAt: null },
+      ],
+      ...overrides,
+    });
+  }
+
+  it('shows the partner display name in the queue meta line', () => {
+    mockPartnerName.mockReturnValue({ name: 'Casey', isFallback: false });
+    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(getByText('You 2 · Casey 3')).toBeTruthy();
+  });
+
+  it('falls back to the quiet lowercase "your partner" when no name is known', () => {
+    mockPartnerName.mockReturnValue({ name: 'your partner', isFallback: true });
+    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(getByText('You 2 · your partner 3')).toBeTruthy();
+  });
+
+  it('passes the resolved name into the category detail meta too', () => {
+    mockPartnerName.mockReturnValue({ name: 'Casey', isFallback: false });
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+    const { getByTestId } = render(<HearthScreen />);
+
+    fireEvent.press(getByTestId('hearth-tile-communication'));
+    expect(lastProps(mockCategoryDetailProps).partnerName).toBe('Casey');
+  });
+});
+
+describe('HearthScreen monthly stat labels pluralize', () => {
+  it('1 answered reads singular; 0 tended stays plural', () => {
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(getByText('question answered together')).toBeTruthy();
+    expect(getByText('conversations tended')).toBeTruthy();
+  });
+
+  it('2 answered reads plural; 1 tended reads singular', () => {
+    mockHearthQuery.mockReturnValue({
+      data: [
+        makeCompletion(),
+        makeCompletion({ id: 'c-2', category: 'money', discussedAt: new Date() }),
+      ],
+      isLoading: false,
+    });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(getByText('questions answered together')).toBeTruthy();
+    expect(getByText('conversation tended')).toBeTruthy();
   });
 });
 

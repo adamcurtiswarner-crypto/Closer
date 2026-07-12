@@ -189,13 +189,19 @@ describe('accept-invite screen', () => {
       expect(mockRouterReplace).not.toHaveBeenCalled();
     });
 
-    it('advances to tone calibration after the moment', async () => {
+    it('advances to tone calibration via the long fallback when nobody taps', async () => {
       mockAcceptInvite.mockResolvedValueOnce({ coupleId: 'couple-1' });
       const utils = render(<AcceptInviteScreen />);
       await submitCode(utils);
 
+      // The moment waits for the tap; the 10s fallback is the safety net.
       act(() => {
-        jest.advanceTimersByTime(2500);
+        jest.advanceTimersByTime(9999);
+      });
+      expect(mockRouterReplace).not.toHaveBeenCalled();
+
+      act(() => {
+        jest.advanceTimersByTime(1);
       });
       expect(mockRouterReplace).toHaveBeenCalledWith('/(onboarding)/tone-calibration');
     });

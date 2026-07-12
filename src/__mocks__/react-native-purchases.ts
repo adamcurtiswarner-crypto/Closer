@@ -9,6 +9,7 @@ const LOG_LEVEL = {
 const Purchases = {
   configure: jest.fn(),
   setLogLevel: jest.fn(),
+  setLogHandler: jest.fn(),
   logIn: jest.fn(),
   getCustomerInfo: jest.fn().mockResolvedValue({
     entitlements: { active: {} },

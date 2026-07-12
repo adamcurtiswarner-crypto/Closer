@@ -133,7 +133,7 @@ describe('waiting-partner screen', () => {
     expect(mockRouterReplace).not.toHaveBeenCalled();
   });
 
-  it('advances to tone calibration after the moment', () => {
+  it('advances to tone calibration via the long fallback when nobody taps', () => {
     mockCoupleQuery.mockReturnValue({
       data: { id: 'couple-1', status: 'active' },
       refetch: jest.fn(),
@@ -141,8 +141,14 @@ describe('waiting-partner screen', () => {
     mockPartnerQuery.mockReturnValue({ data: { id: 'p1', displayName: 'Jess Lee' } });
 
     render(<WaitingPartnerScreen />);
+    // The moment waits for the tap; the 10s fallback is the safety net.
     act(() => {
-      jest.advanceTimersByTime(2500);
+      jest.advanceTimersByTime(9999);
+    });
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(1);
     });
     expect(mockRouterReplace).toHaveBeenCalledWith('/(onboarding)/tone-calibration');
   });

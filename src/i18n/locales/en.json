@@ -140,6 +140,7 @@
       "fireLit": "The fire is lit.",
       "you": "You",
       "yourPartner": "your partner",
+      "tapToContinue": "Tap to continue",
       "continueA11y": "Continue"
     },
     "toneCalibration": {
@@ -369,7 +370,8 @@
     "yourName": "YOUR NAME",
     "yourNamePlaceholder": "Your name",
     "partner": "PARTNER",
-    "partnerPlaceholder": "Partner's name",
+    "addPartnerName": "Add their name",
+    "partnerNicknamePlaceholder": "What you call them (optional)",
     "linkWithPartner": "Link with a partner to edit",
     "setYourDate": "Set your date",
     "yourLoveLanguage": "YOUR LOVE LANGUAGE",
@@ -586,7 +588,6 @@
     "subWaiting": "{{count}} conversations waiting for you two",
     "empty": "Your first answered question will glow here.",
     "emptySub": "It starts with today's question.",
-    "partnerFallback": "your partner",
     "state": {
       "repair": "Talk about it",
       "divergence": "Compare notes",
@@ -616,8 +617,10 @@
     "queueTitle": "Waiting for you two",
     "queueMeta": "You {{mine}} · {{partner}} {{theirs}}",
     "statsTitle": "This month",
-    "statsAnswered": "questions answered together",
-    "statsTended": "conversations tended",
+    "statsAnswered_one": "question answered together",
+    "statsAnswered_other": "questions answered together",
+    "statsTended_one": "conversation tended",
+    "statsTended_other": "conversations tended",
     "categorySub": "{{answered}} answered · {{tended}} tended",
     "readThisDay": "Read this day",
     "readAnswers": "Read the answers",

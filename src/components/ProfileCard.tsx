@@ -17,6 +17,7 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple, useUpdateAnniversaryDate } from '@/hooks/useCouple';
+import { usePartnerName } from '@/hooks/usePartnerName';
 import {
   pickImage,
   showPhotoAccessDeniedAlert,
@@ -34,7 +35,14 @@ import { AnniversaryPicker } from './AnniversaryPicker';
 import { colors, spacing, typography } from '@/config/theme';
 function getInitials(name: string | null): string {
   if (!name) return '?';
-  return name.charAt(0).toUpperCase();
+  return firstGrapheme(name);
+}
+
+// Array.from splits on code points, so names starting with an accented or
+// non-BMP character still yield one whole glyph rather than half a surrogate.
+function firstGrapheme(name: string): string {
+  const first = Array.from(name.trim())[0];
+  return first ? first.toUpperCase() : '?';
 }
 
 export function ProfileCard() {
@@ -45,6 +53,7 @@ export function ProfileCard() {
 
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [partnerName, setPartnerName] = useState(user?.partnerName || '');
+  const [editingPartnerName, setEditingPartnerName] = useState(false);
   const [uploadingUser, setUploadingUser] = useState(false);
   const [uploadingPartner, setUploadingPartner] = useState(false);
   const [savingName, setSavingName] = useState(false);
@@ -52,6 +61,12 @@ export function ProfileCard() {
   const [selectedDate, setSelectedDate] = useState<Date>(couple?.anniversaryDate || new Date());
   const [showLoveLanguageModal, setShowLoveLanguageModal] = useState(false);
   const [savingLoveLanguage, setSavingLoveLanguage] = useState(false);
+
+  // What the partner row DISPLAYS. The row edits the pet-name override
+  // (users.partner_name), but the name shown must resolve the same way as
+  // everywhere else: partner display_name > pet name > fallback.
+  const { name: resolvedPartnerName, isFallback: partnerNameIsFallback } = usePartnerName();
+  const partnerInitial = partnerNameIsFallback ? null : firstGrapheme(resolvedPartnerName);
 
   // Fetch partner's love language
   const partnerId = couple?.memberIds?.find((id: string) => id !== user?.id) || null;
@@ -261,7 +276,14 @@ export function ProfileCard() {
             <Image source={{ uri: user.partnerPhotoUrl }} style={styles.avatar} />
           ) : (
             <View style={[styles.avatar, styles.avatarPartner]}>
-              <Text style={styles.avatarText}>{getInitials(user.partnerName)}</Text>
+              {partnerInitial ? (
+                <Text style={styles.avatarText}>{partnerInitial}</Text>
+              ) : (
+                // No real name yet — a neutral glyph, never a "?".
+                <View testID="partner-avatar-fallback">
+                  <Icon name="heart" size="sm" color={colors.text.inverse} weight="fill" />
+                </View>
+              )}
             </View>
           )}
           {uploadingPartner ? (
@@ -277,17 +299,40 @@ export function ProfileCard() {
 
         <View style={styles.profileInfo}>
           <Text style={styles.profileLabel}>{t('profile.partner')}</Text>
-          <TextInput
-            style={styles.nameInput}
-            value={partnerName}
-            onChangeText={setPartnerName}
-            onBlur={handleSavePartnerName}
-            placeholder={t('profile.partnerPlaceholder')}
-            placeholderTextColor={colors.text.secondary}
-            maxLength={30}
-            returnKeyType="done"
-            editable={!!user.coupleId}
-          />
+          {editingPartnerName ? (
+            // The editor writes the pet-name override (users.partner_name) —
+            // it never touches the partner's own display_name.
+            <TextInput
+              style={styles.nameInput}
+              value={partnerName}
+              onChangeText={setPartnerName}
+              onBlur={() => {
+                setEditingPartnerName(false);
+                void handleSavePartnerName();
+              }}
+              placeholder={t('profile.partnerNicknamePlaceholder')}
+              placeholderTextColor={colors.text.secondary}
+              maxLength={30}
+              returnKeyType="done"
+              autoFocus
+            />
+          ) : (
+            <TouchableOpacity
+              accessibilityRole="button"
+              disabled={!user.coupleId}
+              activeOpacity={0.7}
+              onPress={() => {
+                setPartnerName(user.partnerName || '');
+                setEditingPartnerName(true);
+              }}
+            >
+              <Text
+                style={[styles.nameInput, partnerNameIsFallback && styles.namePlaceholder]}
+              >
+                {partnerNameIsFallback ? t('profile.addPartnerName') : resolvedPartnerName}
+              </Text>
+            </TouchableOpacity>
+          )}
           {!user.coupleId && (
             <Text style={styles.hintText}>{t('profile.linkWithPartner')}</Text>
           )}
@@ -462,6 +507,9 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     padding: 0,
     marginBottom: 2,
+  },
+  namePlaceholder: {
+    color: colors.text.secondary,
   },
   emailText: {
     ...typography.bodySm,
