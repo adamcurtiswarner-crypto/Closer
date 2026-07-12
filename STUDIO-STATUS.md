@@ -1,5 +1,5 @@
 # Stoke Studio Status
-*Last updated: 2026-07-12 — Build 64 cutting → TestFlight (two-sim walkthroughs passed; all P0-P3 + button-audit findings fixed; universal 8AM delivery; calendar sync removed). Board: 852 app / 484 functions / 34 rules / 18 flows. Critical path = founder items (W-9, legal, IAP screenshot, domain, paywall verdict).*
+*Last updated: 2026-07-12 — Build 64 SUBMITTED to TestFlight (most-validated build to date: two live walkthroughs, all findings fixed, universal 8AM delivery). Awaiting founder two-phone pass + founder items (W-9, legal, IAP screenshot, domain, paywall verdict).*
 
 ## Founder Directive (2026-07-05)
 v1 = scored prompts by category + score-triggered follow-ups (deepener / repair / divergence). Everything else hidden via `src/config/features.ts`. Target: top 0.1% design quality for the category. Payments live. App Store submission next.
