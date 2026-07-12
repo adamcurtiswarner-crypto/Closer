@@ -540,6 +540,8 @@ describe('usePrompt', () => {
       expect(result?.isComplete).toBe(false);
       // Read-boundary mapping applies (snake_case → camelCase)
       expect(result?.assignment.promptText).toBe("Yesterday's question");
+      // The chip needs the day itself to speak truthfully about it
+      expect(result?.assignedDate).toBe(YESTERDAY);
     });
 
     it('partial where the partner answered first → the question waits on me', () => {
@@ -565,6 +567,26 @@ describe('usePrompt', () => {
       const result = selectSecondaryAssignment(docs, 't-1', [], TODAY, ME);
       expect(result?.iAnswered).toBe(true);
       expect(result?.partnerAnswered).toBe(true);
+      expect(result?.isComplete).toBe(true);
+      expect(result?.assignedDate).toBe(YESTERDAY);
+    });
+
+    it('a same-day secondary surfaces with assignedDate === today (double-delivery edge)', () => {
+      // The pairing-day double delivery: a second question displaced the
+      // first before its reveal was seen — the displaced doc shares TODAY's
+      // assigned_date. The chip must know it is a same-day question, not
+      // "Yesterday".
+      const docs = [
+        primary,
+        makeDoc('t-2', {
+          status: 'completed',
+          assigned_date: TODAY,
+          prompt_text: 'The displaced first question',
+        }),
+      ];
+      const result = selectSecondaryAssignment(docs, 't-1', [], TODAY, ME);
+      expect(result?.assignment.id).toBe('t-2');
+      expect(result?.assignedDate).toBe(TODAY);
       expect(result?.isComplete).toBe(true);
     });
 

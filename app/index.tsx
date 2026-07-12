@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@hooks/useAuth';
+import { colors } from '@config/theme';
 
 export default function Index() {
   const { isLoading, isAuthenticated, user } = useAuth();
@@ -9,7 +10,7 @@ export default function Index() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#D4522A" />
+        <ActivityIndicator size="large" color={colors.accent.primary} />
       </View>
     );
   }
@@ -19,6 +20,12 @@ export default function Index() {
   }
 
   if (!user?.isOnboarded) {
+    // A name is load-bearing for the product — every un-named account
+    // finishes the name step before anything else. Never re-shown once
+    // display_name is set (and never for already-onboarded users).
+    if (!user?.displayName?.trim()) {
+      return <Redirect href="/(onboarding)/name" />;
+    }
     if (!user?.coupleId) {
       return <Redirect href="/(onboarding)/invite-partner" />;
     }
@@ -33,6 +40,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F2EE',
+    backgroundColor: colors.surface.background,
   },
 });

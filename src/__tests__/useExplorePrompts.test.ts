@@ -13,6 +13,7 @@
 
 jest.mock('firebase/firestore', () => ({
   collection: jest.fn((_db: unknown, name: string) => ({ __collection: name })),
+  doc: jest.fn((_db: unknown, name: string, id: string) => ({ __doc: `${name}/${id}` })),
   query: jest.fn((ref: unknown, ...filters: unknown[]) => ({ ref, filters })),
   where: jest.fn((field: string, op: string, value: unknown) => ({ field, op, value })),
   orderBy: jest.fn(),
@@ -41,6 +42,7 @@ import {
   mapExploreAssignment,
   isLiveExploreAssignment,
   pendingPartnerQuestions,
+  useCompletionReactions,
   useStartExplorePrompt,
   useExploreResponses,
   NoCoupleLinkedError,
@@ -250,6 +252,114 @@ describe('useStartExplorePrompt', () => {
     expect(firestore.where).toHaveBeenCalledWith('couple_id', '==', 'couple-1');
     expect(firestore.where).toHaveBeenCalledWith('prompt_id', '==', 'prompt-1');
     expect(firestore.where).toHaveBeenCalledWith('source', '==', 'explore');
+  });
+});
+
+describe('useCompletionReactions — live listener on the completion doc', () => {
+  type SnapshotHandler = (snap: {
+    exists: () => boolean;
+    data: () => Record<string, unknown>;
+  }) => void;
+  type ErrorHandler = (error: Error) => void;
+
+  function captureListener() {
+    const handlers: { next?: SnapshotHandler; error?: ErrorHandler } = {};
+    const unsubscribe = jest.fn();
+    firestore.onSnapshot.mockImplementation(
+      (_ref: unknown, onNext: SnapshotHandler, onError: ErrorHandler) => {
+        handlers.next = onNext;
+        handlers.error = onError;
+        return unsubscribe;
+      }
+    );
+    return { handlers, unsubscribe };
+  }
+
+  it('feeds the partner reaction into an OPEN reveal live — snapshot, not one-shot fetch', async () => {
+    const { handlers, unsubscribe } = captureListener();
+
+    const { result, unmount } = renderHook(() => useCompletionReactions('assign-1'), {
+      wrapper: createWrapper(),
+    });
+
+    // Listens on the completion doc, whose id IS the assignment id.
+    expect(firestore.doc).toHaveBeenCalledWith({}, 'prompt_completions', 'assign-1');
+
+    // Let the initial (empty-cache) query settle before the first snapshot
+    // arrives — in production the snapshot is always the later event.
+    await waitFor(() => expect(result.current.data).toBeNull());
+
+    // First snapshot: only my reaction exists.
+    act(() => {
+      handlers.next!({
+        exists: () => true,
+        data: () => ({ reactions: { 'user-1': 'love' } }),
+      });
+    });
+    await waitFor(() => expect(result.current.data).toEqual({ 'user-1': 'love' }));
+
+    // The partner reacts while the sheet is still up — it lands with no
+    // refetch and no reopen.
+    act(() => {
+      handlers.next!({
+        exists: () => true,
+        data: () => ({ reactions: { 'user-1': 'love', 'user-2': 'spark' } }),
+      });
+    });
+    await waitFor(() =>
+      expect(result.current.data).toEqual({ 'user-1': 'love', 'user-2': 'spark' })
+    );
+
+    unmount();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not listen without an assignment id (sheet closed)', () => {
+    firestore.onSnapshot.mockClear();
+    renderHook(() => useCompletionReactions(null), { wrapper: createWrapper() });
+    expect(firestore.onSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('swaps the listener when the reveal moves to another assignment', async () => {
+    const { unsubscribe } = captureListener();
+
+    const { rerender } = renderHook(
+      ({ id }: { id: string | null }) => useCompletionReactions(id),
+      { wrapper: createWrapper(), initialProps: { id: 'assign-1' as string | null } }
+    );
+    expect(firestore.doc).toHaveBeenCalledWith({}, 'prompt_completions', 'assign-1');
+
+    rerender({ id: 'assign-2' });
+
+    // Old listener torn down, new one up on the new doc.
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+    expect(firestore.doc).toHaveBeenCalledWith({}, 'prompt_completions', 'assign-2');
+  });
+
+  it('a missing completion doc resolves to null reactions', async () => {
+    const { handlers } = captureListener();
+
+    const { result } = renderHook(() => useCompletionReactions('assign-1'), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      handlers.next!({ exists: () => false, data: () => ({}) });
+    });
+    await waitFor(() => expect(result.current.data).toBeNull());
+  });
+
+  it('a listener error settles to null — reactions are non-critical, the reveal still renders', async () => {
+    const { handlers } = captureListener();
+
+    const { result } = renderHook(() => useCompletionReactions('assign-1'), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      handlers.error!(new Error('permission-denied'));
+    });
+    await waitFor(() => expect(result.current.data).toBeNull());
   });
 });
 

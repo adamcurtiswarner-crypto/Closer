@@ -22,7 +22,7 @@ describe('premiumGates', () => {
   describe('flag on, couple free', () => {
     const gates = premiumGates({ gatesEnabled: true, isPremium: false });
 
-    it('locks follow-ups, explore sends, and hearth history', () => {
+    it('locks follow-ups, explore sends, and hearth history (past months + trends)', () => {
       expect(gates.followUpLocked).toBe(true);
       expect(gates.exploreSendLocked).toBe(true);
       expect(gates.hearthHistoryLocked).toBe(true);
@@ -34,6 +34,19 @@ describe('premiumGates', () => {
 
     it('never locks answering a question the partner sent', () => {
       expect(gates.exploreAnswerLocked).toBe(false);
+    });
+
+    it('exposes NO couch-queue lock — the current-month queue is free (the talk ritual is the hook)', () => {
+      // hearthHistoryLocked covers pre-current-month entries and trends only.
+      // Consumers derive the free queue from the currentMonthOnly() slice;
+      // there is deliberately no key that could lock the visible queue.
+      expect(Object.keys(gates).sort()).toEqual([
+        'dailyPromptLocked',
+        'exploreAnswerLocked',
+        'exploreSendLocked',
+        'followUpLocked',
+        'hearthHistoryLocked',
+      ]);
     });
   });
 

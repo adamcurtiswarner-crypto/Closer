@@ -91,13 +91,13 @@ describe('HearthEmberTile', () => {
         icon="coins"
         state="unlit"
         stateLabel="Not yet lit"
-        tally="Ask one to light it"
+        tally="Ask one tonight"
         onPress={jest.fn()}
       />
     );
     expect(getByText('Not yet lit')).toBeTruthy();
-    expect(getByText('Ask one to light it')).toBeTruthy();
-    expect(getByLabelText('Money, Not yet lit, Ask one to light it')).toBeTruthy();
+    expect(getByText('Ask one tonight')).toBeTruthy();
+    expect(getByLabelText('Money, Not yet lit, Ask one tonight')).toBeTruthy();
   });
 
   it('fires onPress', () => {
@@ -126,6 +126,74 @@ describe('HearthEmberTile', () => {
       />
     );
     expect(getByText('Compare notes')).toBeTruthy();
+  });
+
+  describe('text fitting at 3-column width', () => {
+    // The longest shipping labels — the ones that used to break mid-word
+    // ("Communicatio / n") or truncate at 3-across width.
+    const longestLabels = {
+      single: 'Communication',
+      multi: ['Growth and independence', 'Appreciation and trust'],
+    };
+
+    it('single-word labels render on ONE line with font shrink — never a mid-word break', () => {
+      const { getByText } = render(
+        <HearthEmberTile
+          label={longestLabels.single}
+          icon="chat-circle"
+          state="steady"
+          stateLabel="Steady"
+          onPress={jest.fn()}
+        />
+      );
+      const label = getByText('Communication');
+      expect(label.props.numberOfLines).toBe(1);
+      expect(label.props.adjustsFontSizeToFit).toBe(true);
+      expect(label.props.minimumFontScale).toBe(0.8);
+    });
+
+    it('multi-word labels wrap at spaces across two lines, with shrink as the overflow net', () => {
+      longestLabels.multi.forEach((text) => {
+        const { getByText, unmount } = render(
+          <HearthEmberTile
+            label={text}
+            icon="path"
+            state="steady"
+            stateLabel="Steady"
+            onPress={jest.fn()}
+          />
+        );
+        const label = getByText(text);
+        expect(label.props.numberOfLines).toBe(2);
+        expect(label.props.adjustsFontSizeToFit).toBe(true);
+        unmount();
+      });
+    });
+
+    it('the tally/hint line wraps to two lines instead of truncating with an ellipsis', () => {
+      const { getByText } = render(
+        <HearthEmberTile
+          label="Money"
+          icon="coins"
+          state="unlit"
+          stateLabel="Not yet lit"
+          tally="Ask one tonight"
+          onPress={jest.fn()}
+        />
+      );
+      expect(getByText('Ask one tonight').props.numberOfLines).toBe(2);
+    });
+
+    it('the shipped unlit hint fits the ~15-character caption line budget', () => {
+      const en = require('../i18n/locales/en.json');
+      const hint: string = en.hearth.tile.unlitHint;
+      // One caption line at 3-across is ~15 characters; with two lines
+      // available, every word must fit a line and the whole hint two.
+      expect(hint.length).toBeLessThanOrEqual(30);
+      hint.split(' ').forEach((word) => {
+        expect(word.length).toBeLessThanOrEqual(15);
+      });
+    });
   });
 
   it('ships no emoji anywhere in the hearth namespace copy', () => {

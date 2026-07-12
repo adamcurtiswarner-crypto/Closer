@@ -26,13 +26,24 @@ export function SocialAuthButtons({ animationDelay = 0, dividerText = 'or' }: So
     const pendingCode = await getPendingInviteCode();
     if (pendingCode) {
       await clearPendingInviteCode();
-      router.replace({
-        pathname: '/(onboarding)/accept-invite',
-        params: { code: pendingCode },
-      });
+      // New accounts confirm their name first; the name screen carries the
+      // invite code into accept-invite. Existing accounts already named
+      // themselves — never ask twice, go straight to the join screen.
+      if (isNewUser) {
+        router.replace({
+          pathname: '/(onboarding)/name',
+          params: { code: pendingCode },
+        });
+      } else {
+        router.replace({
+          pathname: '/(onboarding)/accept-invite',
+          params: { code: pendingCode },
+        });
+      }
     } else if (isNewUser) {
-      // New users see the value proposition before inviting their partner
-      router.replace('/(onboarding)/value-prop');
+      // Name step first — pre-filled when Apple/Google shared a name, so
+      // it's a one-tap confirm. Then value-prop → invite-partner.
+      router.replace('/(onboarding)/name');
     } else {
       router.replace('/');
     }

@@ -4,6 +4,7 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
+import { todayLocalISO } from '@utils/localDate';
 
 export type OpenDayChipState = 'sealed' | 'open' | 'reveal';
 
@@ -32,6 +33,14 @@ interface OpenDayChipProps {
   isComplete: boolean;
   /** Partner display name — caller falls back to "your partner". */
   partnerName: string;
+  /**
+   * The secondary day's local assigned date (yyyy-MM-dd) — pass
+   * SecondaryAssignmentInfo.assignedDate. When it matches the device's local
+   * today the copy reads "Earlier today · …" instead of "Yesterday · …" (a
+   * same-day secondary exists after a double delivery, and calling it
+   * yesterday lies). Absent → the historical "Yesterday" copy.
+   */
+  assignedDate?: string;
   /** Open the responding flow for the still-open question ('open' state). */
   onOpenResponding: () => void;
   /** Present the finished day's reveal ('reveal' state). */
@@ -49,6 +58,7 @@ export function OpenDayChip({
   partnerAnswered,
   isComplete,
   partnerName,
+  assignedDate,
   onOpenResponding,
   onOpenReveal,
 }: OpenDayChipProps) {
@@ -57,8 +67,14 @@ export function OpenDayChip({
   const state = openDayChipState({ iAnswered, partnerAnswered, isComplete });
   if (state === null) return null;
 
+  // Date-aware copy: a secondary dated the device's local today is "Earlier
+  // today", not "Yesterday" — the chip never lies about which day is open.
+  const isSameLocalDay = assignedDate != null && assignedDate === todayLocalISO();
+
   if (state === 'sealed') {
-    const label = t('today.openDaySealed', { name: partnerName });
+    const label = isSameLocalDay
+      ? t('today.openDaySealedToday', { name: partnerName })
+      : t('today.openDaySealed', { name: partnerName });
     return (
       <Animated.View entering={FadeInUp.duration(500).delay(300)}>
         <View
@@ -78,8 +94,8 @@ export function OpenDayChip({
 
   const isReveal = state === 'reveal';
   const label = isReveal
-    ? t('today.openDayReveal')
-    : t('today.openDayStillOpen');
+    ? t(isSameLocalDay ? 'today.openDayRevealToday' : 'today.openDayReveal')
+    : t(isSameLocalDay ? 'today.openDayStillOpenToday' : 'today.openDayStillOpen');
 
   return (
     <Animated.View entering={FadeInUp.duration(500).delay(300)}>

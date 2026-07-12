@@ -186,6 +186,8 @@ export function ProfileCard() {
     setSavingName(true);
     try {
       const userRef = doc(db, 'users', user.id);
+      // partner_name is a pet-name override: in usePartnerName's precedence it
+      // ranks below the partner's own display_name and above the generic fallback.
       await updateDoc(userRef, {
         partner_name: trimmed || null,
         updated_at: serverTimestamp(),

@@ -1,5 +1,14 @@
+const LOG_LEVEL = {
+  VERBOSE: 'VERBOSE',
+  DEBUG: 'DEBUG',
+  INFO: 'INFO',
+  WARN: 'WARN',
+  ERROR: 'ERROR',
+};
+
 const Purchases = {
   configure: jest.fn(),
+  setLogLevel: jest.fn(),
   logIn: jest.fn(),
   getCustomerInfo: jest.fn().mockResolvedValue({
     entitlements: { active: {} },
@@ -16,4 +25,4 @@ const Purchases = {
 };
 
 export default Purchases;
-export { Purchases };
+export { Purchases, LOG_LEVEL };

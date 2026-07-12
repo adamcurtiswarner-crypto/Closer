@@ -43,8 +43,8 @@ export default function HearthScreen() {
   const { isPremium, isLoading: premiumLoading } = useSubscription();
 
   // Premium gate (SEV-0 #8): free couples keep the current month — embers,
-  // talk sheet, "we talked" marks. History, trends, and the couch queue
-  // live behind the quiet gate card below the grid.
+  // the couch queue, talk sheet, "we talked" marks. Only history (past
+  // months) and trends live behind the quiet gate card below.
   const historyLocked = premiumGates({
     gatesEnabled: FEATURES.premiumGates,
     isPremium,
@@ -72,14 +72,17 @@ export default function HearthScreen() {
   const partnerName = user?.partnerName || t('hearth.partnerFallback');
 
   // What a free couple sees: this calendar month only. Premium (or gates
-  // off) sees everything. The queue count for the header line stays honest
-  // either way — locked things still exist and we say so.
+  // off) sees everything.
   const visibleCompletions = useMemo(
     () => (historyLocked ? currentMonthOnly(completions) : completions),
     [completions, historyLocked]
   );
 
-  const queue = useMemo(() => couchQueue(completions), [completions]);
+  // The couch queue derives from the VISIBLE set: free couples get the
+  // current month's queue (the talk ritual is never advertised in the
+  // header and then locked), premium gets it all. The header count below
+  // therefore always matches what the queue section actually shows.
+  const queue = useMemo(() => couchQueue(visibleCompletions), [visibleCompletions]);
   // Tile states derive from whatever entry set the screen already shows —
   // free couples accumulate from the current month only (the existing gate).
   const states = useMemo(() => perCategoryTileState(visibleCompletions), [visibleCompletions]);
@@ -274,16 +277,10 @@ export default function HearthScreen() {
               })}
             </View>
 
-            {/* History, trends, and the couch queue live in Premium —
-                one quiet card, never a wall over the embers above. */}
-            {historyLocked && (
-              <View style={styles.section}>
-                <HearthGateCard onSeePremium={() => setShowPaywall(true)} />
-              </View>
-            )}
-
-            {/* Couch queue */}
-            {!historyLocked && queue.length > 0 && (
+            {/* Couch queue — free for the current month (the visible set
+                already reflects the gate), so the talk ritual never dead-ends
+                into a lock. */}
+            {queue.length > 0 && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t('hearth.queueTitle')}</Text>
                 {queue.map((completion, index) => {
@@ -339,6 +336,14 @@ export default function HearthScreen() {
                 </View>
               </View>
             </View>
+
+            {/* Past months and trends live in Premium — one quiet card at
+                the end of the free, current-month content. Never a wall. */}
+            {historyLocked && (
+              <View style={styles.section}>
+                <HearthGateCard onSeePremium={() => setShowPaywall(true)} />
+              </View>
+            )}
           </>
         )}
       </ScrollView>

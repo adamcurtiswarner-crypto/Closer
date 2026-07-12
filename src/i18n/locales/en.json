@@ -72,6 +72,13 @@
     }
   },
   "onboarding": {
+    "name": {
+      "title": "What should we call you?",
+      "placeholder": "Your first name",
+      "hint": "Your partner sees this with every answer.",
+      "saveFailedTitle": "We couldn't save your name",
+      "saveFailedBody": "Check your connection and try again."
+    },
     "acceptInvite": {
       "title": "Join your partner",
       "subtitle": "Enter the code they sent you.",
@@ -188,6 +195,8 @@
     "wellDone": "Well done",
     "anotherMomentSaved": "Another moment saved",
     "firstOfMany": "The first of many",
+    "anticipationDivergence": "Your numbers are far apart. Tomorrow goes a little deeper.",
+    "anticipationRepair": "Tomorrow brings a gentle follow-up.",
     "midScaleLine": "What would move this one point higher?",
     "keepForCouch": "Keep it for the couch",
     "keptForCouch": "Kept for the couch — it's in the Hearth.",
@@ -229,6 +238,9 @@
     "openDaySealed": "Yesterday · sealed until {{name}} answers",
     "openDayStillOpen": "Yesterday's question is still open",
     "openDayReveal": "Yesterday · you both answered — see it",
+    "openDaySealedToday": "Earlier today · sealed until {{name}} answers",
+    "openDayStillOpenToday": "Earlier today · a question is still open",
+    "openDayRevealToday": "Earlier today · you both answered — see it",
     "openDayAnswersFailed": "Couldn't load the answers."
   },
   "memories": {
@@ -596,7 +608,7 @@
         "steady": "Steady",
         "unlit": "Not yet lit"
       },
-      "unlitHint": "Ask one to light it",
+      "unlitHint": "Ask one tonight",
       "answered": "{{count}} answered",
       "warming": "warming",
       "settling": "settling"
@@ -641,6 +653,6 @@
     "followUpLine": "Follow-ups are part of Stoke Premium",
     "seePremium": "See Premium",
     "hearthTitle": "Your full history lives in Premium",
-    "hearthBody": "This month glows right here. Past months, your trends, and the couch queue are kept for you in Premium."
+    "hearthBody": "This month glows right here, couch and all. Past months and your trends are kept for you in Premium."
   }
 }

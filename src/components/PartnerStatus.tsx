@@ -10,12 +10,16 @@ import Animated, {
 } from 'react-native-reanimated';
 import { formatDistanceToNow } from 'date-fns';
 import { PresenceIndicator } from './PresenceIndicator';
+import { usePartnerName } from '@/hooks/usePartnerName';
+import { colors, typography } from '@/config/theme';
 
 interface PartnerStatusProps {
   isOnline: boolean;
   isTyping: boolean;
   typingContext?: 'prompt' | null;
   lastSeen: Date | null;
+  /** Override for tests/callers that already resolved a name; when absent,
+   *  usePartnerName decides (partner display_name > pet name > fallback). */
   partnerName?: string;
   showIndicator?: boolean;
 }
@@ -60,19 +64,29 @@ export function PartnerStatus({
   isTyping,
   typingContext,
   lastSeen,
-  partnerName = 'Partner',
+  partnerName,
   showIndicator = true,
 }: PartnerStatusProps) {
+  const { name: resolvedName, isFallback } = usePartnerName();
+  // The hook's fallback is lowercase "your partner" by design; these status
+  // lines start with the name, so sentence-case it here. Real names (and
+  // explicit prop overrides) pass through untouched.
+  const name =
+    partnerName ??
+    (isFallback
+      ? resolvedName.charAt(0).toUpperCase() + resolvedName.slice(1)
+      : resolvedName);
+
   const getStatusText = () => {
     if (isTyping) {
       if (typingContext === 'prompt') {
-        return `${partnerName} is responding...`;
+        return `${name} is responding...`;
       }
-      return `${partnerName} is typing...`;
+      return `${name} is typing...`;
     }
 
     if (isOnline) {
-      return `${partnerName} is online`;
+      return `${name} is online`;
     }
 
     if (lastSeen) {
@@ -103,12 +117,11 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   statusText: {
-    fontSize: 13,
-    fontFamily: 'Nunito-Regular',
-    color: '#6B6B7A',
+    ...typography.bodySm,
+    color: colors.text.secondary,
   },
   typingText: {
-    color: '#D4522A',
+    color: colors.accent.primary,
     fontStyle: 'italic',
   },
   typingDots: {
@@ -120,6 +133,6 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#D4522A',
+    backgroundColor: colors.accent.primary,
   },
 });

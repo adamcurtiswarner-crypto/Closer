@@ -121,6 +121,12 @@ jest.mock('@/hooks/useAuth', () => ({
   }),
 }));
 
+// usePartnerName runs for real (fallback register under test elsewhere);
+// it needs usePartner stubbed so no React Query client is required.
+jest.mock('@/hooks/usePartner', () => ({
+  usePartner: () => ({ data: null }),
+}));
+
 jest.mock('@/hooks/usePresence', () => ({
   usePresence: () => ({
     isPartnerOnline: false,

@@ -14,11 +14,20 @@ import {
   type PrePromptTrigger,
 } from '@/utils/pushPrePrompt';
 
+interface PrePromptOfferContext {
+  /**
+   * True when an unseen completed reveal is on screen (or a submit is about
+   * to complete the day and present it). Blocks the card — the reveal
+   * ceremony is never covered; the offer returns at a later seam instead.
+   */
+  revealUnseen?: boolean;
+}
+
 interface NotificationPrePromptState {
   /** Whether the branded pre-prompt card should be on screen. */
   visible: boolean;
   /** Ask to show the card from a seam ('first_submit' | 'reveal'). Gated internally. */
-  offer: (trigger: PrePromptTrigger) => void;
+  offer: (trigger: PrePromptTrigger, context?: PrePromptOfferContext) => void;
   /** User accepted the card — show the real system dialog and register. */
   accept: () => Promise<void>;
   /** User chose "Not now" — hide and stay quiet for the rest of the session. */
@@ -36,7 +45,7 @@ export function useNotificationPrePrompt(userId: string | undefined): Notificati
   const offeredThisSessionRef = useRef(false);
 
   const offer = useCallback(
-    (trigger: PrePromptTrigger) => {
+    (trigger: PrePromptTrigger, context?: PrePromptOfferContext) => {
       if (!userId || offeredThisSessionRef.current) return;
       (async () => {
         try {
@@ -52,6 +61,7 @@ export function useNotificationPrePrompt(userId: string | undefined): Notificati
             exposures,
             offeredThisSession: offeredThisSessionRef.current,
             trigger,
+            revealUnseen: context?.revealUnseen ?? false,
           });
           if (!show) return;
           offeredThisSessionRef.current = true;

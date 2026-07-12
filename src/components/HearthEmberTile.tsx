@@ -150,6 +150,15 @@ export function HearthEmberTile({
     ? `${label}, ${stateLabel}, ${tally}`
     : `${label}, ${stateLabel}`;
 
+  // At 3-across width a long single-word label ("Communication") char-wraps
+  // mid-word on iOS. Forcing single-word labels to ONE line makes the
+  // overflow exceed numberOfLines, which is what actually triggers
+  // adjustsFontSizeToFit — the label shrinks a step instead of breaking
+  // "Communicatio / n". Multi-word labels ("Growth and independence") wrap
+  // at spaces across two lines; if a wrapped word would still overflow onto
+  // a third line, the same shrink kicks in.
+  const isSingleWordLabel = !label.trim().includes(' ');
+
   return (
     <TouchableOpacity
       style={[
@@ -165,7 +174,14 @@ export function HearthEmberTile({
     >
       {state === 'talk' && <PulseDot />}
       <Icon name={icon} size="md" color={visual.fg} weight="light" />
-      <Text style={styles.label} numberOfLines={2} maxFontSizeMultiplier={1.4}>
+      <Text
+        style={styles.label}
+        numberOfLines={isSingleWordLabel ? 1 : 2}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+        lineBreakStrategyIOS="standard"
+        maxFontSizeMultiplier={1.4}
+      >
         {label}
       </Text>
       <View style={styles.stateRow}>
@@ -181,7 +197,10 @@ export function HearthEmberTile({
         </Text>
       </View>
       {tally != null && tally !== '' && (
-        <Text style={styles.tally} numberOfLines={1} maxFontSizeMultiplier={1.4}>
+        // Two lines, never an ellipsis — the unlit hint and the
+        // "N answered · warming" tally both wrap at spaces if the column
+        // runs narrow (~15 caption characters per line at 3-across).
+        <Text style={styles.tally} numberOfLines={2} maxFontSizeMultiplier={1.4}>
           {tally}
         </Text>
       )}

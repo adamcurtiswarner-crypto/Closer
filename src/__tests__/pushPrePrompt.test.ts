@@ -12,6 +12,7 @@ describe('pushPrePrompt gating', () => {
     exposures: 0,
     offeredThisSession: false,
     trigger: 'first_submit',
+    revealUnseen: false,
   };
 
   describe('shouldShowPrePrompt', () => {
@@ -59,6 +60,32 @@ describe('pushPrePrompt gating', () => {
       expect(shouldShowPrePrompt(maxedOut)).toBe(false);
       expect(shouldShowPrePrompt({ ...maxedOut, trigger: 'reveal' })).toBe(false);
       expect(shouldShowPrePrompt({ ...freshUser, exposures: 5, trigger: 'reveal' })).toBe(false);
+    });
+
+    describe('unseen reveal blocks the card (the ceremony owns the screen)', () => {
+      it('never shows during an unseen reveal, even for an otherwise eligible user', () => {
+        expect(
+          shouldShowPrePrompt({ ...freshUser, trigger: 'reveal', revealUnseen: true })
+        ).toBe(false);
+      });
+
+      it('blocks the first_submit seam too — a submit that completes the day yields', () => {
+        expect(shouldShowPrePrompt({ ...freshUser, revealUnseen: true })).toBe(false);
+      });
+
+      it('shows again at the reveal seam once the reveal has been seen', () => {
+        expect(
+          shouldShowPrePrompt({ ...freshUser, trigger: 'reveal', revealUnseen: false })
+        ).toBe(true);
+        expect(
+          shouldShowPrePrompt({
+            ...freshUser,
+            exposures: 1,
+            trigger: 'reveal',
+            revealUnseen: false,
+          })
+        ).toBe(true);
+      });
     });
   });
 

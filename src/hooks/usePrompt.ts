@@ -218,6 +218,14 @@ export function selectAssignmentDoc(
  */
 export interface SecondaryAssignmentInfo {
   assignment: PromptAssignment;
+  /**
+   * The secondary day's local assigned date (yyyy-MM-dd) — surfaced at the
+   * top level so the open-day chip can speak truthfully about WHICH day is
+   * still open. Usually yesterday, but a same-day secondary can exist (e.g.
+   * a double-delivery displaced the first question), and calling that
+   * "Yesterday" lies. Compare against todayLocalISO().
+   */
+  assignedDate: string;
   iAnswered: boolean;
   partnerAnswered: boolean;
   isComplete: boolean;
@@ -268,8 +276,10 @@ export function selectSecondaryAssignment(
 
   const data = candidate.data();
   if (data.status === 'completed') {
+    const assignment = mapAssignment(candidate.id, data);
     return {
-      assignment: mapAssignment(candidate.id, data),
+      assignment,
+      assignedDate: assignment.assignedDate,
       iAnswered: true,
       partnerAnswered: true,
       isComplete: true,
@@ -279,8 +289,10 @@ export function selectSecondaryAssignment(
   // and my user id the state is unknowable; say nothing rather than guess.
   if (!myUserId || !data.first_responder_id) return null;
   const iAnswered = data.first_responder_id === myUserId;
+  const assignment = mapAssignment(candidate.id, data);
   return {
-    assignment: mapAssignment(candidate.id, data),
+    assignment,
+    assignedDate: assignment.assignedDate,
     iAnswered,
     partnerAnswered: !iAnswered,
     isComplete: false,

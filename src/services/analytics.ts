@@ -5,6 +5,7 @@ import { logger } from '@/utils/logger';
 
 type AnalyticsEvent =
   | 'onboarding_completed'
+  | 'onboarding_name_set'
   | 'couple_linked'
   | 'prompt_viewed'
   | 'prompt_started'

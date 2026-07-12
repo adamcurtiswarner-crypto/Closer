@@ -48,21 +48,23 @@ export default function SignUpScreen() {
     try {
       await signUp(data.email, data.password);
 
-      // Check for pending invite code from deep link
+      // Every new account goes through the name step first — it's the one
+      // common point before the invite/join branch. The name screen carries
+      // the branch decision forward via params.
       const pendingCode = await getPendingInviteCode();
       if (pendingCode) {
         await clearPendingInviteCode();
         router.replace({
-          pathname: '/(onboarding)/accept-invite',
+          pathname: '/(onboarding)/name',
           params: { code: pendingCode },
         });
       } else if (invite === 'true') {
         // User came from "I have an invite code" on welcome screen
-        router.replace('/(onboarding)/accept-invite');
+        router.replace({ pathname: '/(onboarding)/name', params: { next: 'join' } });
       } else {
-        // Verification is a passive notice on the invite screen now —
-        // lead with the value proposition instead of an email gate.
-        router.replace('/(onboarding)/value-prop');
+        // Creator path: name → value-prop → invite-partner. Verification is
+        // a passive notice on the invite screen — no email gate here.
+        router.replace('/(onboarding)/name');
       }
     } catch (error: any) {
       Alert.alert(t('auth.signUp.failed'), getAuthErrorMessage(error));

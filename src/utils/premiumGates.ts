@@ -8,11 +8,13 @@
 //     - ANSWERING an Explore question the partner sent (never block the
 //       recipient), and browsing Explore
 //     - skipping a follow-up
-//     - current-month Hearth embers, including the "we talked" mark
+//     - current-month Hearth embers AND the current-month couch queue,
+//       including the "we talked" mark — the talk ritual is the product's
+//       hook, never advertised in the header and then locked
 //
 //   Premium (trial / subscription):
 //     - the follow-up question itself (deepener / repair / divergence)
-//     - Hearth history, trends, and the couch queue
+//     - Hearth history (pre-current-month) and trends
 //     - initiating an Explore send
 //
 // These functions are pure so the gate map is unit-testable without
@@ -36,7 +38,11 @@ export interface PremiumGateMap {
   followUpLocked: boolean;
   /** Tapping Respond on a fresh Explore prompt (initiating a send). */
   exploreSendLocked: boolean;
-  /** Hearth history, trends, and the couch queue. */
+  /**
+   * Hearth history (pre-current-month) and trends. The couch queue is NOT
+   * behind this: free couples keep the queue built from current-month
+   * completions — callers derive it from the currentMonthOnly() slice.
+   */
   hearthHistoryLocked: boolean;
 }
 

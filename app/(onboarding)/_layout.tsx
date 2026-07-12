@@ -11,6 +11,7 @@ export default function OnboardingLayout() {
         animation: 'slide_from_right',
       }}
     >
+      <Stack.Screen name="name" />
       <Stack.Screen name="value-prop" />
       <Stack.Screen name="invite-partner" />
       <Stack.Screen name="accept-invite" />

@@ -56,4 +56,15 @@ describe('NotificationPrePrompt', () => {
     );
     expect(queryByText('Know the moment they answer')).toBeNull();
   });
+
+  it('reads naturally with the lowercase fallback name mid-sentence', () => {
+    const { getByText } = render(
+      <NotificationPrePrompt {...defaultProps} partnerName="your partner" />
+    );
+    expect(
+      getByText(
+        "We'll only nudge when it matters — when your partner answers, and when a new question is ready."
+      )
+    ).toBeTruthy();
+  });
 });

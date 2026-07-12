@@ -10,11 +10,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Icon } from './Icon';
+import { usePartnerName } from '@/hooks/usePartnerName';
 
 import { colors, spacing, typography } from '@/config/theme';
 interface ConnectionHeaderProps {
   userName: string | null;
-  partnerName: string;
+  /** Override for tests/callers that already resolved a name; when absent,
+   *  usePartnerName decides (partner display_name > pet name > fallback). */
+  partnerName?: string;
   isPartnerOnline: boolean;
   isPartnerTyping: boolean;
   typingContext?: 'chat' | 'prompt' | null;
@@ -27,7 +30,14 @@ interface ConnectionHeaderProps {
 
 function getInitials(name: string | null): string {
   if (!name) return '?';
-  return name.charAt(0).toUpperCase();
+  return firstGrapheme(name);
+}
+
+// Array.from splits on code points, so names starting with an accented or
+// non-BMP character still yield one whole glyph rather than half a surrogate.
+function firstGrapheme(name: string): string {
+  const first = Array.from(name.trim())[0];
+  return first ? first.toUpperCase() : '?';
 }
 
 function getStatusText(
@@ -56,7 +66,20 @@ export function ConnectionHeader({
   userPhotoUrl,
   partnerPhotoUrl,
 }: ConnectionHeaderProps) {
-  const statusText = getStatusText(partnerName, isPartnerOnline, isPartnerTyping, typingContext);
+  const { name: hookPartnerName, isFallback } = usePartnerName();
+  // Status lines start with the name; the hook's fallback is lowercase
+  // "your partner" by design, so sentence-case it for this position.
+  const statusName =
+    partnerName ??
+    (isFallback
+      ? hookPartnerName.charAt(0).toUpperCase() + hookPartnerName.slice(1)
+      : hookPartnerName);
+  // The avatar initial always derives from the hook — a prop like the old
+  // "Partner" default must never surface as a capital-P initial. When no
+  // real name exists yet, a neutral glyph stands in.
+  const partnerInitial = isFallback ? null : firstGrapheme(hookPartnerName);
+
+  const statusText = getStatusText(statusName, isPartnerOnline, isPartnerTyping, typingContext);
 
   return (
     <Animated.View entering={FadeIn.duration(600)} style={styles.container}>
@@ -91,7 +114,13 @@ export function ConnectionHeader({
             <Image source={{ uri: partnerPhotoUrl }} style={styles.avatar} />
           ) : (
             <View style={[styles.avatar, styles.avatarPartner]}>
-              <Text style={styles.avatarText}>{getInitials(partnerName)}</Text>
+              {partnerInitial ? (
+                <Text style={styles.avatarText}>{partnerInitial}</Text>
+              ) : (
+                <View testID="partner-avatar-fallback">
+                  <Icon name="heart" size="sm" color={colors.text.inverse} weight="fill" />
+                </View>
+              )}
             </View>
           )}
           {isPartnerOnline && (

@@ -26,11 +26,17 @@ describe('HearthGateCard', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the quiet gate copy', () => {
+  it('renders the quiet gate copy — history and trends only', () => {
     const { getByText } = render(<HearthGateCard onSeePremium={jest.fn()} />);
 
     expect(getByText('Your full history lives in Premium')).toBeTruthy();
-    expect(getByText(/couch queue are kept for you in Premium/)).toBeTruthy();
+    expect(getByText(/Past months and your trends are kept for you in Premium/)).toBeTruthy();
+  });
+
+  it('never claims the couch queue is gated — the current-month queue is free', () => {
+    const en = require('../i18n/locales/en.json');
+    expect(en.gates.hearthBody).not.toMatch(/couch queue/i);
+    expect(en.gates.hearthTitle).not.toMatch(/couch queue/i);
   });
 
   it('opens the paywall from the button', () => {

@@ -362,10 +362,39 @@ export function shouldDeliverDaily(
 }
 
 // ============================================
-// PRIVATE: Deliver Prompt to Couple
+// Deliver Prompt to Couple
 // ============================================
 
-async function deliverPromptToCouple(coupleId: string, timezone: string): Promise<void> {
+/**
+ * Deterministic id for a couple's DAILY assignment doc — one per couple per
+ * local calendar day, enforced by Firestore itself via `.create()`. Two
+ * delivery paths racing (START NOW button + Today auto-trigger both fire at
+ * pairing) used to beat the check-then-add window query by ~500ms and mint
+ * two daily assignments for the same date, instantly displacing the couple's
+ * first unviewed reveal. The loser of a `.create()` race gets ALREADY_EXISTS
+ * and returns silently. Follow-up and explore assignments are separate
+ * creation paths and keep their auto-ids.
+ */
+export function dailyAssignmentId(coupleId: string, assignedDate: string): string {
+  return `${coupleId}_${assignedDate}`;
+}
+
+/**
+ * True when a Firestore write failed because the document already exists —
+ * gRPC status 6 (ALREADY_EXISTS). The admin SDK surfaces the numeric code;
+ * the string form and message text are checked defensively.
+ */
+export function isAlreadyExistsError(err: unknown): boolean {
+  const code = (err as { code?: unknown } | null | undefined)?.code;
+  if (code === 6 || code === 'already-exists') return true;
+  return err instanceof Error && err.message.includes('ALREADY_EXISTS');
+}
+
+/**
+ * Exported for tests only (race-condition regression coverage) — NOT a
+ * deployed Cloud Function; the index barrel uses explicit named exports.
+ */
+export async function deliverPromptToCouple(coupleId: string, timezone: string): Promise<void> {
   // Compute the couple's local calendar day — the recipient's timezone is
   // authoritative, never server UTC (midnight UTC is 8 PM US/Eastern).
   const { yesterday, today, tomorrow } = assignmentDateWindow(timezone);
@@ -414,8 +443,15 @@ async function deliverPromptToCouple(coupleId: string, timezone: string): Promis
   // Create assignment
   // v1: response_format/scale_config/category are denormalized here because
   // the client renders from the assignment doc, never the prompt doc.
+  //
+  // ATOMIC: deterministic doc id + `.create()` (never `.add()`). The
+  // shouldDeliverDaily window query above is a cheap first check but is
+  // check-then-add and non-transactional — two concurrent delivery paths
+  // (verified in prod: two assignments 541ms apart at pairing) both pass it.
+  // Firestore's create() fails with ALREADY_EXISTS for the race loser, which
+  // returns silently below: delivery already happened, including the pushes.
   const responseFormat = prompt.response_format || 'text';
-  await db.collection('prompt_assignments').add({
+  const assignmentPayload = {
     couple_id: coupleId,
     prompt_id: prompt.id,
     prompt_text: prompt.text,
@@ -440,7 +476,21 @@ async function deliverPromptToCouple(coupleId: string, timezone: string): Promis
     second_response_at: null,
     created_at: admin.firestore.FieldValue.serverTimestamp(),
     updated_at: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  };
+
+  try {
+    await db
+      .collection('prompt_assignments')
+      .doc(dailyAssignmentId(coupleId, today))
+      .create(assignmentPayload);
+  } catch (err) {
+    if (isAlreadyExistsError(err)) {
+      // Lost the creation race — the winner already delivered (and pushed)
+      // today's prompt. Nothing to repair, nothing to report.
+      return;
+    }
+    throw err;
+  }
 
   // Send push notifications to both partners
   const coupleData = coupleDoc.data()!;

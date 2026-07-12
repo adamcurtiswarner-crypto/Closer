@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   collection,
   doc,
-  getDoc,
   query,
   where,
   getDocs,
@@ -258,26 +257,52 @@ export function useStartExplorePrompt() {
 
 /**
  * Reactions on a completed assignment — read from the completion doc, whose
- * id IS the assignment id (same convention as the daily flow). Feeds the
- * explore reveal's ReactionRow; writes go through useReaction, which
- * invalidates ['completionReactions'] so this settles after a tap.
+ * id IS the assignment id (same convention as the daily flow). Real-time:
+ * an onSnapshot listener on the completion doc feeds the React Query cache
+ * (same pattern as useExploreAssignments above), so the PARTNER's reaction
+ * lands live in any open reveal sheet — no refetch, no reopen. My own taps
+ * still settle through useReaction's ['completionReactions'] invalidation,
+ * which now just re-reads the listener-owned cache.
  */
 export function useCompletionReactions(assignmentId: string | null) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const enabled = !!assignmentId && !!user?.coupleId;
+
+  useEffect(() => {
+    if (!enabled || !assignmentId) return;
+
+    const unsubscribe = onSnapshot(
+      doc(db, 'prompt_completions', assignmentId),
+      (snap) => {
+        queryClient.setQueryData<Record<string, string> | null>(
+          ['completionReactions', assignmentId],
+          snap.exists() ? snap.data()?.reactions ?? null : null
+        );
+      },
+      () => {
+        // Reactions are non-critical — the reveal renders without them
+        queryClient.setQueryData<Record<string, string> | null>(
+          ['completionReactions', assignmentId],
+          null
+        );
+      }
+    );
+
+    // Unsubscribe on unmount or when the sheet moves to another assignment
+    return unsubscribe;
+  }, [assignmentId, enabled, queryClient]);
 
   return useQuery<Record<string, string> | null>({
     queryKey: ['completionReactions', assignmentId],
-    queryFn: async () => {
-      if (!assignmentId) return null;
-      try {
-        const snap = await getDoc(doc(db, 'prompt_completions', assignmentId));
-        return snap.exists() ? snap.data().reactions ?? null : null;
-      } catch {
-        // Reactions are non-critical — the reveal renders without them
-        return null;
-      }
-    },
-    enabled: !!assignmentId && !!user?.coupleId,
+    queryFn: () =>
+      queryClient.getQueryData<Record<string, string> | null>([
+        'completionReactions',
+        assignmentId,
+      ]) ?? null,
+    enabled,
+    // No refetchInterval — the snapshot listener owns freshness
+    staleTime: Infinity,
   });
 }
 

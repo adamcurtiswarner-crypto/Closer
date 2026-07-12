@@ -375,6 +375,109 @@ describe('CompletionMoment', () => {
     });
   });
 
+  describe('anticipation line (divergence/repair — tomorrow is coming)', () => {
+    const scaleProps = {
+      promptText: 'How connected did you feel this week?',
+      yourResponse: 'Felt close after our walk.',
+      partnerResponse: 'The weekend helped.',
+      partnerName: 'Alex',
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      seedStorage({ [FIRST_REVEAL_LIFETIME_KEY]: 'true' });
+    });
+
+    it('divergence: names the gap and tomorrow, quietly, on the first viewing', async () => {
+      const { getByText } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={3}
+          partnerScore={9}
+          anticipationSignal="divergence"
+          assignmentId="s1"
+        />
+      );
+      await act(async () => {});
+      expect(
+        getByText('Your numbers are far apart. Tomorrow goes a little deeper.')
+      ).toBeTruthy();
+    });
+
+    it('repair: promises the gentle follow-up on the first viewing', async () => {
+      const { getByText } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={3}
+          partnerScore={4}
+          anticipationSignal="repair"
+          assignmentId="s2"
+        />
+      );
+      await act(async () => {});
+      expect(getByText('Tomorrow brings a gentle follow-up.')).toBeTruthy();
+    });
+
+    it('says nothing without a divergence/repair signal', async () => {
+      const { queryByTestId } = render(
+        <CompletionMoment {...scaleProps} yourScore={7} partnerScore={8} assignmentId="s3" />
+      );
+      await act(async () => {});
+      expect(queryByTestId('anticipation-line')).toBeNull();
+    });
+
+    it('never re-promises tomorrow on a revisit (reveal already seen)', async () => {
+      seedStorage({ reveal_seen_s4: 'true', [FIRST_REVEAL_LIFETIME_KEY]: 'true' });
+      const { queryByTestId, getByTestId } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={3}
+          partnerScore={9}
+          anticipationSignal="divergence"
+          assignmentId="s4"
+        />
+      );
+      await act(async () => {});
+      // The reveal content still renders flat — only the anticipation is gone
+      expect(getByTestId('your-score').props.children).toBe(3);
+      expect(queryByTestId('anticipation-line')).toBeNull();
+    });
+
+    it('renders after the reactions block, in the closing-thought position', async () => {
+      const { toJSON } = render(
+        <CompletionMoment
+          {...scaleProps}
+          yourScore={3}
+          partnerScore={9}
+          anticipationSignal="divergence"
+          assignmentId="s5"
+          onReact={jest.fn()}
+        />
+      );
+      await act(async () => {});
+      const flat = JSON.stringify(toJSON());
+      const reactionsIdx = flat.indexOf("React to Alex's answer");
+      const lineIdx = flat.indexOf('Your numbers are far apart.');
+      expect(reactionsIdx).toBeGreaterThan(-1);
+      expect(lineIdx).toBeGreaterThan(reactionsIdx);
+    });
+  });
+
+  describe('partner-name register', () => {
+    it('falls back to lowercase "your partner", never robot-register "Partner"', async () => {
+      const { getAllByText, queryByText } = render(
+        <CompletionMoment
+          promptText="What made you smile today?"
+          yourResponse="The sunset."
+          partnerResponse="Morning coffee."
+        />
+      );
+      await act(async () => {});
+      expect(getAllByText('your partner').length).toBeGreaterThanOrEqual(1);
+      expect(queryByText('Partner')).toBeNull();
+    });
+  });
+
   describe('keep it for the couch (mid-scale reveal)', () => {
     const scaleProps = {
       promptText: 'How connected did you feel this week?',

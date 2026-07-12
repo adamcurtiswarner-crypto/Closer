@@ -7,7 +7,9 @@ import { colors, spacing, typography } from '@/config/theme';
 interface TodayScreenHeaderProps {
   greeting: string;
   userName: string | null;
-  partnerName: string;
+  /** Optional override — when absent, ConnectionHeader resolves the name
+   *  via usePartnerName (partner display_name > pet name > fallback). */
+  partnerName?: string;
   isPartnerOnline: boolean;
   isPartnerTyping: boolean;
   typingContext: 'chat' | 'prompt' | null;

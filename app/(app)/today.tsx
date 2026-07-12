@@ -75,12 +75,14 @@ import {
   useAssignmentReveal,
 } from '@/hooks/usePrompt';
 import { usePersonalize } from '@/hooks/usePersonalize';
+import { usePartnerName } from '@/hooks/usePartnerName';
 import {
   useExploreAssignments,
   useCompletionReactions,
   pendingPartnerQuestions,
 } from '@/hooks/useExplorePrompts';
 import { isMiddleScaleOutcome } from '@/utils/scale';
+import { computeSignal } from '@/utils/hearthSignal';
 import {
   isSameSessionDeepener,
   deepenerEntranceDelay,
@@ -232,6 +234,14 @@ export default function TodayScreen() {
   // Renders {partner}/{me} tokens with real first names at display time only —
   // canonical tokenized text stays in Firestore and in every write path.
   const personalize = usePersonalize();
+  // Single source of truth for what to call the partner — real name first,
+  // lowercase "your partner" fallback (never robot-register "Partner").
+  const { name: partnerName, isFallback: partnerNameIsFallback } = usePartnerName();
+  // Sentence-initial templates ("… is responding", "… set this one aside")
+  // need "Your partner", not mid-sentence "your partner". Real names pass through.
+  const partnerNameSentenceCase = partnerNameIsFallback
+    ? partnerName.charAt(0).toUpperCase() + partnerName.slice(1)
+    : partnerName;
 
   const [isResponding, setIsResponding] = useState(false);
   const [responseText, setResponseText] = useState('');
@@ -262,6 +272,16 @@ export default function TodayScreen() {
   const [showSecondaryReveal, setShowSecondaryReveal] = useState(false);
   // null = unknown/not applicable; the reveal chip only shows on `false`.
   const [secondaryRevealSeen, setSecondaryRevealSeen] = useState<boolean | null>(null);
+  // Whether the PRIMARY reveal on screen had already been seen BEFORE this
+  // viewing (null = not on a reveal / still resolving). Captured at the
+  // moment 'complete' renders — before CompletionMoment marks it seen — so
+  // an unseen reveal keeps the screen to itself for the whole viewing:
+  // no pre-prompt card, no stage card, nothing lands on top of the ceremony.
+  // Keyed by assignment id so a stale value from a previous reveal never leaks.
+  const [primaryRevealSeen, setPrimaryRevealSeen] = useState<{
+    assignmentId: string;
+    seenBefore: boolean;
+  } | null>(null);
 
   // Stage prompt is offered at most 3 times before it quietly stops asking.
   useEffect(() => {
@@ -453,6 +473,20 @@ export default function TodayScreen() {
   const isRevealScale = revealAssignment?.responseFormat === 'scale';
   const isRevealFollowUp = revealAssignment?.assignmentKind === 'follow_up';
 
+  // Divergence/repair outcome for the reveal on screen: CompletionMoment adds
+  // one quiet anticipation line naming tomorrow's follow-up. Daily scored
+  // reveals only — a follow-up's own reveal never promises another one.
+  const revealYourScore = isRevealScale ? revealMyResponse?.responseScore ?? null : null;
+  const revealPartnerScore = isRevealScale
+    ? revealPartnerResponse?.responseScore ?? null
+    : null;
+  const revealSignal =
+    !isRevealFollowUp && revealYourScore != null && revealPartnerScore != null
+      ? computeSignal(revealYourScore, revealPartnerScore)
+      : null;
+  const anticipationSignal =
+    revealSignal === 'divergence' || revealSignal === 'repair' ? revealSignal : null;
+
   // Capture the completed scored reveal (deepener parents are always scored)
   useEffect(() => {
     if (mode === 'complete' && !deepenerHold && assignment && myResponse && isScalePrompt) {
@@ -550,15 +584,52 @@ export default function TodayScreen() {
     }
   }, [mode, markResponseViewed]);
 
+  // Which reveal (if any) currently owns the screen.
+  const primaryRevealId = mode === 'complete' ? revealAssignment?.id ?? null : null;
+
+  // Capture whether this reveal was seen BEFORE this viewing. The read is
+  // issued in the same commit as CompletionMoment's mount — ahead of its
+  // deferred reveal_seen write — so a fresh reveal resolves seenBefore=false
+  // and holds the screen for the whole viewing.
+  useEffect(() => {
+    if (!primaryRevealId) {
+      setPrimaryRevealSeen(null);
+      return;
+    }
+    let cancelled = false;
+    AsyncStorage.getItem(revealSeenKey(primaryRevealId))
+      .then((raw) => {
+        if (!cancelled) {
+          setPrimaryRevealSeen({ assignmentId: primaryRevealId, seenBefore: raw === 'true' });
+        }
+      })
+      .catch(() => {
+        // Storage failure — err toward protecting the ceremony (treat as unseen)
+        if (!cancelled) {
+          setPrimaryRevealSeen({ assignmentId: primaryRevealId, seenBefore: false });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [primaryRevealId]);
+
+  // True while an unseen completed reveal owns the screen (or we haven't
+  // verified otherwise yet). Everything optional yields to it.
+  const unseenRevealOnScreen =
+    primaryRevealId != null &&
+    !(primaryRevealSeen?.assignmentId === primaryRevealId && primaryRevealSeen.seenBefore);
+
   // The reveal is the second (and last) chance to offer the push pre-prompt —
   // the value of "know when they answer" is most concrete right here.
   // Gating lives in useNotificationPrePrompt (undetermined permission only,
   // once per session, two lifetime exposures, never after the system dialog).
+  // An UNSEEN reveal blocks the card (the pushPrePrompt gate owns that rule);
+  // the offer lands on the next natural mount of the already-seen reveal.
   useEffect(() => {
-    if (mode === 'complete') {
-      prePrompt.offer('reveal');
-    }
-  }, [mode, prePrompt.offer]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!primaryRevealId || primaryRevealSeen?.assignmentId !== primaryRevealId) return;
+    prePrompt.offer('reveal', { revealUnseen: !primaryRevealSeen.seenBefore });
+  }, [primaryRevealId, primaryRevealSeen, prePrompt.offer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update iOS home screen widget data
   useEffect(() => {
@@ -591,7 +662,7 @@ export default function TodayScreen() {
       currentStreak: FEATURES.streaks ? currentStreak : 0,
       daysAsCouple,
       userName: user.displayName || '',
-      partnerName: user.partnerName || 'Partner',
+      partnerName,
       promptStatus,
       promptText: personalize(assignment?.promptText || ''),
       anniversaryDaysLeft,
@@ -599,7 +670,7 @@ export default function TodayScreen() {
     });
 
     updateWidgetData(widgetData);
-  }, [user, couple, currentStreak, assignment, myResponse, isComplete]);
+  }, [user, couple, currentStreak, assignment, myResponse, isComplete, partnerName]);
 
   const handleRespond = () => {
     hapticImpact();
@@ -658,7 +729,12 @@ export default function TodayScreen() {
       } else {
         // First-submission seam: offer the push pre-prompt (gated internally).
         // Skipped when safety resources are up — never stack over that moment.
-        prePrompt.offer('first_submit');
+        // When the partner already answered, this submit completes the day and
+        // the unseen reveal is about to take the screen — the card yields.
+        const revealImminent = respondingSecondary
+          ? secondary?.partnerAnswered ?? false
+          : partnerResponse != null;
+        prePrompt.offer('first_submit', { revealUnseen: revealImminent });
       }
     } catch (err) {
       logger.error('Error submitting response:', err);
@@ -692,7 +768,8 @@ export default function TodayScreen() {
       if (result.safetyMatch) {
         setShowSafetyResources(true);
       } else {
-        prePrompt.offer('first_submit');
+        // Completing the day means the unseen reveal takes the screen — yield.
+        prePrompt.offer('first_submit', { revealUnseen: partnerResponse != null });
       }
     } catch (err) {
       logger.error('Error submitting score:', err);
@@ -729,10 +806,12 @@ export default function TodayScreen() {
     skipFollowUp.mutate({ assignmentId: assignment.id });
   };
 
-  const partnerName = user?.partnerName || 'Partner';
   const userName = user?.displayName || null;
 
-  const showStagePrompt = !user?.relationshipStage && user?.isOnboarded && !stageDismissed;
+  // The stage card never lands on top of an unseen reveal — the ceremony
+  // owns the screen; the card returns on the next natural mount.
+  const showStagePrompt =
+    !user?.relationshipStage && user?.isOnboarded && !stageDismissed && !unseenRevealOnScreen;
 
   // Shared props for header component
   const headerProps = {
@@ -751,7 +830,7 @@ export default function TodayScreen() {
   // Shared props for engagement cards (check-in and coaching are feature-flagged for v1)
   const engagementProps = {
     hasPendingCheckIn: FEATURES.checkIns && hasPendingCheckIn,
-    partnerName: user?.partnerName ?? 'your partner',
+    partnerName,
     onCheckInSubmit: (responses: any) => submitCheckIn.mutate(responses),
     onCheckInDismiss: () => dismissCheckIn.mutate(),
     isPremium,
@@ -821,6 +900,7 @@ export default function TodayScreen() {
         iAnswered={secondary.iAnswered}
         partnerAnswered={secondary.partnerAnswered}
         isComplete={secondary.isComplete}
+        assignedDate={secondary.assignedDate}
         partnerName={partnerName}
         onOpenResponding={handleOpenDayRespond}
         onOpenReveal={handleOpenDayReveal}
@@ -995,7 +1075,7 @@ export default function TodayScreen() {
           <Text style={styles.sealedSubtitle}>
             {todayData?.isMyResponseOffline
               ? t('today.savedOffline')
-              : t('today.sealedUntil', { name: partnerName ?? 'your partner' })}
+              : t('today.sealedUntil', { name: partnerName })}
           </Text>
         </Animated.View>
 
@@ -1008,7 +1088,7 @@ export default function TodayScreen() {
           >
             <Icon name="hourglass" size={16} color={colors.text.muted} />
             <Text style={styles.waitingMessage}>
-              {t('today.partnerSetAside', { name: partnerName ?? t('explore.partnerFallback') })}
+              {t('today.partnerSetAside', { name: partnerNameSentenceCase })}
             </Text>
           </Animated.View>
         ) : isPartnerTyping && partnerTypingContext === 'prompt' ? (
@@ -1018,7 +1098,9 @@ export default function TodayScreen() {
             style={styles.typingRow}
           >
             <PulsingDots color={colors.accent.primary} size={5} />
-            <Text style={styles.typingText}>{t('today.isResponding', { name: partnerName })}</Text>
+            <Text style={styles.typingText}>
+              {t('today.isResponding', { name: partnerNameSentenceCase })}
+            </Text>
           </Animated.View>
         ) : (
           <Animated.View
@@ -1104,6 +1186,7 @@ export default function TodayScreen() {
               ? personalize(revealAssignment!.closingText)
               : null
           }
+          anticipationSignal={anticipationSignal}
         />
       </Animated.View>
 

@@ -78,6 +78,12 @@ interface CompletionMomentProps {
   /** Final-step follow-up templates: shown at reveal */
   closingText?: string | null;
   /**
+   * Divergence/repair outcomes: a quiet anticipation line after the
+   * reactions — tomorrow's follow-up is coming. First viewing only
+   * (revisits settle flat and say nothing about tomorrow).
+   */
+  anticipationSignal?: 'divergence' | 'repair' | null;
+  /**
    * Gate the choreography + haptics to the FIRST reveal of this assignment
    * (AsyncStorage reveal_seen key, shared with the Today screen dwell gate).
    * When omitted, the reveal is treated as first (used in tests/previews).
@@ -89,7 +95,7 @@ export function CompletionMoment({
   promptText,
   yourResponse,
   partnerResponse,
-  partnerName = 'Partner',
+  partnerName,
   yourImageUrl,
   partnerImageUrl,
   myReaction = null,
@@ -99,10 +105,13 @@ export function CompletionMoment({
   partnerScore = null,
   showMidScaleLine = false,
   closingText = null,
+  anticipationSignal = null,
   assignmentId,
 }: CompletionMomentProps) {
   const { t } = useTranslation();
   const hasScores = yourScore != null && partnerScore != null;
+  // Lowercase "your partner", never robot-register "Partner" (sim 2026-07-12)
+  const displayPartnerName = partnerName?.trim() || t('explore.partnerFallback');
 
   // "Keep it for the couch" — only fetched when the mid-scale block renders
   // for a real completion. Flagged by EITHER partner → quiet confirmation.
@@ -302,7 +311,7 @@ export function CompletionMoment({
                   </View>
                   <View style={styles.scoreDivider} />
                   <View style={styles.scoreCol}>
-                    <Text style={styles.scoreName}>{partnerName}</Text>
+                    <Text style={styles.scoreName}>{displayPartnerName}</Text>
                     <View style={styles.scoreValueWrap}>
                       <Animated.Text
                         style={[styles.scoreValue, partnerScoreStyle]}
@@ -339,7 +348,7 @@ export function CompletionMoment({
               {(!hasScores || partnerResponse.length > 0) && (
                 <Animated.View entering={enterUp(partnerBodyDelay, NOTE_FADE_MS)}>
                   <ResponseCard
-                    label={partnerName}
+                    label={displayPartnerName}
                     responseText={partnerResponse}
                     imageUrl={partnerImageUrl}
                     isYours={false}
@@ -360,9 +369,22 @@ export function CompletionMoment({
                   <ReactionRow
                     myReaction={myReaction}
                     partnerReaction={partnerReaction}
-                    partnerName={partnerName}
+                    partnerName={displayPartnerName}
                     onReact={onReact}
                   />
+                </Animated.View>
+              )}
+
+              {/* Divergence/repair: one quiet anticipation line after the
+                  reactions — tomorrow's follow-up is real, name it softly.
+                  First viewing only; revisits never re-promise tomorrow. */}
+              {anticipationSignal != null && isFirstReveal === true && (
+                <Animated.View entering={enterFade(REVEAL_T.FOOTER, CLOSING_FADE_MS)}>
+                  <Text style={styles.anticipationLine} testID="anticipation-line">
+                    {anticipationSignal === 'divergence'
+                      ? t('today.anticipationDivergence')
+                      : t('today.anticipationRepair')}
+                  </Text>
                 </Animated.View>
               )}
 
@@ -491,6 +513,14 @@ const styles = StyleSheet.create({
   },
   midScaleLine: {
     // Closing-thought register — mirrors closingText below.
+    ...typography.bodySm,
+    marginTop: spacing.md,
+    color: colors.text.secondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  anticipationLine: {
+    // Same closing-thought register as midScaleLine/closingText.
     ...typography.bodySm,
     marginTop: spacing.md,
     color: colors.text.secondary,

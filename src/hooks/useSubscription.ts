@@ -8,13 +8,34 @@ import Purchases, {
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 import { useCouple } from './useCouple';
-import { configurePurchases } from '@/config/purchases';
+import { configurePurchases, isPurchasesConfigured } from '@/config/purchases';
 
 const PREMIUM_ENTITLEMENT = 'premium';
 /** Couple-scoped subscription docs change rarely — cache for five minutes. */
 const COUPLE_SUBSCRIPTION_STALE_MS = 5 * 60 * 1000;
+
+// Offerings being unavailable is an EXPECTED state on fresh free accounts
+// (RC unconfigured, products not yet approved, sandbox hiccups). It must
+// never produce error-level noise or a retry storm — one quiet warn per
+// session, and the paywall's user-facing "plans aren't loading" state
+// (offeringError) carries it from there.
+let offeringsWarnedThisSession = false;
+function warnOfferingsUnavailableOnce(context: string, error?: unknown): void {
+  if (offeringsWarnedThisSession) return;
+  offeringsWarnedThisSession = true;
+  logger.warn(
+    `[useSubscription] offerings unavailable (${context}) — treating as free; paywall shows its retry state`,
+    error ?? ''
+  );
+}
+
+/** Test-only escape hatch for the once-per-session warn guard. */
+export function resetOfferingsWarnForTests(): void {
+  offeringsWarnedThisSession = false;
+}
 
 interface SubscriptionState {
   isPremium: boolean;
@@ -148,6 +169,15 @@ export function useSubscription(): SubscriptionState {
       try {
         await configurePurchases(user!.id);
 
+        // RC never configured (no API key — e.g. local dev): a quiet
+        // expected state. Skip the SDK calls entirely so the entitlement
+        // check can't throw-and-log, and let the paywall react via
+        // offeringError. No retry — the next app session tries again.
+        if (!isPurchasesConfigured()) {
+          if (!cancelled) setOfferingError(true);
+          return;
+        }
+
         const customerInfo = await Purchases.getCustomerInfo();
         if (!cancelled) {
           setRevenueCatPremium(
@@ -160,12 +190,14 @@ export function useSubscription(): SubscriptionState {
           if (offerings.current) {
             setOffering(offerings.current);
           } else {
+            warnOfferingsUnavailableOnce('no current offering');
             setOfferingError(true);
           }
         }
       } catch (error) {
-        // RevenueCat not configured or unavailable — default to free,
-        // but surface the offering failure so the paywall can react.
+        // RevenueCat unavailable — default to free, warn once (never
+        // error-level), and surface the failure so the paywall can react.
+        warnOfferingsUnavailableOnce('init', error);
         if (!cancelled) setOfferingError(true);
       } finally {
         if (!cancelled) setIsLoading(false);
@@ -188,8 +220,14 @@ export function useSubscription(): SubscriptionState {
     };
   }, [user?.id]);
 
+  // User-initiated retry from the paywall — the only re-fetch path. There
+  // is deliberately no automatic retry loop around getOfferings.
   const refreshOffering = useCallback(async () => {
     setOfferingError(false);
+    if (!isPurchasesConfigured()) {
+      setOfferingError(true);
+      return;
+    }
     try {
       const offerings = await Purchases.getOfferings();
       if (offerings.current) {
@@ -198,6 +236,8 @@ export function useSubscription(): SubscriptionState {
         setOfferingError(true);
       }
     } catch (error) {
+      // Quiet by design — the paywall's inline state is the surface.
+      warnOfferingsUnavailableOnce('refresh', error);
       setOfferingError(true);
     }
   }, []);

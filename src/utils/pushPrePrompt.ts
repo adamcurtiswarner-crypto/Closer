@@ -14,6 +14,10 @@
  * - At most once per session, and at most MAX_PREPROMPT_EXPOSURES lifetime.
  * - The second (final) exposure is only re-offered at a reveal — the moment
  *   the value of "know when they answer" is most concrete.
+ * - NEVER while an unseen completed reveal is (about to be) on screen: the
+ *   reveal ceremony is the product's core moment and nothing may cover it.
+ *   The card waits for the next natural seam (e.g. the next mount, once the
+ *   reveal has been seen).
  */
 
 /** AsyncStorage flag: the OS permission dialog has been shown once. */
@@ -38,9 +42,16 @@ export interface PrePromptGateInput {
   offeredThisSession: boolean;
   /** Which seam is asking. */
   trigger: PrePromptTrigger;
+  /**
+   * True when an unseen completed reveal is on screen (or is about to take
+   * it — e.g. a submit that completes the day). The reveal always wins.
+   */
+  revealUnseen: boolean;
 }
 
 export function shouldShowPrePrompt(input: PrePromptGateInput): boolean {
+  // The reveal ceremony owns the screen — the card yields, unconditionally.
+  if (input.revealUnseen) return false;
   if (input.permission !== 'undetermined') return false;
   if (input.systemPrompted) return false;
   if (input.offeredThisSession) return false;

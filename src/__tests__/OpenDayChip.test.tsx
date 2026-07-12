@@ -3,6 +3,13 @@ import { render, fireEvent } from '@testing-library/react-native';
 
 jest.mock('@/components/Icon', () => ({ Icon: () => null }));
 
+// Pin the device-local day so date-aware labels are deterministic
+const LOCAL_TODAY = '2026-07-12';
+const LOCAL_YESTERDAY = '2026-07-11';
+jest.mock('@utils/localDate', () => ({
+  todayLocalISO: () => LOCAL_TODAY,
+}));
+
 // Resolve t() against the real en.json so tests assert shipped copy
 jest.mock('react-i18next', () => {
   const en = require('../i18n/locales/en.json');
@@ -125,6 +132,121 @@ describe('OpenDayChip', () => {
       />
     );
     expect(toJSON()).toBeNull();
+  });
+
+  describe('date-aware labels (the chip never lies about which day is open)', () => {
+    it('same local day, sealed → "Earlier today" copy with the partner name', () => {
+      const { getByText, getByTestId } = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered={true}
+          partnerAnswered={false}
+          isComplete={false}
+          assignedDate={LOCAL_TODAY}
+        />
+      );
+      expect(getByText('Earlier today · sealed until Jordan answers')).toBeTruthy();
+      expect(getByTestId('open-day-chip-sealed')).toBeTruthy();
+    });
+
+    it('same local day, still open → "Earlier today" copy, still routes to responding', () => {
+      const { getByText, getByTestId } = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered={false}
+          partnerAnswered={true}
+          isComplete={false}
+          assignedDate={LOCAL_TODAY}
+        />
+      );
+      expect(getByText('Earlier today · a question is still open')).toBeTruthy();
+      fireEvent.press(getByTestId('open-day-chip-open'));
+      expect(baseProps.onOpenResponding).toHaveBeenCalledTimes(1);
+    });
+
+    it('same local day, reveal → "Earlier today" copy, still routes to the reveal', () => {
+      const { getByText, getByTestId } = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered={true}
+          partnerAnswered={true}
+          isComplete={true}
+          assignedDate={LOCAL_TODAY}
+        />
+      );
+      expect(getByText('Earlier today · you both answered — see it')).toBeTruthy();
+      fireEvent.press(getByTestId('open-day-chip-reveal'));
+      expect(baseProps.onOpenReveal).toHaveBeenCalledTimes(1);
+    });
+
+    it('a past local day keeps the "Yesterday" copy in every state', () => {
+      const sealed = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered
+          partnerAnswered={false}
+          isComplete={false}
+          assignedDate={LOCAL_YESTERDAY}
+        />
+      );
+      expect(sealed.getByText('Yesterday · sealed until Jordan answers')).toBeTruthy();
+
+      const open = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered={false}
+          partnerAnswered
+          isComplete={false}
+          assignedDate={LOCAL_YESTERDAY}
+        />
+      );
+      expect(open.getByText("Yesterday's question is still open")).toBeTruthy();
+
+      const reveal = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered
+          partnerAnswered
+          isComplete
+          assignedDate={LOCAL_YESTERDAY}
+        />
+      );
+      expect(reveal.getByText('Yesterday · you both answered — see it')).toBeTruthy();
+    });
+
+    it('absent assignedDate falls back to the "Yesterday" copy (unwired caller stays honest for the common case)', () => {
+      const { getByText } = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered={true}
+          partnerAnswered={true}
+          isComplete={true}
+        />
+      );
+      expect(getByText('Yesterday · you both answered — see it')).toBeTruthy();
+    });
+
+    it('same-day accessibility labels match the visible copy', () => {
+      const sealed = render(
+        <OpenDayChip
+          {...baseProps}
+          iAnswered
+          partnerAnswered={false}
+          isComplete={false}
+          assignedDate={LOCAL_TODAY}
+        />
+      );
+      expect(
+        sealed.getByTestId('open-day-chip-sealed').props.accessibilityLabel
+      ).toBe('Earlier today · sealed until Jordan answers');
+
+      const reveal = render(
+        <OpenDayChip {...baseProps} iAnswered partnerAnswered isComplete assignedDate={LOCAL_TODAY} />
+      );
+      expect(reveal.getByTestId('open-day-chip-reveal').props.accessibilityLabel).toBe(
+        'Earlier today · you both answered — see it'
+      );
+    });
   });
 
   it('every state carries an accessibility label', () => {

@@ -12,8 +12,9 @@ interface HearthGateCardProps {
 
 /**
  * Quiet in-tab gate for the Hearth (premiumGates on, couple free): the
- * current month's embers stay free above this card; history, trends, and
- * the couch queue live behind it. Never a wall — just a card in the flow.
+ * current month — embers AND the couch queue — stays free above this card;
+ * only past months and trends live behind it. Never a wall — just a card
+ * in the flow.
  */
 export function HearthGateCard({ onSeePremium }: HearthGateCardProps) {
   const { t } = useTranslation();

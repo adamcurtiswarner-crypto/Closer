@@ -272,7 +272,7 @@ describe('HearthScreen tile states and tallies', () => {
     expect(getByText('Glowing')).toBeTruthy();
     expect(getByText('1 answered')).toBeTruthy();
     expect(queryAllByText('Not yet lit')).toHaveLength(11);
-    expect(queryAllByText('Ask one to light it')).toHaveLength(11);
+    expect(queryAllByText('Ask one tonight')).toHaveLength(11);
   });
 
   it('a couch-flagged steady entry says Talk about it on BOTH the tile and the queue card', () => {
@@ -296,6 +296,87 @@ describe('HearthScreen tile states and tallies', () => {
     // The founder-caught contradiction: tile and queue can never disagree.
     expect(getByTestId('hearth-queue-c-1')).toBeTruthy();
     expect(queryAllByText('Talk about it')).toHaveLength(2);
+  });
+});
+
+describe('HearthScreen free-couple couch queue (current month free, history gated)', () => {
+  function repairCompletion(overrides: Record<string, unknown> = {}) {
+    return makeCompletion({
+      id: 'c-repair',
+      category: 'money',
+      signal: 'repair' as const,
+      responses: [
+        { userId: 'user-1', responseText: 'a', responseScore: 2, imageUrl: null, submittedAt: null },
+        { userId: 'user-2', responseText: 'b', responseScore: 3, imageUrl: null, submittedAt: null },
+      ],
+      ...overrides,
+    });
+  }
+  const now = new Date();
+  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
+
+  it('free couples see the current-month couch queue — the advertised conversation is never locked', () => {
+    // Default free subscription from beforeEach.
+    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
+    const { getByTestId, getByText } = render(<HearthScreen />);
+
+    // Header advertises it AND the queue delivers it, on the same screen.
+    expect(getByText('1 answered this month · 1 waiting for you two')).toBeTruthy();
+    expect(getByTestId('hearth-queue-c-repair')).toBeTruthy();
+    // History/trends stay gated below.
+    expect(getByTestId('hearth-gate')).toBeTruthy();
+  });
+
+  it('hides past-month queue entries from free couples and keeps the header count matching', () => {
+    mockHearthQuery.mockReturnValue({
+      data: [
+        repairCompletion({ id: 'c-now' }),
+        repairCompletion({ id: 'c-old', completedAt: lastMonth }),
+      ],
+      isLoading: false,
+    });
+    const { getByTestId, queryByTestId, getByText } = render(<HearthScreen />);
+
+    expect(getByTestId('hearth-queue-c-now')).toBeTruthy();
+    expect(queryByTestId('hearth-queue-c-old')).toBeNull();
+    // The metrics strip counts only what the queue below actually shows.
+    expect(getByText('1 answered this month · 1 waiting for you two')).toBeTruthy();
+  });
+
+  it('a free couple whose only waiting entry is last month sees the steady header, no queue, and the gate', () => {
+    mockHearthQuery.mockReturnValue({
+      data: [repairCompletion({ completedAt: lastMonth })],
+      isLoading: false,
+    });
+    const { getByTestId, queryByTestId, getByText } = render(<HearthScreen />);
+
+    expect(getByText('Nothing waiting — your fire is steady')).toBeTruthy();
+    expect(queryByTestId('hearth-queue-c-repair')).toBeNull();
+    expect(getByTestId('hearth-gate')).toBeTruthy();
+  });
+
+  it('premium couples keep the full queue, past months included, with no gate card', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    mockHearthQuery.mockReturnValue({
+      data: [repairCompletion({ completedAt: lastMonth })],
+      isLoading: false,
+    });
+    const { getByTestId, queryByTestId } = render(<HearthScreen />);
+
+    expect(getByTestId('hearth-queue-c-repair')).toBeTruthy();
+    expect(queryByTestId('hearth-gate')).toBeNull();
+  });
+
+  it('the talk flow works on a free couple queue entry (open the sheet, no paywall in the way)', () => {
+    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
+    const { getByTestId } = render(<HearthScreen />);
+
+    fireEvent.press(getByTestId('hearth-queue-c-repair'));
+
+    expect(logEvent).toHaveBeenCalledWith('talk_sheet_opened', {
+      completion_id: 'c-repair',
+      signal: 'repair',
+    });
   });
 });
 
