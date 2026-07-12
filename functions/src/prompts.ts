@@ -506,6 +506,14 @@ export async function deliverPromptToCouple(coupleId: string, timezone: string):
 // SCHEDULED: Daily Prompt Delivery
 // ============================================
 
+// Universal delivery time: 08:00 in each user's LOCAL timezone, the same for
+// everyone (founder decision 2026-07-12). The per-user `notification_time`
+// field is vestigial — intentionally ignored here, never written by the
+// client anymore, and left on old user docs without migration. The client
+// twin lives in src/config/promptTime.ts (DAILY_PROMPT_TIME = '08:00'); the
+// unit test in src/__tests__/promptTime.test.ts keeps the two in lockstep.
+const DELIVERY_HOUR_LOCAL = 8;
+
 export const deliverDailyPrompts = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every 15 minutes')
   .onRun(async () => {
@@ -526,22 +534,14 @@ export const deliverDailyPrompts = functions.runWith({ timeoutSeconds: 540, memo
       if (!userData.couple_id) continue;
       if (deliveredCouples.has(userData.couple_id)) continue;
 
-      // Parse notification time
-      const [notifHour, notifMinute] = (userData.notification_time || '19:00')
-        .split(':')
-        .map(Number);
-
       // Convert current time to user's timezone
       const userTimezone = userData.timezone || 'America/Los_Angeles';
       const userLocalTime = formatInTimeZone(now, userTimezone, 'HH:mm');
       const [localHour, localMinute] = userLocalTime.split(':').map(Number);
 
-      // Check if within 15-minute window
-      if (
-        localHour === notifHour &&
-        localMinute >= notifMinute &&
-        localMinute < notifMinute + 15
-      ) {
+      // Check if within the 08:00-08:15 local window (the scheduler runs
+      // every 15 minutes, so each timezone matches exactly one run per day)
+      if (localHour === DELIVERY_HOUR_LOCAL && localMinute < 15) {
         // Check prompt_frequency before delivering
         const coupleDoc = await db.collection('couples').doc(userData.couple_id).get();
         if (!coupleDoc.exists) continue;
@@ -559,7 +559,7 @@ export const deliverDailyPrompts = functions.runWith({ timeoutSeconds: 540, memo
         }
 
         try {
-          // Deliver dated in this user's timezone — their notification_time
+          // Deliver dated in this user's timezone — their 8 AM local
           // window is what fired, so their local calendar day is "today".
           await deliverPromptToCouple(userData.couple_id, userTimezone);
           deliveredCouples.add(userData.couple_id);

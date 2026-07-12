@@ -37,8 +37,6 @@ type AnalyticsEvent =
   | 'responses_anonymized'
   | 'resource_viewed'
   | 'resource_link_opened'
-  | 'calendar_synced'
-  | 'calendar_removed'
   | 'chat_message_sent'
   | 'chat_opened'
   | 'chat_image_sent'

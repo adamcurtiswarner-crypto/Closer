@@ -157,10 +157,8 @@
     },
     "ready": {
       "title": "You're all set",
-      "subtitle": "Your first prompt arrives at {{time}}.",
-      "changeTime": "Prefer a different time?",
-      "startNow": "Start now",
-      "waitForPrompt": "I'll wait for the prompt"
+      "subtitle": "A new question arrives each morning.",
+      "startNow": "Start now"
     },
     "valueProp": {
       "title": "Stay connected in\njust 5 minutes a day",
@@ -183,7 +181,7 @@
     "emptyTitle": "Today's 5-minute connection",
     "emptySubtitle": "Your prompt is on the way",
     "promptBadge": "~5 min",
-    "arrivingAround": "Arriving around {{time}}",
+    "arrivesEachMorning": "A new question arrives each morning.",
     "checkBackSoon": "Check back soon",
     "getTodaysPrompt": "Get today's prompt",
     "sharePlaceholder": "Share what comes to mind...",
@@ -294,11 +292,9 @@
     "title": "Profile",
     "profile": "PROFILE",
     "notifications": "NOTIFICATIONS",
-    "dailyPromptTime": "Daily prompt time",
     "promptFrequency": "Prompt frequency",
     "remindMe": "Remind me to respond",
     "notifyPartner": "Notify when partner responds",
-    "syncToCalendar": "Sync to calendar",
     "resources": "RESOURCES",
     "findSupport": "Find support",
     "partnership": "PARTNERSHIP",
@@ -315,8 +311,6 @@
     "version": "Version",
     "signOut": "Sign out",
     "signOutConfirm": "You can sign back in anytime.",
-    "promptTimeTitle": "Daily prompt time",
-    "promptTimeSubtitle": "When should your daily prompt arrive?",
     "frequencyTitle": "Prompt frequency",
     "frequencySubtitle": "How often should you receive prompts?",
     "frequencyOptions": {
@@ -346,7 +340,6 @@
     "contactFailed": "Couldn't open your mail app. You can email us at {{email}}.",
     "safetyText": "Stoke is not therapy or crisis support. If you feel unsafe in your relationship, please seek help.",
     "safetyLink": "National Domestic Violence Hotline",
-    "errorUpdateTime": "Couldn't update your prompt time. Please try again.",
     "errorUpdateFrequency": "Couldn't update your prompt frequency. Please try again.",
     "partnerLoveLanguageNotSet": "They haven't picked theirs yet",
     "subscriptionWarning": "You have an active subscription",

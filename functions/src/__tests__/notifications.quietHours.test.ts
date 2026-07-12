@@ -65,10 +65,10 @@ describe('quiet hours applied to the recipient local hour', () => {
     expect(isWithinReminderWindow(tokyoHour)).toBe(true);
   });
 
-  it('keeps the reminder-2 morning band (8-10 AM) inside the quiet-hours window', () => {
-    // Reminder 2 fires at 8-10 AM local; the guard must never block it.
-    expect(isWithinReminderWindow(8)).toBe(true);
+  it('keeps the reminder-2 morning band (9-11 AM) inside the quiet-hours window', () => {
+    // Reminder 2 fires at 9-11 AM local; the guard must never block it.
     expect(isWithinReminderWindow(9)).toBe(true);
+    expect(isWithinReminderWindow(10)).toBe(true);
   });
 });
 

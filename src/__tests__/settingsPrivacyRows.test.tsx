@@ -67,14 +67,6 @@ jest.mock('@/hooks/useSubscription', () => ({
   useSubscription: () => ({ isPremium: false }),
 }));
 
-jest.mock('@/hooks/useCalendar', () => ({
-  useCalendarSync: () => ({
-    synced: false,
-    sync: { mutate: jest.fn(), isPending: false },
-    remove: { mutate: jest.fn(), isPending: false },
-  }),
-}));
-
 jest.mock('@/hooks/useBiometricAuth', () => ({
   useBiometricAuth: () => ({
     isBiometricAvailable: false,
@@ -175,5 +167,24 @@ describe('Privacy & Data rows', () => {
     expect(en.settings.anonymizeBody).toContain('cannot be recovered');
     expect(en.settings.anonymizeBody).toContain('This cannot be undone.');
     getByText(en.settings.anonymizeBody);
+  });
+});
+
+describe('Removed notification rows (2026-07-12 founder decisions)', () => {
+  it('has no "Daily prompt time" row — delivery is 8 AM local for everyone', () => {
+    const { queryByText } = render(<SettingsScreen />);
+    expect(queryByText('Daily prompt time')).toBeNull();
+  });
+
+  it('has no "Sync to calendar" row — the feature was removed', () => {
+    const { queryByText } = render(<SettingsScreen />);
+    expect(queryByText('Sync to calendar')).toBeNull();
+  });
+
+  it('keeps the prompt frequency row and both reminder toggles', () => {
+    const { getByText } = render(<SettingsScreen />);
+    getByText('Prompt frequency');
+    getByText('Remind me to respond');
+    getByText('Notify when partner responds');
   });
 });

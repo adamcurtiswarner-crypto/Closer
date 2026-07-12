@@ -51,9 +51,12 @@ export function isUserSetAside(
 // ============================================
 
 const HOURS_UNTIL_FIRST_REMINDER = 4; // reminder 1 eligibility
-const HOURS_UNTIL_NEXT_MORNING = 13; // a 7 PM delivery hits 13h at 8 AM next day
-const MORNING_BAND_START_HOUR = 8; // inclusive — reminder-2 band
-const MORNING_BAND_END_HOUR = 10; // exclusive
+const HOURS_UNTIL_NEXT_MORNING = 13; // an evening deferral lands next morning
+// Reminder-2 band starts at 9 AM, NOT 8 AM: daily prompts now deliver at
+// 8 AM local for everyone, so an 8 AM band would stack yesterday's reminder
+// on top of the new-question push in the same hour.
+const MORNING_BAND_START_HOUR = 9; // inclusive — reminder-2 band
+const MORNING_BAND_END_HOUR = 11; // exclusive
 
 const REMINDER_1_BODY = 'Still time to respond today.';
 const REMINDER_2_BODY_PROMPT = "Yesterday's prompt is still open.";
@@ -98,8 +101,9 @@ export interface ReminderEvaluation {
  *   an 8 PM delivery would send reminder 1 at 8 AM (12h) and reminder 2 at
  *   9 AM (13h): exactly the double-morning stacking this exists to prevent.
  * - Reminder 2 proper: exactly 1 reminder sent, >= 13h since delivery,
- *   local hour in [8, 10). Combined with the count-0 consolidation branch,
- *   every count <= 1 state can reach the morning nudge.
+ *   local hour in [9, 11) — one hour clear of the universal 8 AM delivery
+ *   push. Combined with the count-0 consolidation branch, every count <= 1
+ *   state can reach the morning nudge.
  */
 export function evaluateReminder(
   input: ReminderEvaluationInput
@@ -143,7 +147,7 @@ export function evaluateReminder(
     return { send: true, body: REMINDER_1_BODY, countsAs: 1 };
   }
 
-  // remindersSent === 1: proper reminder 2, next morning, 8-10 AM band only.
+  // remindersSent === 1: proper reminder 2, next morning, 9-11 AM band only.
   if (
     hoursSinceDelivery >= HOURS_UNTIL_NEXT_MORNING &&
     localHour >= MORNING_BAND_START_HOUR &&

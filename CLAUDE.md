@@ -290,6 +290,7 @@ v1 scope: several scheduled push functions are disabled in the export barrel (`f
 
 ## Known Issues / Gotchas
 
+- **expo-calendar is installed but mostly unused**: the v1 "Sync to calendar" feature was removed (2026-07-12); only the hidden date-nights feature still uses it. It stays installed because it is a native dependency — remove it at the next native-change build (prebuild/runtimeVersion bump) if date-nights is also cut.
 - **iOS 26 + Release builds**: React Native 0.83 TurboModule crash on physical devices. Debug builds work. Tracked at facebook/react-native#54859.
 - **Firebase Auth on SDK 55**: Must use firebase@12+. Older versions throw "Component auth has not been registered yet".
 - **Firestore indexes**: Queries with composite filters need indexes deployed. Check `firebase functions:log` for "FAILED_PRECONDITION" errors and create missing indexes.

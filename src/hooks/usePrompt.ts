@@ -25,6 +25,7 @@ import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import { uploadResponsePhoto } from '@/services/imageUpload';
 import { DEFAULT_SCALE_CONFIG, isValidScore } from '@/utils/scale';
+import { DAILY_PROMPT_TIME } from '@/config/promptTime';
 import { containsCrisisLanguage } from '@/utils/safetyLexicon';
 import type {
   AssignmentKind,
@@ -409,7 +410,6 @@ export function useTodayPrompt() {
   const queryClient = useQueryClient();
   const coupleId = user?.coupleId;
   const userId = user?.id;
-  const notificationTime = user?.notificationTime;
   const [refreshKey, setRefreshKey] = useState(promptRefreshCounter);
 
   // Listen for external refresh signals (from useTriggerPrompt)
@@ -488,7 +488,7 @@ export function useTodayPrompt() {
       if (!assignmentDoc) {
         queryClient.setQueryData(['todayPrompt', coupleId], {
           ...EMPTY_TODAY,
-          nextPromptAt: `${today}T${notificationTime || '19:00'}:00`,
+          nextPromptAt: `${today}T${DAILY_PROMPT_TIME}:00`,
           reactions: null,
           secondaryAssignment,
           needsDailyDelivery: needsDelivery,
@@ -557,7 +557,7 @@ export function useTodayPrompt() {
       unsubAssignment();
       if (unsubResponses) unsubResponses();
     };
-  }, [coupleId, userId, notificationTime, queryClient, refreshKey]);
+  }, [coupleId, userId, queryClient, refreshKey]);
 
   // useQuery reads from the cache populated by onSnapshot above
   return useQuery({

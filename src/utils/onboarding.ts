@@ -9,8 +9,6 @@ import { logEvent } from '@/services/analytics';
 export interface CompleteOnboardingOptions {
   /** True when the user skipped inviting a partner. */
   skippedInvite?: boolean;
-  /** Optional prompt time (HH:mm) chosen on the final step. */
-  notificationTime?: string;
 }
 
 /**
@@ -21,15 +19,13 @@ export async function completeOnboarding(
   userId: string,
   options: CompleteOnboardingOptions = {}
 ): Promise<void> {
+  // Deliberately no notification_time write: the daily prompt arrives at
+  // 08:00 local for everyone (see src/config/promptTime.ts).
   const payload: Record<string, unknown> = {
     is_onboarded: true,
     onboarding_completed_at: serverTimestamp(),
     updated_at: serverTimestamp(),
   };
-
-  if (options.notificationTime) {
-    payload.notification_time = options.notificationTime;
-  }
 
   await updateDoc(doc(db, 'users', userId), payload);
 

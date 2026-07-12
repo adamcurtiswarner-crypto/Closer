@@ -38,23 +38,11 @@ describe('completeOnboarding', () => {
     );
   });
 
-  it('does not write notification_time unless provided', async () => {
+  it('never writes notification_time — delivery is 8 AM local for everyone', async () => {
     await completeOnboarding('user-1');
 
     const payload = mockUpdateDoc.mock.calls[0][1];
     expect(payload).not.toHaveProperty('notification_time');
-  });
-
-  it('writes the chosen prompt time when provided', async () => {
-    await completeOnboarding('user-1', { notificationTime: '08:00' });
-
-    expect(mockUpdateDoc).toHaveBeenCalledWith(
-      { path: 'users/user-1' },
-      expect.objectContaining({
-        is_onboarded: true,
-        notification_time: '08:00',
-      })
-    );
   });
 
   it('logs completion without the skip flag by default', async () => {

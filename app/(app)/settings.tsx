@@ -23,7 +23,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCouple, useUpdatePromptFrequency } from '@/hooks/useCouple';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useDeleteAccount, useExportData, useAnonymizeResponses } from '@/hooks/usePrivacy';
-import { useCalendarSync } from '@/hooks/useCalendar';
 import { Paywall } from '@/components/Paywall';
 import { ReauthModal } from '@/components/ReauthModal';
 import { logger } from '@/utils/logger';
@@ -36,7 +35,6 @@ import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { buildExportShareMessage, EXPORT_SHARE_TITLE } from '@/utils/exportShare';
 import Constants from 'expo-constants';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
-import { TIME_OPTIONS, getTimeDisplay, resolvePromptTime } from '@/config/promptTime';
 
 const FREQUENCY_OPTIONS = [
   { label: 'Daily', value: 'daily' as const, description: 'Every day' },
@@ -49,23 +47,17 @@ function getFrequencyDisplay(value: string): string {
 }
 
 export default function SettingsScreen() {
-  const { user, signOut, refreshUser } = useAuth();
+  const { user, signOut } = useAuth();
   const { t } = useTranslation();
   const { data: couple } = useCouple();
   const updateFrequency = useUpdatePromptFrequency();
   const [remindMe, setRemindMe] = useState(user?.remindToRespond ?? true);
   const [partnerNotify, setPartnerNotify] = useState(user?.notifyPartnerResponse ?? true);
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
-  const [isSavingTime, setIsSavingTime] = useState(false);
 
   const { isPremium } = useSubscription();
   const [showPaywall, setShowPaywall] = useState(false);
   const currentFrequency = couple?.promptFrequency || 'daily';
-
-  // Truth: display what delivery will actually use — the stored user value,
-  // falling back to the backend default (19:00, see functions/src/prompts.ts).
-  const currentTime = resolvePromptTime(user?.notificationTime);
 
   // Privacy & Data
   const deleteAccount = useDeleteAccount();
@@ -86,28 +78,6 @@ export default function SettingsScreen() {
 
   // Re-auth for delete flow
   const [showReauthModal, setShowReauthModal] = useState(false);
-
-  // Calendar sync
-  const { synced: calendarSynced, sync: calendarSync, remove: calendarRemove } = useCalendarSync();
-
-  const handleTimeChange = async (newTime: string) => {
-    if (!user?.id) return;
-    setIsSavingTime(true);
-    try {
-      const userRef = doc(db, 'users', user.id);
-      await updateDoc(userRef, {
-        notification_time: newTime,
-        updated_at: serverTimestamp(),
-      });
-      await refreshUser();
-    } catch (error) {
-      logger.error('Error updating notification time:', error);
-      Alert.alert(t('common.error'), t('settings.errorUpdateTime'));
-    } finally {
-      setIsSavingTime(false);
-      setShowTimePicker(false);
-    }
-  };
 
   const handleSignOut = () => {
     Alert.alert(t('settings.signOut'), t('settings.signOutConfirm'), [
@@ -228,13 +198,6 @@ export default function SettingsScreen() {
         <Animated.View entering={FadeInUp.duration(400).delay(150)}>
           <Text style={styles.sectionTitle}>{t('settings.notifications')}</Text>
           <View style={styles.section}>
-            <TouchableOpacity style={styles.row} onPress={() => setShowTimePicker(true)}>
-              <Text style={styles.rowLabel}>{t('settings.dailyPromptTime')}</Text>
-              <View style={styles.rowRight}>
-                <Text style={styles.rowValue}>{getTimeDisplay(currentTime)}</Text>
-                <Icon name="caret-right" size="sm" color={colors.text.muted} />
-              </View>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.row} onPress={() => setShowFrequencyPicker(true)}>
               <Text style={styles.rowLabel}>{t('settings.promptFrequency')}</Text>
               <View style={styles.rowRight}>
@@ -251,29 +214,13 @@ export default function SettingsScreen() {
                 thumbColor={colors.surface.card}
               />
             </View>
-            <View style={styles.rowToggle}>
+            <View style={[styles.rowToggle, styles.lastRow]}>
               <Text style={styles.rowLabel}>{t('settings.notifyPartner')}</Text>
               <Switch
                 value={partnerNotify}
                 onValueChange={handleTogglePartnerNotify}
                 trackColor={{ false: colors.border.default, true: colors.accent.primary }}
                 thumbColor={colors.surface.card}
-              />
-            </View>
-            <View style={[styles.rowToggle, styles.lastRow]}>
-              <Text style={styles.rowLabel}>{t('settings.syncToCalendar')}</Text>
-              <Switch
-                value={calendarSynced}
-                onValueChange={(value) => {
-                  if (value) {
-                    calendarSync.mutate();
-                  } else {
-                    calendarRemove.mutate();
-                  }
-                }}
-                trackColor={{ false: colors.border.default, true: colors.accent.primary }}
-                thumbColor={colors.surface.card}
-                disabled={calendarSync.isPending || calendarRemove.isPending}
               />
             </View>
           </View>
@@ -445,54 +392,6 @@ export default function SettingsScreen() {
         </Animated.View>
       </ScrollView>
 
-      {/* Time Picker Modal */}
-      <Modal
-        visible={showTimePicker}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowTimePicker(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('settings.promptTimeTitle')}</Text>
-            <Text style={styles.modalSubtitle}>
-              {t('settings.promptTimeSubtitle')}
-            </Text>
-
-            {TIME_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.timeOption,
-                  currentTime === option.value && styles.timeOptionActive,
-                ]}
-                onPress={() => handleTimeChange(option.value)}
-                disabled={isSavingTime}
-              >
-                <View style={[
-                  styles.radio,
-                  currentTime === option.value && styles.radioActive,
-                ]}>
-                  {currentTime === option.value && <View style={styles.radioInner} />}
-                </View>
-                <Text style={[
-                  styles.timeOptionText,
-                  currentTime === option.value && styles.timeOptionTextActive,
-                ]}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-
-            <TouchableOpacity
-              style={styles.modalClose}
-              onPress={() => setShowTimePicker(false)}
-            >
-              <Text style={styles.modalCloseText}>{t('common.cancel')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
       <Paywall visible={showPaywall} onClose={() => setShowPaywall(false)} />
 
       {/* Frequency Picker Modal */}

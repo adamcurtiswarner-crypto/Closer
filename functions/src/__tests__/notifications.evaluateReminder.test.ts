@@ -10,7 +10,10 @@
  *     Quiet hours DEFER (no ceiling), they never kill.
  *   - Morning consolidation: a first reminder landing >= 13h after delivery
  *     uses the reminder-2 copy and counts as BOTH (at most one morning nudge).
- *   - Reminder 2 proper: <= 1 sent, >= 13h after delivery, local hour in [8, 10).
+ *   - Reminder 2 proper: <= 1 sent, >= 13h after delivery, local hour in
+ *     [9, 11). The band starts at 9 AM — NOT 8 AM — because daily prompts now
+ *     deliver at 8 AM local for everyone (2026-07-12), and an 8 AM band would
+ *     stack yesterday's reminder on the new-question push in the same hour.
  *   - Max 2 reminders per assignment per user; never two on the same run.
  */
 
@@ -74,7 +77,34 @@ function simulateHourlyRuns(
   return sends;
 }
 
-describe('evaluateReminder — SEV-0 #7 default 19:00 delivery', () => {
+describe('evaluateReminder — universal 8 AM delivery (the shipping rhythm)', () => {
+  it('sends reminder 1 at noon and reminder 2 next morning at 9 AM', () => {
+    const sends = simulateHourlyRuns(8, 48);
+
+    expect(sends).toHaveLength(2);
+
+    // Reminder 1: 4h after the 8 AM delivery = noon, same-day copy.
+    expect(sends[0].hoursSinceDelivery).toBe(4);
+    expect(sends[0].localHour).toBe(12);
+    expect(sends[0].body).toBe(REMINDER_1_BODY);
+
+    // Reminder 2: next morning at 9 AM (25h) — never at 8 AM, which is
+    // when today's new question lands.
+    expect(sends[1].hoursSinceDelivery).toBe(25);
+    expect(sends[1].localHour).toBe(9);
+    expect(sends[1].body).toBe(MORNING_BODY);
+  });
+
+  it('never sends reminder 2 in the 8 AM delivery hour', () => {
+    // 24h after yesterday's 8 AM delivery = 8 AM today, the moment the new
+    // question push goes out. The band starting at 9 keeps them apart.
+    expect(
+      evaluate({ hoursSinceDelivery: 24, localHour: 8, remindersSent: 1 }).send
+    ).toBe(false);
+  });
+});
+
+describe('evaluateReminder — SEV-0 #7 legacy 19:00 delivery', () => {
   it('sends exactly ONE reminder (next morning, reminder-2 copy, counts as both)', () => {
     const sends = simulateHourlyRuns(19, 48);
 
@@ -143,19 +173,20 @@ describe('evaluateReminder — 9 AM delivery gets both reminders', () => {
     expect(sends[0].localHour).toBe(13);
     expect(sends[0].body).toBe(REMINDER_1_BODY);
 
-    // Reminder 2: next morning in the 8-10 AM band (23h -> 8 AM).
-    expect(sends[1].hoursSinceDelivery).toBe(23);
-    expect(sends[1].localHour).toBe(8);
+    // Reminder 2: next morning in the 9-11 AM band (24h -> 9 AM).
+    expect(sends[1].hoursSinceDelivery).toBe(24);
+    expect(sends[1].localHour).toBe(9);
     expect(sends[1].body).toBe(MORNING_BODY);
   });
 
-  it('reminder 2 proper fires only in the [8, 10) local band', () => {
+  it('reminder 2 proper fires only in the [9, 11) local band', () => {
     const base = { hoursSinceDelivery: 23, remindersSent: 1 };
 
     expect(evaluate({ ...base, localHour: 7 }).send).toBe(false);
-    expect(evaluate({ ...base, localHour: 8 }).send).toBe(true);
+    expect(evaluate({ ...base, localHour: 8 }).send).toBe(false);
     expect(evaluate({ ...base, localHour: 9 }).send).toBe(true);
-    expect(evaluate({ ...base, localHour: 10 }).send).toBe(false);
+    expect(evaluate({ ...base, localHour: 10 }).send).toBe(true);
+    expect(evaluate({ ...base, localHour: 11 }).send).toBe(false);
     expect(evaluate({ ...base, localHour: 15 }).send).toBe(false);
   });
 

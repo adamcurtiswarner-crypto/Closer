@@ -1,10 +1,17 @@
+// Device-calendar helpers for the HIDDEN date-nights feature
+// (app/(app)/date-nights.tsx, flagged off in src/config/features.ts).
+//
+// The v1-visible "Sync to calendar" feature (anniversary event + daily prompt
+// reminder, toggled from Profile) was removed 2026-07-12 — this file keeps
+// only what date-nights needs so the flag can be flipped back on post-launch.
+// The expo-calendar package stays installed: it is a native dependency, and
+// uninstalling it forces native churn (see CLAUDE.md Known Issues).
 import * as Calendar from 'expo-calendar';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logger } from '@/utils/logger';
 
 const CALENDAR_ID_KEY = 'stoke_calendar_id';
-const CALENDAR_SYNCED_KEY = 'stoke_calendar_synced';
 
 export async function requestCalendarPermission(): Promise<boolean> {
   const { status } = await Calendar.requestCalendarPermissionsAsync();
@@ -58,24 +65,6 @@ export async function getOrCreateStokeCalendar(): Promise<string> {
   return calendarId;
 }
 
-export async function addAnniversaryEvent(
-  calendarId: string,
-  date: Date,
-  partnerName: string
-): Promise<void> {
-  await Calendar.createEventAsync(calendarId, {
-    title: `Anniversary with ${partnerName}`,
-    startDate: date,
-    endDate: date,
-    allDay: true,
-    recurrenceRule: {
-      frequency: Calendar.Frequency.YEARLY,
-    },
-    alarms: [{ relativeOffset: -1440 }], // 1 day before (in minutes)
-    notes: 'Added by Stoke',
-  });
-}
-
 export async function addDateNightEvent(
   calendarId: string,
   title: string,
@@ -116,94 +105,4 @@ export async function addDateNightEvent(
     logger.warn('Error creating date night calendar event:', error);
     return null;
   }
-}
-
-export async function addPromptReminder(
-  calendarId: string,
-  notificationTime: string
-): Promise<void> {
-  const [hours, minutes] = notificationTime.split(':').map(Number);
-
-  // Start from today
-  const startDate = new Date();
-  startDate.setHours(hours, minutes, 0, 0);
-
-  // If the time has already passed today, start tomorrow
-  if (startDate < new Date()) {
-    startDate.setDate(startDate.getDate() + 1);
-  }
-
-  const endDate = new Date(startDate);
-  endDate.setMinutes(endDate.getMinutes() + 15);
-
-  await Calendar.createEventAsync(calendarId, {
-    title: 'Stoke prompt time',
-    startDate,
-    endDate,
-    recurrenceRule: {
-      frequency: Calendar.Frequency.DAILY,
-    },
-    alarms: [{ relativeOffset: 0 }],
-    notes: 'Your daily relationship prompt is ready',
-  });
-}
-
-export async function syncCalendar({
-  anniversaryDate,
-  partnerName,
-  notificationTime,
-}: {
-  anniversaryDate?: Date | null;
-  partnerName: string;
-  notificationTime: string;
-}): Promise<void> {
-  const calendarId = await getOrCreateStokeCalendar();
-
-  // Clear existing Stoke events
-  const now = new Date();
-  const oneYearAgo = new Date(now);
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-  const twoYearsAhead = new Date(now);
-  twoYearsAhead.setFullYear(twoYearsAhead.getFullYear() + 2);
-
-  try {
-    const existingEvents = await Calendar.getEventsAsync(
-      [calendarId],
-      oneYearAgo,
-      twoYearsAhead
-    );
-    for (const event of existingEvents) {
-      await Calendar.deleteEventAsync(event.id);
-    }
-  } catch (error) {
-    logger.warn('Error clearing old calendar events:', error);
-  }
-
-  // Add anniversary event
-  if (anniversaryDate) {
-    await addAnniversaryEvent(calendarId, anniversaryDate, partnerName);
-  }
-
-  // Add daily prompt reminder
-  await addPromptReminder(calendarId, notificationTime);
-
-  await AsyncStorage.setItem(CALENDAR_SYNCED_KEY, 'true');
-}
-
-export async function isSynced(): Promise<boolean> {
-  const value = await AsyncStorage.getItem(CALENDAR_SYNCED_KEY);
-  return value === 'true';
-}
-
-export async function removeStokeCalendar(): Promise<void> {
-  const calendarId = await AsyncStorage.getItem(CALENDAR_ID_KEY);
-  if (calendarId) {
-    try {
-      await Calendar.deleteCalendarAsync(calendarId);
-    } catch (error) {
-      logger.warn('Error deleting Stoke calendar:', error);
-    }
-  }
-  await AsyncStorage.removeItem(CALENDAR_ID_KEY);
-  await AsyncStorage.removeItem(CALENDAR_SYNCED_KEY);
 }

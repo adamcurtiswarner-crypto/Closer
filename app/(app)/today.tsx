@@ -1005,9 +1005,7 @@ export default function TodayScreen() {
         <Icon name="coffee" size="xl" color={colors.accent.primary} weight="light" />
         <Text style={styles.emptyTitle}>{t('today.emptyTitle')}</Text>
         <Text style={styles.emptySubtitle}>
-          {nextPromptAt
-            ? t('today.arrivingAround', { time: format(new Date(nextPromptAt), 'h:mm a') })
-            : t('today.emptySubtitle')}
+          {nextPromptAt ? t('today.arrivesEachMorning') : t('today.emptySubtitle')}
         </Text>
         {user?.coupleId && (
           <TouchableOpacity

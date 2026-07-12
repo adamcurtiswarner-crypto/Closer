@@ -20,23 +20,9 @@ import { hasSeenPairingPaywall, markPairingPaywallSeen } from '@/utils/paywallSe
 import { logger } from '@/utils/logger';
 import { useTranslation } from 'react-i18next';
 
-// Matches the backend default in functions/src/prompts.ts
-// (notification_time || '19:00') and the sign-up default in useAuth.
-const DEFAULT_PROMPT_TIME = '19:00';
-
-const TIME_OPTIONS = [
-  { value: '08:00', label: '8:00 AM' },
-  { value: '14:00', label: '2:00 PM' },
-  { value: '19:00', label: '7:00 PM' },
-  { value: '21:00', label: '9:00 PM' },
-];
-
 export default function ReadyScreen() {
   const { user, refreshUser } = useAuth();
   const { isPremium, isLoading: premiumLoading } = useSubscription();
-  const [selectedTime, setSelectedTime] = useState(
-    user?.notificationTime || DEFAULT_PROMPT_TIME
-  );
   const [isSaving, setIsSaving] = useState(false);
   // The trial moment (SEV-0 #8): the paywall shows once, softly, after
   // pairing completes — never to an already-premium couple, and "Not now"
@@ -44,14 +30,11 @@ export default function ReadyScreen() {
   const [showTrialPaywall, setShowTrialPaywall] = useState(false);
   const { t } = useTranslation();
 
-  const timeLabel =
-    TIME_OPTIONS.find((option) => option.value === selectedTime)?.label || '7:00 PM';
-
   const handleStart = async () => {
     if (!user?.id || isSaving) return;
     setIsSaving(true);
     try {
-      await completeOnboarding(user.id, { notificationTime: selectedTime });
+      await completeOnboarding(user.id);
       await refreshUser();
 
       const alreadySeen = await hasSeenPairingPaywall(user.id);
@@ -95,33 +78,8 @@ export default function ReadyScreen() {
             {t('onboarding.ready.title')}
           </Text>
           <Text style={styles.subtitle}>
-            {t('onboarding.ready.subtitle', { time: timeLabel })}
+            {t('onboarding.ready.subtitle')}
           </Text>
-        </Animated.View>
-
-        <Animated.View entering={FadeInUp.duration(400).delay(150)} style={styles.timeSection}>
-          <Text style={styles.timeLabel}>{t('onboarding.ready.changeTime')}</Text>
-          <View style={styles.timeRow}>
-            {TIME_OPTIONS.map((option) => {
-              const isSelected = selectedTime === option.value;
-              return (
-                <TouchableOpacity
-                  key={option.value}
-                  accessibilityRole="button"
-                  accessibilityState={isSelected ? { selected: true } : {}}
-                  style={[styles.timeChip, isSelected && styles.timeChipSelected]}
-                  onPress={() => setSelectedTime(option.value)}
-                >
-                  <Text
-                    style={[styles.timeChipText, isSelected && styles.timeChipTextSelected]}
-                    maxFontSizeMultiplier={1.4}
-                  >
-                    {option.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
         </Animated.View>
 
         <Animated.View entering={FadeInUp.duration(400).delay(300)}>
@@ -175,41 +133,6 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     textAlign: 'center',
     marginTop: spacing.sm,
-  },
-  timeSection: {
-    marginBottom: spacing.xl,
-  },
-  timeLabel: {
-    ...typography.caption,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: spacing.smd,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.sm,
-  },
-  timeChip: {
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    backgroundColor: colors.surface.card,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.smd,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  timeChipSelected: {
-    backgroundColor: colors.surface.warmTint,
-    borderColor: colors.accent.primary,
-  },
-  timeChipText: {
-    ...typography.bodySm,
-    color: colors.text.secondary,
-  },
-  timeChipTextSelected: {
-    color: colors.accent.primary,
   },
   // Full-width pill CTA
   cta: {

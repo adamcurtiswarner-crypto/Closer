@@ -17,7 +17,6 @@ export interface User {
   displayName: string | null;
   partnerName: string | null;
   coupleId: string | null;
-  notificationTime: string;
   timezone: string;
   toneCalibration: ToneCalibration;
   isOnboarded: boolean;
@@ -90,11 +89,6 @@ export interface SignUpFormData {
 export interface SignInFormData {
   email: string;
   password: string;
-}
-
-export interface OnboardingPreferencesFormData {
-  partnerName: string;
-  notificationTime: string;
 }
 
 export interface PromptResponseFormData {

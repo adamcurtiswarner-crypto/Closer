@@ -278,20 +278,20 @@ describe('Response Reminders', () => {
     });
   });
 
-  describe('Reminder 2: next morning 8-10 AM local', () => {
-    it('should send reminder 2 when local hour is 8-9', () => {
+  describe('Reminder 2: next morning 9-11 AM local (clear of the 8 AM delivery)', () => {
+    it('should send reminder 2 when local hour is 9-10', () => {
       const localHour = 9;
-      expect(localHour >= 8 && localHour < 10).toBe(true);
+      expect(localHour >= 9 && localHour < 11).toBe(true);
     });
 
-    it('should not send reminder 2 before 8 AM local', () => {
-      const localHour = 7;
-      expect(localHour >= 8 && localHour < 10).toBe(false);
+    it('should not send reminder 2 in the 8 AM delivery hour', () => {
+      const localHour = 8;
+      expect(localHour >= 9 && localHour < 11).toBe(false);
     });
 
-    it('should not send reminder 2 at 10 AM local or later', () => {
-      const localHour = 10;
-      expect(localHour >= 8 && localHour < 10).toBe(false);
+    it('should not send reminder 2 at 11 AM local or later', () => {
+      const localHour = 11;
+      expect(localHour >= 9 && localHour < 11).toBe(false);
     });
 
     it('should require at least 8 hours since delivery for reminder 2', () => {
