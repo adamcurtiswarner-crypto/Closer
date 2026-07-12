@@ -67,3 +67,23 @@ describe('promptCategories taxonomy', () => {
     expect(getCategoryByType('nonexistent')).toBeUndefined();
   });
 });
+
+describe('legacy → v1 category aliases (Hearth tally homes)', () => {
+  const { LEGACY_TO_V1_CATEGORY, toV1Category, V1_PROMPT_CATEGORIES } =
+    require('../config/promptCategories');
+
+  it('maps every legacy category to a real v1 tile', () => {
+    const v1Ids = V1_PROMPT_CATEGORIES.map((c: { type: string }) => c.type);
+    for (const target of Object.values(LEGACY_TO_V1_CATEGORY)) {
+      expect(v1Ids).toContain(target);
+    }
+  });
+
+  it('passes v1 ids through unchanged and aliases legacy ids', () => {
+    expect(toV1Category('money')).toBe('money');
+    expect(toV1Category('love_map_update')).toBe('communication');
+    expect(toV1Category('dream_exploration')).toBe('future_dreams');
+    expect(toV1Category('repair_attempt')).toBe('conflict_repair');
+    expect(toV1Category('')).toBe('');
+  });
+});

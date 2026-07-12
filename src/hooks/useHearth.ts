@@ -13,7 +13,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
-import { V1_PROMPT_CATEGORIES } from '@/config/promptCategories';
+import { V1_PROMPT_CATEGORIES, toV1Category } from '@/config/promptCategories';
 import { logEvent } from '@/services/analytics';
 import { logger } from '@/utils/logger';
 import { resolveSignal, type HearthSignal } from '@/utils/hearthSignal';
@@ -122,7 +122,9 @@ export function mapCompletion(id: string, data: Record<string, any>): HearthComp
 
   return {
     id,
-    category: typeof data.category === 'string' ? data.category : '',
+    // Legacy category ids (pre-v1 prompts, old explore assignments) resolve
+  // to their v1 tile so history always has a home on the grid.
+  category: typeof data.category === 'string' ? toV1Category(data.category) : '',
     promptText: typeof data.prompt_text === 'string' ? data.prompt_text : '',
     isScale: data.is_scale === true,
     responses,

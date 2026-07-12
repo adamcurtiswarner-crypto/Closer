@@ -192,6 +192,24 @@ export const V1_PROMPT_CATEGORIES: PromptCategory[] = PROMPT_CATEGORIES.filter(
   (c) => !c.legacy
 );
 
+// Legacy taxonomy → v1 tile aliases. Pre-v1 prompts and old explore
+// assignments carry legacy type ids; Hearth tallies by the 12 v1
+// categories, so every legacy id maps to its nearest v1 home. Applied at
+// the Hearth read boundary AND when new assignments are written.
+export const LEGACY_TO_V1_CATEGORY: Record<string, string> = {
+  love_map_update: 'communication',
+  bid_for_connection: 'affection',
+  appreciation_expression: 'appreciation_trust',
+  dream_exploration: 'future_dreams',
+  conflict_navigation: 'conflict_repair',
+  repair_attempt: 'conflict_repair',
+};
+
+/** Resolve any category id (legacy or v1) to its v1 tile id. */
+export function toV1Category(type: string): string {
+  return LEGACY_TO_V1_CATEGORY[type] ?? type;
+}
+
 export function getCategoryByType(type: string): PromptCategory | undefined {
   return PROMPT_CATEGORIES.find((c) => c.type === type);
 }

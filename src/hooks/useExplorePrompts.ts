@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { todayLocalISO } from '@utils/localDate';
+import { toV1Category } from '@/config/promptCategories';
 import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
@@ -82,7 +83,7 @@ export function mapExploreAssignment(
     promptHint: data.prompt_hint ?? null,
     // Older explore docs never wrote category — fall back to prompt_type
     // (the backfill script sets category = prompt_type for those).
-    category: data.category || data.prompt_type || '',
+    category: toV1Category(data.category || data.prompt_type || ''),
     status: (data.status as string) || 'delivered',
     firstResponderId: data.first_responder_id ?? null,
     responseCount: typeof data.response_count === 'number' ? data.response_count : 0,
@@ -228,7 +229,8 @@ export function useStartExplorePrompt() {
         prompt_type: prompt.type,
         // Hearth completions group by category — write both so explore
         // completions land in their category tile like daily ones do.
-        category: prompt.type,
+        // Legacy prompt types are aliased to their v1 tile at write time.
+        category: toV1Category(prompt.type),
         requires_conversation: false,
         assigned_date: todayLocalISO(),
         source: 'explore',
