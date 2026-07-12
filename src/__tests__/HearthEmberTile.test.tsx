@@ -19,7 +19,7 @@ describe('HearthEmberTile', () => {
       <HearthEmberTile
         label="Money"
         icon="coins"
-        state="repair"
+        state="talk"
         stateLabel="Talk about it"
         onPress={jest.fn()}
       />
@@ -29,19 +29,19 @@ describe('HearthEmberTile', () => {
     expect(getByTestId('icon-coins')).toBeTruthy();
   });
 
-  it('shows the pulsing dot only on un-tended repair tiles', () => {
-    const repair = render(
+  it('shows the pulsing dot only on talk tiles', () => {
+    const talk = render(
       <HearthEmberTile
         label="Money"
         icon="coins"
-        state="repair"
+        state="talk"
         stateLabel="Talk about it"
         onPress={jest.fn()}
       />
     );
-    expect(repair.getByTestId('hearth-pulse-dot')).toBeTruthy();
+    expect(talk.getByTestId('hearth-pulse-dot')).toBeTruthy();
 
-    (['divergence', 'deepener', 'steady'] as const).forEach((state) => {
+    (['compare', 'glowing', 'tended', 'steady', 'unlit'] as const).forEach((state) => {
       const { queryByTestId, unmount } = render(
         <HearthEmberTile
           label="Money"
@@ -54,6 +54,50 @@ describe('HearthEmberTile', () => {
       expect(queryByTestId('hearth-pulse-dot')).toBeNull();
       unmount();
     });
+  });
+
+  it('renders the tally line and folds it into the accessibility label', () => {
+    const { getByText, getByLabelText } = render(
+      <HearthEmberTile
+        label="Money"
+        icon="coins"
+        state="glowing"
+        stateLabel="Glowing"
+        tally="3 answered · warming"
+        onPress={jest.fn()}
+      />
+    );
+    expect(getByText('3 answered · warming')).toBeTruthy();
+    expect(getByLabelText('Money, Glowing, 3 answered · warming')).toBeTruthy();
+  });
+
+  it('tended tiles carry a quiet sage check', () => {
+    const { getByTestId } = render(
+      <HearthEmberTile
+        label="Money"
+        icon="coins"
+        state="tended"
+        stateLabel="Tended"
+        onPress={jest.fn()}
+      />
+    );
+    expect(getByTestId('icon-check')).toBeTruthy();
+  });
+
+  it('unlit tiles show the invite line', () => {
+    const { getByText, getByLabelText } = render(
+      <HearthEmberTile
+        label="Money"
+        icon="coins"
+        state="unlit"
+        stateLabel="Not yet lit"
+        tally="Ask one to light it"
+        onPress={jest.fn()}
+      />
+    );
+    expect(getByText('Not yet lit')).toBeTruthy();
+    expect(getByText('Ask one to light it')).toBeTruthy();
+    expect(getByLabelText('Money, Not yet lit, Ask one to light it')).toBeTruthy();
   });
 
   it('fires onPress', () => {
@@ -76,7 +120,7 @@ describe('HearthEmberTile', () => {
       <HearthEmberTile
         label="Future dreams"
         icon="path"
-        state="divergence"
+        state="compare"
         stateLabel="Compare notes"
         onPress={jest.fn()}
       />

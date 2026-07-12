@@ -195,6 +195,110 @@ describe('HearthScreen first-run states', () => {
   });
 });
 
+describe('HearthScreen header metrics strip', () => {
+  function repairCompletion(overrides: Record<string, unknown> = {}) {
+    return makeCompletion({
+      id: 'c-2',
+      category: 'money',
+      signal: 'repair' as const,
+      responses: [
+        { userId: 'user-1', responseText: 'a', responseScore: 2, imageUrl: null, submittedAt: null },
+        { userId: 'user-2', responseText: 'b', responseScore: 3, imageUrl: null, submittedAt: null },
+      ],
+      ...overrides,
+    });
+  }
+
+  it('composes answered and glowing from live data, omitting zero segments', () => {
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+    const { getByText } = render(<HearthScreen />);
+
+    // 1 answered, communication glowing (8/9 average), nothing waiting —
+    // the waiting segment is omitted, not rendered as zero.
+    expect(getByText('1 answered this month · 1 glowing')).toBeTruthy();
+  });
+
+  it('adds the waiting segment when the couch queue has entries', () => {
+    mockHearthQuery.mockReturnValue({
+      data: [makeCompletion(), repairCompletion()],
+      isLoading: false,
+    });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(
+      getByText('2 answered this month · 1 glowing · 1 waiting for you two')
+    ).toBeTruthy();
+  });
+
+  it('omits the glowing segment when no category glows', () => {
+    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(getByText('1 answered this month · 1 waiting for you two')).toBeTruthy();
+  });
+
+  it('falls back to the waiting copy when nothing was answered this month', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
+    mockHearthQuery.mockReturnValue({
+      data: [repairCompletion({ completedAt: lastMonth })],
+      isLoading: false,
+    });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(getByText('1 conversation waiting for you two')).toBeTruthy();
+  });
+
+  it('falls back to the steady copy when nothing answered and nothing waiting', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    const now = new Date();
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
+    mockHearthQuery.mockReturnValue({
+      data: [makeCompletion({ completedAt: lastMonth })],
+      isLoading: false,
+    });
+    const { getByText } = render(<HearthScreen />);
+
+    expect(getByText('Nothing waiting — your fire is steady')).toBeTruthy();
+  });
+});
+
+describe('HearthScreen tile states and tallies', () => {
+  it('the answered category shows Glowing with its tally; the rest sit unlit with the invite line', () => {
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+    const { getByText, queryAllByText } = render(<HearthScreen />);
+
+    expect(getByText('Glowing')).toBeTruthy();
+    expect(getByText('1 answered')).toBeTruthy();
+    expect(queryAllByText('Not yet lit')).toHaveLength(11);
+    expect(queryAllByText('Ask one to light it')).toHaveLength(11);
+  });
+
+  it('a couch-flagged steady entry says Talk about it on BOTH the tile and the queue card', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    mockHearthQuery.mockReturnValue({
+      data: [
+        makeCompletion({
+          signal: 'steady' as const,
+          couchFlagged: true,
+          couchFlaggedBy: 'user-2',
+          responses: [
+            { userId: 'user-1', responseText: 'a', responseScore: 6, imageUrl: null, submittedAt: null },
+            { userId: 'user-2', responseText: 'b', responseScore: 6, imageUrl: null, submittedAt: null },
+          ],
+        }),
+      ],
+      isLoading: false,
+    });
+    const { getByTestId, queryAllByText } = render(<HearthScreen />);
+
+    // The founder-caught contradiction: tile and queue can never disagree.
+    expect(getByTestId('hearth-queue-c-1')).toBeTruthy();
+    expect(queryAllByText('Talk about it')).toHaveLength(2);
+  });
+});
+
 describe('HearthScreen past-day reveal wiring', () => {
   it('the reveal sheet starts closed', () => {
     mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });

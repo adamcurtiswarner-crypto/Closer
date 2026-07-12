@@ -582,6 +582,25 @@
       "steady": "Steady",
       "tended": "Tended · {{date}}"
     },
+    "metrics": {
+      "answered": "{{count}} answered this month",
+      "glowing": "{{count}} glowing",
+      "waiting": "{{count}} waiting for you two"
+    },
+    "tile": {
+      "state": {
+        "talk": "Talk about it",
+        "compare": "Compare notes",
+        "glowing": "Glowing",
+        "tended": "Tended",
+        "steady": "Steady",
+        "unlit": "Not yet lit"
+      },
+      "unlitHint": "Ask one to light it",
+      "answered": "{{count}} answered",
+      "warming": "warming",
+      "settling": "settling"
+    },
     "queueTitle": "Waiting for you two",
     "queueMeta": "You {{mine}} · {{partner}} {{theirs}}",
     "statsTitle": "This month",

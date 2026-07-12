@@ -30,17 +30,20 @@ import { renderHook, act } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   categoryEntries,
-  categoryState,
+  categoryTileState,
   couchQueue,
   mapCompletion,
   monthlyStats,
-  perCategoryState,
+  needsCouch,
+  perCategoryTileState,
   scoresFor,
+  tileTally,
   trendSeries,
   useHearth,
   useMarkDiscussed,
   type HearthCompletion,
 } from '../hooks/useHearth';
+import { computeSignal } from '@/utils/hearthSignal';
 import { logEvent } from '@/services/analytics';
 
 const NOW = new Date('2026-07-07T12:00:00Z');
@@ -262,61 +265,274 @@ describe('useHearth', () => {
     });
   });
 
-  describe('categoryState precedence', () => {
-    it('un-tended repair beats everything', () => {
-      const entries = [
-        makeCompletion({ id: '1', signal: 'repair' }),
-        makeCompletion({ id: '2', signal: 'divergence' }),
-        makeCompletion({ id: '3', signal: 'deepener', completedAt: NOW }),
-      ];
-      expect(categoryState(entries, NOW)).toBe('repair');
+  describe('categoryTileState precedence (accumulated tile state)', () => {
+    // A scored completion the way production produces it: signal computed
+    // from the two scores with the same thresholds the backend uses.
+    function scoredEntry(
+      id: string,
+      scoreA: number,
+      scoreB: number,
+      completedAt: string,
+      overrides: Partial<HearthCompletion> = {}
+    ): HearthCompletion {
+      return makeCompletion({
+        id,
+        signal: computeSignal(scoreA, scoreB),
+        responses: [
+          {
+            userId: 'user-1',
+            responseText: '',
+            responseScore: scoreA,
+            imageUrl: null,
+            submittedAt: null,
+          },
+          {
+            userId: 'user-2',
+            responseText: '',
+            responseScore: scoreB,
+            imageUrl: null,
+            submittedAt: null,
+          },
+        ],
+        completedAt: new Date(completedAt),
+        ...overrides,
+      });
+    }
+
+    it('zero completions is unlit, not steady', () => {
+      expect(categoryTileState([], NOW)).toBe('unlit');
     });
 
-    it('un-tended divergence beats deepener and steady', () => {
-      const entries = [
-        makeCompletion({ id: '2', signal: 'divergence' }),
-        makeCompletion({ id: '3', signal: 'deepener', completedAt: NOW }),
-      ];
-      expect(categoryState(entries, NOW)).toBe('divergence');
+    it("the founder's case: a single 8/8 day lights the tile glowing", () => {
+      const entries = [scoredEntry('one', 8, 8, '2026-07-06T00:00:00Z')];
+      expect(entries[0].signal).toBe('steady'); // not a deepener — still glows
+      expect(categoryTileState(entries, NOW)).toBe('glowing');
     });
 
-    it('tended repair no longer drives the tile — falls through', () => {
+    it('the contradiction case: a couch-flagged steady entry says talk on BOTH the tile and the queue', () => {
+      const flagged = scoredEntry('f1', 6, 6, '2026-07-05T00:00:00Z', {
+        couchFlagged: true,
+        couchFlaggedBy: 'user-2',
+      });
+      expect(flagged.signal).toBe('steady');
+      // Same predicate drives both surfaces — they can never disagree.
+      expect(needsCouch(flagged)).toBe(true);
+      expect(couchQueue([flagged]).map((c) => c.id)).toEqual(['f1']);
+      expect(categoryTileState([flagged], NOW)).toBe('talk');
+    });
+
+    it('an un-tended repair entry is talk, and outranks everything below it', () => {
       const entries = [
-        makeCompletion({
-          id: '1',
-          signal: 'repair',
-          discussedAt: new Date('2026-07-02'),
+        scoredEntry('repair', 2, 3, '2026-07-01T00:00:00Z'),
+        scoredEntry('diverge', 3, 9, '2026-07-02T00:00:00Z'),
+        scoredEntry('glow', 9, 9, '2026-07-06T00:00:00Z'),
+      ];
+      expect(categoryTileState(entries, NOW)).toBe('talk');
+    });
+
+    it('an un-tended divergence entry is compare, and outranks glow', () => {
+      const entries = [
+        scoredEntry('diverge', 3, 9, '2026-07-02T00:00:00Z'),
+        scoredEntry('glow', 9, 9, '2026-07-06T00:00:00Z'),
+      ];
+      expect(categoryTileState(entries, NOW)).toBe('compare');
+    });
+
+    it('a strength with an open conversation still needs the couch first', () => {
+      // 8/8 today AND a couch-flagged entry: the flag wins the tile.
+      const entries = [
+        scoredEntry('glow', 8, 8, '2026-07-06T00:00:00Z'),
+        scoredEntry('kept', 6, 7, '2026-07-04T00:00:00Z', { couchFlagged: true }),
+      ];
+      expect(categoryTileState(entries, NOW)).toBe('talk');
+    });
+
+    it('glowing averages the 3 most recent scored completions — an old low day falls out of the window', () => {
+      const entries = [
+        scoredEntry('old-low', 5, 5, '2026-06-01T00:00:00Z', {
+          discussedAt: new Date('2026-06-02T00:00:00Z'),
         }),
+        scoredEntry('a', 8, 8, '2026-07-03T00:00:00Z'),
+        scoredEntry('b', 8, 7, '2026-07-04T00:00:00Z'),
+        scoredEntry('c', 8, 8, '2026-07-05T00:00:00Z'),
       ];
-      expect(categoryState(entries, NOW)).toBe('steady');
+      // window = (8 + 7.5 + 8) / 3 ≈ 7.83 ≥ 7.5
+      expect(categoryTileState(entries, NOW)).toBe('glowing');
     });
 
-    it('recent deepener glows; a stale one settles to steady', () => {
-      const recent = [
-        makeCompletion({ id: '1', signal: 'deepener', completedAt: new Date('2026-07-01') }),
+    it('a recent mid-range day inside the window can dim the glow', () => {
+      const entries = [
+        scoredEntry('a', 9, 9, '2026-06-01T00:00:00Z'),
+        scoredEntry('b', 6, 6, '2026-07-03T00:00:00Z'),
+        scoredEntry('c', 7, 7, '2026-07-04T00:00:00Z'),
+        scoredEntry('d', 7, 6, '2026-07-05T00:00:00Z'),
       ];
-      const stale = [
-        makeCompletion({ id: '1', signal: 'deepener', completedAt: new Date('2026-05-01') }),
-      ];
-      expect(categoryState(recent, NOW)).toBe('deepener');
-      expect(categoryState(stale, NOW)).toBe('steady');
+      // window = (6 + 7 + 6.5) / 3 = 6.5 < 7.5 — the old 9/9 is outside it
+      expect(categoryTileState(entries, NOW)).toBe('steady');
     });
 
-    it('empty category is steady', () => {
-      expect(categoryState([], NOW)).toBe('steady');
-    });
-
-    it('a couch flag never changes the ember color — steady stays steady', () => {
+    it('the 7.5 threshold is inclusive', () => {
       expect(
-        categoryState([makeCompletion({ signal: 'steady', couchFlagged: true })], NOW)
+        categoryTileState([scoredEntry('edge', 7, 8, '2026-07-06T00:00:00Z')], NOW)
+      ).toBe('glowing');
+      expect(
+        categoryTileState([scoredEntry('under', 7, 7, '2026-07-06T00:00:00Z')], NOW)
       ).toBe('steady');
     });
 
-    it('perCategoryState covers all 12 v1 categories', () => {
-      const states = perCategoryState([makeCompletion({ signal: 'repair' })], NOW);
+    it('a repair tended within 7 days shows tended; older settles to steady', () => {
+      const recent = [
+        scoredEntry('r', 2, 3, '2026-07-01T00:00:00Z', {
+          discussedAt: new Date('2026-07-04T00:00:00Z'),
+        }),
+      ];
+      const stale = [
+        scoredEntry('r', 2, 3, '2026-06-20T00:00:00Z', {
+          discussedAt: new Date('2026-06-25T00:00:00Z'),
+        }),
+      ];
+      expect(categoryTileState(recent, NOW)).toBe('tended');
+      expect(categoryTileState(stale, NOW)).toBe('steady');
+    });
+
+    it('a tended couch-flagged entry counts for tended too', () => {
+      const entries = [
+        scoredEntry('kept', 6, 6, '2026-07-02T00:00:00Z', {
+          couchFlagged: true,
+          discussedAt: new Date('2026-07-05T00:00:00Z'),
+        }),
+      ];
+      expect(categoryTileState(entries, NOW)).toBe('tended');
+    });
+
+    it('glowing outranks tended — a fresh strength shows over a settled repair', () => {
+      const entries = [
+        scoredEntry('r', 2, 3, '2026-07-01T00:00:00Z', {
+          discussedAt: new Date('2026-07-05T00:00:00Z'),
+        }),
+        scoredEntry('glow', 9, 9, '2026-07-06T00:00:00Z'),
+      ];
+      // window average = (2.5 + 9) / 2 = 5.75 < 7.5 — no glow; tended wins
+      expect(categoryTileState(entries, NOW)).toBe('tended');
+
+      const glowier = [
+        scoredEntry('r', 6, 7, '2026-07-01T00:00:00Z', {
+          couchFlagged: true,
+          discussedAt: new Date('2026-07-05T00:00:00Z'),
+        }),
+        scoredEntry('g1', 9, 9, '2026-07-05T00:00:00Z'),
+        scoredEntry('g2', 9, 9, '2026-07-06T00:00:00Z'),
+      ];
+      // window average = (6.5 + 9 + 9) / 3 ≈ 8.17 ≥ 7.5 — glow outranks tended
+      expect(categoryTileState(glowier, NOW)).toBe('glowing');
+    });
+
+    it('text-only completions with no scores read as answered but steady', () => {
+      const textOnly = makeCompletion({
+        id: 'text',
+        signal: null,
+        responses: [
+          {
+            userId: 'user-1',
+            responseText: 'just words',
+            responseScore: null,
+            imageUrl: null,
+            submittedAt: null,
+          },
+        ],
+        completedAt: new Date('2026-07-05T00:00:00Z'),
+      });
+      expect(categoryTileState([textOnly], NOW)).toBe('steady');
+    });
+
+    it('perCategoryTileState covers all 12 v1 categories, unlit where nothing happened', () => {
+      const states = perCategoryTileState(
+        [scoredEntry('r', 2, 3, '2026-07-01T00:00:00Z', { category: 'money' })],
+        NOW
+      );
       expect(Object.keys(states)).toHaveLength(12);
-      expect(states.money).toBe('repair');
-      expect(states.intimacy).toBe('steady');
+      expect(states.money).toBe('talk');
+      expect(states.intimacy).toBe('unlit');
+    });
+  });
+
+  describe('tileTally', () => {
+    function scoredAt(id: string, avgPair: [number, number], completedAt: string) {
+      return makeCompletion({
+        id,
+        responses: [
+          {
+            userId: 'user-1',
+            responseText: '',
+            responseScore: avgPair[0],
+            imageUrl: null,
+            submittedAt: null,
+          },
+          {
+            userId: 'user-2',
+            responseText: '',
+            responseScore: avgPair[1],
+            imageUrl: null,
+            submittedAt: null,
+          },
+        ],
+        completedAt: new Date(completedAt),
+      });
+    }
+
+    it('counts every completion as answered — text and scored alike', () => {
+      const textOnly = makeCompletion({
+        id: 'text',
+        responses: [
+          {
+            userId: 'user-1',
+            responseText: 'words',
+            responseScore: null,
+            imageUrl: null,
+            submittedAt: null,
+          },
+        ],
+        completedAt: new Date('2026-07-01T00:00:00Z'),
+      });
+      const tally = tileTally([textOnly, scoredAt('s', [6, 6], '2026-07-02T00:00:00Z')]);
+      expect(tally.answered).toBe(2);
+      expect(tally.trend).toBeNull(); // only one scored completion
+    });
+
+    it('rising latest average reads warming', () => {
+      const tally = tileTally([
+        scoredAt('a', [5, 5], '2026-07-01T00:00:00Z'),
+        scoredAt('b', [7, 8], '2026-07-03T00:00:00Z'),
+      ]);
+      expect(tally).toEqual({ answered: 2, trend: 'warming' });
+    });
+
+    it('falling latest average reads settling — never negative language', () => {
+      const tally = tileTally([
+        scoredAt('a', [8, 8], '2026-07-01T00:00:00Z'),
+        scoredAt('b', [5, 6], '2026-07-03T00:00:00Z'),
+      ]);
+      expect(tally).toEqual({ answered: 2, trend: 'settling' });
+    });
+
+    it('a flat pair carries no trend word', () => {
+      const tally = tileTally([
+        scoredAt('a', [6, 8], '2026-07-01T00:00:00Z'),
+        scoredAt('b', [7, 7], '2026-07-03T00:00:00Z'),
+      ]);
+      expect(tally).toEqual({ answered: 2, trend: null });
+    });
+
+    it('compares by completion date, not array order', () => {
+      const tally = tileTally([
+        scoredAt('later', [9, 9], '2026-07-05T00:00:00Z'),
+        scoredAt('earlier', [4, 4], '2026-07-01T00:00:00Z'),
+      ]);
+      expect(tally.trend).toBe('warming');
+    });
+
+    it('an empty category tallies zero with no trend', () => {
+      expect(tileTally([])).toEqual({ answered: 0, trend: null });
     });
   });
 

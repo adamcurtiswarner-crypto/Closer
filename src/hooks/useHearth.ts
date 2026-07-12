@@ -21,8 +21,14 @@ import { useAuth } from './useAuth';
 
 const COMPLETIONS_LIMIT = 120;
 
-/** A deepener ember keeps its glow on the category tile for this long. */
-export const RECENT_DEEPENER_DAYS = 14;
+/** Glowing: average of the N most recent scored completions must reach this. */
+export const GLOWING_THRESHOLD = 7.5;
+
+/** Glowing looks at the N most recent scored completions (fewer is fine). */
+export const GLOWING_WINDOW = 3;
+
+/** Tended: the latest mutual "we talked" mark must be within this window. */
+export const TENDED_RECENT_DAYS = 7;
 
 // ─── Types (app camelCase, mapped from Firestore snake_case) ───
 
@@ -55,8 +61,24 @@ export interface HearthCompletion {
   completedAt: Date | null;
 }
 
-/** Tile state for a category — worst un-tended entry wins. */
-export type CategoryEmberState = 'repair' | 'divergence' | 'deepener' | 'steady';
+/**
+ * Tile state for a category — accumulated from the couple's completions.
+ * Precedence (problems outrank glow — an open conversation needs the couch
+ * before a strength gets to shine):
+ *   1. talk     — any un-tended repair or couch-flagged entry
+ *   2. compare  — any un-tended divergence entry
+ *   3. glowing  — recent scored average ≥ GLOWING_THRESHOLD
+ *   4. tended   — latest mutual "we talked" mark within TENDED_RECENT_DAYS
+ *   5. steady   — answered, mid-range
+ *   6. unlit    — zero completions
+ */
+export type HearthTileState =
+  | 'talk'
+  | 'compare'
+  | 'glowing'
+  | 'tended'
+  | 'steady'
+  | 'unlit';
 
 // ─── Read-boundary mapping (null-tolerant of missing new fields) ───
 
@@ -151,36 +173,103 @@ export function categoryEntries(
 }
 
 /**
- * Tile state precedence: un-tended repair > un-tended divergence >
- * recent deepener > steady.
+ * Scored points for a set of completions: per-completion average of the two
+ * partners' scores, chronological ascending. Entries missing a date or
+ * either score (old/text completions) are skipped. Shared by the tile state,
+ * the tally trend, and trendSeries so they can never disagree on what
+ * "scored" means.
  */
-export function categoryState(
+export function scoredPoints(entries: HearthCompletion[]): TrendPoint[] {
+  return entries
+    .map((c) => {
+      if (!c.completedAt) return null;
+      const scores = c.responses
+        .map((r) => r.responseScore)
+        .filter((s): s is number => typeof s === 'number');
+      if (scores.length !== 2) return null;
+      return { date: c.completedAt, value: (scores[0] + scores[1]) / 2 };
+    })
+    .filter((p): p is TrendPoint => p != null)
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+/**
+ * Accumulated tile state for a category. See HearthTileState for the
+ * precedence table. The talk/compare branches filter with the exact
+ * needsCouch predicate the couch queue uses — every queued entry drives its
+ * tile to talk or compare, so the tile and the queue can never contradict
+ * each other (a couch-flagged steady entry says "Talk about it" in both).
+ */
+export function categoryTileState(
   entries: HearthCompletion[],
   now: Date = new Date()
-): CategoryEmberState {
-  if (entries.some((c) => c.signal === 'repair' && !isTended(c))) return 'repair';
-  if (entries.some((c) => c.signal === 'divergence' && !isTended(c))) return 'divergence';
-  const recentCutoff = now.getTime() - RECENT_DEEPENER_DAYS * 86400000;
-  if (
-    entries.some(
-      (c) => c.signal === 'deepener' && (c.completedAt?.getTime() ?? 0) >= recentCutoff
-    )
-  ) {
-    return 'deepener';
+): HearthTileState {
+  if (entries.length === 0) return 'unlit';
+
+  const waiting = entries.filter(needsCouch);
+  if (waiting.some((c) => c.signal === 'repair' || c.couchFlagged)) return 'talk';
+  if (waiting.some((c) => c.signal === 'divergence')) return 'compare';
+
+  // Glowing: the average across the min(GLOWING_WINDOW, available) most
+  // recent scored completions. One 8/8 day is enough to light it.
+  const points = scoredPoints(entries);
+  if (points.length >= 1) {
+    const windowPoints = points.slice(-GLOWING_WINDOW);
+    const avg = windowPoints.reduce((sum, p) => sum + p.value, 0) / windowPoints.length;
+    if (avg >= GLOWING_THRESHOLD) return 'glowing';
   }
+
+  // Tended: the couple's most recent mutual "we talked" mark on a
+  // repair/divergence/flagged entry, within the last TENDED_RECENT_DAYS.
+  // (Any un-tended one would have returned talk/compare above.)
+  const tendedMarks = entries
+    .filter(
+      (c) =>
+        (c.signal === 'repair' || c.signal === 'divergence' || c.couchFlagged) &&
+        c.discussedAt != null
+    )
+    .map((c) => (c.discussedAt as Date).getTime());
+  const recentCutoff = now.getTime() - TENDED_RECENT_DAYS * 86400000;
+  if (tendedMarks.length > 0 && Math.max(...tendedMarks) >= recentCutoff) {
+    return 'tended';
+  }
+
   return 'steady';
 }
 
-export function perCategoryState(
+export function perCategoryTileState(
   completions: HearthCompletion[],
   now: Date = new Date()
-): Record<string, CategoryEmberState> {
+): Record<string, HearthTileState> {
   return Object.fromEntries(
     V1_PROMPT_CATEGORIES.map((cat) => [
       cat.type,
-      categoryState(categoryEntries(completions, cat.type), now),
+      categoryTileState(categoryEntries(completions, cat.type), now),
     ])
   );
+}
+
+export interface HearthTileTally {
+  /** Every completion counts as answered — text and scored alike. */
+  answered: number;
+  /**
+   * Latest scored average vs the prior one: up → warming, down → settling,
+   * flat (or fewer than two scored completions) → null. Never negative
+   * language — "settling", not "declining".
+   */
+  trend: 'warming' | 'settling' | null;
+}
+
+export function tileTally(entries: HearthCompletion[]): HearthTileTally {
+  const points = scoredPoints(entries);
+  let trend: HearthTileTally['trend'] = null;
+  if (points.length >= 2) {
+    const latest = points[points.length - 1].value;
+    const prior = points[points.length - 2].value;
+    if (latest > prior) trend = 'warming';
+    else if (latest < prior) trend = 'settling';
+  }
+  return { answered: entries.length, trend };
 }
 
 export interface HearthMonthlyStats {
@@ -214,18 +303,7 @@ export function trendSeries(
   category: string,
   maxPoints = 10
 ): TrendPoint[] {
-  const points = categoryEntries(completions, category)
-    .map((c) => {
-      if (!c.completedAt) return null;
-      const scores = c.responses
-        .map((r) => r.responseScore)
-        .filter((s): s is number => typeof s === 'number');
-      if (scores.length !== 2) return null;
-      return { date: c.completedAt, value: (scores[0] + scores[1]) / 2 };
-    })
-    .filter((p): p is TrendPoint => p != null)
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
-  return points.slice(-maxPoints);
+  return scoredPoints(categoryEntries(completions, category)).slice(-maxPoints);
 }
 
 /** Convenience for meta lines and score chips: my score vs my partner's. */

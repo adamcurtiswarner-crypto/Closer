@@ -10,8 +10,9 @@ import {
   categoryEntries,
   couchQueue,
   monthlyStats,
-  perCategoryState,
+  perCategoryTileState,
   scoresFor,
+  tileTally,
   trendSeries,
   useHearth,
   useMarkDiscussed,
@@ -79,8 +80,14 @@ export default function HearthScreen() {
   );
 
   const queue = useMemo(() => couchQueue(completions), [completions]);
-  const states = useMemo(() => perCategoryState(visibleCompletions), [visibleCompletions]);
+  // Tile states derive from whatever entry set the screen already shows —
+  // free couples accumulate from the current month only (the existing gate).
+  const states = useMemo(() => perCategoryTileState(visibleCompletions), [visibleCompletions]);
   const stats = useMemo(() => monthlyStats(completions), [completions]);
+  const glowingCount = useMemo(
+    () => Object.values(states).filter((s) => s === 'glowing').length,
+    [states]
+  );
 
   // The talk sheet reads the live entry from the snapshot-driven cache so
   // the partner's mark (and the server's discussed_at) settle it in place.
@@ -113,12 +120,25 @@ export default function HearthScreen() {
     logEvent('category_opened', { category: categoryType });
   };
 
-  const subLine =
+  // Header metrics strip: one quiet line from live data, zero segments
+  // omitted. Nothing answered this month falls back to the queue-based copy.
+  const waitingSubLine =
     queue.length === 0
       ? t('hearth.subSteady')
       : queue.length === 1
         ? t('hearth.subWaitingOne')
         : t('hearth.subWaiting', { count: queue.length });
+
+  const subLine =
+    stats.answered === 0
+      ? waitingSubLine
+      : [
+          t('hearth.metrics.answered', { count: stats.answered }),
+          glowingCount > 0 ? t('hearth.metrics.glowing', { count: glowingCount }) : null,
+          queue.length > 0 ? t('hearth.metrics.waiting', { count: queue.length }) : null,
+        ]
+          .filter((segment): segment is string => segment != null)
+          .join(' · ');
 
   const talkSheet = (
     <HearthTalkSheet
@@ -220,7 +240,18 @@ export default function HearthScreen() {
             {/* Ember grid — 12 categories, 3 across */}
             <View style={styles.grid}>
               {V1_PROMPT_CATEGORIES.map((category, index) => {
-                const state = states[category.type] ?? 'steady';
+                const state = states[category.type] ?? 'unlit';
+                const tallyInfo = tileTally(
+                  categoryEntries(visibleCompletions, category.type)
+                );
+                const tally =
+                  state === 'unlit'
+                    ? t('hearth.tile.unlitHint')
+                    : tallyInfo.trend
+                      ? `${t('hearth.tile.answered', { count: tallyInfo.answered })} · ${t(
+                          `hearth.tile.${tallyInfo.trend}`
+                        )}`
+                      : t('hearth.tile.answered', { count: tallyInfo.answered });
                 return (
                   <Animated.View
                     key={category.type}
@@ -233,7 +264,8 @@ export default function HearthScreen() {
                       label={category.label}
                       icon={category.icon}
                       state={state}
-                      stateLabel={t(`hearth.state.${state}`)}
+                      stateLabel={t(`hearth.tile.state.${state}`)}
+                      tally={tally}
                       onPress={() => openCategory(category.type)}
                       testID={`hearth-tile-${category.type}`}
                     />
