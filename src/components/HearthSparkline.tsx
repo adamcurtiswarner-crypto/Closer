@@ -17,13 +17,21 @@ function formatValue(value: number): string {
 interface HearthSparklineProps {
   /** Chronological per-completion score averages (last up to 10). */
   series: TrendPoint[];
+  /** Value domain; defaults to the 1-10 score scale. The Us view passes
+   *  0-9 for gap series so a gap of 0 plots inside the drawable band. */
+  domainMin?: number;
+  domainMax?: number;
 }
 
 /**
  * Quiet score-trend card: single coral polyline, endpoint dot with the
  * endpoint value in ink, first/last date captions. No legend, no gridlines.
  */
-export function HearthSparkline({ series }: HearthSparklineProps) {
+export function HearthSparkline({
+  series,
+  domainMin = SCORE_MIN,
+  domainMax = SCORE_MAX,
+}: HearthSparklineProps) {
   const [chartWidth, setChartWidth] = useState(0);
 
   if (series.length < 2) return null;
@@ -32,7 +40,7 @@ export function HearthSparkline({ series }: HearthSparklineProps) {
     CHART_PAD + (index * (chartWidth - CHART_PAD * 2)) / (series.length - 1);
   const yFor = (value: number) =>
     CHART_PAD +
-    ((SCORE_MAX - value) / (SCORE_MAX - SCORE_MIN)) * (CHART_HEIGHT - CHART_PAD * 2);
+    ((domainMax - value) / (domainMax - domainMin)) * (CHART_HEIGHT - CHART_PAD * 2);
 
   const points = series.map((p, i) => `${xFor(i)},${yFor(p.value)}`).join(' ');
   const last = series[series.length - 1];

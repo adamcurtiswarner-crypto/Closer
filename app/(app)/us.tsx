@@ -20,6 +20,7 @@ import { getInitials } from '@/utils/initials';
 import { Icon } from '@/components/Icon';
 import { HearthSparkline } from '@/components/HearthSparkline';
 import { Paywall } from '@/components/Paywall';
+import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
@@ -55,15 +56,16 @@ export default function UsScreen() {
   const alignments = useMemo(() => deriveAlignment(completions), [completions]);
   const movements = useMemo(() => movementPicks(alignments), [alignments]);
 
-  // Repair/divergence/flagged entries both partners marked "we talked",
-  // this calendar month — the free proof-of-effort line.
+  // Repair/divergence/flagged entries both partners marked "we talked"
+  // this calendar month. Counted by the DISCUSSED month (discussedAt), the
+  // same semantics as Hearth's monthly stats — the two screens must agree.
   const tendedCount = useMemo(
     () =>
       completions.filter(
         (c: HearthCompletion) =>
           (c.signal === 'repair' || c.signal === 'divergence' || c.couchFlagged) &&
           isTended(c) &&
-          isSameCalendarMonth(c.completedAt)
+          isSameCalendarMonth(c.discussedAt)
       ).length,
     [completions]
   );
@@ -101,6 +103,9 @@ export default function UsScreen() {
           disabled={locked}
           activeOpacity={0.7}
           accessibilityRole="button"
+          // When locked, pin the row's computed label to the category name so
+          // VoiceOver can never flatten the blurred state text into it.
+          accessibilityLabel={locked ? categoryLabel : undefined}
           testID={`us-alignment-${alignment.category}`}
         >
           <View style={styles.alignmentInfo}>
@@ -180,11 +185,25 @@ export default function UsScreen() {
           </View>
         </Animated.View>
 
-        {/* Alignment map */}
+        {/* Alignment map. While entitlement resolves, hold a skeleton — the
+            unlocked-while-loading policy elsewhere protects premium couples,
+            but here it would flash the exact content being sold to free
+            couples before the blur lands. */}
         <Animated.View entering={FadeInUp.duration(400).delay(150)} style={styles.section}>
           <Text style={styles.sectionTitle}>{t('us.alignmentTitle')}</Text>
           <Text style={styles.sectionSubtitle}>{t('us.alignmentSubtitle')}</Text>
-          {alignments.length === 0 ? (
+          {premiumLoading ? (
+            <View style={styles.card} testID="us-alignment-loading">
+              {Array.from({ length: 3 }, (_, i) => (
+                <View key={i} style={styles.alignmentRow}>
+                  <View style={styles.alignmentInfo}>
+                    <Skeleton width={80} height={12} style={{ marginBottom: spacing.xs }} />
+                    <Skeleton width={180} height={16} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : alignments.length === 0 ? (
             <View style={styles.card}>
               <Text style={styles.emptyTitle}>{t('us.emptyTitle')}</Text>
               <Text style={styles.emptyBody}>{t('us.emptyBody')}</Text>
@@ -218,8 +237,10 @@ export default function UsScreen() {
           </Animated.View>
         )}
 
-        {/* Movement — premium only */}
-        {!locked && movements.length > 0 && (
+        {/* Movement — premium only; held back while entitlement resolves so
+            it never flashes for free couples. Gap series plot on a 0-9
+            domain (last 10 points, the component's designed density). */}
+        {!premiumLoading && !locked && movements.length > 0 && (
           <Animated.View entering={FadeInUp.duration(400).delay(250)} style={styles.section}>
             <Text style={styles.sectionTitle}>{t('us.movementTitle')}</Text>
             {movements.map((m) => (
@@ -230,7 +251,11 @@ export default function UsScreen() {
                 <Text style={styles.movementLine}>
                   {t(`us.movement.${m.movement}`)}
                 </Text>
-                <HearthSparkline series={m.gapSeries} />
+                <HearthSparkline
+                  series={m.gapSeries.slice(-10)}
+                  domainMin={0}
+                  domainMax={9}
+                />
               </View>
             ))}
           </Animated.View>

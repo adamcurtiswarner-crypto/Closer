@@ -201,7 +201,13 @@ export default function HearthScreen() {
           series={historyLocked ? [] : trendSeries(completions, detailCategory.type)}
           myUid={myUid}
           partnerName={partnerName}
-          onBack={() => setSelectedCategory(null)}
+          onBack={() => {
+            setSelectedCategory(null);
+            // Clear the deep-link param so re-entering the same category from
+            // the Us view re-fires the effect (and a state restore doesn't
+            // reopen the detail uninvited).
+            if (categoryParam) router.setParams({ category: undefined });
+          }}
           onOpenTalkSheet={openTalkSheet}
           onOpenReveal={openReveal}
         />

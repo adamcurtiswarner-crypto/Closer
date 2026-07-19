@@ -69,10 +69,13 @@ the Hearth header. Feature flag: `FEATURES.usView`. Gate: new `usViewLocked` key
    values exist today but never meet on one row). Anniversary. Room for future
    one-time mini-assessments. (Free — this is the table-stakes layer)
 
-**Free-couple teaser:** sections 2–3 render with real category names and the blur
-treatment from `FollowUpLockedCard` (transparent glyphs + light text-shadow) over the
-state words, with one quiet line and the paywall CTA. The couple sees the map exists
-and is *about them* — the same honesty rule as the locked follow-up.
+**Free-couple teaser (as built):** section 2 renders with real category names and the
+blur treatment from `FollowUpLockedCard` (transparent glyphs + light text-shadow) over
+the state words, with one quiet line and the paywall CTA. Section 3 (movement) is
+premium-only and hidden while locked — sparklines don't blur honestly, and one teased
+surface is enough. While entitlement resolves, the map holds a skeleton (never the
+unlocked render — that would flash the content being sold). The couple sees the map
+exists and is *about them* — the same honesty rule as the locked follow-up.
 
 ## Voice guardrails
 
@@ -84,9 +87,10 @@ and is *about them* — the same honesty rule as the locked follow-up.
 
 ## Analytics
 
-`us_view_opened` (source: settings | hearth), `us_view_gate_hit` (surface: 'us_view'),
-`us_view_category_opened` (category), `us_view_upgrade_tapped`. Funnel to watch:
-gate_hit → paywall → trial start, vs. the follow-up gate baseline.
+`us_view_opened` (source: settings | hearth), `gate_hit` with `{surface: 'us_view'}`
+(the existing gate-event convention — build funnels against THIS, not a us_view_gate_hit
+event), `us_view_category_opened` (category), `us_view_upgrade_tapped`. Funnel to
+watch: gate_hit → paywall_shown → trial start, vs. the follow-up gate baseline.
 
 ## Build order
 
