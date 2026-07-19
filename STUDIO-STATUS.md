@@ -1,5 +1,5 @@
 # Stoke Studio Status
-*Last updated: 2026-07-20 late — Build 65 ON TESTFLIGHT; **Build 66 cutting now (id da742332, auto-submits)** with the 3.1.2 paywall compliance patch + Us-view fixes from the CEO review cycle. Device pass should target 66, not 65. Realistic submission: **Wed 7/23** if Adam's Monday items land. See "CEO Cycle July 20 (night)" below.*
+*Last updated: 2026-07-20 late — **Builds 65 AND 66 SUBMITTED to TestFlight** (66 = 3.1.2 paywall compliance + Us-view fixes from the CEO review cycle; Apple processing ~5-10 min). Device pass targets 66. Realistic submission: **Wed 7/23** if Adam's Monday items land. See "CEO Cycle July 20 (night)" below.*
 
 ## CEO Cycle July 20 (night) — three-department review, findings executed
 Three heads consulted in parallel (Testing, Product, PM). All studio-side findings were fixed the same night and ride **build 66**; founder items are in "Adam's Monday List" below.
