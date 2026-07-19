@@ -1,5 +1,25 @@
 # Stoke Studio Status
-*Last updated: 2026-07-20 — Build 65 building on EAS (id 6e1a8047; auto-submits to TestFlight on completion per founder direction). Adds the Us view (premium alignment map), hero-design follow-up cards, and couple-scoped paywall copy. Founder items unchanged (W-9, legal, IAP screenshot, domain).*
+*Last updated: 2026-07-20 late — Build 65 ON TESTFLIGHT; **Build 66 cutting now (id da742332, auto-submits)** with the 3.1.2 paywall compliance patch + Us-view fixes from the CEO review cycle. Device pass should target 66, not 65. Realistic submission: **Wed 7/23** if Adam's Monday items land. See "CEO Cycle July 20 (night)" below.*
+
+## CEO Cycle July 20 (night) — three-department review, findings executed
+Three heads consulted in parallel (Testing, Product, PM). All studio-side findings were fixed the same night and ride **build 66**; founder items are in "Adam's Monday List" below.
+
+**Executed tonight (studio):**
+1. **Paywall 3.1.2 compliance (was a latent rejection):** no Terms/Privacy links existed on the paywall and the renewal disclosure was incomplete. Added auto-renewal note + tappable Terms/Privacy (bundled in-app screens, work before hosting deploys) + Us view added to the premium benefits list. (PM Lead audit finding.)
+2. **Us view pre-device-pass fixes (Testing Lead adversarial review, 9 findings):** sparkline gap-domain fix (gap 0 plotted off-chart on the flagship "closing" chart), entitlement-loading skeleton (free couples saw premium states unblurred for seconds before blur landed), Hearth deep-link re-entry fix, tended-count month semantics now match Hearth's stat, VoiceOver hardening on locked rows (label pinned to category name — the blurred-state leak risk). Remaining device-only checks are in the founder checklist below. Backlog filed: 120-completion window truncation, time-based movement halves.
+3. **Store metadata refreshed against build 65 (Product Lead audit):** Us view section in description + What's New + promo text; subscription copy now states trial is **annual-only** (was a 3.1.2 accuracy defect reading as trial-on-both-plans); couple-scoped line promoted to first bullet; keywords swap `date night` (hidden feature) → `husband,wife`; screenshot narrative now 8 shots with the Us view as shot 5; reviewer path updated (Us reached via Profile/Hearth, not a tab; seed script must guarantee a populated map).
+4. **Hosting deployed:** /support and /join now live (200 verified). /privacy /terms remain correctly gated on founder legal confirmations (firebase.json exclusion untouched) — **Apple fetches the Privacy URL at review; this is the hard gate.**
+5. Tests after all changes: app 83 suites / 870 green; tsc clean. Commits `850e9a0`…`ad84d25` pushed.
+
+**Adam's Monday List (≈90 min total, order matters):**
+1. **W-9 + banking in ASC** — longest external pole (24-48h Apple/bank processing); first thing Monday
+2. **Legal confirmations** (entity, support email, governing law) — 15 min; studio deploys privacy/terms within the hour of the answer; unblocks the Privacy Policy URL Apple requires
+3. IAP review screenshots into both subscription products (file staged in Downloads)
+4. RevenueCat email confirm + webhook dashboard verify (likely already done — 2-min check)
+5. ASC subscription display names → "Stoke Premium (Couple)" per REVENUECAT-SETUP.md
+6. **Tuesday: two-phone pass on build 66** — use the Testing Lead's 11-step checklist (VoiceOver on locked Us rows FIRST, entitlement flash, blur legibility in bright light, repeat deep-link, sparkline gap-0, tended cross-check, Dynamic Type, analytics smoke, sandbox purchase suite: annual trial → webhook → partner unlocks → restore → monthly)
+
+**Runway:** Mon = Adam items + screenshots captured from 66 (studio) · Tue = device pass · **Wed 7/23 = ASC assembly + submit** (conservative Fri 7/25). Contingency: if Paid Apps Agreement still pending Wed, submit anyway — review can proceed but subs can't go live until Active.
 
 ## Founder Directive (2026-07-05)
 v1 = scored prompts by category + score-triggered follow-ups (deepener / repair / divergence). Everything else hidden via `src/config/features.ts`. Target: top 0.1% design quality for the category. Payments live. App Store submission next.
