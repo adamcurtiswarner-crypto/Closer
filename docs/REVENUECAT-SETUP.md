@@ -1,9 +1,11 @@
 # RevenueCat Setup — v1 Launch Runbook
 
-Status (2026-07-05): **NOT CONFIGURED.** No `EXPO_PUBLIC_REVENUECAT_IOS_KEY` exists in `.env`
-or EAS env. In current builds `configurePurchases()` (src/config/purchases.ts) silently
-no-ops, `useSubscription` gets no offerings, and the paywall CTA stays disabled. The app
-does not crash without the key — purchases just don't work.
+Status (2026-07-20): **CONFIGURED.** `EXPO_PUBLIC_REVENUECAT_IOS_KEY` is live in EAS
+production env and local `.env` (verified via `eas env:list`); products, `premium`
+entitlement, and default offering are wired; webhook secured. Payments are enabled in
+production builds since build 55. The steps below are kept as the reference runbook —
+remaining founder-side items live in STUDIO-STATUS.md (W-9, IAP review screenshot,
+webhook email confirmation).
 
 ## Decision locked by CEO (2026-07-05)
 **14-day free trial** on the annual plan (spec choice; couples must experience at least one
@@ -28,6 +30,17 @@ intro offer MUST be configured as 2 weeks to match the copy.
    - `stoke_premium_annual` — $49.99/year — **Intro offer: 14 days free** (Free Trial, 2 weeks)
    - `stoke_premium_monthly` — $9.99/month (no trial, or same 14-day if desired — copy currently only promises trial on annual)
 3. Fill localization + review notes; add the subscription screenshot later with the App Store submission.
+   **Couple-scoped wording (do not soften):** competitor reviews show per-partner
+   double-charging is the #1 complaint in this category and "one sub covers both" the
+   #1 praise. Ours is couple-scoped (webhook writes `couples/{id}.premium_until` +
+   a couple-scoped /subscriptions doc — the partner pays nothing), so say it in every
+   ASC surface:
+   - Subscription group display name: `Stoke Premium`
+   - Subscription display name: `Stoke Premium (Couple)` for both products
+   - ASC localization description: `One subscription covers both partners. Your
+     partner is unlocked automatically — nothing for them to buy.`
+   - Review notes: state that entitlement is shared across the linked couple via
+     server webhook, and the second account needs no purchase.
 4. Users and Access → Integrations → App Store Connect API: create (or reuse) an API key with App Manager role for RevenueCat; also note the In-App Purchase Key (Subscriptions key) — RevenueCat setup asks for it.
 
 ### 2. RevenueCat dashboard (app.revenuecat.com)

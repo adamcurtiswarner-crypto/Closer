@@ -1,8 +1,15 @@
 # Stoke Studio Status
-*Last updated: 2026-07-12 — Build 64 SUBMITTED to TestFlight (most-validated build to date: two live walkthroughs, all findings fixed, universal 8AM delivery). Awaiting founder two-phone pass + founder items (W-9, legal, IAP screenshot, domain, paywall verdict).*
+*Last updated: 2026-07-20 — Build 65 building on EAS (id 6e1a8047; auto-submits to TestFlight on completion per founder direction). Adds the Us view (premium alignment map), hero-design follow-up cards, and couple-scoped paywall copy. Founder items unchanged (W-9, legal, IAP screenshot, domain).*
 
 ## Founder Directive (2026-07-05)
 v1 = scored prompts by category + score-triggered follow-ups (deepener / repair / divergence). Everything else hidden via `src/config/features.ts`. Target: top 0.1% design quality for the category. Payments live. App Store submission next.
+
+## Done July 20 — Build 65
+- **Us view (new premium surface, per docs/plans/2026-07-20-us-profile-view-design.md)**: couple page at `/(app)/us` — alignment map from both partners' daily scores (per-category avg gap × level over 90 days, states in brand voice, never a grade), gap-movement sparklines, "what you tended" line, love languages finally side by side. Free couples get the honest teaser (real category names, blurred states) + quiet gate → paywall (`source: us_view`; funnel instrumented vs the follow-up gate). Entry rows in ProfileCard + Hearth header; rows deep-link into Hearth category detail (`?category=` param). New `usViewLocked` gate key + `FEATURES.usView` flag (ON). Derivation is pure (`src/utils/alignment.ts`, 11 tests); zero new server work — reads the completions Hearth already streams.
+- **Follow-up cards match the main design**: PromptCard (all text-format prompts incl. follow-ups) restyled to the ink hero surface (ToneShapes, category eyebrow, Nunito-Black question, coral pill); FollowUpLockedCard moved to ink with light-shadow blur. The design no longer shifts the moment the follow-up engine kicks in.
+- **Couple-scoped pricing said loudly** (competitor research: per-partner double-charging is the category's #1 complaint): paywall line now "One subscription covers you both. Your partner unlocks automatically."; REVENUECAT-SETUP.md mandates couple wording in ASC display name/description/review notes. Verified entitlement is couple-scoped end-to-end (webhook → couples.premium_until + /subscriptions doc; partner pays nothing). Confirmed `EXPO_PUBLIC_REVENUECAT_IOS_KEY` live in EAS prod env — payments enabled in builds since 55.
+- **Competitive research** (Paired/Couply/Flamme/Agapé/Evergreen): profile-as-couple-identity is table stakes at the top; our score-divergence data is the unique asset — the Us view is its face. Spec + findings in docs/plans.
+- Tests: app 83 suites / 869; functions 21 suites / 484. tsc + design lint clean.
 
 ## Where Things Stand — END OF DAY
 One day, scope reset to submission candidate. Commits `d86212d` → `ff9fa71` (main, pushed).
@@ -86,7 +93,7 @@ Full synthesis: docs/reviews/2026-07-09-worthiness-review.md (8 department audit
 - invite-partner "Copied" Alert → quiet inline pattern (flagged cross-agent, unowned)
 
 ## Engineering Health
-- App: tsc clean, 51 suites / 487 tests green; functions: 11 suites / 308 green (canonical 2026-07-09)
+- App: tsc clean, 83 suites / 869 tests green; functions: 21 suites / 484 green (canonical 2026-07-20)
 - Design lint: 0 violations in v1-visible surface
 - main @ ff9fa71, pushed; working tree clean
 
