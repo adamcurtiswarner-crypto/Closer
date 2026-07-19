@@ -21,12 +21,14 @@ Alternatives if you prefer:
 **One question a day, together**  *(28)*
 
 ## Promotional Text (max 170 chars, editable anytime without review)
-Each day, one question — you both answer privately, then see each other. When it lands high or low, a gentle follow-up helps you go a little deeper.
+New: the Us view — a quiet map of where you're close, where you differ, which way it's moving. Built from your daily answers. One subscription covers you both.
+
+*(162 chars. Promo text is the only always-editable field — it carries the newest surface (Us view) plus the category differentiator. The daily-loop story lives in the subtitle and description opening.)*
 
 ## Keywords (max 100 chars, comma-separated)
-`relationship,intimacy,marriage,partner,conversation,date night,communication,check in,spouse,quiz`
+`relationship,intimacy,marriage,partner,conversation,husband,wife,communication,check in,spouse,quiz`
 
-*(97 chars. Swapped low-intent mood words — love, romance, closeness — for the terms couples actually search: check in, spouse, quiz. Avoids repeating words already in the name/subtitle — stoke, couples, connection, question, day, together — since Apple indexes those separately.)*
+*(99 chars. Dropped `date night` — names a hidden, flagged-off feature and attracts date-idea intent v1 doesn't serve; replaced with high-volume `husband`,`wife`. Keeps `quiz` deliberately: Paired-adjacent searchers are our conversion target. No competitor names — 2.3.7. Avoids repeating words already indexed from name/subtitle.)*
 
 ---
 
@@ -49,7 +51,10 @@ EXPLORE, WHEN YOU HAVE A QUESTION OF YOUR OWN
 Some days you don't want to wait to be asked — there's something you've been meaning to bring up. Explore holds questions across twelve parts of a relationship: communication, intimacy, affection, money, family, friends, fun, the future, everyday life, conflict and repair, appreciation and trust, and growing as your own people. Find the one you've been circling, send it to your partner, and answer it together.
 
 THE HEARTH
-Daily questions come and go; some of the answers shouldn't. The Hearth holds onto the conversations you owe each other, kept warm until you've actually had them — the moments worth sitting down for, waiting quietly, never nagging. When the two of you have talked one through, you set it down together.
+Daily questions come and go; some of the answers shouldn't. The Hearth holds onto the conversations you owe each other, kept warm until you've actually had them — the moments worth sitting down for, waiting quietly, never nagging. When the two of you have talked one through, you set it down together. And over the months, the Hearth remembers — what you tended, and what keeps coming back.
+
+THE US VIEW
+Day by day, your answers add up to a picture of the two of you. The Us view is that picture: where you're close, where you differ, and which way it's moving. It is never a grade. Different is not broken — it just tells you where to look next.
 
 PRIVATE BY DESIGN
 Stoke is just for the two of you. Your answers stay private between partners.
@@ -58,9 +63,9 @@ NOT THERAPY
 Stoke is for tending a healthy relationship, not treating a crisis. If something in your relationship ever feels unsafe, Stoke will quietly point you toward real support.
 
 SUBSCRIPTION
-The daily question is free, forever — for both of you. Stoke Premium adds the parts that act on your answers: the follow-ups, your Hearth history, and sending Explore questions.
-- 14-day free trial, then $49.99 per year or $9.99 per month
-- One subscription covers both partners
+The daily question is free, forever — for both of you. Stoke Premium adds the parts that act on your answers: the follow-ups, the Us view, your Hearth history and trends, and sending Explore questions.
+- One subscription covers both partners. You pay once; your partner unlocks automatically
+- 14-day free trial on the annual plan, then $49.99 per year. Or $9.99 per month, no trial
 - Payment is charged to your Apple ID at confirmation of purchase
 - Your subscription renews automatically unless turned off at least 24 hours before the end of the current period, and your account is charged for renewal within 24 hours of the end of the current period
 - Manage or cancel anytime in your Apple ID Account Settings
@@ -72,7 +77,7 @@ Privacy Policy: https://stoke.llc/privacy
 
 ## What's New (version 1.0 release notes, max 4000 chars)
 
-Welcome to Stoke. One question a day, answered together — with gentle follow-ups when something is going well or could use some care. This is our first release, and we would love to hear what you think.
+Welcome to Stoke. One question a day, answered together — gentle follow-ups when something is going well or could use some care, and the Us view, a quiet map of the two of you. This is our first release, and we would love to hear what you think.
 
 ---
 
@@ -116,6 +121,7 @@ One-device path, signed in as Partner B:
 2. Answer on the 1 to 10 scale and add a short note. The reveal opens immediately: both answers side by side.
 3. Score a 9 or 10 and a same-day follow-up question (a "deepener") appears after the reveal — this follow-up engine is the heart of the app.
 4. The Hearth and Explore tabs have seeded history to browse, and from Explore you can send Partner A a new question.
+5. The Us view (Profile → Us, or the link under the Hearth header — not a tab) shows the couple's alignment map, built from the seeded scored history. It is a premium surface; the demo couple's entitlement keeps it open. It never shows an overall score or grade by design.
 
 Notes for the reviewer:
 - The demo couple has already been granted a premium entitlement, so every premium surface is open without a purchase. The paywall itself is reachable from Profile → the plan row; subscriptions are handled via RevenueCat + StoreKit, and a sandbox Apple ID can test the 14-day free trial and purchase.
@@ -125,7 +131,7 @@ Notes for the reviewer:
 
 ## Screenshot Guidance (v1 — capture from the latest build)
 
-The full 7-shot sequence — captions, staging state, demo data, and device sizes —
+The full 8-shot sequence — captions, staging state, demo data, and device sizes —
 lives in **docs/store/screenshot-shot-list.md**. Summary: question → sealed →
 reveal → follow-up → Hearth → Explore categories → paywall, with shots 1–3
 telling one continuing story on the same question. 6.7" and 6.5" sets required.

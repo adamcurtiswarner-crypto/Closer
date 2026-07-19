@@ -1,8 +1,10 @@
 # App Store Screenshot Shot List (v1)
 
-*From the 2026-07-09 worthiness review (Marketing). Seven shots that tell the loop
-in order: question → sealed → reveal → follow-up → Hearth → Explore → price.
-Shots 3–5 are the ones no competitor can copy — do not bury them.*
+*From the 2026-07-09 worthiness review (Marketing); updated 2026-07-20 for build 65.
+Eight shots that tell the loop in order: question → sealed → reveal → follow-up →
+Us view → Hearth → Explore → price. Shots 3–5 are the ones no competitor can
+copy — do not bury them. (Apple allows 10; the Us view earns the extra frame —
+it is the surface built from the data no competitor has.)*
 
 ## Ground rules
 
@@ -42,9 +44,10 @@ Sign-in per shot:
 | 2 | Sealed | Answer privately — sealed until you both have | Today tab as Partner A, after answering: A's answer submitted, partner's side sealed/waiting | Seed script: A's response submitted (score 9 + note); B has not answered; **same question as shot 1** |
 | 3 | The reveal | Then see each other, side by side | The reveal moment as Partner B, immediately after submitting a 9: both scores and both notes side by side | B answers 9 on the device during capture; **same question as shots 1–2** |
 | 4 | The follow-up | When it lands high or low, Stoke does something about it | The same-day deepener that appears after shot 3's reveal (both scores ≥ 9) | A seeded at 9 + B answering 9/10 fires the deepener; category verified to have live templates by the seed script |
-| 5 | Hearth | The conversations you owe each other, kept warm | Hearth tab as Partner B, with several completed conversations to show (mix of signals so the screen has texture) | Seeded history — the seed script warns if `prompt_completions` is empty; backfill with the sandbox seeder before capture if so |
-| 6 | Explore | Twelve parts of a relationship — ask the one you have been circling | Explore tab: the twelve category grid, nothing modal, nothing mid-send | None beyond an authed, paired account |
-| 7 | Paywall | One subscription, both of you | The paywall (Profile → plan row): trial CTA with the post-trial price visible in the same frame — "Try 14 days free, then $49.99/year", monthly option, restore link | Capture on an account WITHOUT the demo premium grant (or before running the seed), otherwise the plan row shows the active state |
+| 5 | The Us view | Where you're close, where you differ — never a grade | Us view as Partner B (Profile → Us): alignment map with a believable mix of states (close, apart, one movement chip), couple header visible | Seed script must backfill ~3 months of scored history across several categories so alignment states render (not "Still early here" everywhere); premium entitlement already staged |
+| 6 | Hearth | The conversations you owe each other, kept warm | Hearth tab as Partner B, with several completed conversations to show (mix of signals so the screen has texture) | Seeded history — the seed script warns if `prompt_completions` is empty; backfill with the sandbox seeder before capture if so |
+| 7 | Explore | Twelve parts of a relationship — ask the one you have been circling | Explore tab: the twelve category grid, nothing modal, nothing mid-send | None beyond an authed, paired account |
+| 8 | Paywall | One subscription, both of you | The paywall (Profile → plan row): trial CTA with the post-trial price visible in the same frame — "Try 14 days free, then $49.99/year", monthly option, restore link, renewal note + legal links visible | Capture on an account WITHOUT the demo premium grant (or before running the seed), otherwise the plan row shows the active state |
 
 ## Capture-day order
 
@@ -53,9 +56,11 @@ Sign-in per shot:
 2. Sign in as **Partner A** → capture shot 2 (sealed) FIRST, before B answers.
 3. Sign in as **Partner B** → capture shot 1 (question), then answer with a 9
    → capture shot 3 (reveal) → the deepener appears → capture shot 4.
-4. Capture shots 5 (Hearth) and 6 (Explore) in the same session.
-5. Capture shot 7 (paywall) on the non-premium account/state.
-6. Repeat the set on the second device size.
+4. Capture shot 5 (Us view: Profile → Us) in the same session — verify the map
+   shows mixed states, not "Still early here" everywhere, before shooting.
+5. Capture shots 6 (Hearth) and 7 (Explore) in the same session.
+6. Capture shot 8 (paywall) on the non-premium account/state.
+7. Repeat the set on the second device size.
 
 ## Rejection guards
 
