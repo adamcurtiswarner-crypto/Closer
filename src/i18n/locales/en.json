@@ -448,7 +448,7 @@
       "monthly": "$9.99/month",
       "billedMonthly": "Billed monthly"
     },
-    "sharedNote": "One subscription. Both of you.",
+    "sharedNote": "One subscription covers you both. Your partner unlocks automatically.",
     "ctaTrial": "Try 14 days free",
     "ctaSubline": "then {{price}}, cancel anytime",
     "plansError": "Plans aren't loading right now.",
@@ -649,6 +649,38 @@
     "followUpLine": "Follow-ups are part of Stoke Premium",
     "seePremium": "See Premium",
     "hearthTitle": "Your full history lives in Premium",
-    "hearthBody": "This month glows right here, couch and all. Past months and your trends are kept for you in Premium."
+    "hearthBody": "This month glows right here, couch and all. Past months and your trends are kept for you in Premium.",
+    "usViewLine": "The full picture is part of Stoke Premium"
+  },
+  "us": {
+    "entryLabel": "Us",
+    "entryValue": "How you two line up",
+    "eyebrow": "The two of you",
+    "title": "Us",
+    "daysTogether_one": "{{count}} day together",
+    "daysTogether_other": "{{count}} days together",
+    "alignmentTitle": "Where you stand",
+    "alignmentSubtitle": "From your daily answers, over the last three months.",
+    "state": {
+      "close_strong": "Close, and strong here",
+      "close_tender": "Close, and carrying this together",
+      "apart": "You two see this differently",
+      "early": "Still early here"
+    },
+    "movementTitle": "Which way it's moving",
+    "movement": {
+      "closing": "This gap has been narrowing.",
+      "opening": "This gap has been widening. That's information, not a problem."
+    },
+    "tendedTitle": "What you tended",
+    "tended_one": "You went back to {{count}} hard one this month.",
+    "tended_other": "You went back to {{count}} hard ones this month.",
+    "tendedNone": "Nothing waiting on the couch right now.",
+    "sideBySideTitle": "Side by side",
+    "loveLanguageLabel": "Love language",
+    "you": "You",
+    "notSet": "Not set yet",
+    "emptyTitle": "Your map starts with your answers",
+    "emptyBody": "Answer the daily question together for a while and this page fills in — where you're close, where you differ, and which way it's moving."
   }
 }

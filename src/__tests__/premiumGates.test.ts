@@ -15,6 +15,7 @@ describe('premiumGates', () => {
         followUpLocked: false,
         exploreSendLocked: false,
         hearthHistoryLocked: false,
+        usViewLocked: false,
       });
     });
   });
@@ -26,6 +27,7 @@ describe('premiumGates', () => {
       expect(gates.followUpLocked).toBe(true);
       expect(gates.exploreSendLocked).toBe(true);
       expect(gates.hearthHistoryLocked).toBe(true);
+      expect(gates.usViewLocked).toBe(true);
     });
 
     it('never locks the daily prompt loop', () => {
@@ -46,6 +48,7 @@ describe('premiumGates', () => {
         'exploreSendLocked',
         'followUpLocked',
         'hearthHistoryLocked',
+        'usViewLocked',
       ]);
     });
   });
@@ -56,6 +59,7 @@ describe('premiumGates', () => {
       expect(gates.followUpLocked).toBe(false);
       expect(gates.exploreSendLocked).toBe(false);
       expect(gates.hearthHistoryLocked).toBe(false);
+      expect(gates.usViewLocked).toBe(false);
       expect(gates.dailyPromptLocked).toBe(false);
       expect(gates.exploreAnswerLocked).toBe(false);
     });

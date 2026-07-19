@@ -10,14 +10,15 @@ import {
   Alert,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { hapticImpact, hapticNotification, ImpactFeedbackStyle, NotificationFeedbackType } from '@utils/haptics';
 import { format } from 'date-fns';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple, useUpdateAnniversaryDate } from '@/hooks/useCouple';
 import { usePartnerName } from '@/hooks/usePartnerName';
+import { usePartnerLoveLanguage } from '@/hooks/usePartnerLoveLanguage';
 import {
   pickImage,
   showPhotoAccessDeniedAlert,
@@ -25,6 +26,8 @@ import {
   uploadPartnerPhoto,
 } from '@/services/imageUpload';
 import { getLoveLanguageDisplay } from '@/config/loveLanguages';
+import { FEATURES } from '@/config/features';
+import { firstGrapheme, getInitials } from '@/utils/initials';
 import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
 import { logger } from '@/utils/logger';
@@ -33,20 +36,10 @@ import { LoveLanguageModal } from './LoveLanguageModal';
 import { AnniversaryPicker } from './AnniversaryPicker';
 
 import { colors, spacing, typography } from '@/config/theme';
-function getInitials(name: string | null): string {
-  if (!name) return '?';
-  return firstGrapheme(name);
-}
-
-// Array.from splits on code points, so names starting with an accented or
-// non-BMP character still yield one whole glyph rather than half a surrogate.
-function firstGrapheme(name: string): string {
-  const first = Array.from(name.trim())[0];
-  return first ? first.toUpperCase() : '?';
-}
 
 export function ProfileCard() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { user, refreshUser } = useAuth();
   const { data: couple } = useCouple();
   const updateAnniversary = useUpdateAnniversaryDate();
@@ -68,18 +61,8 @@ export function ProfileCard() {
   const { name: resolvedPartnerName, isFallback: partnerNameIsFallback } = usePartnerName();
   const partnerInitial = partnerNameIsFallback ? null : firstGrapheme(resolvedPartnerName);
 
-  // Fetch partner's love language
-  const partnerId = couple?.memberIds?.find((id: string) => id !== user?.id) || null;
-  const { data: partnerLoveLanguage } = useQuery({
-    queryKey: ['partnerLoveLanguage', partnerId, couple?.id],
-    queryFn: async () => {
-      if (!partnerId) return null;
-      const partnerSnap = await getDoc(doc(db, 'users', partnerId));
-      return partnerSnap.exists() ? (partnerSnap.data().love_language || null) : null;
-    },
-    enabled: !!partnerId,
-    staleTime: 60 * 1000,
-  });
+  // Partner's love language — shared cache with the Us view.
+  const { data: partnerLoveLanguage } = usePartnerLoveLanguage();
 
   if (!user) return null;
 
@@ -338,6 +321,32 @@ export function ProfileCard() {
           )}
         </View>
       </Animated.View>
+
+      {/* Us — the couple view (alignment map over your scored answers) */}
+      {FEATURES.usView && user.coupleId && (
+        <>
+          <View style={styles.divider} />
+          <Animated.View entering={FadeInUp.duration(400).delay(150)}>
+            <TouchableOpacity
+              style={styles.anniversaryRow}
+              onPress={() => {
+                logEvent('us_view_opened', { source: 'settings' });
+                router.push('/(app)/us');
+              }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              testID="profile-us-row"
+            >
+              <Icon name="users" size="md" color={colors.accent.primary} />
+              <View style={styles.anniversaryInfo}>
+                <Text style={styles.anniversaryLabel}>{t('us.entryLabel')}</Text>
+                <Text style={styles.anniversaryValue}>{t('us.entryValue')}</Text>
+              </View>
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
+            </TouchableOpacity>
+          </Animated.View>
+        </>
+      )}
 
       {/* Anniversary */}
       {user.coupleId && (

@@ -23,6 +23,7 @@ export type PaywallSource =
   | 'hearth_history'
   | 'explore_send'
   | 'settings'
+  | 'us_view'
   | 'unspecified';
 
 interface PaywallProps {

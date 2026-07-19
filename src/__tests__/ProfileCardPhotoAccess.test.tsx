@@ -17,6 +17,10 @@ const mockPickImage = jest.fn();
 const mockShowDeniedAlert = jest.fn();
 const mockUploadProfilePhoto = jest.fn();
 const mockUploadPartnerPhoto = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+}));
+
 jest.mock('@/services/imageUpload', () => ({
   pickImage: (...args: unknown[]) => mockPickImage(...args),
   showPhotoAccessDeniedAlert: (...args: unknown[]) => mockShowDeniedAlert(...args),

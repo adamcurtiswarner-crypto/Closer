@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Stack } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInUp, ReduceMotion } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +37,7 @@ import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
 export default function HearthScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { user } = useAuth();
   const { data: rawCompletions = [], isLoading } = useHearth();
   const markDiscussed = useMarkDiscussed();
@@ -64,6 +65,15 @@ export default function HearthScreen() {
   const [talkCompletionId, setTalkCompletionId] = useState<string | null>(null);
   const [revealCompletionId, setRevealCompletionId] = useState<string | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
+
+  // Deep link from the Us view: /(app)/hearth?category=x opens that
+  // category's detail directly.
+  const { category: categoryParam } = useLocalSearchParams<{ category?: string }>();
+  useEffect(() => {
+    if (typeof categoryParam === 'string' && categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [categoryParam]);
 
   useEffect(() => {
     logEvent('hearth_viewed');
@@ -216,6 +226,22 @@ export default function HearthScreen() {
           <Text style={styles.subLine} maxFontSizeMultiplier={1.4}>
             {subLine}
           </Text>
+          {FEATURES.usView && (
+            <TouchableOpacity
+              style={styles.usLink}
+              onPress={() => {
+                logEvent('us_view_opened', { source: 'hearth' });
+                router.push('/(app)/us');
+              }}
+              accessibilityRole="button"
+              testID="hearth-us-link"
+            >
+              <Text style={styles.usLinkText} maxFontSizeMultiplier={1.4}>
+                {t('us.entryValue')}
+              </Text>
+              <Icon name="caret-right" size="sm" color={colors.accent.primary} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {isLoading ? (
@@ -389,6 +415,17 @@ const styles = StyleSheet.create({
     ...typography.bodySm,
     color: colors.text.secondary,
     marginTop: spacing.xs,
+  },
+  usLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minHeight: 44,
+    marginTop: spacing.xs,
+  },
+  usLinkText: {
+    ...typography.bodySm,
+    color: colors.accent.primary,
   },
 
   // Ember grid

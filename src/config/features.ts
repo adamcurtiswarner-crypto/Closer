@@ -22,6 +22,7 @@ export const FEATURES = Object.freeze({
   resources: false,
   explore: true, // shown as the "Categories" tab
   hearth: true, // ember grid + couch queue over prompt_completions
+  usView: true, // the couple "Us" view (alignment map over scored completions)
   // ONE flag for the premium model (SEV-0 #8). False = the app behaves
   // exactly as before, everything free. True = the daily prompt loop stays
   // free forever; follow-up questions, Hearth history/trends/couch queue,

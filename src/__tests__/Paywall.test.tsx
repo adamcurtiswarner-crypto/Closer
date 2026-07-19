@@ -115,7 +115,9 @@ describe('Paywall', () => {
       expect(getByText('$49.99/year')).toBeTruthy();
       expect(getByText('$9.99/month')).toBeTruthy();
       expect(getByText('Billed monthly')).toBeTruthy();
-      expect(getByText('One subscription. Both of you.')).toBeTruthy();
+      expect(
+        getByText('One subscription covers you both. Your partner unlocks automatically.')
+      ).toBeTruthy();
       expect(queryByTestId('paywall-plans-loading')).toBeNull();
       expect(queryByTestId('paywall-error')).toBeNull();
     });

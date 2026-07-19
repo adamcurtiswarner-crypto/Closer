@@ -83,7 +83,10 @@ type AnalyticsEvent =
   | 'marked_discussed'
   | 'completion_tended'
   | 'couch_flagged'
-  | 'category_opened';
+  | 'category_opened'
+  | 'us_view_opened'
+  | 'us_view_category_opened'
+  | 'us_view_upgrade_tapped';
 
 interface EventContext {
   user_id?: string;

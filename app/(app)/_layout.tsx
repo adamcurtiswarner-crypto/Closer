@@ -237,6 +237,12 @@ export default function AppLayout() {
         }
       />
       <Tabs.Screen
+        name="us"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="date-nights"
         options={{
           href: null,

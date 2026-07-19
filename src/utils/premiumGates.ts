@@ -44,6 +44,12 @@ export interface PremiumGateMap {
    * completions — callers derive it from the currentMonthOnly() slice.
    */
   hearthHistoryLocked: boolean;
+  /**
+   * The Us view's alignment map and movement sections. The couple header
+   * and side-by-side rows stay free; locked sections render the honest
+   * teaser (real category names, blurred states).
+   */
+  usViewLocked: boolean;
 }
 
 /**
@@ -60,6 +66,7 @@ export function premiumGates(input: PremiumGateInput): PremiumGateMap {
     followUpLocked: locked,
     exploreSendLocked: locked,
     hearthHistoryLocked: locked,
+    usViewLocked: locked,
   };
 }
 

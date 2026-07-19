@@ -13,6 +13,10 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // ─── Mocks ───
 
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+}));
+
 jest.mock('@/services/imageUpload', () => ({
   pickImage: jest.fn(),
   showPhotoAccessDeniedAlert: jest.fn(),

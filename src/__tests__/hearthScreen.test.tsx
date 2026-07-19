@@ -5,6 +5,8 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 jest.mock('expo-router', () => ({
   Stack: { Screen: () => null },
+  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock('react-native-safe-area-context', () => {
