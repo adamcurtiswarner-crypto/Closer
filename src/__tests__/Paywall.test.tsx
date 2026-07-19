@@ -1,5 +1,10 @@
 jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
 
+const mockRouterPush = jest.fn();
+jest.mock('expo-router', () => ({
+  useRouter: () => ({ push: mockRouterPush, back: jest.fn() }),
+}));
+
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
 import { Paywall } from '../components/Paywall';
@@ -165,6 +170,24 @@ describe('Paywall', () => {
 
       fireEvent.press(getByText('Not now'));
       expect(onClose).toHaveBeenCalled();
+    });
+
+    // 3.1.2: auto-renewal disclosure + tappable legal links on the paywall
+    it('shows the renewal disclosure and working legal links', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      const onClose = jest.fn();
+      const { getByText, getByTestId } = render(
+        <Paywall visible onClose={onClose} />
+      );
+
+      expect(getByText(/Renews automatically until cancelled/)).toBeTruthy();
+
+      fireEvent.press(getByTestId('paywall-terms'));
+      expect(onClose).toHaveBeenCalled();
+      expect(mockRouterPush).toHaveBeenCalledWith('/(app)/terms-of-service');
+
+      fireEvent.press(getByTestId('paywall-privacy'));
+      expect(mockRouterPush).toHaveBeenCalledWith('/(app)/privacy-policy');
     });
   });
 

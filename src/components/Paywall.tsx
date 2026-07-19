@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { useRouter } from 'expo-router';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
@@ -49,6 +50,7 @@ const MIN_TOUCH_TARGET = 44;
 const PREMIUM_FEATURES = [
   { icon: 'flame' as const, key: 'paywall.features.daily' },
   { icon: 'lightbulb' as const, key: 'paywall.features.followUps' },
+  { icon: 'users' as const, key: 'paywall.features.usView' },
   { icon: 'target' as const, key: 'paywall.features.categories' },
   { icon: 'heart' as const, key: 'paywall.features.privacy' },
 ];
@@ -57,6 +59,15 @@ export function Paywall({ visible, onClose, source = 'unspecified' }: PaywallPro
   const { offering, offeringError, refreshOffering, purchase, restore, isLoading } =
     useSubscription();
   const { t } = useTranslation();
+  const router = useRouter();
+
+  // 3.1.2: terms/privacy must be reachable from the paywall. The bundled
+  // in-app screens work before hosting deploys; close the sheet first so
+  // the pushed screen isn't hidden under the modal.
+  const openLegal = (route: '/(app)/terms-of-service' | '/(app)/privacy-policy') => {
+    onClose();
+    router.push(route);
+  };
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('annual');
   const [timedOut, setTimedOut] = useState(false);
 
@@ -227,6 +238,28 @@ export function Paywall({ visible, onClose, source = 'unspecified' }: PaywallPro
             <Text style={styles.restoreText}>{t('paywall.restore')}</Text>
           </TouchableOpacity>
 
+          {/* 3.1.2: auto-renewal disclosure + tappable legal links */}
+          <Text style={styles.renewalNote}>{t('paywall.renewalNote')}</Text>
+          <View style={styles.legalRow}>
+            <TouchableOpacity
+              style={styles.legalButton}
+              onPress={() => openLegal('/(app)/terms-of-service')}
+              accessibilityRole="link"
+              testID="paywall-terms"
+            >
+              <Text style={styles.legalText}>{t('paywall.termsLink')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.legalDot}>·</Text>
+            <TouchableOpacity
+              style={styles.legalButton}
+              onPress={() => openLegal('/(app)/privacy-policy')}
+              accessibilityRole="link"
+              testID="paywall-privacy"
+            >
+              <Text style={styles.legalText}>{t('paywall.privacyLink')}</Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
             style={styles.closeButton}
             onPress={handleDismiss}
@@ -389,6 +422,32 @@ const styles = StyleSheet.create({
   restoreText: {
     ...typography.bodySm,
     color: colors.text.secondary,
+  },
+  renewalNote: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+  },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  legalButton: {
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: 'center',
+  },
+  legalText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    textDecorationLine: 'underline',
+  },
+  legalDot: {
+    ...typography.caption,
+    color: colors.text.muted,
   },
   closeButton: {
     minHeight: MIN_TOUCH_TARGET,
