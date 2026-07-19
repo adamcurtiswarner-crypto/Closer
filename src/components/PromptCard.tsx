@@ -3,74 +3,23 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { Icon } from './Icon';
-import { AccentBar } from './AccentBar';
+import { ToneShapes } from './ToneShapes';
 import type { IconName } from './Icon';
 
-// Prompt type visual config: icon, label, accent color, background tint.
-// Palette-conformant: coral primary with purple and green as the only accents.
-const PROMPT_TYPE_CONFIG: Record<string, {
-  icon: IconName;
-  label: string;
-  accent: string;
-  bgTint: string;
-  bgTintDark: string;
-}> = {
-  love_map_update: {
-    icon: 'map-pin',
-    label: 'Love Map',
-    accent: colors.accent.primary,
-    bgTint: colors.accent.primaryLight,
-    bgTintDark: colors.accent.primaryLight,
-  },
-  conflict_navigation: {
-    icon: 'path',
-    label: 'Navigate Together',
-    accent: colors.brand.purple,
-    bgTint: colors.brand.purpleLight,
-    bgTintDark: colors.brand.purpleLight,
-  },
-  bid_for_connection: {
-    icon: 'handshake',
-    label: 'Connection',
-    accent: colors.accent.primary,
-    bgTint: colors.accent.primaryLight,
-    bgTintDark: colors.accent.primaryLight,
-  },
-  appreciation_expression: {
-    icon: 'sparkle',
-    label: 'Appreciation',
-    accent: colors.brand.green,
-    bgTint: colors.brand.greenLight,
-    bgTintDark: colors.brand.greenLight,
-  },
-  dream_exploration: {
-    icon: 'compass',
-    label: 'Dreams',
-    accent: colors.brand.purple,
-    bgTint: colors.brand.purpleLight,
-    bgTintDark: colors.brand.purpleLight,
-  },
-  repair_attempt: {
-    icon: 'heart',
-    label: 'Repair',
-    accent: colors.accent.primary,
-    bgTint: colors.accent.primaryLight,
-    bgTintDark: colors.accent.primaryLight,
-  },
+// Prompt type eyebrow config: icon + label. The card itself is the ink hero
+// surface for every category — category identity lives in the eyebrow only.
+const PROMPT_TYPE_CONFIG: Record<string, { icon: IconName; label: string }> = {
+  love_map_update: { icon: 'map-pin', label: 'Love Map' },
+  conflict_navigation: { icon: 'path', label: 'Navigate Together' },
+  bid_for_connection: { icon: 'handshake', label: 'Connection' },
+  appreciation_expression: { icon: 'sparkle', label: 'Appreciation' },
+  dream_exploration: { icon: 'compass', label: 'Dreams' },
+  repair_attempt: { icon: 'heart', label: 'Repair' },
 };
 
-const DEFAULT_CONFIG: {
-  icon: IconName;
-  label: string;
-  accent: string;
-  bgTint: string;
-  bgTintDark: string;
-} = {
+const DEFAULT_CONFIG: { icon: IconName; label: string } = {
   icon: 'chat-text',
   label: 'Prompt',
-  accent: colors.accent.primary,
-  bgTint: colors.accent.primaryLight,
-  bgTintDark: colors.accent.primaryLight,
 };
 
 interface PromptCardProps {
@@ -81,6 +30,11 @@ interface PromptCardProps {
   showRespondButton?: boolean;
 }
 
+/**
+ * Text-format prompt (daily open prompts and follow-ups). Same full-bleed ink
+ * hero surface as ScalePromptCard: tone-on-tone shapes, eyebrow cap,
+ * Nunito-Black question, coral pill CTA.
+ */
 export function PromptCard({
   promptText,
   promptHint,
@@ -91,16 +45,13 @@ export function PromptCard({
   const config = PROMPT_TYPE_CONFIG[promptType] || DEFAULT_CONFIG;
 
   return (
-    <View style={[styles.card, { backgroundColor: config.bgTint }]}>
-      {/* Decorative top accent bar */}
-      <AccentBar color={config.accent} />
+    <View style={styles.card}>
+      <ToneShapes variant="black" />
 
-      {/* Type badge */}
-      <Animated.View entering={FadeIn.duration(400).delay(100)} style={styles.badgeRow}>
-        <View style={[styles.typeBadge, { backgroundColor: config.bgTintDark }]}>
-          <Icon name={config.icon as IconName} size="sm" color={config.accent} weight="regular" />
-          <Text style={[styles.typeLabel, { color: config.accent }]}>{config.label}</Text>
-        </View>
+      {/* Category eyebrow */}
+      <Animated.View entering={FadeIn.duration(400).delay(100)} style={styles.eyebrowRow}>
+        <Icon name={config.icon} size="sm" color={colors.onDark.muted} weight="regular" />
+        <Text style={styles.eyebrow}>{config.label}</Text>
       </Animated.View>
 
       {/* Prompt text */}
@@ -120,8 +71,9 @@ export function PromptCard({
         <Animated.View entering={FadeInDown.duration(400).delay(500)}>
           <TouchableOpacity
             onPress={onRespond}
-            style={[styles.button, { backgroundColor: config.accent }]}
+            style={styles.button}
             activeOpacity={0.8}
+            accessibilityRole="button"
           >
             <Text style={styles.buttonText} maxFontSizeMultiplier={1.4}>Respond</Text>
           </TouchableOpacity>
@@ -133,37 +85,30 @@ export function PromptCard({
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: colors.surface.ink,
     borderRadius: radius.hero,
-    padding: spacing.lg,
-    paddingTop: spacing.screen,
-    ...shadow.card,
+    padding: spacing.cardPad,
+    paddingTop: spacing.lg,
     overflow: 'hidden',
+    ...shadow.card,
   },
-  badgeRow: {
-    alignItems: 'center',
-    marginBottom: spacing.screen,
-    marginTop: spacing.sm,
-  },
-  typeBadge: {
+  eyebrowRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
     gap: spacing.sm,
+    marginBottom: spacing.smd,
   },
-  typeLabel: {
+  eyebrow: {
     ...typography.eyebrow,
+    color: colors.onDark.muted,
   },
   promptText: {
     ...typography.headingLg,
-    color: colors.text.primary,
-    textAlign: 'center',
+    color: colors.text.inverse,
   },
   hint: {
     ...typography.bodySm,
-    color: colors.text.secondary,
-    textAlign: 'center',
+    color: colors.onDark.muted,
     marginTop: spacing.md,
     fontStyle: 'italic',
   },
@@ -173,6 +118,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.accent.primary,
   },
   buttonText: {
     ...typography.btn,

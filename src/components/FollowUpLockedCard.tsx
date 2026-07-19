@@ -3,6 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { Icon } from './Icon';
+import { ToneShapes } from './ToneShapes';
 import { FollowUpContextLine } from './FollowUpContext';
 import { logEvent } from '@/services/analytics';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
@@ -37,6 +38,7 @@ export function FollowUpLockedCard({
     <Animated.View entering={FadeIn.duration(400)} testID="follow-up-locked">
       {branch && <FollowUpContextLine branch={branch} />}
       <View style={styles.card}>
+        <ToneShapes variant="black" />
         {/* Blurred question — visually present (the follow-up EXISTS and we
             say so), unreadable, and hidden from screen readers so the blur
             cannot be bypassed. */}
@@ -51,7 +53,7 @@ export function FollowUpLockedCard({
         </View>
 
         <View style={styles.lockRow}>
-          <Icon name="lock" size="sm" color={colors.text.secondary} weight="light" />
+          <Icon name="lock" size="sm" color={colors.onDark.muted} weight="light" />
           <Text style={styles.lockedLine}>{t('gates.followUpLine')}</Text>
         </View>
 
@@ -73,9 +75,10 @@ export function FollowUpLockedCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface.card,
+    backgroundColor: colors.surface.ink,
     borderRadius: radius.hero,
     padding: spacing.cardPad,
+    paddingTop: spacing.lg,
     alignItems: 'center',
     overflow: 'hidden',
     ...shadow.card,
@@ -83,9 +86,9 @@ const styles = StyleSheet.create({
   blurredText: {
     ...typography.heading,
     textAlign: 'center',
-    // Blur effect: transparent glyphs, soft shadow where the text sits.
+    // Blur effect: transparent glyphs, soft light shadow where the text sits.
     color: 'transparent',
-    textShadowColor: colors.text.muted,
+    textShadowColor: colors.onDark.muted,
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 14,
   },
@@ -97,7 +100,7 @@ const styles = StyleSheet.create({
   },
   lockedLine: {
     ...typography.bodySm,
-    color: colors.text.secondary,
+    color: colors.onDark.body,
   },
   premiumButton: {
     marginTop: spacing.md,
