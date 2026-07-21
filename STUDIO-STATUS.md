@@ -1,5 +1,5 @@
 # Stoke Studio Status
-*Last updated: 2026-07-20 late — **Builds 65 AND 66 SUBMITTED to TestFlight** (66 = 3.1.2 paywall compliance + Us-view fixes from the CEO review cycle; Apple processing ~5-10 min). Device pass targets 66. Realistic submission: **Wed 7/23** if Adam's Monday items land. See "CEO Cycle July 20 (night)" below.*
+*Last updated: 2026-07-21 — **BUILD HOLD: no EAS builds or TestFlight submissions until Adam says go** (founder directive). Builds 65+66 are on TestFlight; device pass targets 66. NEW since 66, riding the next build whenever Adam calls it: Categories tab in the prompt design language (ink hero category band, hero responding card, heading-voice questions). LIVE server-side already (no build needed): notification policy — exactly two push events (new prompt ready / partner responded); sendResponseReminders, onReactionAdded, onChatMessageCreated deleted from prod, Hearth nudge push stripped (deployed 2026-07-21). Submission runway still gated on Adam's Monday list below.*
 
 ## CEO Cycle July 20 (night) — three-department review, findings executed
 Three heads consulted in parallel (Testing, Product, PM). All studio-side findings were fixed the same night and ride **build 66**; founder items are in "Adam's Monday List" below.
