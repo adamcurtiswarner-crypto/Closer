@@ -26,6 +26,12 @@ describe('v1 export barrel scope (see functions/V1-SCOPE.md)', () => {
     'sendSpark',
     'submitSparkGuess',
     'onCheckInSubmitted',
+    // Notification policy 2026-07-21: only "new prompt ready" and "partner
+    // responded" push. Reminder cadence, reaction pushes, and the chat push
+    // source are gone.
+    'sendResponseReminders',
+    'onReactionAdded',
+    'onChatMessageCreated',
   ];
 
   // The v1 daily-prompt loop must stay deployed.
@@ -34,10 +40,7 @@ describe('v1 export barrel scope (see functions/V1-SCOPE.md)', () => {
     'triggerPromptDelivery',
     'expireStalePrompts',
     'graduatePrompts',
-    'sendResponseReminders',
     'onResponseSubmitted',
-    'onReactionAdded',
-    'onChatMessageCreated',
     'onCompletionDiscussed',
     'deleteAccount',
     'exportUserData',

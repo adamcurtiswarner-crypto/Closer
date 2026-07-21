@@ -71,3 +71,23 @@ firebase deploy --only functions --project stoke-5f762
 Note: `firebase deploy --only functions` will also prompt to delete functions
 that are deployed but no longer exported; the explicit `functions:delete`
 commands above make the removal deliberate and scriptable.
+
+## Notification policy (founder directive 2026-07-21)
+
+Exactly TWO push events survive:
+1. **A new prompt is ready** — daily delivery (`deliverDailyPrompts`),
+   follow-up delivery (same-day deepener + next-day repair/divergence in
+   `followUps.ts`), and a partner-sent Explore question (`onResponseSubmitted`).
+2. **Your partner responded** — first-answer nudge and reveal-ready
+   (`onResponseSubmitted`).
+
+Removed and deleted from prod (2026-07-21):
+
+```bash
+firebase functions:delete sendResponseReminders --project stoke-5f762
+firebase functions:delete onReactionAdded --project stoke-5f762
+firebase functions:delete onChatMessageCreated --project stoke-5f762
+```
+
+`onCompletionDiscussed` stays deployed (it settles `discussed_at`) but its
+first-mark nudge push was stripped in code — redeploy applies that.

@@ -2,11 +2,9 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import {
   db,
-  CATEGORY_LABELS,
   CompletionSignal,
   DEFAULT_SCALE_CONFIG,
   ScaleConfig,
-  sendPushNotification,
   logEvent,
   reportError,
 } from './shared';
@@ -27,8 +25,9 @@ import { evaluateFollowUpBranch, extractScores } from './followUps';
 // `discussed` map. Each partner marks "we talked" by writing
 // discussed.<uid> = serverTimestamp() directly (security rules confine
 // that write to the discussed map). The onCompletionDiscussed trigger
-// below nudges the other partner on the first mark and stamps
-// discussed_at once both marks are present.
+// below stamps discussed_at once both marks are present. (The first-mark
+// partner nudge push was removed 2026-07-21 — notification policy allows
+// only "new prompt ready" and "partner responded".)
 // ============================================
 
 // ============================================
@@ -113,19 +112,10 @@ export const onCompletionDiscussed = functions.firestore
         return null;
       }
 
-      // First mark: nudge the partner whose key is still absent.
-      const markerUid = addedUids[0];
-      const partnerId = membersNotMarked.find((id) => id !== markerUid);
-      if (!partnerId) return null;
-
-      const markerDoc = await db.collection('users').doc(markerUid).get();
-      const markerName = markerDoc.data()?.display_name || 'Your partner';
-      const categoryLabel = CATEGORY_LABELS[after.category] || 'it';
-
-      await sendPushNotification(partnerId, {
-        title: markerName,
-        body: `says you two talked about ${categoryLabel}. Mark it too, and it's tended.`,
-      }, { type: 'hearth' });
+      // First mark: no push. Notification policy (2026-07-21): the only
+      // push events are "new prompt ready" and "partner responded" — the
+      // partner discovers the waiting mark in the app. The trigger still
+      // exists for the discussed_at settle above.
     } catch (err) {
       await reportError('onCompletionDiscussed', err, {
         coupleId: coupleId || undefined,

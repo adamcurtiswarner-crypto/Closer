@@ -383,7 +383,11 @@ function seedCoupleAndUsers(): void {
 const context = { params: { completionId: ASSIGNMENT_ID } };
 
 describe('onCompletionDiscussed', () => {
-  it('first mark sends the partner a push with the category label and no discussed_at', async () => {
+  // Notification policy 2026-07-21: the first-mark nudge push was removed —
+  // the only push events are "new prompt ready" and "partner responded".
+  // The trigger's remaining job on a first mark is: nothing (no push, no
+  // event, no discussed_at). The settle happens on the second mark.
+  it('first mark sends NO push and writes no discussed_at', async () => {
     seedCoupleAndUsers();
     const before = baseCompletion();
     const after = baseCompletion({ discussed: { [USER_A]: new Date() } });
@@ -391,40 +395,11 @@ describe('onCompletionDiscussed', () => {
 
     await wrappedDiscussed(makeChange(before, after), context);
 
-    expect(sendPushNotification).toHaveBeenCalledTimes(1);
-    expect(sendPushNotification).toHaveBeenCalledWith(
-      USER_B,
-      {
-        title: 'Alex',
-        body: "says you two talked about Conflict and repair. Mark it too, and it's tended.",
-      },
-      { type: 'hearth' }
-    );
-    // No tended event, no discussed_at write on the first mark.
+    expect(sendPushNotification).not.toHaveBeenCalled();
     expect(logEvent).not.toHaveBeenCalled();
     const doc = store.docs.get(COMPLETION_PATH)!;
     expect(doc.discussed_at).toBeNull();
     expect(reportError).not.toHaveBeenCalled();
-  });
-
-  it('falls back to "it" for an unknown category', async () => {
-    seedCoupleAndUsers();
-    const before = baseCompletion({ category: 'legacy_whatever' });
-    const after = baseCompletion({
-      category: 'legacy_whatever',
-      discussed: { [USER_A]: new Date() },
-    });
-    store.docs.set(COMPLETION_PATH, after);
-
-    await wrappedDiscussed(makeChange(before, after), context);
-
-    expect(sendPushNotification).toHaveBeenCalledWith(
-      USER_B,
-      expect.objectContaining({
-        body: "says you two talked about it. Mark it too, and it's tended.",
-      }),
-      { type: 'hearth' }
-    );
   });
 
   it('second mark stamps discussed_at, logs completion_tended, and sends no push', async () => {
