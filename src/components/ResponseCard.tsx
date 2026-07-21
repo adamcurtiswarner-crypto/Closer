@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   responseText: {
     color: colors.text.primary,
-    ...typography.body,
+    ...typography.bodyLg,
   },
   responseImage: {
     width: '100%',

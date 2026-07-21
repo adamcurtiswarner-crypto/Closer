@@ -94,6 +94,23 @@ describe('ReactionRow', () => {
     expect(onReact).toHaveBeenCalledWith('heart');
   });
 
+  it('lights the tapped reaction immediately, before the prop round-trip', () => {
+    // myReaction stays null (the Firestore write has not landed — or never
+    // will, offline). The ring must still light optimistically on tap.
+    const { getByLabelText } = render(
+      <ReactionRow {...defaultProps} myReaction={null} onReact={jest.fn()} />
+    );
+    fireEvent.press(getByLabelText('Moved'));
+    expect(getByLabelText('Moved').props.accessibilityState).toMatchObject({
+      selected: true,
+    });
+    // Tapping again toggles off, still without any prop change.
+    fireEvent.press(getByLabelText('Moved'));
+    expect(getByLabelText('Moved').props.accessibilityState).toMatchObject({
+      selected: false,
+    });
+  });
+
   it('toggles off when the current reaction is tapped again', () => {
     const onReact = jest.fn();
     const { getByLabelText } = render(

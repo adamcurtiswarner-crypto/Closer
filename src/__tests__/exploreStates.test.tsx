@@ -410,16 +410,18 @@ describe('ExploreScreen states', () => {
         assignments: { data: [completed] },
         responses: bothResponses,
       });
-      const { getByText, findByText } = render(<ExploreScreen />);
+      const { getByText, getAllByText, findByText } = render(<ExploreScreen />);
 
       fireEvent.press(getByText('See both answers'));
       await act(async () => {});
 
       // Responses are fetched for the completed assignment (seal is open)
       expect(mockResponsesQuery).toHaveBeenCalledWith('assign-1', 'completed');
-      // The reveal ceremony card — same component as the daily reveal
+      // The reveal ceremony card — same component as the daily reveal.
+      // The prompt text appears twice: the list card behind the sheet and
+      // the reveal card itself (unquoted since the design unification).
       expect(await findByText('You both answered')).toBeTruthy();
-      expect(getByText(`${PROMPT.text}`)).toBeTruthy();
+      expect(getAllByText(`${PROMPT.text}`).length).toBeGreaterThanOrEqual(2);
       expect(getByText('You')).toBeTruthy();
       expect(getByText('Mine')).toBeTruthy();
       expect(getByText('Jordan')).toBeTruthy();

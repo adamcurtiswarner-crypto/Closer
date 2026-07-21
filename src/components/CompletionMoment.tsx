@@ -291,7 +291,9 @@ export function CompletionMoment({
             </Animated.View>
 
             <Animated.View entering={enterUp(REVEAL_T.PROMPT, PROMPT_FADE_MS)}>
-              <Text style={styles.promptText}>{'“'}{promptText}{'”'}</Text>
+              {/* The question speaks in the daily prompt voice — Nunito-Black,
+                  no quote marks, no italic. Same design language everywhere. */}
+              <Text style={styles.promptText}>{promptText}</Text>
             </Animated.View>
 
             <View style={styles.responses}>
@@ -466,11 +468,10 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
   promptText: {
-    ...typography.body,
-    color: colors.text.secondary,
+    ...typography.headingLg,
+    color: colors.text.primary,
     textAlign: 'center',
     marginBottom: spacing.lg,
-    fontStyle: 'italic',
   },
   responses: {},
   spacer: {
@@ -552,7 +553,7 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
   },
   closingText: {
-    ...typography.bodySm,
+    ...typography.body,
     marginTop: spacing.md,
     color: colors.text.secondary,
     fontStyle: 'italic',

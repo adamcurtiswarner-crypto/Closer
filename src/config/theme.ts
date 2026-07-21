@@ -242,6 +242,15 @@ export const typography = {
     fontWeight: '600',
   } as TextStyle,
 
+  // Reading-weight body — reveal answers and other passages the couple
+  // actually sits with. One step up from body, same quiet SemiBold.
+  bodyLg: {
+    fontSize: 17,
+    lineHeight: 25,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+  } as TextStyle,
+
   bodySm: {
     fontSize: 13,
     lineHeight: 19,

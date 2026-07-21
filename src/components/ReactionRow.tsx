@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
@@ -95,6 +95,20 @@ export function ReactionRow({
 }: ReactionRowProps) {
   const { t } = useTranslation();
   const displayName = partnerName ?? t('explore.partnerFallback');
+
+  // Optimistic selection: the ring lights the moment the button is tapped.
+  // The myReaction prop follows a Firestore round-trip (and offline, never
+  // arrives) — the local override renders immediately and clears once the
+  // prop catches up. `undefined` means "no override".
+  const [optimistic, setOptimistic] = useState<ReactionType | null | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    if (optimistic !== undefined && myReaction === optimistic) {
+      setOptimistic(undefined);
+    }
+  }, [myReaction, optimistic]);
+  const effectiveReaction = optimistic !== undefined ? optimistic : myReaction;
   const partnerCopy = partnerReaction ? REACTION_COPY[partnerReaction] : null;
   const partnerLine = partnerCopy
     ? t(partnerCopy.partnerKey, { name: displayName })
@@ -114,10 +128,12 @@ export function ReactionRow({
             icon={r.icon}
             type={r.type}
             caption={t(REACTION_COPY[r.type].captionKey)}
-            isSelected={myReaction === r.type}
+            isSelected={effectiveReaction === r.type}
             onPress={() => {
               if (disabled) return;
-              onReact(myReaction === r.type ? null : r.type);
+              const next = effectiveReaction === r.type ? null : r.type;
+              setOptimistic(next);
+              onReact(next);
             }}
           />
         ))}
@@ -183,13 +199,13 @@ const styles = StyleSheet.create({
   captionSelected: {
     color: colors.accent.primary,
   },
+  // Centered under the reaction row — it answers the row above it.
   partnerReaction: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     alignItems: 'center',
     gap: spacing.xs,
     marginTop: spacing.sm,
-    paddingRight: spacing.xs,
   },
   partnerLine: {
     ...typography.caption,
