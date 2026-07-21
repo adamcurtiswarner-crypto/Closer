@@ -48,6 +48,7 @@ import { premiumGates } from '@/utils/premiumGates';
 import { Icon } from '@/components/Icon';
 import { CompletionMoment } from '@/components/CompletionMoment';
 import { Paywall } from '@/components/Paywall';
+import { ToneShapes } from '@/components/ToneShapes';
 import { QueryError } from '@/components/QueryError';
 import { Skeleton } from '@/components/Skeleton';
 import { SafetyResources } from '@/components/SafetyResources';
@@ -258,26 +259,43 @@ export default function ExploreScreen() {
             contentContainerStyle={styles.respondingScroll}
             keyboardShouldPersistTaps="handled"
           >
-            <Animated.View entering={FadeIn.duration(300)} style={styles.respondingHeader}>
-              <Text style={styles.respondingPrompt}>
-                {'\u201C'}{personalize(activePrompt.text)}{'\u201D'}
-              </Text>
-              {activePrompt.hint && (
-                <Text style={styles.respondingHint}>{personalize(activePrompt.hint)}</Text>
-              )}
-            </Animated.View>
+            {/* The question renders on the same ink hero surface as the
+                daily prompt card \u2014 one design language for every prompt. */}
+            <Animated.View entering={FadeIn.duration(300)} style={styles.heroCard}>
+              <ToneShapes variant="black" />
 
-            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-              <TextInput
-                style={styles.textInput}
-                placeholder={t('explore.placeholder')}
-                placeholderTextColor={colors.text.secondary}
-                multiline
-                textAlignVertical="top"
-                value={responseText}
-                onChangeText={setResponseText}
-                autoFocus
-              />
+              {(() => {
+                const promptCategory = getCategoryByType(activePrompt.type);
+                return promptCategory ? (
+                  <View style={styles.heroEyebrowRow}>
+                    <Icon
+                      name={promptCategory.icon}
+                      size="sm"
+                      color={colors.onDark.muted}
+                      weight="regular"
+                    />
+                    <Text style={styles.heroEyebrow}>{promptCategory.label}</Text>
+                  </View>
+                ) : null;
+              })()}
+
+              <Text style={styles.heroPrompt}>{personalize(activePrompt.text)}</Text>
+              {activePrompt.hint && (
+                <Text style={styles.heroHint}>{personalize(activePrompt.hint)}</Text>
+              )}
+
+              <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+                <TextInput
+                  style={styles.heroInput}
+                  placeholder={t('explore.placeholder')}
+                  placeholderTextColor={colors.onDark.faint}
+                  multiline
+                  textAlignVertical="top"
+                  value={responseText}
+                  onChangeText={setResponseText}
+                  autoFocus
+                />
+              </Animated.View>
             </Animated.View>
 
             <View style={styles.respondingFooter}>
@@ -388,10 +406,25 @@ export default function ExploreScreen() {
         </ScrollView>
       </View>
 
-      {/* Category description */}
+      {/* Selected category — the same ink hero surface as the daily prompt
+          card, so the category itself reads in the prompt design language. */}
       {currentCategory && (
-        <Animated.View entering={FadeIn.duration(300)} style={styles.categoryDesc}>
-          <Text style={styles.categoryDescText}>{currentCategory.description}</Text>
+        <Animated.View
+          key={currentCategory.type}
+          entering={FadeIn.duration(300)}
+          style={styles.categoryHero}
+        >
+          <ToneShapes variant="black" />
+          <View style={styles.heroEyebrowRow}>
+            <Icon
+              name={currentCategory.icon}
+              size="sm"
+              color={colors.onDark.muted}
+              weight="regular"
+            />
+            <Text style={styles.heroEyebrow}>{currentCategory.label}</Text>
+          </View>
+          <Text style={styles.categoryHeroText}>{currentCategory.description}</Text>
         </Animated.View>
       )}
 
@@ -699,11 +732,29 @@ const styles = StyleSheet.create({
     color: colors.accent.primary,
   },
 
-  // Category description
-  categoryDesc: { paddingHorizontal: spacing.screen, paddingBottom: spacing.smd },
-  categoryDescText: {
-    ...typography.bodySm,
-    color: colors.text.secondary,
+  // Selected category — ink mini-hero (the prompt-card design language)
+  categoryHero: {
+    backgroundColor: colors.surface.ink,
+    borderRadius: radius.hero,
+    padding: spacing.cardPad,
+    marginHorizontal: spacing.screen,
+    marginBottom: spacing.smd,
+    overflow: 'hidden',
+    ...shadow.card,
+  },
+  categoryHeroText: {
+    ...typography.heading,
+    color: colors.text.inverse,
+  },
+  heroEyebrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.smd,
+  },
+  heroEyebrow: {
+    ...typography.eyebrow,
+    color: colors.onDark.muted,
   },
 
   // Prompt list
@@ -723,8 +774,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   promptContent: { padding: spacing.cardPad },
+  // Questions read in the prompt voice — the same Nunito-Black scale as the
+  // daily card, one step down for list density.
   promptText: {
-    ...typography.body,
+    ...typography.heading,
     color: colors.text.primary,
     marginBottom: spacing.sm,
   },
@@ -856,26 +909,35 @@ const styles = StyleSheet.create({
 
   // Responding mode
   respondingScroll: { padding: spacing.screen, flexGrow: 1 },
-  respondingHeader: { marginBottom: spacing.lg },
-  respondingPrompt: {
-    ...typography.heading,
-    color: colors.text.primary,
-    fontStyle: 'italic',
+  // Responding — the ink hero card (same surface as the daily prompt card)
+  heroCard: {
+    backgroundColor: colors.surface.ink,
+    borderRadius: radius.hero,
+    padding: spacing.cardPad,
+    paddingTop: spacing.lg,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+    ...shadow.card,
   },
-  respondingHint: {
+  heroPrompt: {
+    ...typography.headingLg,
+    color: colors.text.inverse,
+  },
+  heroHint: {
     ...typography.bodySm,
-    color: colors.text.secondary,
+    color: colors.onDark.muted,
+    fontStyle: 'italic',
     marginTop: spacing.sm,
   },
-  textInput: {
-    backgroundColor: colors.surface.card,
-    borderRadius: radius.card,
+  heroInput: {
+    marginTop: spacing.md,
+    backgroundColor: colors.onDark.field,
+    borderRadius: radius.input,
     padding: spacing.md,
     ...typography.body,
-    color: colors.text.primary,
+    color: colors.text.inverse,
     minHeight: 160,
     textAlignVertical: 'top',
-    ...shadow.cardSubtle,
   },
   respondingFooter: { marginTop: spacing.md },
   charHint: {

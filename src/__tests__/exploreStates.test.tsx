@@ -323,7 +323,7 @@ describe('ExploreScreen states', () => {
 
       // Respond editor opens on the same prompt (guard reuses assign-1)
       expect(mockStartExplore).toHaveBeenCalledWith(PROMPT);
-      expect(await findByText(`“${PROMPT.text}”`)).toBeTruthy();
+      expect(await findByText(`${PROMPT.text}`)).toBeTruthy();
     });
 
     it('never shows the partner answer while partial', () => {
@@ -367,7 +367,7 @@ describe('ExploreScreen states', () => {
 
       expect(queryByTestId('paywall')).toBeNull();
       expect(mockStartExplore).toHaveBeenCalledWith(PROMPT);
-      expect(await findByText(`“${PROMPT.text}”`)).toBeTruthy();
+      expect(await findByText(`${PROMPT.text}`)).toBeTruthy();
     });
 
     it('a premium couple sends freely', async () => {
@@ -380,7 +380,7 @@ describe('ExploreScreen states', () => {
 
       expect(queryByTestId('paywall')).toBeNull();
       expect(mockStartExplore).toHaveBeenCalledWith(PROMPT);
-      expect(await findByText(`“${PROMPT.text}”`)).toBeTruthy();
+      expect(await findByText(`${PROMPT.text}`)).toBeTruthy();
     });
   });
 
@@ -419,7 +419,7 @@ describe('ExploreScreen states', () => {
       expect(mockResponsesQuery).toHaveBeenCalledWith('assign-1', 'completed');
       // The reveal ceremony card — same component as the daily reveal
       expect(await findByText('You both answered')).toBeTruthy();
-      expect(getByText(`“${PROMPT.text}”`)).toBeTruthy();
+      expect(getByText(`${PROMPT.text}`)).toBeTruthy();
       expect(getByText('You')).toBeTruthy();
       expect(getByText('Mine')).toBeTruthy();
       expect(getByText('Jordan')).toBeTruthy();
