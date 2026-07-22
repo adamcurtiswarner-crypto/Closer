@@ -21,6 +21,15 @@ Three heads consulted in parallel (Testing, Product, PM). All studio-side findin
 
 **Runway:** Mon = Adam items + screenshots captured from 66 (studio) · Tue = device pass · **Wed 7/23 = ASC assembly + submit** (conservative Fri 7/25). Contingency: if Paid Apps Agreement still pending Wed, submit anyway — review can proceed but subs can't go live until Active.
 
+## Legal & Corporate Track (opened 2026-07-22 — advisor cross-reference of the LLC/Privacy action plan)
+Product safety architecture is ahead of the plan (unpair/delete/anonymize live, anti-guilt in code, crisis off-ramp, minimal collection, two-event notifications). The exposed flank is corporate: personal-identity accounts, no IP assignment, individual Apple enrollment. Studio docs prepared in `docs/legal/`:
+- **DATA-MAP.md** — full collection map from the live schema, data states, retention, the documented position on freeform answers + photos, user controls
+- **POLICY-ADDENDA.md** — AI disclosure ("your answers are never sent to AI services" — true in v1), unpairing, conduct clause, real 6-vendor subprocessor list, no-overclaim security overview, subscription note
+- **CONTRIBUTOR-IP-ASSIGNMENT-DRAFT.md** — attorney-review skeleton, past-work + AI-work capture, both contributors, entity facts pre-answered
+- **LLC-MIGRATION-RUNBOOK.md** — per-service ownership transfer in blast-radius order (Firebase add-owner-then-demote; Apple org-enrollment decision A/B; Expo/RevenueCat/GitHub/domain steps; money hygiene)
+
+**Adam's corporate P0s (gate public/paid launch):** ① sign IP assignment (attorney review of the draft) ② the July-6 legal confirmations (~15 min; unblocks privacy/terms deploy — Apple hard gate) ③ D-U-N-S lookup today → Apple org enrollment decision (Option A delay vs Option B TestFlight-now/org-before-paid-launch) ④ LLC email + card → run the migration runbook ⑤ insurance quotes (cyber + tech E&O) — applications answerable from DATA-MAP.md.
+
 ## Founder Directive (2026-07-05)
 v1 = scored prompts by category + score-triggered follow-ups (deepener / repair / divergence). Everything else hidden via `src/config/features.ts`. Target: top 0.1% design quality for the category. Payments live. App Store submission next.
 
