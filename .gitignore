@@ -43,3 +43,9 @@ expo-env.d.ts
 
 # Firebase deploy cache
 .firebase/
+
+# EAS local credentials (never commit)
+credentials.json
+credentials/
+*.mobileprovision
+*.p12
