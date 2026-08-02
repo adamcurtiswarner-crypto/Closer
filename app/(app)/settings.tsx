@@ -51,7 +51,6 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const { data: couple } = useCouple();
   const updateFrequency = useUpdatePromptFrequency();
-  const [remindMe, setRemindMe] = useState(user?.remindToRespond ?? true);
   const [partnerNotify, setPartnerNotify] = useState(user?.notifyPartnerResponse ?? true);
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
 
@@ -152,21 +151,6 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleToggleRemind = async (value: boolean) => {
-    setRemindMe(value);
-    if (!user?.id) return;
-    try {
-      const userRef = doc(db, 'users', user.id);
-      await updateDoc(userRef, {
-        remind_to_respond: value,
-        updated_at: serverTimestamp(),
-      });
-    } catch (error) {
-      logger.error('Error updating reminder setting:', error);
-      setRemindMe(!value); // Revert on error
-    }
-  };
-
   const handleTogglePartnerNotify = async (value: boolean) => {
     setPartnerNotify(value);
     if (!user?.id) return;
@@ -205,15 +189,6 @@ export default function SettingsScreen() {
                 <Icon name="caret-right" size="sm" color={colors.text.muted} />
               </View>
             </TouchableOpacity>
-            <View style={styles.rowToggle}>
-              <Text style={styles.rowLabel}>{t('settings.remindMe')}</Text>
-              <Switch
-                value={remindMe}
-                onValueChange={handleToggleRemind}
-                trackColor={{ false: colors.border.default, true: colors.accent.primary }}
-                thumbColor={colors.surface.card}
-              />
-            </View>
             <View style={[styles.rowToggle, styles.lastRow]}>
               <Text style={styles.rowLabel}>{t('settings.notifyPartner')}</Text>
               <Switch

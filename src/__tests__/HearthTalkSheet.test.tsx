@@ -163,7 +163,7 @@ describe('HearthTalkSheet', () => {
       makeCompletion({ discussed: { me: new Date('2026-07-02') } })
     );
     expect(getByText('You marked it — waiting for Sam')).toBeTruthy();
-    expect(getByText('They get a quiet nudge.')).toBeTruthy();
+    expect(getByText("They'll see it next time they open Stoke.")).toBeTruthy();
     expect(queryByTestId('talk-sheet-mark-button')).toBeNull();
   });
 

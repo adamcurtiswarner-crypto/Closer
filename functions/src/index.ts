@@ -25,6 +25,10 @@ export {
 // nudge, reveal ready). Everything else is un-exported below AND must be
 // deleted from prod at deploy time — see functions/V1-SCOPE.md.
 //
+// One transactional exception: "Your partner has left Stoke." (users.ts,
+// account deletion + unlink paths). It's a one-time relationship-state
+// change the partner must learn about, not an engagement event.
+//
 // export {
 //   sendResponseReminders, — reminder pushes ("still waiting" cadence) removed
 //   dateNightReminder, — hidden feature

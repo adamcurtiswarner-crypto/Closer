@@ -181,10 +181,13 @@ describe('Removed notification rows (2026-07-12 founder decisions)', () => {
     expect(queryByText('Sync to calendar')).toBeNull();
   });
 
-  it('keeps the prompt frequency row and both reminder toggles', () => {
-    const { getByText } = render(<SettingsScreen />);
+  it('keeps the prompt frequency row and the partner-responded toggle', () => {
+    const { getByText, queryByText } = render(<SettingsScreen />);
     getByText('Prompt frequency');
-    getByText('Remind me to respond');
     getByText('Notify when partner responds');
+    // "Remind me to respond" removed 2026-08-02: its backend
+    // (sendResponseReminders) is deleted from prod, so the toggle was a dead
+    // promise. Re-add only if reminders ship again.
+    expect(queryByText('Remind me to respond')).toBeNull();
   });
 });

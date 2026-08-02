@@ -676,7 +676,7 @@ export const unlinkCouple = functions.https.onCall(async (data, context) => {
       await sendPushNotification(partnerId, {
         title: APP_NAME,
         body: 'Your partner has left Stoke.',
-      }, { type: 'prompt' });
+      }, { type: 'prompt' }); // 'prompt' routes the tap to Today, where the unpaired state explains itself
     } catch (error) {
       await reportError('unlinkCouple:push', error, { userId: partnerId, coupleId });
     }

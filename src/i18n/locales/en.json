@@ -293,7 +293,6 @@
     "profile": "PROFILE",
     "notifications": "NOTIFICATIONS",
     "promptFrequency": "Prompt frequency",
-    "remindMe": "Remind me to respond",
     "notifyPartner": "Notify when partner responds",
     "resources": "RESOURCES",
     "findSupport": "Find support",
@@ -632,7 +631,7 @@
       "starterHint": "Read it out loud. No screens after this line.",
       "markTalked": "We talked about it",
       "waitingForPartner": "You marked it — waiting for {{name}}",
-      "waitingSub": "They get a quiet nudge.",
+      "waitingSub": "They'll see it next time they open Stoke.",
       "partnerMarkedFirst": "{{name}} marked it — were you two able to talk?",
       "tendedTogether": "Tended, together",
       "settleBody": "Tended. This ember settles into your hearth."
