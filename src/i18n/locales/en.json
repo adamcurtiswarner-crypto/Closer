@@ -242,7 +242,9 @@
     "openDayStillOpenToday": "Earlier today · a question is still open",
     "openDayRevealToday": "Earlier today · you both answered — see it",
     "openDayAnswersFailed": "Couldn't load the answers.",
-    "stillOpen": "Still open — {{day}}"
+    "stillOpen": "Still open — {{day}}",
+    "scaleNotePlaceholder": "What's one moment behind that number?",
+    "chooseNumber": "Choose a number first"
   },
   "memories": {
     "title": "Memories",

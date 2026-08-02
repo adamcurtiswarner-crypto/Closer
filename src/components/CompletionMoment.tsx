@@ -417,9 +417,12 @@ export function CompletionMoment({
                   <TouchableOpacity
                     activeOpacity={1}
                     onPress={onReact ? handlePartnerCardTap : undefined}
-                    accessibilityLabel={t('clarify.partnerCardHint', {
-                      name: displayPartnerName,
-                    })}
+                    // accessible={false}: a Touchable defaults to collapsing
+                    // its subtree into one element, which would replace the
+                    // partner's actual answer with the gesture hint for
+                    // screen readers. The double-tap is a sighted shortcut;
+                    // the reaction row below is the accessible path.
+                    accessible={false}
                     testID="partner-response-card"
                   >
                     <ResponseCard

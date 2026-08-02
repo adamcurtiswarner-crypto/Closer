@@ -87,7 +87,7 @@ function ReactionButton({
         ]}
       >
         {customEmoji ? (
-          <Text style={styles.customEmoji} maxFontSizeMultiplier={1.2}>
+          <Text style={styles.customEmoji} maxFontSizeMultiplier={1.2} numberOfLines={1}>
             {customEmoji}
           </Text>
         ) : icon ? (
@@ -211,7 +211,7 @@ export function ReactionRow({
           accessibilityLabel={partnerLine}
         >
           {partnerIsCustom ? (
-            <Text style={styles.partnerEmoji} maxFontSizeMultiplier={1.2}>
+            <Text style={styles.partnerEmoji} maxFontSizeMultiplier={1.2} numberOfLines={1}>
               {partnerReaction}
             </Text>
           ) : (

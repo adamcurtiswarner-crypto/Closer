@@ -8,6 +8,11 @@ jest.mock('react-native-safe-area-context', () => {
 
 jest.mock('@/components/ToneShapes', () => ({ ToneShapes: () => null }));
 
+jest.mock('@utils/haptics', () => ({
+  hapticImpact: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
+}));
+
 // Resolve t() against the real en.json so tests assert shipped copy.
 jest.mock('react-i18next', () => {
   const en = require('../i18n/locales/en.json');
@@ -89,6 +94,42 @@ describe('RespondingScreen (ink hero design, 2026-08-02)', () => {
   it('keeps the 10-character gate and quiet hint copy', () => {
     const { getByText } = renderScreen({ responseText: 'short' });
     expect(getByText('5 more characters')).toBeTruthy();
+  });
+
+  it('scale mode: slider shown, note optional, submit gated on the score', () => {
+    const onSubmit = jest.fn();
+    const { getByText, queryByText, rerender } = render(
+      <RespondingScreen
+        promptText="How connected did today feel?"
+        responseText=""
+        onChangeText={jest.fn()}
+        onSubmit={onSubmit}
+        onCancel={jest.fn()}
+        isPending={false}
+        scale={{ config: null, value: null, onChange: jest.fn() }}
+      />
+    );
+    // Score not chosen: gated with the quiet hint, no char-count nag.
+    expect(getByText('Choose a number first')).toBeTruthy();
+    expect(queryByText(/more characters/)).toBeNull();
+    fireEvent.press(getByText('Share'));
+    expect(onSubmit).not.toHaveBeenCalled();
+
+    // Score chosen: note stays optional, submit unlocks.
+    rerender(
+      <RespondingScreen
+        promptText="How connected did today feel?"
+        responseText=""
+        onChangeText={jest.fn()}
+        onSubmit={onSubmit}
+        onCancel={jest.fn()}
+        isPending={false}
+        scale={{ config: null, value: 7, onChange: jest.fn() }}
+      />
+    );
+    expect(getByText('Ready to share')).toBeTruthy();
+    fireEvent.press(getByText('Share'));
+    expect(onSubmit).toHaveBeenCalled();
   });
 
   it('submits and cancels through the footer buttons', () => {

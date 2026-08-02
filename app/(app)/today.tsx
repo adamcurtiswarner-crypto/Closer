@@ -252,6 +252,9 @@ export default function TodayScreen() {
   // can never list what my partner missed.
   const { data: openDays = [] } = useOpenDays();
   const [respondingOpenDay, setRespondingOpenDay] = useState<PromptAssignment | null>(null);
+  // Score for a SCALE assignment routed through the editor (open days /
+  // yesterday chip) — the primary Today card owns its own scale state.
+  const [editorScaleValue, setEditorScaleValue] = useState<number | null>(null);
   // Sentence-initial templates ("… is responding", "… set this one aside")
   // need "Your partner", not mid-sentence "your partner". Real names pass through.
   const partnerNameSentenceCase = partnerNameIsFallback
@@ -745,14 +748,22 @@ export default function TodayScreen() {
   };
 
   const handleSubmit = async () => {
-    if (responseText.length < 10 || !respondingAssignment) return;
+    if (!respondingAssignment) return;
+    // Scale assignments in the editor: score required, note optional —
+    // submitting text-only for a scale day silently killed the signal
+    // pipeline (review find 2026-08-02).
+    const editorIsScale = respondingAssignment.responseFormat === 'scale';
+    if (editorIsScale ? editorScaleValue == null : responseText.length < 10) return;
     hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     setTyping(false);
     try {
       const result = await submitResponse.mutateAsync({
         assignmentId: respondingAssignment.id,
-        responseText,
+        responseText: editorIsScale ? responseText.trim() : responseText,
+        ...(editorIsScale && editorScaleValue != null
+          ? { responseScore: editorScaleValue }
+          : {}),
       });
       setIsResponding(false);
       setRespondingSecondary(false);
@@ -760,6 +771,7 @@ export default function TodayScreen() {
         logEvent('open_day_answered', { assignment_id: respondingOpenDay.id });
         setRespondingOpenDay(null);
       }
+      setEditorScaleValue(null);
       setResponseText('');
       if (result.safetyMatch) {
         setShowSafetyResources(true);
@@ -1007,6 +1019,15 @@ export default function TodayScreen() {
           promptText={personalize(respondingAssignment!.promptText)}
           contextText={respondingSecondary ? null : followUpContextText}
           trail={respondingSecondary ? null : respondingTrail}
+          scale={
+            respondingAssignment!.responseFormat === 'scale'
+              ? {
+                  config: respondingAssignment!.scaleConfig,
+                  value: editorScaleValue,
+                  onChange: setEditorScaleValue,
+                }
+              : null
+          }
           responseText={responseText}
           onChangeText={handleTextChange}
           onSubmit={handleSubmit}
@@ -1014,6 +1035,7 @@ export default function TodayScreen() {
             setIsResponding(false);
             setRespondingSecondary(false);
             setRespondingOpenDay(null);
+            setEditorScaleValue(null);
             setResponseText('');
           }}
           isPending={submitResponse.isPending}

@@ -12,6 +12,9 @@ import {
 import Animated, { FadeIn, FadeInUp, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ToneShapes } from '@/components/ToneShapes';
+import { ScaleSlider } from '@/components/ScaleSlider';
+import { DEFAULT_SCALE_CONFIG } from '@/utils/scale';
+import type { ScaleConfig } from '@/types';
 import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { useTranslation } from 'react-i18next';
 
@@ -37,6 +40,16 @@ interface RespondingScreenProps {
   onSubmit: () => void;
   onCancel: () => void;
   isPending: boolean;
+  /**
+   * Scale prompts routed through the editor (open days, the yesterday
+   * chip): the score is required, the note optional — same contract as the
+   * Today card. Null/omitted = plain text prompt (10-char minimum).
+   */
+  scale?: {
+    config: ScaleConfig | null;
+    value: number | null;
+    onChange: (value: number) => void;
+  } | null;
 }
 
 // The full-screen text editor renders on the same ink hero surface as the
@@ -52,8 +65,12 @@ export function RespondingScreen({
   onSubmit,
   onCancel,
   isPending,
+  scale = null,
 }: RespondingScreenProps) {
   const { t } = useTranslation();
+  const scaleConfig = scale ? (scale.config ?? DEFAULT_SCALE_CONFIG) : null;
+  // Scale: score required, note optional. Text: the 10-character floor.
+  const canSubmit = scale ? scale.value != null : responseText.length >= 10;
   const submitScale = useSharedValue(1);
   const submitAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: submitScale.value }],
@@ -90,25 +107,43 @@ export function RespondingScreen({
 
             <Text style={styles.heroPrompt}>{promptText}</Text>
 
+            {scale && scaleConfig ? (
+              <Animated.View entering={FadeInUp.duration(400).delay(80)} style={styles.heroScale}>
+                <ScaleSlider
+                  value={scale.value}
+                  onChange={scale.onChange}
+                  minLabel={scaleConfig.minLabel}
+                  maxLabel={scaleConfig.maxLabel}
+                  min={scaleConfig.min}
+                  max={scaleConfig.max}
+                  tone="dark"
+                />
+              </Animated.View>
+            ) : null}
+
             <Animated.View entering={FadeInUp.duration(400).delay(100)}>
               <TextInput
-                style={styles.heroInput}
-                placeholder={t('today.sharePlaceholder')}
+                style={[styles.heroInput, scale ? styles.heroInputScale : null]}
+                placeholder={scale ? t('today.scaleNotePlaceholder') : t('today.sharePlaceholder')}
                 placeholderTextColor={colors.onDark.faint}
                 multiline
                 textAlignVertical="top"
                 value={responseText}
                 onChangeText={onChangeText}
-                autoFocus
+                autoFocus={!scale}
               />
             </Animated.View>
           </Animated.View>
 
           <View style={styles.respondingFooter}>
             <Text style={styles.charHint}>
-              {responseText.length < 10
-                ? t('today.moreCharacters', { count: 10 - responseText.length })
-                : t('today.readyToShare')}
+              {scale
+                ? canSubmit
+                  ? t('today.readyToShare')
+                  : t('today.chooseNumber')
+                : responseText.length < 10
+                  ? t('today.moreCharacters', { count: 10 - responseText.length })
+                  : t('today.readyToShare')}
             </Text>
 
             <View style={styles.buttonRow}>
@@ -117,11 +152,11 @@ export function RespondingScreen({
               </TouchableOpacity>
               <Animated.View style={[{ flex: 1 }, submitAnimStyle]}>
                 <TouchableOpacity
-                  style={[styles.submitButton, (responseText.length < 10 || isPending) && styles.disabled]}
+                  style={[styles.submitButton, (!canSubmit || isPending) && styles.disabled]}
                   onPress={onSubmit}
                   onPressIn={() => { submitScale.value = withTiming(0.96, { duration: 100 }); }}
                   onPressOut={() => { submitScale.value = withSpring(1, { damping: 12, stiffness: 200 }); }}
-                  disabled={responseText.length < 10 || isPending}
+                  disabled={!canSubmit || isPending}
                   activeOpacity={0.8}
                 >
                   <Text style={styles.submitText} maxFontSizeMultiplier={1.4}>
@@ -189,6 +224,9 @@ const styles = StyleSheet.create({
     ...typography.headingLg,
     color: colors.text.inverse,
   },
+  heroScale: {
+    marginTop: spacing.md,
+  },
   heroInput: {
     marginTop: spacing.md,
     backgroundColor: colors.onDark.field,
@@ -201,6 +239,9 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
 
+  heroInputScale: {
+    minHeight: 90,
+  },
   respondingFooter: {
     marginTop: spacing.xs,
   },
