@@ -127,7 +127,24 @@
         "origin": false
       },
       "eas": {
-        "projectId": "ed4dbe48-8597-4a51-8580-3402ea568d2f"
+        "projectId": "ed4dbe48-8597-4a51-8580-3402ea568d2f",
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "StokeWidgets",
+                  "bundleIdentifier": "io.getstoke.app.StokeWidgets",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.io.getstoke.app"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
     },
     "owner": "adamcurtiswarner"

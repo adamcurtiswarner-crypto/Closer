@@ -46,14 +46,25 @@ struct must change together. `currentStreak` is written but never rendered.
   ReactNativeWidgetExtension` compiles `Module.swift` against
   ExpoModulesCore.
 
-## Before the next EAS build (founder checklist)
+## EAS credentials (verified 2026-08-02)
 
-- The extension target needs its own provisioning: run
-  `eas credentials` (iOS) and confirm a profile exists for
-  `io.getstoke.app.StokeWidgets` with the App Group capability — this is
-  the exact step that broke the first TestFlight build in February.
-- App Store Connect: the app group `group.io.getstoke.app` must be
-  registered to the team (7F8CUS39VP) and enabled on BOTH identifiers.
+Checked via `eas credentials` against the production profile:
+
+- `extra.eas.build.experimental.ios.appExtensions` in app.json declares the
+  `StokeWidgets` target / `io.getstoke.app.StokeWidgets` bundle id with the
+  App Group entitlement. (The Feb config pointed at a target named
+  "widgets" and the pre-rename bundle id — a third reason it never built.)
+- An ACTIVE provisioning profile already exists for
+  `io.getstoke.app.StokeWidgets` (portal ID MMXNJM227L, expires 2027-02-25),
+  alongside the valid distribution cert.
+- An App Store Connect API key with ADMIN role is stored with EAS, so the
+  next `eas build --non-interactive` can re-validate/regenerate the profile
+  (including the App Group capability) without any interactive Apple login.
+
+Remaining build-time caveats:
+
+- If the stored profile lacks the `group.io.getstoke.app` capability, EAS
+  will fix it automatically at build time via the ASC key — nothing manual.
 - `react-native-shared-group-preferences` is unmaintained and untested on
   the New Architecture (expo-doctor exclusion documented in package.json).
   If the first device build misbehaves, the fallback is a 20-line custom
