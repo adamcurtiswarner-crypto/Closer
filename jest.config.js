@@ -29,6 +29,8 @@ module.exports = {
     '^@react-native-google-signin/google-signin$': '<rootDir>/src/__mocks__/@react-native-google-signin/google-signin.ts',
     '^expo-apple-authentication$': '<rootDir>/src/__mocks__/expo-apple-authentication.ts',
     '^react-native-worklets(.*)$': '<rootDir>/src/__mocks__/react-native-worklets.ts',
+    '^react-native-shared-group-preferences$':
+      '<rootDir>/src/__mocks__/react-native-shared-group-preferences.ts',
     '^react-native-reanimated$': '<rootDir>/src/__mocks__/react-native-reanimated.ts',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],

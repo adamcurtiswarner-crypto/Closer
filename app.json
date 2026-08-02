@@ -90,6 +90,15 @@
         }
       ],
       "expo-localization",
+      [
+        "react-native-widget-extension",
+        {
+          "frequentUpdates": false,
+          "deploymentTarget": "17.0",
+          "groupIdentifier": "group.io.getstoke.app",
+          "widgetsFolder": "widgets"
+        }
+      ],
       "@sentry/react-native",
       "expo-apple-authentication",
       [
