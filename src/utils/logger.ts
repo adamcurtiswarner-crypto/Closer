@@ -53,17 +53,42 @@ export const logger = {
   warn: (...args: any[]) => {
     if (isDev) console.warn(...args);
   },
+  /**
+   * Every call site in this app logs as `logger.error('Context:', err)`, so
+   * reading args[0] captured the CONTEXT STRING and threw the error away —
+   * Sentry received a bare message with no stack, no type and no Firestore
+   * code. (Found 2026-08-02: a production "Error loading your words:" issue
+   * that was undiagnosable for exactly this reason.) Scan the args for the
+   * real Error instead, keep the context as an annotation, and tag the
+   * Firestore code so failures are triageable at a glance.
+   */
   error: (...args: any[]) => {
     if (isDev) {
       console.error(...args);
-    } else {
-      const error = args[0];
-      if (error instanceof Error) {
-        Sentry.captureException(error);
-      } else {
-        Sentry.captureMessage(String(error), 'error');
-      }
+      return;
     }
+    const error = args.find((a) => a instanceof Error);
+    const context = args
+      .filter((a): a is string => typeof a === 'string')
+      .join(' ')
+      .trim();
+
+    if (error) {
+      const code = firestoreErrorCode(error);
+      Sentry.captureException(error, {
+        ...(context ? { extra: { context } } : {}),
+        ...(code ? { tags: { firestore_code: code } } : {}),
+      });
+      return;
+    }
+
+    // No Error anywhere in the args — keep whatever detail we do have.
+    const detail = args.find((a) => a != null && typeof a !== 'string');
+    Sentry.captureMessage(
+      [context, detail != null ? String(detail) : null].filter(Boolean).join(' ') ||
+        'Unknown error',
+      'error'
+    );
   },
   /**
    * For catch blocks around Firestore queries/listeners. Logs like

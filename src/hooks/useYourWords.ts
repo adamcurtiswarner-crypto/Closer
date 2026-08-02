@@ -96,29 +96,44 @@ async function fetchYourWords(
   // never vanish (the whole point of this feature).
   const assignments = new Map<string, Record<string, any>>();
   if (coupleId) {
-    const assignmentIds = [
-      ...new Set(
-        responseDocs
-          .map((d) => d.data().assignment_id)
-          .filter((id): id is string => typeof id === 'string' && id.length > 0)
-      ),
-    ];
-
-    for (const ids of chunk(assignmentIds, IN_CHUNK)) {
-      const snap = await getDocs(
-        query(
-          collection(db, 'prompt_assignments'),
-          where('couple_id', '==', coupleId),
-          where(documentId(), 'in', ids)
-        )
-      );
-      for (const doc of snap.docs) assignments.set(doc.id, doc.data());
+    try {
+      await joinAssignments(responseDocs, coupleId, assignments);
+    } catch (error) {
+      // The join only supplies prompt text. It is a SEPARATE round trip
+      // (and this user's history can span several ex-couples), so a failure
+      // here must degrade to date + answer — never empty the journal.
+      logger.reportQueryDenied('useYourWords.assignmentJoin', error);
     }
   }
 
   return responseDocs.map((d) =>
     mapYourWordsEntry(d.id, d.data(), assignments.get(d.data().assignment_id))
   );
+}
+
+async function joinAssignments(
+  responseDocs: { data: () => Record<string, any> }[],
+  coupleId: string,
+  assignments: Map<string, Record<string, any>>
+): Promise<void> {
+  const assignmentIds = [
+    ...new Set(
+      responseDocs
+        .map((d) => d.data().assignment_id)
+        .filter((id): id is string => typeof id === 'string' && id.length > 0)
+    ),
+  ];
+
+  for (const ids of chunk(assignmentIds, IN_CHUNK)) {
+    const snap = await getDocs(
+      query(
+        collection(db, 'prompt_assignments'),
+        where('couple_id', '==', coupleId),
+        where(documentId(), 'in', ids)
+      )
+    );
+    for (const doc of snap.docs) assignments.set(doc.id, doc.data());
+  }
 }
 
 export function useYourWords() {
@@ -139,7 +154,10 @@ export function useYourWords() {
       try {
         return await fetchYourWords(userId!, coupleId);
       } catch (error) {
-        logger.error('Error loading your words:', error);
+        // reportQueryDenied captures the real exception (with its Firestore
+        // code) AND, on a rules denial, writes a server-visible client_error
+        // event — the signal a bare logger.error cannot give us.
+        logger.reportQueryDenied('useYourWords.responses', error);
         throw error;
       }
     },

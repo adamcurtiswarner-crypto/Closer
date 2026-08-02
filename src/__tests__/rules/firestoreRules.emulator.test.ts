@@ -40,7 +40,7 @@ import {
 // Modular Firestore functions accept the compat instances the test contexts
 // return (official rules-unit-testing quickstart pattern) — used for writes
 // that need the serverTimestamp() sentinel.
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, serverTimestamp, documentId } from 'firebase/firestore';
 
 const PROJECT_ID = 'stoke-rules-test';
 const APP_ROOT = path.resolve(__dirname, '../../..');
@@ -95,11 +95,15 @@ beforeEach(async () => {
       couple_id: COUPLE_ID,
       user_id: MEMBER_A,
       response_text: 'private answer',
+      assignment_id: 'asg-1',
+      submitted_at: new Date('2026-07-30T12:00:00Z'),
     });
     await db.doc('prompt_responses/resp-deleted').set({
       couple_id: DELETED_COUPLE_ID,
       user_id: MEMBER_A,
       response_text: 'ex-couple answer',
+      assignment_id: 'asg-deleted-couple',
+      submitted_at: new Date('2026-06-01T12:00:00Z'),
     });
 
     await db.doc('prompt_completions/comp-active').set({
@@ -132,6 +136,22 @@ beforeEach(async () => {
         { user_id: MEMBER_B, response_text: 'b', response_score: 4 },
       ],
       discussed: { [MEMBER_A]: new Date('2026-07-01T00:00:00Z') },
+    });
+
+    // Assignments for the Your Words join + Open Days query shapes.
+    await db.doc('prompt_assignments/asg-1').set({
+      couple_id: COUPLE_ID,
+      prompt_text: 'A question',
+      status: 'partial',
+      assigned_date: '2026-07-30',
+      source: 'daily',
+    });
+    await db.doc('prompt_assignments/asg-deleted-couple').set({
+      couple_id: DELETED_COUPLE_ID,
+      prompt_text: 'Old question',
+      status: 'delivered',
+      assigned_date: '2026-06-01',
+      source: 'daily',
     });
 
     // Plain completion used by the clarify-exchange suite.
@@ -444,6 +464,93 @@ describe('prompt_completions clarify exchange (2026-08-02)', () => {
   it('denies a stranger asking', async () => {
     await assertFails(
       updateDoc(doc(asUser(STRANGER), 'prompt_completions/comp-active'), ask(STRANGER))
+    );
+  });
+});
+
+describe('client LIST query shapes (the shapes the app actually issues)', () => {
+  // Rules are evaluated per returned document for list queries; a single
+  // unreadable candidate fails the WHOLE query. These assert the exact
+  // shapes from useYourWords / useOpenDays / usePendingClarify — the class
+  // of bug single-doc get() tests cannot catch.
+
+  it('Your Words: own responses by user_id, newest first', async () => {
+    await assertSucceeds(
+      asUser(MEMBER_A)
+        .collection('prompt_responses')
+        .where('user_id', '==', MEMBER_A)
+        .orderBy('submitted_at', 'desc')
+        .limit(100)
+        .get()
+    );
+  });
+
+  it('Your Words: the result set may include ex-couple answers (owner read)', async () => {
+    const snap = await asUser(MEMBER_A)
+      .collection('prompt_responses')
+      .where('user_id', '==', MEMBER_A)
+      .orderBy('submitted_at', 'desc')
+      .get();
+    // resp-deleted belongs to a DELETED couple — it must still come back,
+    // otherwise the journal empties at the unlink boundary.
+    expect(snap.docs.map((d: { id: string }) => d.id).sort()).toEqual([
+      'resp-active',
+      'resp-deleted',
+    ]);
+  });
+
+  it("denies querying the PARTNER's responses by user_id", async () => {
+    await assertFails(
+      asUser(MEMBER_B)
+        .collection('prompt_responses')
+        .where('user_id', '==', MEMBER_A)
+        .orderBy('submitted_at', 'desc')
+        .get()
+    );
+  });
+
+  it('Your Words: assignment join by documentId within the couple', async () => {
+    await assertSucceeds(
+      asUser(MEMBER_A)
+        .collection('prompt_assignments')
+        .where('couple_id', '==', COUPLE_ID)
+        .where(documentId(), 'in', ['asg-1'])
+        .get()
+    );
+  });
+
+  it('Open Days: couple assignments by status + date window', async () => {
+    await assertSucceeds(
+      asUser(MEMBER_A)
+        .collection('prompt_assignments')
+        .where('couple_id', '==', COUPLE_ID)
+        .where('status', 'in', ['delivered', 'partial'])
+        .where('assigned_date', '>=', '2026-07-01')
+        .orderBy('assigned_date', 'desc')
+        .get()
+    );
+  });
+
+  it('Pending clarify: recent completions for the couple', async () => {
+    await assertSucceeds(
+      asUser(MEMBER_A)
+        .collection('prompt_completions')
+        .where('couple_id', '==', COUPLE_ID)
+        .orderBy('completed_at', 'desc')
+        .limit(30)
+        .get()
+    );
+  });
+
+  it('denies a stranger the same couple-scoped shapes', async () => {
+    await assertFails(
+      asUser(STRANGER)
+        .collection('prompt_assignments')
+        .where('couple_id', '==', COUPLE_ID)
+        .where('status', 'in', ['delivered', 'partial'])
+        .where('assigned_date', '>=', '2026-07-01')
+        .orderBy('assigned_date', 'desc')
+        .get()
     );
   });
 });

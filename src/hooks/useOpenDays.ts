@@ -89,7 +89,8 @@ export function useOpenDays(excludeIds: string[] = []) {
           (a) => !answered.has(responseDocId(a.id, userId!))
         );
       } catch (error) {
-        logger.error('Error loading open days:', error);
+        // Catch-up is additive: a failure here must never break Today.
+        logger.reportQueryDenied('useOpenDays', error);
         return [];
       }
     },

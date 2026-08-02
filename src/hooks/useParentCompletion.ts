@@ -39,7 +39,7 @@ export function useParentCompletion(parentAssignmentId: string | null) {
         return { promptText: completion.promptText, mine, theirs };
       } catch (error) {
         // Context is a nice-to-have — never block the editor on it.
-        logger.error('Error loading parent completion:', error);
+        logger.reportQueryDenied('useParentCompletion', error);
         return null;
       }
     },

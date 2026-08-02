@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { mapCompletion, type HearthCompletion } from './useHearth';
+import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 
 /** How far back a clarify question can surface on Today. */
@@ -49,7 +50,8 @@ export function usePendingClarify() {
           pending
         );
       },
-      () => {
+      (error) => {
+        logger.reportQueryDenied('usePendingClarify.listener', error);
         queryClient.setQueryData<HearthCompletion[]>(
           ['pending-clarify', coupleId, myUid],
           []

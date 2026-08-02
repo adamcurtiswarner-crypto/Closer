@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { mapClarify, type ClarifyExchange } from './useClarify';
+import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 
 /**
@@ -28,8 +29,10 @@ export function useCompletionClarify(assignmentId: string | null) {
           snap.exists() ? mapClarify(snap.data()?.clarify) : []
         );
       },
-      () => {
-        // Clarify is additive — the reveal renders without it.
+      (error) => {
+        // Clarify is additive — the reveal renders without it, but a rules
+        // denial must still surface instead of failing silently.
+        logger.reportQueryDenied('useCompletionClarify.listener', error);
         queryClient.setQueryData<ClarifyExchange[]>(['clarify', assignmentId], []);
       }
     );
