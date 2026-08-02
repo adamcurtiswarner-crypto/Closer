@@ -18,6 +18,8 @@ interface TodayScreenHeaderProps {
   isStreakActive: boolean;
   userPhotoUrl?: string | null;
   partnerPhotoUrl?: string | null;
+  /** Both partners answered today — lights the ember on the thread. */
+  bothAnswered?: boolean;
 }
 
 export function TodayScreenHeader({
@@ -32,6 +34,7 @@ export function TodayScreenHeader({
   isStreakActive,
   userPhotoUrl,
   partnerPhotoUrl,
+  bothAnswered,
 }: TodayScreenHeaderProps) {
   return (
     <>
@@ -53,6 +56,7 @@ export function TodayScreenHeader({
         isStreakActive={isStreakActive}
         userPhotoUrl={userPhotoUrl}
         partnerPhotoUrl={partnerPhotoUrl}
+        bothAnswered={bothAnswered}
       />
     </>
   );

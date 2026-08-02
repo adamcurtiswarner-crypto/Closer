@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import Animated, {
   FadeIn,
@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Icon } from './Icon';
+import { ConnectionEmber } from './ConnectionEmber';
 import { usePartnerName } from '@/hooks/usePartnerName';
 
 import { colors, spacing, typography } from '@/config/theme';
@@ -26,6 +27,8 @@ interface ConnectionHeaderProps {
   isStreakActive: boolean;
   userPhotoUrl?: string | null;
   partnerPhotoUrl?: string | null;
+  /** Both partners answered today — lights the ember on the thread. */
+  bothAnswered?: boolean;
 }
 
 function getInitials(name: string | null): string {
@@ -65,8 +68,14 @@ export function ConnectionHeader({
   isStreakActive,
   userPhotoUrl,
   partnerPhotoUrl,
+  bothAnswered = false,
 }: ConnectionHeaderProps) {
   const { name: hookPartnerName, isFallback } = usePartnerName();
+  // The ignition belongs to the moment the day completes while you are
+  // watching; arriving at an already-complete day settles straight to the
+  // breath (see ConnectionEmber).
+  const wasAnsweredOnMount = useRef(bothAnswered);
+  const igniting = bothAnswered && !wasAnsweredOnMount.current;
   // Status lines start with the name; the hook's fallback is lowercase
   // "your partner" by design, so sentence-case it for this position.
   const statusName =
@@ -97,13 +106,16 @@ export function ConnectionHeader({
           <View style={[styles.onlineDot, styles.onlineActive]} />
         </View>
 
-        {/* Connection visualization */}
+        {/* Connection visualization. The middle slot held the streak pill
+            (retired — guilt mechanic); it now holds the ember that lights
+            when you both answered. */}
         <View style={styles.connectionLine}>
           <View style={[styles.dot, styles.dotLeft]} />
           <View style={styles.line} />
           {currentStreak > 0 && (
             <StreakPill streak={currentStreak} active={isStreakActive} />
           )}
+          <ConnectionEmber lit={bothAnswered} igniting={igniting} />
           <View style={styles.line} />
           <View style={[styles.dot, styles.dotRight]} />
         </View>

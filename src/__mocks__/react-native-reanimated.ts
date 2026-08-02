@@ -54,6 +54,7 @@ module.exports = {
   withSequence: (...args: any[]) => args[0],
   withDelay: (_: any, val: any) => val,
   runOnJS: (fn: any) => fn,
+  useReducedMotion: () => false,
   interpolate: () => 0,
   ReduceMotion: {
     System: 'system',

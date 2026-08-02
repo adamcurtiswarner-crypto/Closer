@@ -864,6 +864,8 @@ export default function TodayScreen() {
     isStreakActive,
     userPhotoUrl: user?.photoUrl,
     partnerPhotoUrl: user?.partnerPhotoUrl,
+    // Lights the ember on the connection thread once you both answered.
+    bothAnswered: isComplete,
   };
 
   // Shared props for engagement cards (check-in and coaching are feature-flagged for v1)
