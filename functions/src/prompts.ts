@@ -611,21 +611,23 @@ export const expireStalePrompts = functions.runWith({ timeoutSeconds: 540, memor
   .schedule('every day 04:00')
   .timeZone('America/Los_Angeles')
   .onRun(async () => {
-    // Use yesterday (not today) so morning reminders have time to fire
-    // for users in all timezones before assignments are expired
-    const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+    // Open days (founder decision 2026-08-02): a missed question stays
+    // answerable for a rolling week — the Today "Still open" section
+    // surfaces each person's own unanswered days (useOpenDays client-side,
+    // same 7-day window). After that the day retires quietly.
+    const cutoff = format(subDays(new Date(), 7), 'yyyy-MM-dd');
 
-    // Find assignments that are still 'delivered' or 'partial' from before yesterday
+    // Find assignments still 'delivered' or 'partial' from before the window
     const staleDelivered = await db
       .collection('prompt_assignments')
       .where('status', '==', 'delivered')
-      .where('assigned_date', '<', yesterday)
+      .where('assigned_date', '<', cutoff)
       .get();
 
     const stalePartial = await db
       .collection('prompt_assignments')
       .where('status', '==', 'partial')
-      .where('assigned_date', '<', yesterday)
+      .where('assigned_date', '<', cutoff)
       .get();
 
     // A partial explore assignment is a question one partner sent and the

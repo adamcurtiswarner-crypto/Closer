@@ -37,3 +37,13 @@ export function localDateWindow(now: Date = new Date()): [string, string, string
     toLocalISO(new Date(now.getTime() + dayMs)),
   ];
 }
+
+/**
+ * Parse a YYYY-MM-DD string as a LOCAL calendar day. `new Date('2026-07-30')`
+ * parses as UTC midnight — west of Greenwich that renders the previous
+ * weekday. Local-component construction keeps the weekday honest.
+ */
+export function parseLocalDay(isoDay: string): Date {
+  const [y, m, d] = isoDay.split('-').map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}

@@ -205,6 +205,24 @@
       ]
     },
     {
+      "collectionGroup": "prompt_assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "couple_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "assigned_date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "prompt_completions",
       "queryScope": "COLLECTION",
       "fields": [

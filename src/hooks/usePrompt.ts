@@ -134,6 +134,7 @@ export function mapAssignment(id: string, data: Record<string, any>): PromptAssi
     followUp: assignmentKind === 'follow_up' ? mapFollowUpInfo(data.follow_up) : null,
     closingText: data.closing_text ?? null,
     skippedBy: data.skipped_by ? Object.keys(data.skipped_by) : [],
+    source: data.source === 'explore' ? 'explore' : 'daily',
   };
 }
 
@@ -950,6 +951,8 @@ export function useSubmitResponse() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });
+      // An answered open day leaves the Today catch-up list.
+      queryClient.invalidateQueries({ queryKey: ['open-days'] });
       // Explore submissions flow through this same mutation — refresh the
       // explore card state and any cached responses so the card seals
       // instead of dropping back to "Respond".

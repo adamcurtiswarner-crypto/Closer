@@ -241,7 +241,8 @@
     "openDaySealedToday": "Earlier today · sealed until {{name}} answers",
     "openDayStillOpenToday": "Earlier today · a question is still open",
     "openDayRevealToday": "Earlier today · you both answered — see it",
-    "openDayAnswersFailed": "Couldn't load the answers."
+    "openDayAnswersFailed": "Couldn't load the answers.",
+    "stillOpen": "Still open — {{day}}"
   },
   "memories": {
     "title": "Memories",

@@ -161,6 +161,10 @@ jest.mock('@/hooks/usePrompt', () => ({
   useAssignmentReveal: (id: string | null) => mockUseAssignmentReveal(id),
 }));
 
+jest.mock('@/hooks/useOpenDays', () => ({
+  useOpenDays: () => ({ data: [] }),
+  OPEN_DAYS_VISIBLE: 3,
+}));
 jest.mock('@/hooks/usePendingClarify', () => ({
   usePendingClarify: () => ({ data: [] }),
 }));

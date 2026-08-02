@@ -72,11 +72,14 @@ import {
   useTriggerPrompt,
   useSkipFollowUp,
   useAssignmentReveal,
+  type PromptAssignment,
 } from '@/hooks/usePrompt';
 import { usePersonalize } from '@/hooks/usePersonalize';
 import { usePartnerName } from '@/hooks/usePartnerName';
 import { useParentCompletion } from '@/hooks/useParentCompletion';
 import { usePendingClarify } from '@/hooks/usePendingClarify';
+import { parseLocalDay } from '@/utils/localDate';
+import { useOpenDays, OPEN_DAYS_VISIBLE } from '@/hooks/useOpenDays';
 import { HearthRevealSheet } from '@/components/HearthRevealSheet';
 import type { HearthCompletion } from '@/hooks/useHearth';
 import {
@@ -244,6 +247,11 @@ export default function TodayScreen() {
   // reveal carries its composer inline; the push routes here).
   const { data: pendingClarifies = [] } = usePendingClarify();
   const [clarifyReveal, setClarifyReveal] = useState<HearthCompletion | null>(null);
+  // Open days (2026-08-02): questions I missed in the last week, quiet
+  // catch-up cards under the day. My own unanswered days only — the hook
+  // can never list what my partner missed.
+  const { data: openDays = [] } = useOpenDays();
+  const [respondingOpenDay, setRespondingOpenDay] = useState<PromptAssignment | null>(null);
   // Sentence-initial templates ("… is responding", "… set this one aside")
   // need "Your partner", not mid-sentence "your partner". Real names pass through.
   const partnerNameSentenceCase = partnerNameIsFallback
@@ -427,9 +435,9 @@ export default function TodayScreen() {
 
   // Which assignment the full-screen editor answers: the primary, or the
   // secondary day routed in from the open-day chip.
-  const respondingAssignment = respondingSecondary
-    ? secondary?.assignment ?? null
-    : assignment;
+  const respondingAssignment =
+    respondingOpenDay ??
+    (respondingSecondary ? secondary?.assignment ?? null : assignment);
 
   // If the secondary day vanishes mid-edit (expired server-side, snapshot
   // shifted), fall back to Today instead of editing a missing assignment.
@@ -748,6 +756,10 @@ export default function TodayScreen() {
       });
       setIsResponding(false);
       setRespondingSecondary(false);
+      if (respondingOpenDay) {
+        logEvent('open_day_answered', { assignment_id: respondingOpenDay.id });
+        setRespondingOpenDay(null);
+      }
       setResponseText('');
       if (result.safetyMatch) {
         setShowSafetyResources(true);
@@ -952,6 +964,41 @@ export default function TodayScreen() {
     />
   );
 
+  // Still-open days: my own missed questions from the last week (today and
+  // the open-day chip's yesterday are excluded — they have their own
+  // surfaces). Capped — a catch-up, never a pile.
+  const openDayIdsShown = new Set(
+    [assignment?.id, secondary?.assignment.id].filter(Boolean)
+  );
+  const stillOpenDays = openDays
+    .filter((a) => !openDayIdsShown.has(a.id))
+    .slice(0, OPEN_DAYS_VISIBLE);
+  const stillOpenSection =
+    stillOpenDays.length > 0 ? (
+      <>
+        {stillOpenDays.map((a) => (
+          <PartnerQuestionCard
+            key={a.id}
+            partnerName={partnerName}
+            eyebrowText={t('today.stillOpen', {
+              day: format(parseLocalDay(a.assignedDate), 'EEEE'),
+            })}
+            promptText={personalize(a.promptText)}
+            questionCount={1}
+            onPress={() => {
+              hapticImpact(ImpactFeedbackStyle.Light);
+              setRespondingOpenDay(a);
+              setIsResponding(true);
+              logEvent('prompt_started', {
+                assignment_id: a.id,
+                source: 'open_days',
+              });
+            }}
+          />
+        ))}
+      </>
+    ) : null;
+
   // ─── Responding (full-screen editor, outside the crossfade wrapper) ───
   if (mode === 'responding') {
     return (
@@ -966,6 +1013,7 @@ export default function TodayScreen() {
           onCancel={() => {
             setIsResponding(false);
             setRespondingSecondary(false);
+            setRespondingOpenDay(null);
             setResponseText('');
           }}
           isPending={submitResponse.isPending}
@@ -1069,6 +1117,7 @@ export default function TodayScreen() {
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}
+      {stillOpenSection}
 
       {stagePromptCard}
 
@@ -1178,6 +1227,7 @@ export default function TodayScreen() {
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}
+      {stillOpenSection}
 
       {stagePromptCard}
 
@@ -1296,6 +1346,7 @@ export default function TodayScreen() {
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}
+      {stillOpenSection}
 
       {stagePromptCard}
 
@@ -1459,6 +1510,7 @@ export default function TodayScreen() {
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}
+      {stillOpenSection}
 
       {stagePromptCard}
 
