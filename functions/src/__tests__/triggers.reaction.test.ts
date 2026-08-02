@@ -5,7 +5,7 @@
  * continuation of the name ("Masha loved your answer."). Brand voice: no
  * emojis, no exclamation points, sentence case continuation.
  */
-import { reactionPushBody } from '../triggers';
+import { findNewReaction, reactionPushBody } from '../triggers';
 
 describe('reactionPushBody', () => {
   it.each([
@@ -31,4 +31,43 @@ describe('reactionPushBody', () => {
       expect(body.endsWith('.')).toBe(true);
     }
   );
+});
+
+describe('findNewReaction', () => {
+  it('detects a fresh reaction', () => {
+    expect(findNewReaction({}, { 'user-1': 'heart' })).toEqual({
+      reactorId: 'user-1',
+      reactionValue: 'heart',
+    });
+  });
+
+  it('detects a changed reaction', () => {
+    expect(
+      findNewReaction({ 'user-1': 'heart' }, { 'user-1': 'teary' })
+    ).toEqual({ reactorId: 'user-1', reactionValue: 'teary' });
+  });
+
+  it('ignores an un-react (null write) — no push for taking a reaction back', () => {
+    expect(findNewReaction({ 'user-1': 'heart' }, { 'user-1': null })).toBeNull();
+  });
+
+  it('ignores unrelated doc updates where reactions did not change', () => {
+    expect(
+      findNewReaction({ 'user-1': 'heart' }, { 'user-1': 'heart' })
+    ).toBeNull();
+  });
+
+  it('ignores non-string reaction values (malformed writes)', () => {
+    expect(findNewReaction({}, { 'user-1': 7 })).toBeNull();
+    expect(findNewReaction({}, { 'user-1': '' })).toBeNull();
+  });
+
+  it('finds the changed user among unchanged ones', () => {
+    expect(
+      findNewReaction(
+        { 'user-1': 'heart' },
+        { 'user-1': 'heart', 'user-2': 'fire' }
+      )
+    ).toEqual({ reactorId: 'user-2', reactionValue: 'fire' });
+  });
 });

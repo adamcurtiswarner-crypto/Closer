@@ -323,8 +323,9 @@ export function ProfileCard() {
       </Animated.View>
 
       {/* Your words — the user's own answers, kept (Hooked audit 2026-08-02).
-          Requires a couple only because responses live under couple_id. */}
-      {user.coupleId && (
+          Not gated on coupleId: the journal survives an unlink, and an
+          unpaired user just sees the quiet empty state. */}
+      {(
         <>
           <View style={styles.divider} />
           <Animated.View entering={FadeInUp.duration(400).delay(140)}>

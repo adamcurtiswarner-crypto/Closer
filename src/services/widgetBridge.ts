@@ -1,6 +1,5 @@
 import { Platform } from 'react-native';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
-import { requireNativeModule } from 'expo-modules-core';
 import { logger } from '@/utils/logger';
 
 // Re-enabled 2026-08-02 (Hooked audit; extension was disabled 2026-02-25 to
@@ -37,8 +36,12 @@ export async function updateWidgetData(data: WidgetData): Promise<void> {
     await SharedGroupPreferences.setItem(STORAGE_KEY, data, APP_GROUP);
     // The package's JS API (v0.2.0) only exposes Live Activity functions —
     // reloadAllTimelines is our own addition in widgets/Module.swift, so it
-    // is reached via the native module directly, lazily (the module only
-    // exists in real builds, never in Jest or Expo Go).
+    // is reached via the native module directly. Both the module lookup AND
+    // the expo-modules-core import are lazy: a static import crashes at
+    // module-evaluation time in Jest (no jest-expo preset here), before any
+    // try/catch could contain it.
+    const { requireNativeModule } =
+      require('expo-modules-core') as typeof import('expo-modules-core');
     requireNativeModule('ReactNativeWidgetExtension').reloadAllTimelines();
   } catch (error) {
     logger.warn('[WidgetBridge] Failed to update widget data:', error);

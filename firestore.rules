@@ -274,9 +274,12 @@ service cloud.firestore {
     // ============================================
 
     match /prompt_responses/{responseId} {
-      // Can read if in same couple
+      // Your own words are always readable — including after an unlink
+      // (Your Words journal; mirrors the owner-update rule below). Partner
+      // reads still require an active couple.
       allow read: if isAuthenticated() &&
-        isCoupleMember(resource.data.couple_id);
+        (isOwner(resource.data.user_id) ||
+          isCoupleMember(resource.data.couple_id));
 
       // Can create own response
       allow create: if isAuthenticated() &&

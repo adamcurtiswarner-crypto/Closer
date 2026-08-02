@@ -73,7 +73,7 @@ export function chunk<T>(items: T[], size: number): T[][] {
 
 async function fetchYourWords(
   userId: string,
-  coupleId: string
+  coupleId: string | null
 ): Promise<YourWordsEntry[]> {
   // Ordering by submitted_at naturally excludes drafts (no submitted_at);
   // the status filter below is defensive belt-and-suspenders.
@@ -90,24 +90,30 @@ async function fetchYourWords(
   );
 
   // Join to assignments for the prompt text — responses only carry ids.
-  const assignmentIds = [
-    ...new Set(
-      responseDocs
-        .map((d) => d.data().assignment_id)
-        .filter((id): id is string => typeof id === 'string' && id.length > 0)
-    ),
-  ];
-
+  // After an unlink, coupleId is null and the security rules no longer allow
+  // reading the old couple's assignments; the answers still show, with the
+  // same empty-prompt fallback as a deleted assignment. The user's words
+  // never vanish (the whole point of this feature).
   const assignments = new Map<string, Record<string, any>>();
-  for (const ids of chunk(assignmentIds, IN_CHUNK)) {
-    const snap = await getDocs(
-      query(
-        collection(db, 'prompt_assignments'),
-        where('couple_id', '==', coupleId),
-        where(documentId(), 'in', ids)
-      )
-    );
-    for (const doc of snap.docs) assignments.set(doc.id, doc.data());
+  if (coupleId) {
+    const assignmentIds = [
+      ...new Set(
+        responseDocs
+          .map((d) => d.data().assignment_id)
+          .filter((id): id is string => typeof id === 'string' && id.length > 0)
+      ),
+    ];
+
+    for (const ids of chunk(assignmentIds, IN_CHUNK)) {
+      const snap = await getDocs(
+        query(
+          collection(db, 'prompt_assignments'),
+          where('couple_id', '==', coupleId),
+          where(documentId(), 'in', ids)
+        )
+      );
+      for (const doc of snap.docs) assignments.set(doc.id, doc.data());
+    }
   }
 
   return responseDocs.map((d) =>
@@ -118,16 +124,20 @@ async function fetchYourWords(
 export function useYourWords() {
   const { user } = useAuth();
   const userId = user?.id;
-  const coupleId = user?.coupleId;
+  const coupleId = user?.coupleId ?? null;
 
   return useQuery({
-    queryKey: ['your-words', userId],
-    enabled: Boolean(userId && coupleId),
+    // coupleId is part of the key: an unlink (coupleId → null) must not
+    // serve the paired query's cache and vice versa.
+    queryKey: ['your-words', userId, coupleId],
+    // Gated on the user only — after an unlink the journal must survive
+    // (see fetchYourWords for the degraded join).
+    enabled: Boolean(userId),
     // A journal doesn't need to be live — refresh on entry is enough.
     staleTime: 60 * 1000,
     queryFn: async () => {
       try {
-        return await fetchYourWords(userId!, coupleId!);
+        return await fetchYourWords(userId!, coupleId);
       } catch (error) {
         logger.error('Error loading your words:', error);
         throw error;

@@ -160,8 +160,14 @@ describe('prompt_responses reads', () => {
     await assertFails(asUser(STRANGER).doc('prompt_responses/resp-active').get());
   });
 
-  it('denies an ex-member once the couple is deleted (breakup model)', async () => {
-    await assertFails(asUser(MEMBER_A).doc('prompt_responses/resp-deleted').get());
+  it("keeps an ex-member's OWN response readable after the couple is deleted (Your Words, 2026-08-02)", async () => {
+    await assertSucceeds(asUser(MEMBER_A).doc('prompt_responses/resp-deleted').get());
+  });
+
+  it("denies an ex-member their PARTNER's response once the couple is deleted (breakup model)", async () => {
+    // resp-deleted is owned by MEMBER_A — the partner reading it must still
+    // hit the isCoupleMember(active) wall.
+    await assertFails(asUser(MEMBER_B).doc('prompt_responses/resp-deleted').get());
   });
 });
 

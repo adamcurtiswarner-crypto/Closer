@@ -300,10 +300,14 @@ export interface HearthWeeklyRecap {
 
 /**
  * "Your week together" — data for the weekly recap card (re-enabled
- * 2026-08-02, Hooked audit). The week starts Sunday 00:00 local, matching
- * the server's date-fns `ww` week used by sendWeeklyRecaps. Callers pass the
- * gate-visible completion set so the card never shows an entry the reveal
- * sheet would then lock.
+ * 2026-08-02, Hooked audit). The week starts Sunday 00:00 in the DEVICE's
+ * timezone. Known, accepted skew: the server's completion `week` field and
+ * sendWeeklyRecaps use the Functions runtime clock (UTC), so a completion
+ * near the week boundary can be counted by the Sunday push but fall outside
+ * this card (or vice versa). Worst case is a push landing on a Hearth with
+ * no week card — quiet, never wrong-data. Revisit if support hears about it.
+ * Callers pass the gate-visible completion set so the card never shows an
+ * entry the reveal sheet would then lock.
  */
 export function weeklyRecap(
   completions: HearthCompletion[],

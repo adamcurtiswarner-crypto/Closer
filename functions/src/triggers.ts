@@ -433,31 +433,46 @@ async function handleResponseSubmitted(
 // TRIGGER: Reaction Push Notification
 // ============================================
 
+/**
+ * Diff the reactions map of a completion doc — pure, unit tested. Returns
+ * the user who just added/changed a reaction, or null when the update was
+ * something else (an un-react writes null; other doc fields also trigger
+ * onUpdate).
+ */
+export function findNewReaction(
+  beforeReactions: Record<string, unknown>,
+  afterReactions: Record<string, unknown>
+): { reactorId: string; reactionValue: string } | null {
+  for (const [userId, reaction] of Object.entries(afterReactions)) {
+    if (
+      beforeReactions[userId] !== reaction &&
+      typeof reaction === 'string' &&
+      reaction.length > 0
+    ) {
+      return { reactorId: userId, reactionValue: reaction };
+    }
+  }
+  return null;
+}
+
 export const onReactionAdded = functions.firestore
   .document('prompt_completions/{completionId}')
   .onUpdate(async (change) => {
     const before = change.before.data();
     const after = change.after.data();
 
-    const beforeReactions = before.reactions || {};
     const afterReactions = after.reactions || {};
-
-    // Find the user who just reacted
-    let reactorId: string | null = null;
-    let reactionValue: string | null = null;
-    for (const [userId, reaction] of Object.entries(afterReactions)) {
-      if (beforeReactions[userId] !== reaction && reaction !== null) {
-        reactorId = userId;
-        reactionValue = reaction as string;
-        break;
-      }
-    }
-
-    if (!reactorId || !reactionValue) return null;
+    const newReaction = findNewReaction(before.reactions || {}, afterReactions);
+    if (!newReaction) return null;
+    const { reactorId, reactionValue } = newReaction;
 
     const coupleId = after.couple_id;
+    if (typeof coupleId !== 'string' || coupleId.length === 0) return null;
     const coupleDoc = await db.collection('couples').doc(coupleId).get();
-    const coupleData = coupleDoc.data()!;
+    // Couple doc can be mid-deletion (account delete / unlink) while a
+    // stale completion still receives a reaction — drop quietly.
+    const coupleData = coupleDoc.data();
+    if (!coupleData || !Array.isArray(coupleData.member_ids)) return null;
     const partnerId = coupleData.member_ids.find(
       (id: string) => id !== reactorId
     );
