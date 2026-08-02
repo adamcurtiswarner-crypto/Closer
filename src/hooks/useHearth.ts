@@ -291,6 +291,55 @@ export function monthlyStats(
   };
 }
 
+export interface HearthWeeklyRecap {
+  answered: number;
+  tended: number;
+  /** Highest combined-score scored completion of the week; newest wins ties. */
+  brightest: HearthCompletion | null;
+}
+
+/**
+ * "Your week together" — data for the weekly recap card (re-enabled
+ * 2026-08-02, Hooked audit). The week starts Sunday 00:00 local, matching
+ * the server's date-fns `ww` week used by sendWeeklyRecaps. Callers pass the
+ * gate-visible completion set so the card never shows an entry the reveal
+ * sheet would then lock.
+ */
+export function weeklyRecap(
+  completions: HearthCompletion[],
+  now: Date = new Date()
+): HearthWeeklyRecap {
+  const weekStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - now.getDay()
+  );
+  const inWeek = (d: Date | null) => d != null && d >= weekStart;
+  const week = completions.filter((c) => inWeek(c.completedAt));
+
+  let brightest: HearthCompletion | null = null;
+  let bestCombined = -Infinity;
+  for (const c of week) {
+    const scores = c.responses
+      .map((r) => r.responseScore)
+      .filter((s): s is number => s != null);
+    if (scores.length < 2) continue;
+    const combined = scores[0] + scores[1];
+    // Strict > with the newest-first completion order means ties keep the
+    // most recent moment.
+    if (combined > bestCombined) {
+      bestCombined = combined;
+      brightest = c;
+    }
+  }
+
+  return {
+    answered: week.length,
+    tended: week.filter((c) => inWeek(c.discussedAt)).length,
+    brightest,
+  };
+}
+
 export interface TrendPoint {
   date: Date;
   value: number;

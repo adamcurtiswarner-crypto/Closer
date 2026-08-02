@@ -610,6 +610,14 @@
       "warming": "warming",
       "settling": "settling"
     },
+    "week": {
+      "title": "Your week together",
+      "answered_one": "{{count}} question answered",
+      "answered_other": "{{count}} questions answered",
+      "tended_one": "{{count}} tended on the couch",
+      "tended_other": "{{count}} tended on the couch",
+      "brightest": "Brightest moment"
+    },
     "queueTitle": "Waiting for you two",
     "queueMeta": "You {{mine}} · {{partner}} {{theirs}}",
     "statsTitle": "This month",

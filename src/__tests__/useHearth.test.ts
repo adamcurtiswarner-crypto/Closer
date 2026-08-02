@@ -41,6 +41,7 @@ import {
   trendSeries,
   useHearth,
   useMarkDiscussed,
+  weeklyRecap,
   type HearthCompletion,
 } from '../hooks/useHearth';
 import { computeSignal } from '@/utils/hearthSignal';
@@ -557,6 +558,83 @@ describe('useHearth', () => {
         makeCompletion({ id: '5', completedAt: null }),
       ];
       expect(monthlyStats(list, now)).toEqual({ answered: 2, tended: 1 });
+    });
+  });
+
+  describe('weeklyRecap', () => {
+    // Tuesday July 7 2026, local time. The week starts Sunday July 5.
+    const now = new Date(2026, 6, 7, 12, 0, 0);
+
+    function scoredWeekEntry(
+      id: string,
+      scores: [number, number],
+      completedAt: Date,
+      overrides: Partial<HearthCompletion> = {}
+    ) {
+      return makeCompletion({
+        id,
+        completedAt,
+        responses: [
+          { userId: 'user-1', responseText: '', responseScore: scores[0], imageUrl: null, submittedAt: null },
+          { userId: 'user-2', responseText: '', responseScore: scores[1], imageUrl: null, submittedAt: null },
+        ],
+        ...overrides,
+      });
+    }
+
+    it('counts only completions since Sunday 00:00 local', () => {
+      const recap = weeklyRecap(
+        [
+          scoredWeekEntry('in1', [6, 6], new Date(2026, 6, 5, 0, 0, 1)),
+          scoredWeekEntry('in2', [7, 7], new Date(2026, 6, 6)),
+          scoredWeekEntry('out', [9, 9], new Date(2026, 6, 4, 23, 59)),
+        ],
+        now
+      );
+      expect(recap.answered).toBe(2);
+      expect(recap.brightest?.id).toBe('in2');
+    });
+
+    it('tended counts mutual marks made this week, even on older completions', () => {
+      const recap = weeklyRecap(
+        [
+          scoredWeekEntry('old-tended', [3, 4], new Date(2026, 6, 6), {
+            discussedAt: new Date(2026, 6, 6, 20, 0),
+          }),
+        ],
+        now
+      );
+      expect(recap.tended).toBe(1);
+    });
+
+    it('brightest picks the highest combined score; newest-first order wins ties', () => {
+      // The hook delivers completions newest-first (orderBy completed_at desc).
+      const recap = weeklyRecap(
+        [
+          scoredWeekEntry('newer-tie', [8, 8], new Date(2026, 6, 6)),
+          scoredWeekEntry('older-tie', [8, 8], new Date(2026, 6, 5)),
+          scoredWeekEntry('lower', [9, 5], new Date(2026, 6, 6)),
+        ],
+        now
+      );
+      expect(recap.brightest?.id).toBe('newer-tie');
+    });
+
+    it('text-only completions count as answered but never as brightest', () => {
+      const textOnly = makeCompletion({
+        id: 'text',
+        completedAt: new Date(2026, 6, 6),
+        responses: [
+          { userId: 'user-1', responseText: 'words', responseScore: null, imageUrl: null, submittedAt: null },
+        ],
+      });
+      const recap = weeklyRecap([textOnly], now);
+      expect(recap.answered).toBe(1);
+      expect(recap.brightest).toBeNull();
+    });
+
+    it('an empty week hides the card (zero answered, no brightest)', () => {
+      expect(weeklyRecap([], now)).toEqual({ answered: 0, tended: 0, brightest: null });
     });
   });
 

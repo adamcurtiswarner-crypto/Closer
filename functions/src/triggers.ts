@@ -467,23 +467,41 @@ export const onReactionAdded = functions.firestore
     // Don't notify if partner already reacted (avoid ping-pong)
     if (afterReactions[partnerId]) return null;
 
+    // Check recipient's notification preference (default true) \u2014 reactions
+    // are the same "partner responded" family as the answer pushes.
+    const recipientDoc = await db.collection('users').doc(partnerId).get();
+    if (recipientDoc.data()?.notify_partner_response === false) return null;
+
     const reactorDoc = await db.collection('users').doc(reactorId).get();
     const reactorName = reactorDoc.data()?.display_name || 'Your partner';
 
-    const REACTION_EMOJIS: Record<string, string> = {
-      heart: '\u2764\uFE0F',
-      fire: '\uD83D\uDD25',
-      laughing: '\uD83D\uDE02',
-      teary: '\uD83E\uDD7A',
-    };
-
     await sendPushNotification(partnerId, {
       title: reactorName,
-      body: `${REACTION_EMOJIS[reactionValue] || ''} reacted to your response`,
-    }, { type: 'prompt' });
+      body: reactionPushBody(reactionValue),
+    }, { type: 'reaction' });
 
     return null;
   });
+
+/**
+ * Push body for a partner reaction. Title is the reactor's name, so the body
+ * reads as a continuation ("Masha loved your answer."). Reaction keys match
+ * src/hooks/useReaction.ts; UI labels are Love / Spark / Smile / Moved.
+ */
+export function reactionPushBody(reaction: string): string {
+  switch (reaction) {
+    case 'heart':
+      return 'loved your answer.';
+    case 'fire':
+      return 'felt a spark in your answer.';
+    case 'laughing':
+      return 'smiled at your answer.';
+    case 'teary':
+      return 'was moved by your answer.';
+    default:
+      return 'reacted to your answer.';
+  }
+}
 
 // ============================================
 // TRIGGER: On Check-In Submitted

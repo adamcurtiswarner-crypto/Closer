@@ -169,7 +169,8 @@ export function setupNotificationHandlers(): () => void {
     logEvent('notification_opened', { notification_type: type || 'unknown' });
 
     // Route to appropriate screen based on notification type
-    if (type === 'prompt' || type === 'partner_responded') {
+    if (type === 'prompt' || type === 'partner_responded' || type === 'reaction') {
+      // A reaction lands on the revealed completion, which lives on Today.
       router.push('/(app)/today');
     } else if (type === 'explore_question' || type === 'explore_complete') {
       // Explore prompts never appear on Today — land on the explore tab and
@@ -196,8 +197,8 @@ export function setupNotificationHandlers(): () => void {
         router.push('/(app)/explore');
       }
     } else if (type === 'recap' || type === 'weekly_recap') {
-      // Memories is feature-flagged off for v1 — fall back to today
-      router.push(FEATURES.memories ? '/(app)/memories' : '/(app)/today');
+      // The weekly recap lives on Hearth (memories tab stays hidden in v1).
+      router.push(FEATURES.hearth ? '/(app)/hearth' : '/(app)/today');
     } else if (type === 'date_night' || type === 'date_night_reminder') {
       // Date nights is feature-flagged off for v1 — fall back to today
       router.push(FEATURES.dateNights ? '/(app)/date-nights' : '/(app)/today');

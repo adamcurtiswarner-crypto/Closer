@@ -17,6 +17,7 @@ import {
   trendSeries,
   useHearth,
   useMarkDiscussed,
+  weeklyRecap,
   type HearthCompletion,
 } from '@/hooks/useHearth';
 import { V1_PROMPT_CATEGORIES, getCategoryByType } from '@/config/promptCategories';
@@ -101,6 +102,9 @@ export default function HearthScreen() {
   // free couples accumulate from the current month only (the existing gate).
   const states = useMemo(() => perCategoryTileState(visibleCompletions), [visibleCompletions]);
   const stats = useMemo(() => monthlyStats(completions), [completions]);
+  // "Your week together" — derived from the gate-visible set so the
+  // brightest-moment tap never dead-ends into a locked reveal.
+  const week = useMemo(() => weeklyRecap(visibleCompletions), [visibleCompletions]);
   const glowingCount = useMemo(
     () => Object.values(states).filter((s) => s === 'glowing').length,
     [states]
@@ -313,6 +317,49 @@ export default function HearthScreen() {
               })}
             </View>
 
+            {/* Your week together — the weekly recap push lands here.
+                Hidden until the couple has a completion this week; the
+                brightest moment reopens its reveal. */}
+            {week.answered > 0 && (
+              <View style={styles.section} testID="hearth-week">
+                <Text style={styles.sectionTitle}>{t('hearth.week.title')}</Text>
+                <View style={styles.weekCard}>
+                  <Text style={styles.weekLine} maxFontSizeMultiplier={1.4}>
+                    {[
+                      t('hearth.week.answered', { count: week.answered }),
+                      week.tended > 0
+                        ? t('hearth.week.tended', { count: week.tended })
+                        : null,
+                    ]
+                      .filter((segment): segment is string => segment != null)
+                      .join(' · ')}
+                  </Text>
+                  {week.brightest && (
+                    <TouchableOpacity
+                      style={styles.weekBrightest}
+                      onPress={() => openReveal(week.brightest!)}
+                      accessibilityRole="button"
+                      testID="hearth-week-brightest"
+                    >
+                      <View style={styles.weekBrightestText}>
+                        <Text style={styles.weekBrightestLabel} maxFontSizeMultiplier={1.4}>
+                          {t('hearth.week.brightest')}
+                        </Text>
+                        <Text
+                          style={styles.weekBrightestPrompt}
+                          numberOfLines={2}
+                          maxFontSizeMultiplier={1.4}
+                        >
+                          {week.brightest.promptText}
+                        </Text>
+                      </View>
+                      <Icon name="caret-right" size="sm" color={colors.accent.primary} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
+
             {/* Couch queue — free for the current month (the visible set
                 already reflects the gate), so the talk ritual never dead-ends
                 into a lock. */}
@@ -454,6 +501,40 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...typography.h3,
+    color: colors.text.primary,
+  },
+
+  // Your week together
+  weekCard: {
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    gap: spacing.smd,
+    ...shadow.cardSubtle,
+  },
+  weekLine: {
+    ...typography.body,
+    color: colors.text.primary,
+  },
+  weekBrightest: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    minHeight: 44,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.default,
+    paddingTop: spacing.smd,
+  },
+  weekBrightestText: {
+    flex: 1,
+    gap: 2,
+  },
+  weekBrightestLabel: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
+  weekBrightestPrompt: {
+    ...typography.bodySm,
     color: colors.text.primary,
   },
 

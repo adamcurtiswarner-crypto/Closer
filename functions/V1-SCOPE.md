@@ -19,7 +19,7 @@ redeploying.
 | `deliverMorningCheckin` | `src/engines.ts` | daily 8 AM PT | Four Engines morning check-in push; engines are hidden in v1 |
 | `deliverEveningReflection` | `src/engines.ts` | daily evening | Four Engines evening reflection push; engines are hidden in v1 |
 | `detectChurnRisk` | `src/analytics.ts` | daily 5 AM PT | Sends a user-facing re-engagement push to high-risk couples ("It's been a while. A new prompt is waiting for you."). Disabled because it is user-facing. Side effect: the internal `churn_risk_level` / `consecutive_missed_prompts` writes to couple docs also stop while disabled. |
-| `sendWeeklyRecaps` | `src/notifications.ts` | Sunday 6 PM PT | Pushes "Your week together is ready." — the weekly recap surface is hidden in v1, so the push is a dead end |
+| ~~`sendWeeklyRecaps`~~ | `src/notifications.ts` | Sunday 6 PM PT | **Re-enabled 2026-08-02** (founder approval, Hooked audit). The recap now lands on Hearth; push only goes to couples with a completion that week. Redeploy restores the schedule — no delete needed. |
 | `computeRelationshipPulse` | `src/coaching.ts` | Monday 3 AM PT | Pushes "Your weekly insight is ready." for the hidden coaching surface |
 | `triggerPulseComputation` | `src/coaching.ts` | callable | Routes into the same pulse computation + push as `computeRelationshipPulse` |
 | `generateCoachingInsight` | `src/coaching.ts` | callable | Coaching surface is hidden in v1; insight generation routes into the pulse push path |
@@ -52,7 +52,6 @@ firebase functions:delete dateNightReminder --project stoke-5f762
 firebase functions:delete deliverMorningCheckin --project stoke-5f762
 firebase functions:delete deliverEveningReflection --project stoke-5f762
 firebase functions:delete detectChurnRisk --project stoke-5f762
-firebase functions:delete sendWeeklyRecaps --project stoke-5f762
 firebase functions:delete computeRelationshipPulse --project stoke-5f762
 firebase functions:delete triggerPulseComputation --project stoke-5f762
 firebase functions:delete generateCoachingInsight --project stoke-5f762
@@ -72,20 +71,25 @@ Note: `firebase deploy --only functions` will also prompt to delete functions
 that are deployed but no longer exported; the explicit `functions:delete`
 commands above make the removal deliberate and scriptable.
 
-## Notification policy (founder directive 2026-07-21)
+## Notification policy (founder directive 2026-07-21, amended 2026-08-02)
 
-Exactly TWO push events survive:
+Push fires only for **reward events, never guilt**:
 1. **A new prompt is ready** — daily delivery (`deliverDailyPrompts`),
    follow-up delivery (same-day deepener + next-day repair/divergence in
    `followUps.ts`), and a partner-sent Explore question (`onResponseSubmitted`).
 2. **Your partner responded** — first-answer nudge and reveal-ready
    (`onResponseSubmitted`).
+3. **Your partner reacted** — `onReactionAdded`, re-enabled 2026-08-02
+   (founder approval, Hooked audit). Brand-voice copy, no emoji, gated on
+   `notify_partner_response`, ping-pong guarded. Redeploy restores it.
+4. **Your week together is ready** — `sendWeeklyRecaps`, re-enabled
+   2026-08-02. Sundays 6 PM PT, only couples with ≥1 completion that week;
+   tap lands on Hearth.
 
-Removed and deleted from prod (2026-07-21):
+Removed and deleted from prod (2026-07-21) — still dead:
 
 ```bash
 firebase functions:delete sendResponseReminders --project stoke-5f762
-firebase functions:delete onReactionAdded --project stoke-5f762
 firebase functions:delete onChatMessageCreated --project stoke-5f762
 ```
 

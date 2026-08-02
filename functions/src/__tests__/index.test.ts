@@ -18,7 +18,6 @@ describe('v1 export barrel scope (see functions/V1-SCOPE.md)', () => {
     'deliverMorningCheckin',
     'deliverEveningReflection',
     'detectChurnRisk',
-    'sendWeeklyRecaps',
     'computeRelationshipPulse',
     'triggerPulseComputation',
     'generateCoachingInsight',
@@ -26,16 +25,17 @@ describe('v1 export barrel scope (see functions/V1-SCOPE.md)', () => {
     'sendSpark',
     'submitSparkGuess',
     'onCheckInSubmitted',
-    // Notification policy 2026-07-21: only "new prompt ready" and "partner
-    // responded" push. Reminder cadence, reaction pushes, and the chat push
-    // source are gone.
+    // Notification policy 2026-07-21 (amended 2026-08-02): reward events
+    // only. Reminder cadence and the chat push source stay gone; reaction
+    // and weekly-recap pushes were re-enabled 2026-08-02 (see keptExports).
     'sendResponseReminders',
-    'onReactionAdded',
     'onChatMessageCreated',
   ];
 
   // The v1 daily-prompt loop must stay deployed.
   const keptExports = [
+    'onReactionAdded',
+    'sendWeeklyRecaps',
     'deliverDailyPrompts',
     'triggerPromptDelivery',
     'expireStalePrompts',
