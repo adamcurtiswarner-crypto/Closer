@@ -61,6 +61,18 @@ Checked via `eas credentials` against the production profile:
   next `eas build --non-interactive` can re-validate/regenerate the profile
   (including the App Group capability) without any interactive Apple login.
 
+**Build 69 (2026-08-02) shipped with widgets** after fixing the last two
+layers: the App Groups capability was never enabled on the widget App ID in
+the Apple Developer portal (enabled by hand + fresh "StokeWidgets App Store"
+profile generated, uploaded to EAS via the GraphQL API and attached to the
+StokeWidgets APP_STORE build-credentials slot), and EAS's auto capability
+sync tried to switch App Groups back OFF for the extension. Until Expo fixes
+extension-entitlement sync, cut iOS builds with:
+
+```bash
+EXPO_NO_CAPABILITY_SYNC=1 eas build --profile production --platform ios --non-interactive --no-wait
+```
+
 Remaining build-time caveats:
 
 - If the stored profile lacks the `group.io.getstoke.app` capability, EAS
