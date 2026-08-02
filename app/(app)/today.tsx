@@ -13,7 +13,6 @@ import {
   Modal,
 } from 'react-native';
 import { router } from 'expo-router';
-import { pickImage, showPhotoAccessDeniedAlert } from '@/services/imageUpload';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
@@ -76,6 +75,7 @@ import {
 } from '@/hooks/usePrompt';
 import { usePersonalize } from '@/hooks/usePersonalize';
 import { usePartnerName } from '@/hooks/usePartnerName';
+import { useParentCompletion } from '@/hooks/useParentCompletion';
 import {
   useExploreAssignments,
   useCompletionReactions,
@@ -255,7 +255,6 @@ export default function TodayScreen() {
   );
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
   const [showAddWishlistModal, setShowAddWishlistModal] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [stageDismissed, setStageDismissed] = useState(true); // Start true to avoid flash
   const [showConversationModal, setShowConversationModal] = useState(false);
   const [conversationStarterText, setConversationStarterText] = useState('');
@@ -372,6 +371,28 @@ export default function TodayScreen() {
   const followUpContextText = isFollowUp && assignment?.followUp
     ? getFollowUpContextLine(assignment.followUp.branch)
     : null;
+  // The trail: the original question (and both scores) a follow-up chains
+  // from, shown above the follow-up in the editor so the couple answers
+  // against the right context. Loads quietly; the editor never waits on it.
+  const { data: parentContext } = useParentCompletion(
+    isFollowUp && assignment?.followUp?.parentAssignmentId
+      ? assignment.followUp.parentAssignmentId
+      : null
+  );
+  const respondingTrail =
+    parentContext && parentContext.promptText
+      ? {
+          promptText: personalize(parentContext.promptText),
+          metaLine:
+            parentContext.mine != null && parentContext.theirs != null
+              ? t('hearth.queueMeta', {
+                  mine: parentContext.mine,
+                  partner: partnerName,
+                  theirs: parentContext.theirs,
+                })
+              : null,
+        }
+      : null;
   // Follow-up gate: context stays visible, the question locks (never the
   // daily prompt — dailyPromptLocked is hard-wired false in premiumGates).
   const gates = premiumGates({
@@ -713,17 +734,14 @@ export default function TodayScreen() {
     hapticNotification(NotificationFeedbackType.Success);
     Keyboard.dismiss();
     setTyping(false);
-    const imageUri = selectedImage || undefined;
     try {
       const result = await submitResponse.mutateAsync({
         assignmentId: respondingAssignment.id,
         responseText,
-        imageUri,
       });
       setIsResponding(false);
       setRespondingSecondary(false);
       setResponseText('');
-      setSelectedImage(null);
       if (result.safetyMatch) {
         setShowSafetyResources(true);
       } else {
@@ -740,16 +758,6 @@ export default function TodayScreen() {
       logger.error('Error submitting response:', err);
       Alert.alert('Could not save your response', 'Please check your connection and try again.');
     }
-  };
-
-  const handleAddPhoto = async () => {
-    const picked = await pickImage();
-    if (!picked) return; // user cancelled — say nothing
-    if ('denied' in picked) {
-      showPhotoAccessDeniedAlert(t);
-      return;
-    }
-    setSelectedImage(picked.uri);
   };
 
   // Scale prompts: score is required, the note is optional
@@ -914,6 +922,7 @@ export default function TodayScreen() {
         <RespondingScreen
           promptText={personalize(respondingAssignment!.promptText)}
           contextText={respondingSecondary ? null : followUpContextText}
+          trail={respondingSecondary ? null : respondingTrail}
           responseText={responseText}
           onChangeText={handleTextChange}
           onSubmit={handleSubmit}
@@ -922,9 +931,6 @@ export default function TodayScreen() {
             setRespondingSecondary(false);
             setResponseText('');
           }}
-          onAddPhoto={handleAddPhoto}
-          selectedImage={selectedImage}
-          onRemovePhoto={() => setSelectedImage(null)}
           isPending={submitResponse.isPending}
         />
         <SafetyResources
@@ -1064,7 +1070,7 @@ export default function TodayScreen() {
       <Animated.View entering={FadeInUp.duration(500).delay(200)} style={styles.waitingCard}>
         <AccentBar />
         <Text style={styles.waitingPrompt}>
-          {'“'}{personalize(assignment!.promptText)}{'”'}
+          {personalize(assignment!.promptText)}
         </Text>
 
         <Animated.View entering={FadeIn.duration(400)} style={styles.sealedCard}>
@@ -1683,9 +1689,8 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   waitingPrompt: {
-    ...typography.body,
-    color: colors.text.secondary,
-    fontStyle: 'italic',
+    ...typography.headingLg,
+    color: colors.text.primary,
     textAlign: 'center',
     marginBottom: spacing.screen,
   },
@@ -1698,11 +1703,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sealedTitle: {
-    ...typography.h3,
+    ...typography.heading,
     color: colors.text.primary,
   },
   sealedSubtitle: {
-    ...typography.bodySm,
+    ...typography.body,
     color: colors.text.secondary,
   },
   waitingDivider: {
@@ -1728,7 +1733,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   waitingMessage: {
-    ...typography.bodySm,
+    ...typography.body,
     color: colors.text.secondary,
   },
   // Quiet agency row on the sealed-waiting card
@@ -1741,7 +1746,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   waitingCtaText: {
-    ...typography.bodySm,
+    ...typography.body,
     color: colors.accent.primary,
   },
   // ─── Open-day reveal sheet (mirrors the explore reveal) ───

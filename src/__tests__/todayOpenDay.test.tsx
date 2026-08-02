@@ -161,6 +161,9 @@ jest.mock('@/hooks/usePrompt', () => ({
   useAssignmentReveal: (id: string | null) => mockUseAssignmentReveal(id),
 }));
 
+jest.mock('@/hooks/useParentCompletion', () => ({
+  useParentCompletion: () => ({ data: null }),
+}));
 jest.mock('@/hooks/usePersonalize', () => ({
   usePersonalize: () => (s: string) => s,
 }));

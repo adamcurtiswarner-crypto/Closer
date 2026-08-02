@@ -159,6 +159,9 @@ jest.mock('@/hooks/usePrompt', () => ({
   }),
 }));
 
+jest.mock('@/hooks/useParentCompletion', () => ({
+  useParentCompletion: () => ({ data: null }),
+}));
 jest.mock('@/hooks/usePersonalize', () => ({
   usePersonalize: () => (s: string) => s,
 }));

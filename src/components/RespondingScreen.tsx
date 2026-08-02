@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   Text,
-  Image,
   ScrollView,
   TextInput,
   KeyboardAvoidingView,
@@ -12,34 +11,46 @@ import {
 } from 'react-native';
 import Animated, { FadeIn, FadeInUp, useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Icon } from '@components';
-import { colors, radius, spacing, typography } from '@config/theme';
+import { ToneShapes } from '@/components/ToneShapes';
+import { colors, radius, shadow, spacing, typography } from '@config/theme';
 import { useTranslation } from 'react-i18next';
+
+/**
+ * The original question a follow-up chains from — rendered as a quiet
+ * quote block above the follow-up prompt so the couple answers against
+ * the right context (founder ask, 2026-08-02).
+ */
+export interface RespondingTrail {
+  promptText: string;
+  /** Pre-built score line ("You 3 · Masha 8") or null for text parents. */
+  metaLine: string | null;
+}
 
 interface RespondingScreenProps {
   promptText: string;
   /** Quiet follow-up context line rendered above the prompt text */
   contextText?: string | null;
+  /** The original question this follow-up chains from, when known. */
+  trail?: RespondingTrail | null;
   responseText: string;
   onChangeText: (text: string) => void;
   onSubmit: () => void;
   onCancel: () => void;
-  onAddPhoto: () => void;
-  selectedImage: string | null;
-  onRemovePhoto: () => void;
   isPending: boolean;
 }
 
+// The full-screen text editor renders on the same ink hero surface as the
+// daily prompt card and Explore's responding mode — one design language for
+// every prompt (no quote marks, heading scale, tone shapes). The add-photo
+// affordance was removed 2026-08-02 (founder ask).
 export function RespondingScreen({
   promptText,
   contextText = null,
+  trail = null,
   responseText,
   onChangeText,
   onSubmit,
   onCancel,
-  onAddPhoto,
-  selectedImage,
-  onRemovePhoto,
   isPending,
 }: RespondingScreenProps) {
   const { t } = useTranslation();
@@ -55,41 +66,43 @@ export function RespondingScreen({
         style={styles.flex}
       >
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.respondingScroll} keyboardShouldPersistTaps="handled">
-          <Animated.View entering={FadeIn.duration(300)} style={styles.respondingHeader}>
+          <Animated.View entering={FadeIn.duration(300)} style={styles.heroCard}>
+            <ToneShapes variant="black" />
+
             {contextText ? (
-              <Text style={styles.contextText}>{contextText}</Text>
+              <Text style={styles.heroEyebrow} maxFontSizeMultiplier={1.4}>
+                {contextText}
+              </Text>
             ) : null}
-            <Text style={styles.respondingPrompt}>
-              {'\u201C'}{promptText}{'\u201D'}
-            </Text>
-          </Animated.View>
 
-          <Animated.View entering={FadeInUp.duration(400).delay(100)}>
-            <TextInput
-              style={styles.textInput}
-              placeholder={t('today.sharePlaceholder')}
-              placeholderTextColor={colors.text.secondary}
-              multiline
-              textAlignVertical="top"
-              value={responseText}
-              onChangeText={onChangeText}
-              autoFocus
-            />
-          </Animated.View>
+            {trail ? (
+              <View style={styles.trailBlock} testID="responding-trail">
+                <Text style={styles.trailPrompt} maxFontSizeMultiplier={1.4}>
+                  {trail.promptText}
+                </Text>
+                {trail.metaLine ? (
+                  <Text style={styles.trailMeta} maxFontSizeMultiplier={1.4}>
+                    {trail.metaLine}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
 
-          {selectedImage ? (
-            <View style={styles.imagePreview}>
-              <Image source={{ uri: selectedImage }} style={styles.previewImage} resizeMode="cover" />
-              <TouchableOpacity style={styles.removeImage} onPress={onRemovePhoto} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Icon name="x" size="xs" color={colors.text.inverse} weight="bold" />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <TouchableOpacity style={styles.attachPhotoButton} onPress={onAddPhoto}>
-              <Icon name="camera" size="md" color={colors.text.secondary} />
-              <Text style={styles.attachPhotoText}>{t('today.addPhoto')}</Text>
-            </TouchableOpacity>
-          )}
+            <Text style={styles.heroPrompt}>{promptText}</Text>
+
+            <Animated.View entering={FadeInUp.duration(400).delay(100)}>
+              <TextInput
+                style={styles.heroInput}
+                placeholder={t('today.sharePlaceholder')}
+                placeholderTextColor={colors.onDark.faint}
+                multiline
+                textAlignVertical="top"
+                value={responseText}
+                onChangeText={onChangeText}
+                autoFocus
+              />
+            </Animated.View>
+          </Animated.View>
 
           <View style={styles.respondingFooter}>
             <Text style={styles.charHint}>
@@ -100,7 +113,7 @@ export function RespondingScreen({
 
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                <Text style={styles.cancelText} maxFontSizeMultiplier={1.4}>Back</Text>
+                <Text style={styles.cancelText} maxFontSizeMultiplier={1.4}>{t('today.back')}</Text>
               </TouchableOpacity>
               <Animated.View style={[{ flex: 1 }, submitAnimStyle]}>
                 <TouchableOpacity
@@ -134,77 +147,62 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingHorizontal: spacing.lg,
   },
   respondingScroll: {
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xl,
+    padding: spacing.screen,
     flexGrow: 1,
   },
-  respondingHeader: {
-    marginBottom: spacing.lg,
+
+  // The ink hero card — same surface as the daily prompt card and Explore
+  heroCard: {
+    backgroundColor: colors.surface.ink,
+    borderRadius: radius.hero,
+    padding: spacing.cardPad,
+    paddingTop: spacing.lg,
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+    ...shadow.card,
   },
-  contextText: {
+  heroEyebrow: {
     ...typography.eyebrow,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
+    color: colors.onDark.muted,
+    marginBottom: spacing.smd,
   },
-  respondingPrompt: {
-    ...typography.body,
-    color: colors.text.secondary,
-    fontStyle: 'italic',
-    textAlign: 'center',
+  // The trail — the original question as a quiet quote block, never louder
+  // than the question being answered now
+  trailBlock: {
+    borderLeftWidth: 2,
+    borderLeftColor: colors.onDark.outline,
+    paddingLeft: spacing.smd,
+    marginBottom: spacing.md,
+    gap: 2,
   },
-  textInput: {
-    backgroundColor: colors.surface.card,
-    borderRadius: radius.card,
-    padding: spacing.screen,
-    ...typography.body,
-    color: colors.text.primary,
-    borderWidth: 1.5,
-    borderColor: colors.border.default,
-    minHeight: 140,
-    maxHeight: 240,
-  },
-  attachPhotoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.smd,
-    paddingVertical: spacing.smd,
-    paddingHorizontal: spacing.md,
-    alignSelf: 'flex-start',
-    backgroundColor: colors.border.default,
-    borderRadius: radius.input,
-  },
-  attachPhotoText: {
+  trailPrompt: {
     ...typography.bodySm,
-    color: colors.text.secondary,
+    color: colors.onDark.body,
   },
-  imagePreview: {
-    marginTop: spacing.smd,
-    position: 'relative',
-    alignSelf: 'flex-start',
+  trailMeta: {
+    ...typography.caption,
+    color: colors.onDark.muted,
   },
-  previewImage: {
-    width: 120,
-    height: 120,
+  heroPrompt: {
+    ...typography.headingLg,
+    color: colors.text.inverse,
+  },
+  heroInput: {
+    marginTop: spacing.md,
+    backgroundColor: colors.onDark.field,
     borderRadius: radius.input,
+    padding: spacing.md,
+    ...typography.body,
+    color: colors.text.inverse,
+    minHeight: 160,
+    maxHeight: 260,
+    textAlignVertical: 'top',
   },
-  removeImage: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.text.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   respondingFooter: {
-    marginTop: spacing.smd,
+    marginTop: spacing.xs,
   },
   charHint: {
     ...typography.caption,
@@ -224,7 +222,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelText: {
-    ...typography.eyebrow,
+    ...typography.body,
     color: colors.text.secondary,
   },
   submitButton: {
