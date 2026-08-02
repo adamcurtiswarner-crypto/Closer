@@ -1,6 +1,7 @@
 import React, { useEffect, useId } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
   useReducedMotion,
@@ -86,6 +87,12 @@ export function EmberFlame({ size = 15, still = false }: EmberFlameProps) {
       -1,
       true
     );
+    return () => {
+      // Both loops repeat forever; strand them and every remount leaves
+      // another running on the UI thread.
+      cancelAnimation(coreScale);
+      cancelAnimation(coreOpacity);
+    };
   }, [quiet, coreScale, coreOpacity]);
 
   const coreStyle = useAnimatedStyle(() => ({

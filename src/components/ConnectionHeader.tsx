@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import Animated, {
   FadeIn,
@@ -29,6 +29,13 @@ interface ConnectionHeaderProps {
   partnerPhotoUrl?: string | null;
   /** Both partners answered today — lights the ember on the thread. */
   bothAnswered?: boolean;
+  /**
+   * Whether the ember plays its ignition. Decided by the Today screen (see
+   * src/utils/emberIgnition.ts) — this component is remounted by the keyed
+   * mode wrapper exactly when the day completes, so it cannot work this out
+   * for itself.
+   */
+  emberIgniting?: boolean;
 }
 
 function getInitials(name: string | null): string {
@@ -69,13 +76,9 @@ export function ConnectionHeader({
   userPhotoUrl,
   partnerPhotoUrl,
   bothAnswered = false,
+  emberIgniting = false,
 }: ConnectionHeaderProps) {
   const { name: hookPartnerName, isFallback } = usePartnerName();
-  // The ignition belongs to the moment the day completes while you are
-  // watching; arriving at an already-complete day settles straight to the
-  // breath (see ConnectionEmber).
-  const wasAnsweredOnMount = useRef(bothAnswered);
-  const igniting = bothAnswered && !wasAnsweredOnMount.current;
   // Status lines start with the name; the hook's fallback is lowercase
   // "your partner" by design, so sentence-case it for this position.
   const statusName =
@@ -115,7 +118,7 @@ export function ConnectionHeader({
           {currentStreak > 0 && (
             <StreakPill streak={currentStreak} active={isStreakActive} />
           )}
-          <ConnectionEmber lit={bothAnswered} igniting={igniting} />
+          <ConnectionEmber lit={bothAnswered} igniting={emberIgniting} />
           <View style={styles.line} />
           <View style={[styles.dot, styles.dotRight]} />
         </View>

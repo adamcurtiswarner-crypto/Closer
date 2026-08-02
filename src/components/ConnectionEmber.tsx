@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
+  cancelAnimation,
   Easing,
   useAnimatedStyle,
   useReducedMotion,
@@ -91,7 +92,7 @@ export function ConnectionEmber({ lit, igniting }: ConnectionEmberProps) {
       emberScale.value = 1;
       emberOpacity.value = 1;
       breathe();
-      return;
+      return () => cancelAnimation(glowOpacity);
     }
 
     // Act 1 — the sparks leave the avatars and travel inward.
@@ -120,7 +121,12 @@ export function ConnectionEmber({ lit, igniting }: ConnectionEmberProps) {
       })
     );
     const breathTimer = setTimeout(breathe, BLOOM_DELAY_MS + 500);
-    return () => clearTimeout(breathTimer);
+    return () => {
+      clearTimeout(breathTimer);
+      // The breath repeats forever — a remount (mode change, day rollover)
+      // would otherwise strand it running on the UI thread.
+      cancelAnimation(glowOpacity);
+    };
   }, [
     lit,
     igniting,

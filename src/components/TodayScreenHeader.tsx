@@ -20,6 +20,8 @@ interface TodayScreenHeaderProps {
   partnerPhotoUrl?: string | null;
   /** Both partners answered today — lights the ember on the thread. */
   bothAnswered?: boolean;
+  /** Whether the ember plays its ignition (decided by the Today screen). */
+  emberIgniting?: boolean;
 }
 
 export function TodayScreenHeader({
@@ -35,6 +37,7 @@ export function TodayScreenHeader({
   userPhotoUrl,
   partnerPhotoUrl,
   bothAnswered,
+  emberIgniting,
 }: TodayScreenHeaderProps) {
   return (
     <>
@@ -57,6 +60,7 @@ export function TodayScreenHeader({
         userPhotoUrl={userPhotoUrl}
         partnerPhotoUrl={partnerPhotoUrl}
         bothAnswered={bothAnswered}
+        emberIgniting={emberIgniting}
       />
     </>
   );

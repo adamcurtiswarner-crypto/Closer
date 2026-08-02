@@ -79,6 +79,11 @@ import { usePartnerName } from '@/hooks/usePartnerName';
 import { useParentCompletion } from '@/hooks/useParentCompletion';
 import { usePendingClarify } from '@/hooks/usePendingClarify';
 import { parseLocalDay } from '@/utils/localDate';
+import {
+  INITIAL_EMBER_IGNITION,
+  isEmberIgniting,
+  nextEmberIgnition,
+} from '@/utils/emberIgnition';
 import { useOpenDays, OPEN_DAYS_VISIBLE } from '@/hooks/useOpenDays';
 import { HearthRevealSheet } from '@/components/HearthRevealSheet';
 import type { HearthCompletion } from '@/hooks/useHearth';
@@ -853,6 +858,18 @@ export default function TodayScreen() {
     !user?.relationshipStage && user?.isOnboarded && !stageDismissed && !unseenRevealOnScreen;
 
   // Shared props for header component
+  // The ember's ignition is decided HERE, not in the header: the body below
+  // is wrapped in <Animated.View key={mode}>, so the header remounts the
+  // moment the day completes and a mount-time ref there would always see an
+  // already-complete day. This screen is not remounted, so the ref survives.
+  const emberIgnitionRef = useRef(INITIAL_EMBER_IGNITION);
+  emberIgnitionRef.current = nextEmberIgnition(
+    emberIgnitionRef.current,
+    assignment?.id ?? null,
+    isComplete
+  );
+  const emberIgniting = isEmberIgniting(emberIgnitionRef.current, isComplete);
+
   const headerProps = {
     userName,
     partnerName,
@@ -866,6 +883,7 @@ export default function TodayScreen() {
     partnerPhotoUrl: user?.partnerPhotoUrl,
     // Lights the ember on the connection thread once you both answered.
     bothAnswered: isComplete,
+    emberIgniting,
   };
 
   // Shared props for engagement cards (check-in and coaching are feature-flagged for v1)
