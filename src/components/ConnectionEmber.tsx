@@ -11,7 +11,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { Icon } from './Icon';
+import { EmberFlame } from './EmberFlame';
 import { colors } from '@/config/theme';
 
 /**
@@ -159,14 +159,16 @@ export function ConnectionEmber({ lit, igniting }: ConnectionEmberProps) {
       {/* Halo + ember core */}
       <Animated.View style={[styles.glow, glowStyle]} />
       <Animated.View style={[styles.ember, emberStyle]}>
-        <Icon name="flame" size="xs" color={colors.accent.primary} weight="fill" />
+        <EmberFlame size={FLAME_SIZE} />
       </Animated.View>
     </View>
   );
 }
 
-const EMBER_SIZE = 22;
-const GLOW_SIZE = 34;
+const EMBER_SIZE = 26;
+const GLOW_SIZE = 38;
+/** The flame needs room to read as a flame rather than a dot. */
+const FLAME_SIZE = 15;
 
 const styles = StyleSheet.create({
   wrap: {
