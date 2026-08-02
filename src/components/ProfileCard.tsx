@@ -322,6 +322,33 @@ export function ProfileCard() {
         </View>
       </Animated.View>
 
+      {/* Your words — the user's own answers, kept (Hooked audit 2026-08-02).
+          Requires a couple only because responses live under couple_id. */}
+      {user.coupleId && (
+        <>
+          <View style={styles.divider} />
+          <Animated.View entering={FadeInUp.duration(400).delay(140)}>
+            <TouchableOpacity
+              style={styles.anniversaryRow}
+              onPress={() => {
+                logEvent('your_words_opened', { source: 'settings' });
+                router.push('/(app)/your-words');
+              }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              testID="profile-your-words-row"
+            >
+              <Icon name="note" size="md" color={colors.accent.primary} />
+              <View style={styles.anniversaryInfo}>
+                <Text style={styles.anniversaryLabel}>{t('yourWords.entryLabel')}</Text>
+                <Text style={styles.anniversaryValue}>{t('yourWords.entryValue')}</Text>
+              </View>
+              <Icon name="caret-right" size="sm" color={colors.text.muted} />
+            </TouchableOpacity>
+          </Animated.View>
+        </>
+      )}
+
       {/* Us — the couple view (alignment map over your scored answers) */}
       {FEATURES.usView && user.coupleId && (
         <>

@@ -663,6 +663,17 @@
     "hearthBody": "This month glows right here, couch and all. Past months and your trends are kept for you in Premium.",
     "usViewLine": "The full picture is part of Stoke Premium"
   },
+  "yourWords": {
+    "entryLabel": "Your words",
+    "entryValue": "Everything you've written, kept",
+    "eyebrow": "Just yours",
+    "title": "Your words",
+    "subtitle": "Every answer you've given, kept here for you.",
+    "saidScore": "You said {{score}}",
+    "empty": "Your words will gather here",
+    "emptySub": "Each answer you give is kept — this is where you'll find them.",
+    "errorTitle": "Couldn't load your words"
+  },
   "us": {
     "entryLabel": "Us",
     "entryValue": "How you two line up",

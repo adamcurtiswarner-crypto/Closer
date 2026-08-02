@@ -191,6 +191,20 @@
       ]
     },
     {
+      "collectionGroup": "prompt_responses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "user_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "submitted_at",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "prompt_completions",
       "queryScope": "COLLECTION",
       "fields": [

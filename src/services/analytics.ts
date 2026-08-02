@@ -13,6 +13,8 @@ type AnalyticsEvent =
   | 'prompt_completed'
   | 'emotional_response_submitted'
   | 'recap_viewed'
+  | 'your_words_viewed'
+  | 'your_words_opened'
   | 'memory_saved'
   | 'memory_removed'
   | 'session_started'
