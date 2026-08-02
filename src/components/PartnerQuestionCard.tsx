@@ -8,6 +8,8 @@ import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 interface PartnerQuestionCardProps {
   /** Partner display name — caller falls back to "your partner". */
   partnerName: string;
+  /** Override the eyebrow line (defaults to "From {name}"). */
+  eyebrowText?: string;
   /** Text of the (most recent) question waiting on the user. */
   promptText: string;
   /** How many questions are waiting; above 1 the text becomes a count line. */
@@ -22,6 +24,7 @@ interface PartnerQuestionCardProps {
  */
 export function PartnerQuestionCard({
   partnerName,
+  eyebrowText,
   promptText,
   questionCount,
   onPress,
@@ -29,6 +32,7 @@ export function PartnerQuestionCard({
   const { t } = useTranslation();
 
   if (questionCount < 1) return null;
+  const eyebrow = eyebrowText ?? t('today.fromName', { name: partnerName });
 
   return (
     <Animated.View entering={FadeInUp.duration(500).delay(300)}>
@@ -37,10 +41,10 @@ export function PartnerQuestionCard({
         onPress={onPress}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={t('today.fromName', { name: partnerName })}
+        accessibilityLabel={eyebrow}
       >
         <View style={styles.textWrap}>
-          <Text style={styles.eyebrow}>{t('today.fromName', { name: partnerName })}</Text>
+          <Text style={styles.eyebrow}>{eyebrow}</Text>
           <Text style={styles.promptText} numberOfLines={2}>
             {questionCount > 1
               ? t('today.questionsWaiting', { count: questionCount })

@@ -3,7 +3,7 @@ import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'rea
 import { useTranslation } from 'react-i18next';
 import { CompletionMoment } from './CompletionMoment';
 import { useCompletionReactions } from '@/hooks/useExplorePrompts';
-import { useReaction, type ReactionType } from '@/hooks/useReaction';
+import { useReaction, type ReactionValue } from '@/hooks/useReaction';
 import { isMiddleScaleOutcome } from '@/utils/scale';
 import { colors, spacing, typography } from '@/config/theme';
 import type { HearthCompletion } from '@/hooks/useHearth';
@@ -47,11 +47,11 @@ export function HearthRevealSheet({
   const partnerEntry = completion.responses.find((r) => r.userId !== myUid) ?? null;
 
   const reactions = fetchedReactions ?? completion.reactions;
-  const myReaction = (reactions?.[myUid] as ReactionType | undefined) ?? null;
+  const myReaction = (reactions?.[myUid] as ReactionValue | undefined) ?? null;
   const partnerReaction =
     ((reactions &&
       Object.entries(reactions).find(([uid]) => uid !== myUid)?.[1]) as
-      | ReactionType
+      | ReactionValue
       | undefined) ?? null;
 
   const myScore = completion.isScale ? (myEntry?.responseScore ?? null) : null;

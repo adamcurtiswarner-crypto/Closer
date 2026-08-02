@@ -25,12 +25,7 @@ jest.mock('@utils/haptics', () => ({
 // Reveal reactions write through useReaction (completion doc id = assignment id)
 const mockReact = jest.fn();
 jest.mock('@/hooks/useReaction', () => ({
-  REACTIONS: [
-    { type: 'heart', icon: 'heart' },
-    { type: 'fire', icon: 'flame' },
-    { type: 'laughing', icon: 'smiley' },
-    { type: 'teary', icon: 'drop' },
-  ],
+  ...jest.requireActual('@/hooks/useReaction'),
   useReaction: () => ({ mutate: mockReact, isPending: false }),
 }));
 
@@ -44,6 +39,31 @@ jest.mock('@/hooks/useCouchFlag', () => ({
 }));
 
 jest.mock('@/services/analytics', () => ({ logEvent: jest.fn() }));
+// CompletionMoment's clarify hooks (2026-08-02) pull firebase/firestore into
+// this suite's import graph — mock it like the other screen suites do.
+jest.mock('firebase/firestore', () => ({
+  collection: jest.fn(),
+  doc: jest.fn(),
+  getDoc: jest.fn(),
+  getDocs: jest.fn(),
+  updateDoc: jest.fn(),
+  setDoc: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  orderBy: jest.fn(),
+  limit: jest.fn(),
+  serverTimestamp: jest.fn(),
+  onSnapshot: jest.fn(() => jest.fn()),
+}));
+jest.mock('@/config/firebase', () => ({ db: {}, functions: {} }));
+jest.mock('@/hooks/useCompletionClarify', () => ({
+  useCompletionClarify: () => ({ data: [] }),
+}));
+jest.mock('@/hooks/useClarify', () => ({
+  ...jest.requireActual('@/hooks/useClarify'),
+  useAskClarify: () => ({ mutate: jest.fn(), isPending: false }),
+  useAnswerClarify: () => ({ mutate: jest.fn(), isPending: false }),
+}));
 jest.mock('@/components/Icon', () => ({ Icon: () => null }));
 jest.mock('@/components/SafetyResources', () => ({ SafetyResources: () => null }));
 

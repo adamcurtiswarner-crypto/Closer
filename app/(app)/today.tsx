@@ -76,6 +76,9 @@ import {
 import { usePersonalize } from '@/hooks/usePersonalize';
 import { usePartnerName } from '@/hooks/usePartnerName';
 import { useParentCompletion } from '@/hooks/useParentCompletion';
+import { usePendingClarify } from '@/hooks/usePendingClarify';
+import { HearthRevealSheet } from '@/components/HearthRevealSheet';
+import type { HearthCompletion } from '@/hooks/useHearth';
 import {
   useExploreAssignments,
   useCompletionReactions,
@@ -89,7 +92,7 @@ import {
   shouldOfferStagePrompt,
   revealSeenKey,
 } from '@/utils/revealGate';
-import { useReaction, type ReactionType } from '@/hooks/useReaction';
+import { useReaction, type ReactionValue } from '@/hooks/useReaction';
 import { useStreak } from '@/hooks/useStreak';
 import { useMonthlyActivity } from '@/hooks/useMonthlyActivity';
 import { useCouple } from '@/hooks/useCouple';
@@ -237,6 +240,10 @@ export default function TodayScreen() {
   // Single source of truth for what to call the partner — real name first,
   // lowercase "your partner" fallback (never robot-register "Partner").
   const { name: partnerName, isFallback: partnerNameIsFallback } = usePartnerName();
+  // Clarify questions waiting on me from OLDER completions (today's own
+  // reveal carries its composer inline; the push routes here).
+  const { data: pendingClarifies = [] } = usePendingClarify();
+  const [clarifyReveal, setClarifyReveal] = useState<HearthCompletion | null>(null);
   // Sentence-initial templates ("… is responding", "… set this one aside")
   // need "Your partner", not mid-sentence "your partner". Real names pass through.
   const partnerNameSentenceCase = partnerNameIsFallback
@@ -915,6 +922,36 @@ export default function TodayScreen() {
       />
     ) : null;
 
+  // Clarify discovery card — questions about answers from days already off
+  // the Today surface. Today's / the open day's completions are excluded:
+  // their reveals carry the composer inline.
+  const inlineClarifyIds = new Set(
+    [assignment?.id, secondary?.assignment?.id].filter(Boolean)
+  );
+  const clarifyQueue = pendingClarifies.filter((c) => !inlineClarifyIds.has(c.id));
+  const clarifyCard =
+    clarifyQueue.length > 0 ? (
+      <PartnerQuestionCard
+        partnerName={partnerName}
+        eyebrowText={t('clarify.cardEyebrow', { name: partnerName })}
+        promptText={personalize(clarifyQueue[0].promptText)}
+        questionCount={1}
+        onPress={() => {
+          hapticImpact(ImpactFeedbackStyle.Light);
+          setClarifyReveal(clarifyQueue[0]);
+        }}
+      />
+    ) : null;
+  const clarifySheet = (
+    <HearthRevealSheet
+      visible={clarifyReveal != null}
+      completion={clarifyReveal}
+      myUid={user?.id ?? ''}
+      partnerName={partnerName}
+      onClose={() => setClarifyReveal(null)}
+    />
+  );
+
   // ─── Responding (full-screen editor, outside the crossfade wrapper) ───
   if (mode === 'responding') {
     return (
@@ -1030,6 +1067,8 @@ export default function TodayScreen() {
       {openDayChip}
 
       {partnerQuestionCard}
+      {clarifyCard}
+      {clarifySheet}
 
       {stagePromptCard}
 
@@ -1137,6 +1176,8 @@ export default function TodayScreen() {
       {openDayChip}
 
       {partnerQuestionCard}
+      {clarifyCard}
+      {clarifySheet}
 
       {stagePromptCard}
 
@@ -1164,10 +1205,10 @@ export default function TodayScreen() {
           partnerName={partnerName}
           yourImageUrl={revealMyResponse!.imageUrl}
           partnerImageUrl={revealPartnerResponse?.imageUrl}
-          myReaction={revealReactions?.[user!.id] as ReactionType | undefined ?? null}
+          myReaction={revealReactions?.[user!.id] as ReactionValue | undefined ?? null}
           partnerReaction={
             revealReactions
-              ? (Object.entries(revealReactions).find(([k]) => k !== user!.id)?.[1] as ReactionType | undefined ?? null)
+              ? (Object.entries(revealReactions).find(([k]) => k !== user!.id)?.[1] as ReactionValue | undefined ?? null)
               : null
           }
           onReact={(r) => reaction.mutate({
@@ -1253,6 +1294,8 @@ export default function TodayScreen() {
       {openDayChip}
 
       {partnerQuestionCard}
+      {clarifyCard}
+      {clarifySheet}
 
       {stagePromptCard}
 
@@ -1414,6 +1457,8 @@ export default function TodayScreen() {
       {openDayChip}
 
       {partnerQuestionCard}
+      {clarifyCard}
+      {clarifySheet}
 
       {stagePromptCard}
 
@@ -1525,14 +1570,14 @@ export default function TodayScreen() {
                   partnerImageUrl={secondaryRevealQuery.data?.partnerResponse?.imageUrl}
                   myReaction={
                     user?.id
-                      ? ((secondaryReactions?.[user.id] as ReactionType | undefined) ?? null)
+                      ? ((secondaryReactions?.[user.id] as ReactionValue | undefined) ?? null)
                       : null
                   }
                   partnerReaction={
                     user?.id && secondaryReactions
                       ? ((Object.entries(secondaryReactions).find(
                           ([k]) => k !== user.id
-                        )?.[1] as ReactionType | undefined) ?? null)
+                        )?.[1] as ReactionValue | undefined) ?? null)
                       : null
                   }
                   onReact={(r) =>

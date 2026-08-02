@@ -19,8 +19,13 @@ import { AccentBar } from './AccentBar';
 import { ResponseCard } from './ResponseCard';
 import { ReactionRow } from './ReactionRow';
 import { Icon } from './Icon';
-import type { ReactionType } from '@/hooks/useReaction';
+import type { ReactionValue } from '@/hooks/useReaction';
 import { isCouchFlagged, useCouchFlag, useCouchFlagState } from '@/hooks/useCouchFlag';
+import { splitClarify, useAskClarify, useAnswerClarify } from '@/hooks/useClarify';
+import { useCompletionClarify } from '@/hooks/useCompletionClarify';
+import { useAuth } from '@/hooks/useAuth';
+import { logger } from '@/utils/logger';
+import { ClarifyBlock } from './ClarifyBlock';
 
 // ─── Reveal choreography timeline (ms from mount) ───
 // Two beats: YOUR side lands first, then a held breath, then the partner's.
@@ -67,9 +72,9 @@ interface CompletionMomentProps {
   partnerName?: string;
   yourImageUrl?: string | null;
   partnerImageUrl?: string | null;
-  myReaction?: ReactionType | null;
-  partnerReaction?: ReactionType | null;
-  onReact?: (reaction: ReactionType | null) => void;
+  myReaction?: ReactionValue | null;
+  partnerReaction?: ReactionValue | null;
+  onReact?: (reaction: ReactionValue | null) => void;
   /** Scale prompts: both scores shown side by side, visually quiet */
   yourScore?: number | null;
   partnerScore?: number | null;
@@ -109,9 +114,40 @@ export function CompletionMoment({
   assignmentId,
 }: CompletionMomentProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const hasScores = yourScore != null && partnerScore != null;
   // Lowercase "your partner", never robot-register "Partner" (sim 2026-07-12)
   const displayPartnerName = partnerName?.trim() || t('explore.partnerFallback');
+
+  // ── Clarify exchange (2026-08-02): one question about an answer, one
+  // answer back. Only live on real reveals (assignmentId present) where the
+  // reaction row is also live (onReact given).
+  const clarifyLive = onReact && assignmentId ? assignmentId : null;
+  const { data: clarifyExchanges = [] } = useCompletionClarify(clarifyLive);
+  const askClarify = useAskClarify();
+  const answerClarify = useAnswerClarify();
+  const { mine: myClarify, pendingForMe } = splitClarify(
+    clarifyExchanges,
+    user?.id ?? ''
+  );
+  const answeredForMe =
+    clarifyExchanges.find(
+      (e) => e.askerId !== (user?.id ?? '') && e.answer !== null
+    ) ?? null;
+
+  // Double-tap on the partner's answer opens the full emoji picker (founder
+  // ask 2026-08-02). Manual two-tap timer — no gesture-handler dependency.
+  const [pickerNonce, setPickerNonce] = useState(0);
+  const lastTapRef = React.useRef(0);
+  const handlePartnerCardTap = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      lastTapRef.current = 0;
+      setPickerNonce((n) => n + 1);
+    } else {
+      lastTapRef.current = now;
+    }
+  };
 
   // "Keep it for the couch" — only fetched when the mid-scale block renders
   // for a real completion. Flagged by EITHER partner → quiet confirmation.
@@ -343,18 +379,75 @@ export function CompletionMoment({
                     imageUrl={yourImageUrl}
                     isYours={true}
                   />
+                  {/* The partner's question about MY answer, with the
+                      one-shot answer composer while it's open. */}
+                  {clarifyLive != null && (pendingForMe || answeredForMe) && (
+                    <ClarifyBlock
+                      mode="about-me"
+                      exchange={pendingForMe ?? answeredForMe}
+                      partnerName={displayPartnerName}
+                      pending={answerClarify.isPending}
+                      onAnswer={(answer) => {
+                        if (!pendingForMe) return;
+                        answerClarify.mutate(
+                          {
+                            completionId: clarifyLive,
+                            exchange: {
+                              askerId: pendingForMe.askerId,
+                              question: pendingForMe.question,
+                              askedAtRaw: pendingForMe.askedAtRaw,
+                            },
+                            answer,
+                          },
+                          {
+                            onError: (err) =>
+                              logger.error('Error answering clarify:', err),
+                          }
+                        );
+                      }}
+                    />
+                  )}
                 </Animated.View>
               )}
               <View style={styles.spacer} />
-              {/* Partner response lands on the second beat */}
+              {/* Partner response lands on the second beat. Double-tap opens
+                  the emoji picker on the reaction row. */}
               {(!hasScores || partnerResponse.length > 0) && (
                 <Animated.View entering={enterUp(partnerBodyDelay, NOTE_FADE_MS)}>
-                  <ResponseCard
-                    label={displayPartnerName}
-                    responseText={partnerResponse}
-                    imageUrl={partnerImageUrl}
-                    isYours={false}
-                  />
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={onReact ? handlePartnerCardTap : undefined}
+                    accessibilityLabel={t('clarify.partnerCardHint', {
+                      name: displayPartnerName,
+                    })}
+                    testID="partner-response-card"
+                  >
+                    <ResponseCard
+                      label={displayPartnerName}
+                      responseText={partnerResponse}
+                      imageUrl={partnerImageUrl}
+                      isYours={false}
+                    />
+                  </TouchableOpacity>
+                  {/* My one question about THEIR answer (or the affordance
+                      to ask it). */}
+                  {clarifyLive != null && (
+                    <ClarifyBlock
+                      mode="about-partner"
+                      exchange={myClarify}
+                      partnerName={displayPartnerName}
+                      pending={askClarify.isPending}
+                      onAsk={(question) =>
+                        askClarify.mutate(
+                          { completionId: clarifyLive, question },
+                          {
+                            onError: (err) =>
+                              logger.error('Error asking clarify:', err),
+                          }
+                        )
+                      }
+                    />
+                  )}
                 </Animated.View>
               )}
 
@@ -373,6 +466,7 @@ export function CompletionMoment({
                     partnerReaction={partnerReaction}
                     partnerName={displayPartnerName}
                     onReact={onReact}
+                    openPickerNonce={pickerNonce}
                   />
                 </Animated.View>
               )}

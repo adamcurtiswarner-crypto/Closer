@@ -134,6 +134,16 @@ beforeEach(async () => {
       discussed: { [MEMBER_A]: new Date('2026-07-01T00:00:00Z') },
     });
 
+    // Plain completion used by the clarify-exchange suite.
+    await db.doc('prompt_completions/comp-flagged').set({
+      couple_id: COUPLE_ID,
+      signal: 'steady',
+      responses: [
+        { user_id: MEMBER_A, response_text: 'a', response_score: 6 },
+        { user_id: MEMBER_B, response_text: 'b', response_score: 6 },
+      ],
+    });
+
     await db.doc('couple_invites/ABC234').set({
       invite_code: 'ABC234',
       inviter_id: INVITER,
@@ -293,6 +303,150 @@ describe('prompt_completions couch flag', () => {
 // ---------------------------------------------------------------------------
 // couple_invites — enumeration closed
 // ---------------------------------------------------------------------------
+
+describe('prompt_completions clarify exchange (2026-08-02)', () => {
+  const ask = (uid: string) => ({
+    [`clarify.${uid}`]: {
+      question: 'What did you mean by calmer?',
+      asked_at: serverTimestamp(),
+      answer: null,
+      answered_at: null,
+    },
+    updated_at: serverTimestamp(),
+  });
+
+  // Reads go through a member context (members may read completions);
+  // the beforeEach reseed means every test builds its own clarify state.
+  const readEntry = async (completion: string, askerUid: string) => {
+    const snap = await asUser(MEMBER_A).doc(`prompt_completions/${completion}`).get();
+    return (snap.data()?.clarify ?? {})[askerUid];
+  };
+
+  it('lets a member ask one question about the partner answer', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-active'), ask(MEMBER_A))
+    );
+  });
+
+  it('denies asking under the partner key', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), ask(MEMBER_B))
+    );
+  });
+
+  it('denies a second question from the same asker', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), ask(MEMBER_A))
+    );
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-steady'), ask(MEMBER_A))
+    );
+  });
+
+  it('denies an empty or over-long question', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-active'), {
+        [`clarify.${MEMBER_B}`]: {
+          question: '',
+          asked_at: serverTimestamp(),
+          answer: null,
+          answered_at: null,
+        },
+        updated_at: serverTimestamp(),
+      })
+    );
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-active'), {
+        [`clarify.${MEMBER_B}`]: {
+          question: 'x'.repeat(281),
+          asked_at: serverTimestamp(),
+          answer: null,
+          answered_at: null,
+        },
+        updated_at: serverTimestamp(),
+      })
+    );
+  });
+
+  it('lets the partner answer, preserving the question verbatim', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-active'), ask(MEMBER_A))
+    );
+    const entry = await readEntry('comp-active', MEMBER_A);
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-active'), {
+        [`clarify.${MEMBER_A}`]: {
+          question: entry.question,
+          asked_at: entry.asked_at,
+          answer: 'I meant the evenings feel lighter.',
+          answered_at: serverTimestamp(),
+        },
+        updated_at: serverTimestamp(),
+      })
+    );
+  });
+
+  it('denies answering your own question', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-flagged'), ask(MEMBER_B))
+    );
+    const entry = await readEntry('comp-flagged', MEMBER_B);
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-flagged'), {
+        [`clarify.${MEMBER_B}`]: {
+          question: entry.question,
+          asked_at: entry.asked_at,
+          answer: 'answering myself',
+          answered_at: serverTimestamp(),
+        },
+        updated_at: serverTimestamp(),
+      })
+    );
+  });
+
+  it('denies rewriting the question while answering', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-flagged'), ask(MEMBER_B))
+    );
+    const entry = await readEntry('comp-flagged', MEMBER_B);
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-flagged'), {
+        [`clarify.${MEMBER_B}`]: {
+          question: 'a different question',
+          asked_at: entry.asked_at,
+          answer: 'sure',
+          answered_at: serverTimestamp(),
+        },
+        updated_at: serverTimestamp(),
+      })
+    );
+  });
+
+  it('lets a second answer attempt fail once answered', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-flagged'), ask(MEMBER_A))
+    );
+    const entry = await readEntry('comp-flagged', MEMBER_A);
+    const answerWrite = (text: string) =>
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-flagged'), {
+        [`clarify.${MEMBER_A}`]: {
+          question: entry.question,
+          asked_at: entry.asked_at,
+          answer: text,
+          answered_at: serverTimestamp(),
+        },
+        updated_at: serverTimestamp(),
+      });
+    await assertSucceeds(answerWrite('first answer'));
+    await assertFails(answerWrite('rewritten answer'));
+  });
+
+  it('denies a stranger asking', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(STRANGER), 'prompt_completions/comp-active'), ask(STRANGER))
+    );
+  });
+});
 
 describe('couple_invites', () => {
   it('denies listing all pending invites (the enumeration hole)', async () => {

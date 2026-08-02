@@ -161,6 +161,12 @@ jest.mock('@/hooks/usePrompt', () => ({
   useAssignmentReveal: (id: string | null) => mockUseAssignmentReveal(id),
 }));
 
+jest.mock('@/hooks/usePendingClarify', () => ({
+  usePendingClarify: () => ({ data: [] }),
+}));
+jest.mock('@/components/HearthRevealSheet', () => ({
+  HearthRevealSheet: () => null,
+}));
 jest.mock('@/hooks/useParentCompletion', () => ({
   useParentCompletion: () => ({ data: null }),
 }));

@@ -31,6 +31,7 @@ module.exports = {
     '^react-native-worklets(.*)$': '<rootDir>/src/__mocks__/react-native-worklets.ts',
     '^react-native-shared-group-preferences$':
       '<rootDir>/src/__mocks__/react-native-shared-group-preferences.ts',
+    '^rn-emoji-keyboard$': '<rootDir>/src/__mocks__/rn-emoji-keyboard.tsx',
     '^react-native-reanimated$': '<rootDir>/src/__mocks__/react-native-reanimated.ts',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],

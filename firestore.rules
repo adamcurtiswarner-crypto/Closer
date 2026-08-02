@@ -360,15 +360,82 @@ service cloud.firestore {
           );
       }
 
+      // Clarify exchange (2026-08-02): one question about your partner's
+      // answer, one answer back. Entries are keyed by the ASKER's uid.
+      //
+      // Ask: the writer creates ONLY their own entry — question text
+      // (1..280), asked_at = serverTimestamp, answer/answered_at null.
+      function isClarifyAsk() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['clarify', 'updated_at']) &&
+          request.resource.data.clarify is map &&
+          request.resource.data.clarify
+            .diff(('clarify' in resource.data) ? resource.data.clarify : {})
+            .affectedKeys().hasOnly([request.auth.uid]) &&
+          !(('clarify' in resource.data) &&
+            (request.auth.uid in resource.data.clarify)) &&
+          request.resource.data.clarify[request.auth.uid] is map &&
+          request.resource.data.clarify[request.auth.uid].keys()
+            .hasOnly(['question', 'asked_at', 'answer', 'answered_at']) &&
+          request.resource.data.clarify[request.auth.uid].question is string &&
+          request.resource.data.clarify[request.auth.uid].question.size() >= 1 &&
+          request.resource.data.clarify[request.auth.uid].question.size() <= 280 &&
+          request.resource.data.clarify[request.auth.uid].asked_at == request.time &&
+          request.resource.data.clarify[request.auth.uid].answer == null &&
+          request.resource.data.clarify[request.auth.uid].answered_at == null;
+      }
+
+      // Answer: the writer answers their PARTNER's entry — the couple has
+      // exactly two members, so the only legal foreign key is the partner's
+      // uid (read from the couple doc). Question preserved verbatim, answer
+      // text (1..1000) set once, answered_at = serverTimestamp.
+      function clarifyPartnerUid() {
+        return get(/databases/$(database)/documents/couples/$(resource.data.couple_id))
+            .data.member_ids[0] == request.auth.uid
+          ? get(/databases/$(database)/documents/couples/$(resource.data.couple_id))
+              .data.member_ids[1]
+          : get(/databases/$(database)/documents/couples/$(resource.data.couple_id))
+              .data.member_ids[0];
+      }
+
+      function isClarifyAnswer() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['clarify', 'updated_at']) &&
+          ('clarify' in resource.data) &&
+          request.resource.data.clarify
+            .diff(resource.data.clarify)
+            .affectedKeys().hasOnly([clarifyPartnerUid()]) &&
+          (clarifyPartnerUid() in resource.data.clarify) &&
+          (clarifyPartnerUid() in request.resource.data.clarify) &&
+          clarifyAnswerValid(
+            resource.data.clarify[clarifyPartnerUid()],
+            request.resource.data.clarify[clarifyPartnerUid()]
+          );
+      }
+
+      function clarifyAnswerValid(prior, next) {
+        return prior is map &&
+          prior.answer == null &&
+          next is map &&
+          next.keys().hasOnly(['question', 'asked_at', 'answer', 'answered_at']) &&
+          next.question == prior.question &&
+          next.asked_at == prior.asked_at &&
+          next.answer is string &&
+          next.answer.size() >= 1 &&
+          next.answer.size() <= 1000 &&
+          next.answered_at == request.time;
+      }
+
       allow read: if isAuthenticated() &&
         isCoupleMember(resource.data.couple_id);
       // Created by Cloud Functions only
       allow create: if false;
       // Couple members may only make field-scoped updates: the Hearth
-      // "we talked" mark, the couch flag, or the pre-existing
-      // reaction/memory-save writes.
+      // "we talked" mark, the couch flag, the pre-existing reaction/
+      // memory-save writes, or a clarify ask/answer.
       allow update: if isCoupleMember(resource.data.couple_id) &&
-        (isDiscussedOnlyMark() || isLegacyCompletionUpdate() || isCouchFlagUpdate());
+        (isDiscussedOnlyMark() || isLegacyCompletionUpdate() ||
+          isCouchFlagUpdate() || isClarifyAsk() || isClarifyAnswer());
       allow delete: if false;
     }
 

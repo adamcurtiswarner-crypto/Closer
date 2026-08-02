@@ -76,6 +76,7 @@ function makeCompletion(overrides: Partial<HearthCompletion> = {}): HearthComple
     discussedAt: null,
     couchFlagged: false,
     couchFlaggedBy: null,
+    clarify: [],
     completedAt: new Date('2026-07-01'),
     ...overrides,
   };

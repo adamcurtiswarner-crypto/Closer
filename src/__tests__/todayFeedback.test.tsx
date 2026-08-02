@@ -154,6 +154,12 @@ jest.mock('@/hooks/usePrompt', () => ({
   }),
 }));
 
+jest.mock('@/hooks/usePendingClarify', () => ({
+  usePendingClarify: () => ({ data: [] }),
+}));
+jest.mock('@/components/HearthRevealSheet', () => ({
+  HearthRevealSheet: () => null,
+}));
 jest.mock('@/hooks/useParentCompletion', () => ({
   useParentCompletion: () => ({ data: null }),
 }));

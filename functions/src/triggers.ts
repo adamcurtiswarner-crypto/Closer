@@ -502,6 +502,8 @@ export const onReactionAdded = functions.firestore
  * Push body for a partner reaction. Title is the reactor's name, so the body
  * reads as a continuation ("Masha loved your answer."). Reaction keys match
  * src/hooks/useReaction.ts; UI labels are Love / Spark / Smile / Moved.
+ * Any other value is a user-chosen emoji (any-emoji reactions, 2026-08-02) —
+ * user content, so it may appear in the push body after sanitizing.
  */
 export function reactionPushBody(reaction: string): string {
   switch (reaction) {
@@ -513,10 +515,109 @@ export function reactionPushBody(reaction: string): string {
       return 'smiled at your answer.';
     case 'teary':
       return 'was moved by your answer.';
-    default:
-      return 'reacted to your answer.';
+    default: {
+      const emoji = sanitizeCustomReaction(reaction);
+      return emoji ? `reacted ${emoji} to your answer.` : 'reacted to your answer.';
+    }
   }
 }
+
+/**
+ * A custom reaction is rendered into push copy only if it is short and free
+ * of control/whitespace characters — anything else degrades to the neutral
+ * body rather than risking a malformed notification.
+ */
+export function sanitizeCustomReaction(value: string): string | null {
+  const trimmed = value.trim();
+  if (trimmed.length === 0 || trimmed.length > 16) return null;
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u001F\u007F\s]/.test(trimmed)) return null;
+  return trimmed;
+}
+
+// ============================================
+// TRIGGER: Clarify Question / Answer (2026-08-02)
+// ============================================
+
+export interface ClarifyEntry {
+  question?: unknown;
+  answer?: unknown;
+}
+
+export type ClarifyEvent =
+  | { kind: 'question'; askerId: string; question: string }
+  | { kind: 'answer'; askerId: string; answer: string };
+
+/**
+ * Diff the clarify map of a completion doc — pure, unit tested. A clarify
+ * entry is keyed by the ASKER's uid: the question appears first (answer
+ * null), the partner's answer lands on the same entry later. Returns the
+ * single event this update represents, or null for unrelated updates.
+ */
+export function findClarifyEvent(
+  before: Record<string, ClarifyEntry> | undefined,
+  after: Record<string, ClarifyEntry> | undefined
+): ClarifyEvent | null {
+  const beforeMap = before || {};
+  for (const [askerId, entry] of Object.entries(after || {})) {
+    const prior = beforeMap[askerId];
+    const question = typeof entry.question === 'string' ? entry.question : null;
+    const answer = typeof entry.answer === 'string' ? entry.answer : null;
+    if (!prior && question) {
+      return { kind: 'question', askerId, question };
+    }
+    if (
+      prior &&
+      answer &&
+      (typeof prior.answer !== 'string' || prior.answer.length === 0)
+    ) {
+      return { kind: 'answer', askerId, answer };
+    }
+  }
+  return null;
+}
+
+export const onCompletionClarified = functions.firestore
+  .document('prompt_completions/{completionId}')
+  .onUpdate(async (change) => {
+    const before = change.before.data();
+    const after = change.after.data();
+
+    const event = findClarifyEvent(before.clarify, after.clarify);
+    if (!event) return null;
+
+    const coupleId = after.couple_id;
+    if (typeof coupleId !== 'string' || coupleId.length === 0) return null;
+    const coupleDoc = await db.collection('couples').doc(coupleId).get();
+    const coupleData = coupleDoc.data();
+    if (!coupleData || !Array.isArray(coupleData.member_ids)) return null;
+
+    const partnerId = coupleData.member_ids.find(
+      (id: string) => id !== event.askerId
+    );
+    if (!partnerId) return null;
+
+    if (event.kind === 'question') {
+      // The asker wrote a question about their PARTNER's answer — notify the
+      // partner. Person-to-person, named human, reward-family push.
+      const askerDoc = await db.collection('users').doc(event.askerId).get();
+      const askerName = askerDoc.data()?.display_name || 'Your partner';
+      await sendPushNotification(partnerId, {
+        title: askerName,
+        body: `asked about your answer: "${truncatePromptText(event.question)}"`,
+      }, { type: 'clarify_question' });
+    } else {
+      // The partner answered the asker's question — notify the asker.
+      const partnerDoc = await db.collection('users').doc(partnerId).get();
+      const partnerName = partnerDoc.data()?.display_name || 'Your partner';
+      await sendPushNotification(event.askerId, {
+        title: partnerName,
+        body: 'answered your question.',
+      }, { type: 'clarify_answer' });
+    }
+
+    return null;
+  });
 
 // ============================================
 // TRIGGER: On Check-In Submitted

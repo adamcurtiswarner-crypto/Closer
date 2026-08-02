@@ -17,6 +17,7 @@ import { V1_PROMPT_CATEGORIES, toV1Category } from '@/config/promptCategories';
 import { logEvent } from '@/services/analytics';
 import { logger } from '@/utils/logger';
 import { resolveSignal, type HearthSignal } from '@/utils/hearthSignal';
+import { mapClarify, type ClarifyExchange } from './useClarify';
 import { useAuth } from './useAuth';
 
 const COMPLETIONS_LIMIT = 120;
@@ -58,6 +59,8 @@ export interface HearthCompletion {
   /** "Keep it for the couch" — flagged into the couch queue at the reveal. */
   couchFlagged: boolean;
   couchFlaggedBy: string | null;
+  /** Clarify exchanges (one per asker) — see useClarify. */
+  clarify: ClarifyExchange[];
   completedAt: Date | null;
 }
 
@@ -138,6 +141,7 @@ export function mapCompletion(id: string, data: Record<string, any>): HearthComp
     discussedAt: toDate(data.discussed_at),
     couchFlagged: data.couch_flagged === true,
     couchFlaggedBy: typeof data.couch_flagged_by === 'string' ? data.couch_flagged_by : null,
+    clarify: mapClarify(data.clarify),
     completedAt: toDate(data.completed_at),
   };
 }

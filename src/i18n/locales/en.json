@@ -655,7 +655,10 @@
     "partnerHeart": "{{name}} loved this",
     "partnerFire": "{{name}} felt the spark",
     "partnerLaughing": "{{name}} smiled at this",
-    "partnerTeary": "{{name}} was moved"
+    "partnerTeary": "{{name}} was moved",
+    "partnerCustom": "{{name}} left this one",
+    "more": "Any",
+    "yours": "Yours"
   },
   "gates": {
     "followUpLine": "Follow-ups are part of Stoke Premium",
@@ -663,6 +666,17 @@
     "hearthTitle": "Your full history lives in Premium",
     "hearthBody": "This month glows right here, couch and all. Past months and your trends are kept for you in Premium.",
     "usViewLine": "The full picture is part of Stoke Premium"
+  },
+  "clarify": {
+    "cardEyebrow": "{{name}} asked about your answer",
+    "askLink": "Ask about this answer",
+    "askPlaceholder": "One question about what they wrote...",
+    "answerPlaceholder": "Answer in your own words...",
+    "send": "Send",
+    "cancel": "Cancel",
+    "youAsked": "You asked",
+    "theyAsked": "{{name}} asked",
+    "partnerCardHint": "Double tap to react to {{name}}'s answer"
   },
   "yourWords": {
     "entryLabel": "Your words",

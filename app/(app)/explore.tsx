@@ -38,7 +38,7 @@ import {
   NoCoupleLinkedError,
 } from '@/hooks/useExplorePrompts';
 import { useSubmitResponse } from '@/hooks/usePrompt';
-import { useReaction, type ReactionType } from '@/hooks/useReaction';
+import { useReaction, type ReactionValue } from '@/hooks/useReaction';
 import { useAuth } from '@/hooks/useAuth';
 import { usePartner } from '@/hooks/usePartner';
 import { usePersonalize } from '@/hooks/usePersonalize';
@@ -128,11 +128,11 @@ export default function ExploreScreen() {
   const myRevealResponse = revealResponses?.find((r) => r.isCurrentUser) ?? null;
   const partnerRevealResponse = revealResponses?.find((r) => !r.isCurrentUser) ?? null;
   const myReaction = user?.id
-    ? ((revealReactions?.[user.id] ?? null) as ReactionType | null)
+    ? ((revealReactions?.[user.id] ?? null) as ReactionValue | null)
     : null;
   const partnerReaction = user?.id
     ? ((Object.entries(revealReactions ?? {}).find(([k]) => k !== user.id)?.[1] ??
-        null) as ReactionType | null)
+        null) as ReactionValue | null)
     : null;
 
   const submitScale = useSharedValue(1);

@@ -131,6 +131,7 @@ function scoredCompletion(
     discussedAt: null,
     couchFlagged: false,
     couchFlaggedBy: null,
+    clarify: [],
     completedAt: new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000),
   };
 }

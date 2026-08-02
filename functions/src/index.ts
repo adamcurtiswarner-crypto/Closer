@@ -77,6 +77,10 @@ export {
   // reward from a named human — the "partner responded" family, not a nag.
   // Copy is brand-voice (no emoji), gated on notify_partner_response.
   onReactionAdded,
+  // Clarify exchange (founder feature 2026-08-02): one question about your
+  // partner's answer, one answer back. Both pushes are person-to-person
+  // reward events from a named human.
+  onCompletionClarified,
   // Chat is hidden in v1; its push source goes with it.
   // onChatMessageCreated,
   // v1 scope: disabled — hidden feature (see src/config/features.ts in app)

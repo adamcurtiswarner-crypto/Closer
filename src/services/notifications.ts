@@ -169,8 +169,15 @@ export function setupNotificationHandlers(): () => void {
     logEvent('notification_opened', { notification_type: type || 'unknown' });
 
     // Route to appropriate screen based on notification type
-    if (type === 'prompt' || type === 'partner_responded' || type === 'reaction') {
-      // A reaction lands on the revealed completion, which lives on Today.
+    if (
+      type === 'prompt' ||
+      type === 'partner_responded' ||
+      type === 'reaction' ||
+      type === 'clarify_question' ||
+      type === 'clarify_answer'
+    ) {
+      // Reactions and clarify exchanges land on the revealed completion —
+      // Today carries the reveal plus the clarify discovery card.
       router.push('/(app)/today');
     } else if (type === 'explore_question' || type === 'explore_complete') {
       // Explore prompts never appear on Today — land on the explore tab and
