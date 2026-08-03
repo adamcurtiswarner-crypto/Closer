@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/config/firebase';
+import { watchCompletionDoc } from '@/utils/completionWatch';
 import { mapClarify, type ClarifyExchange } from './useClarify';
 import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
@@ -21,8 +20,8 @@ export function useCompletionClarify(assignmentId: string | null) {
   useEffect(() => {
     if (!enabled || !assignmentId) return;
 
-    const unsubscribe = onSnapshot(
-      doc(db, 'prompt_completions', assignmentId),
+    return watchCompletionDoc(
+      assignmentId,
       (snap) => {
         queryClient.setQueryData<ClarifyExchange[]>(
           ['clarify', assignmentId],
@@ -30,13 +29,12 @@ export function useCompletionClarify(assignmentId: string | null) {
         );
       },
       (error) => {
-        // Clarify is additive — the reveal renders without it, but a rules
-        // denial must still surface instead of failing silently.
+        // Clarify is additive — the reveal renders without it, but a denial
+        // that survives the retry ramp must still surface.
         logger.reportQueryDenied('useCompletionClarify.listener', error);
         queryClient.setQueryData<ClarifyExchange[]>(['clarify', assignmentId], []);
       }
     );
-    return unsubscribe;
   }, [assignmentId, enabled, queryClient]);
 
   return useQuery<ClarifyExchange[]>({

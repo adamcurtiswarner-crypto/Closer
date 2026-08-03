@@ -11,6 +11,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { watchCompletionDoc } from '@/utils/completionWatch';
 import { todayLocalISO } from '@utils/localDate';
 import { toV1Category } from '@/config/promptCategories';
 import { logger } from '@/utils/logger';
@@ -272,25 +273,26 @@ export function useCompletionReactions(assignmentId: string | null) {
   useEffect(() => {
     if (!enabled || !assignmentId) return;
 
-    const unsubscribe = onSnapshot(
-      doc(db, 'prompt_completions', assignmentId),
+    // Retrying watcher: the reveal is optimistic and can subscribe before
+    // the server has created the completion doc, which the rules deny (see
+    // src/utils/completionWatch.ts). This used to fail silently, killing
+    // live partner reactions for the rest of the reveal.
+    return watchCompletionDoc(
+      assignmentId,
       (snap) => {
         queryClient.setQueryData<Record<string, string> | null>(
           ['completionReactions', assignmentId],
           snap.exists() ? snap.data()?.reactions ?? null : null
         );
       },
-      () => {
-        // Reactions are non-critical — the reveal renders without them
+      (error) => {
+        logger.reportQueryDenied('useCompletionReactions.listener', error);
         queryClient.setQueryData<Record<string, string> | null>(
           ['completionReactions', assignmentId],
           null
         );
       }
     );
-
-    // Unsubscribe on unmount or when the sheet moves to another assignment
-    return unsubscribe;
   }, [assignmentId, enabled, queryClient]);
 
   return useQuery<Record<string, string> | null>({

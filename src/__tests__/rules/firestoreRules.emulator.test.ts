@@ -219,6 +219,33 @@ describe('prompt_completions reads', () => {
 // prompt_completions — "Keep it for the couch" (isCouchFlagUpdate)
 // ---------------------------------------------------------------------------
 
+describe('prompt_completions — the doc that does not exist yet', () => {
+  // The reveal is optimistic: the client flips isComplete off its own
+  // response_count the instant the second partner submits, which is BEFORE
+  // the server trigger creates the completion doc. This pins the resulting
+  // behaviour, which cost a production permission-denied on 2026-08-03
+  // (build 72) and had been silently killing live reactions long before.
+  it('denies a member reading a completion that has not been created yet', async () => {
+    // resource is null for a missing doc, so isCoupleMember(resource.data...)
+    // cannot be evaluated and the read is denied rather than returning empty.
+    await assertFails(
+      asUser(MEMBER_A).doc('prompt_completions/not-created-yet').get()
+    );
+  });
+
+  it('allows the read the moment the doc lands (what the retry waits for)', async () => {
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc('prompt_completions/not-created-yet').set({
+        couple_id: COUPLE_ID,
+        responses: [],
+      });
+    });
+    await assertSucceeds(
+      asUser(MEMBER_A).doc('prompt_completions/not-created-yet').get()
+    );
+  });
+});
+
 describe('prompt_completions couch flag', () => {
   const flagFields = (uid: string) => ({
     couch_flagged: true,

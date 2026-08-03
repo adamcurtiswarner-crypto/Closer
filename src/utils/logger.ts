@@ -99,14 +99,21 @@ export const logger = {
    * the offline queue). Fire-and-forget: callers do not need to await.
    */
   reportQueryDenied: (context: string, error: unknown): Promise<void> => {
+    const code = firestoreErrorCode(error);
     if (isDev) {
       console.error(`[${context}]`, error);
     } else if (error instanceof Error) {
-      Sentry.captureException(error);
+      // Carry the context and code on the Sentry event itself. Without them
+      // a denial arrived as a bare "Missing or insufficient permissions."
+      // and the failing query had to be recovered by cross-referencing the
+      // /events telemetry (2026-08-03).
+      Sentry.captureException(error, {
+        extra: { context },
+        tags: { query_context: context, ...(code ? { firestore_code: code } : {}) },
+      });
     } else {
       Sentry.captureMessage(`[${context}] ${String(error)}`, 'error');
     }
-    const code = firestoreErrorCode(error);
     if (code === 'permission-denied') {
       return writeClientErrorEvent(context, code);
     }
