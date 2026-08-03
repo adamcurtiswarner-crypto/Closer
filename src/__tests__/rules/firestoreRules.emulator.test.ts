@@ -351,6 +351,61 @@ describe('prompt_completions couch flag', () => {
 // couple_invites — enumeration closed
 // ---------------------------------------------------------------------------
 
+describe('prompt_completions reactions (hardened 2026-08-03)', () => {
+  // The old rule checked only which top-level fields changed — a member could
+  // forge a reaction under the PARTNER's uid and store arbitrary text, which
+  // the push pipeline renders into the partner's notification.
+  const react = (uid: string, value: unknown) => ({
+    [`reactions.${uid}`]: value,
+    updated_at: serverTimestamp(),
+  });
+
+  it('lets a member set their OWN reaction', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-active'), react(MEMBER_A, 'heart'))
+    );
+  });
+
+  it('lets a member clear their own reaction (un-react)', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-active'), react(MEMBER_A, null))
+    );
+  });
+
+  it('accepts a custom emoji within the length cap', async () => {
+    await assertSucceeds(
+      updateDoc(doc(asUser(MEMBER_B), 'prompt_completions/comp-active'), react(MEMBER_B, '\u{1F979}'))
+    );
+  });
+
+  it("DENIES forging a reaction under the partner's uid", async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-active'), react(MEMBER_B, 'heart'))
+    );
+  });
+
+  it('DENIES arbitrary long text (it reaches the partner push body)', async () => {
+    await assertFails(
+      updateDoc(
+        doc(asUser(MEMBER_A), 'prompt_completions/comp-active'),
+        react(MEMBER_A, 'x'.repeat(17))
+      )
+    );
+  });
+
+  it('DENIES a non-string reaction value', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(MEMBER_A), 'prompt_completions/comp-active'), react(MEMBER_A, 7))
+    );
+  });
+
+  it('denies a stranger reacting', async () => {
+    await assertFails(
+      updateDoc(doc(asUser(STRANGER), 'prompt_completions/comp-active'), react(STRANGER, 'heart'))
+    );
+  });
+});
+
 describe('prompt_completions clarify exchange (2026-08-02)', () => {
   const ask = (uid: string) => ({
     [`clarify.${uid}`]: {

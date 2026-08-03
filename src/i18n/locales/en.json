@@ -679,7 +679,8 @@
     "cancel": "Cancel",
     "youAsked": "You asked",
     "theyAsked": "{{name}} asked",
-    "partnerCardHint": "Double tap to react to {{name}}'s answer"
+    "partnerCardHint": "Double tap to react to {{name}}'s answer",
+    "sendFailed": "That did not send. Your words are still here — try again."
   },
   "yourWords": {
     "entryLabel": "Your words",

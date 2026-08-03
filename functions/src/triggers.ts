@@ -597,6 +597,14 @@ export const onCompletionClarified = functions.firestore
     );
     if (!partnerId) return null;
 
+    // Clarify pushes are the "partner responded" family — honour the same
+    // notify_partner_response preference that onReactionAdded and
+    // onResponseSubmitted check. Without this the newest push type silently
+    // ignored a shipped user setting (CEO cycle 2026-08-03).
+    const recipientId = event.kind === 'question' ? partnerId : event.askerId;
+    const recipientDoc = await db.collection('users').doc(recipientId).get();
+    if (recipientDoc.data()?.notify_partner_response === false) return null;
+
     if (event.kind === 'question') {
       // The asker wrote a question about their PARTNER's answer — notify the
       // partner. Person-to-person, named human, reward-family push.

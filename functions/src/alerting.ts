@@ -40,6 +40,18 @@ export const checkErrorAlerts = functions
 
     // Get all admin users
     const adminsSnap = await db.collection('admins').get();
+    // With no admin docs the notify loop below is a no-op, yet every error was
+    // still stamped alerted:true — so failures were permanently suppressed
+    // with nobody ever told. A 31-day BigQuery outage hid behind exactly this
+    // (CEO cycle 2026-08-03). Leave them unalerted so they resurface.
+    if (adminsSnap.empty) {
+      console.error(
+        `checkErrorAlerts: ${errorCount} unalerted error(s) in ${affectedFunctions} ` +
+          'and NO admin recipients configured — create /admins/{uid} to receive ' +
+          'alerts. Leaving these errors unalerted so they resurface.'
+      );
+      return null;
+    }
 
     for (const adminDoc of adminsSnap.docs) {
       await sendPushNotification(adminDoc.id, {

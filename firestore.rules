@@ -326,10 +326,37 @@ service cloud.firestore {
           request.resource.data.discussed[request.auth.uid] == request.time;
       }
 
-      // Legacy client writes: reactions (own-key toggle) and memory saves.
-      function isLegacyCompletionUpdate() {
+      // Reactions. The old rule checked only WHICH top-level fields changed,
+      // so it enforced neither the writer's own key nor the value's type or
+      // length: a member could forge a reaction under their PARTNER's uid, and
+      // store arbitrary text that the push pipeline then renders into the
+      // partner's notification title/body. Any-emoji reactions (2026-08-02)
+      // made that an attacker-controlled push channel. Pinned here the same
+      // way isDiscussedOnlyMark() has always pinned its own key.
+      // MAX_CUSTOM_REACTION_LENGTH in src/hooks/useReaction.ts must stay <= 16.
+      function isReactionUpdate() {
         return request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['reactions', 'updated_at', 'is_memory_saved']);
+            .hasOnly(['reactions', 'updated_at']) &&
+          request.resource.data.reactions is map &&
+          request.resource.data.reactions
+            .diff(('reactions' in resource.data) ? resource.data.reactions : {})
+            .affectedKeys().hasOnly([request.auth.uid]) &&
+          isOwnReactionValueValid();
+      }
+
+      // The writer's own entry is either cleared (un-react) or a short string.
+      function isOwnReactionValueValid() {
+        return !(request.auth.uid in request.resource.data.reactions) ||
+          request.resource.data.reactions[request.auth.uid] == null ||
+          (request.resource.data.reactions[request.auth.uid] is string &&
+            request.resource.data.reactions[request.auth.uid].size() > 0 &&
+            request.resource.data.reactions[request.auth.uid].size() <= 16);
+      }
+
+      // Memory save — hidden feature, legacy client path.
+      function isMemorySaveUpdate() {
+        return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['is_memory_saved', 'updated_at']);
       }
 
       // "Keep it for the couch": a member flags the completion into the
@@ -434,7 +461,7 @@ service cloud.firestore {
       // "we talked" mark, the couch flag, the pre-existing reaction/
       // memory-save writes, or a clarify ask/answer.
       allow update: if isCoupleMember(resource.data.couple_id) &&
-        (isDiscussedOnlyMark() || isLegacyCompletionUpdate() ||
+        (isDiscussedOnlyMark() || isReactionUpdate() || isMemorySaveUpdate() ||
           isCouchFlagUpdate() || isClarifyAsk() || isClarifyAnswer());
       allow delete: if false;
     }

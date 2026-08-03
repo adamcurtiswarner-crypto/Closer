@@ -20,8 +20,10 @@ interface ClarifyBlockProps {
   mode: 'about-partner' | 'about-me';
   exchange: ClarifyExchange | null;
   partnerName: string;
-  onAsk?: (question: string) => void;
-  onAnswer?: (answer: string) => void;
+  /** Must REJECT on failure — the composer holds the user's text until the
+   *  write is known to have landed. */
+  onAsk?: (question: string) => Promise<void>;
+  onAnswer?: (answer: string) => Promise<void>;
   pending?: boolean;
 }
 
@@ -36,18 +38,38 @@ export function ClarifyBlock({
   const { t } = useTranslation();
   const [composing, setComposing] = useState(false);
   const [text, setText] = useState('');
+  const [failed, setFailed] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const submit = () => {
+  // The text clears only once the write has LANDED. Clearing it optimistically
+  // destroyed the user's typed question on any failure — offline, a rules
+  // denial, a duplicate ask — with nothing on screen to say so. CLAUDE.md:
+  // every client Firestore write needs user-facing failure feedback.
+  const submit = async () => {
     const trimmed = text.trim();
-    if (trimmed.length === 0 || pending) return;
-    if (mode === 'about-partner') {
-      onAsk?.(trimmed);
-    } else {
-      onAnswer?.(trimmed);
+    if (trimmed.length === 0 || pending || busy) return;
+    setBusy(true);
+    setFailed(false);
+    try {
+      if (mode === 'about-partner') {
+        await onAsk?.(trimmed);
+      } else {
+        await onAnswer?.(trimmed);
+      }
+      setComposing(false);
+      setText('');
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
     }
-    setComposing(false);
-    setText('');
   };
+
+  const failureLine = failed ? (
+    <Text style={styles.failedText} maxFontSizeMultiplier={1.4}>
+      {t('clarify.sendFailed')}
+    </Text>
+  ) : null;
 
   // ── about-partner: my question about their answer ──
   if (mode === 'about-partner') {
@@ -82,11 +104,13 @@ export function ClarifyBlock({
             autoFocus
             testID="clarify-ask-input"
           />
+          {failureLine}
           <View style={styles.composerRow}>
             <TouchableOpacity
               onPress={() => {
                 setComposing(false);
                 setText('');
+                setFailed(false);
               }}
               style={styles.composerCancel}
               accessibilityRole="button"
@@ -97,10 +121,10 @@ export function ClarifyBlock({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={submit}
-              disabled={text.trim().length === 0 || pending}
+              disabled={text.trim().length === 0 || pending || busy}
               style={[
                 styles.composerSend,
-                (text.trim().length === 0 || pending) && styles.composerSendDisabled,
+                (text.trim().length === 0 || pending || busy) && styles.composerSendDisabled,
               ]}
               accessibilityRole="button"
               testID="clarify-ask-send"
@@ -153,14 +177,15 @@ export function ClarifyBlock({
             multiline
             testID="clarify-answer-input"
           />
+          {failureLine}
           <View style={styles.composerRow}>
             <View style={styles.composerCancel} />
             <TouchableOpacity
               onPress={submit}
-              disabled={text.trim().length === 0 || pending}
+              disabled={text.trim().length === 0 || pending || busy}
               style={[
                 styles.composerSend,
-                (text.trim().length === 0 || pending) && styles.composerSendDisabled,
+                (text.trim().length === 0 || pending || busy) && styles.composerSendDisabled,
               ]}
               accessibilityRole="button"
               testID="clarify-answer-send"
@@ -247,6 +272,10 @@ const styles = StyleSheet.create({
   },
   composerSendDisabled: {
     opacity: 0.4,
+  },
+  failedText: {
+    ...typography.caption,
+    color: colors.accent.primary,
   },
   composerSendText: {
     ...typography.btn,

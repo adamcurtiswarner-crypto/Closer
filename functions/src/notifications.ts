@@ -168,7 +168,15 @@ export const sendWeeklyRecaps = functions
   .pubsub.schedule('every sunday 18:00')
   .timeZone('America/Los_Angeles')
   .onRun(async (_context) => {
-    const weekString = format(new Date(), "yyyy-'W'ww");
+    // The schedule fires Sunday 18:00 PT = MONDAY 01:00 UTC, and the
+    // container clock is UTC — so `format(new Date(), "yyyy-'W'ww")` returned
+    // the week that had just STARTED, matching only ~32 hours of completions
+    // instead of the past week. A couple active Mon-Sat but quiet on Sunday
+    // was silently skipped. Query an explicit 7-day window instead; the
+    // couple_id + completed_at index already exists (CEO cycle 2026-08-03).
+    const windowStart = subDays(new Date(), 7);
+    let evaluated = 0;
+    let notified = 0;
 
     const couplesSnapshot = await db
       .collection('couples')
@@ -176,11 +184,12 @@ export const sendWeeklyRecaps = functions
       .get();
 
     for (const coupleDoc of couplesSnapshot.docs) {
-      // Check if they have completions this week
+      evaluated += 1;
+      // Any completion in the last 7 days earns the recap.
       const completionsSnapshot = await db
         .collection('prompt_completions')
         .where('couple_id', '==', coupleDoc.id)
-        .where('week', '==', weekString)
+        .where('completed_at', '>=', windowStart)
         .limit(1)
         .get();
 
@@ -191,10 +200,16 @@ export const sendWeeklyRecaps = functions
             title: APP_NAME,
             body: 'Your week together is ready.',
           }, { type: 'weekly_recap' });
+          notified += 1;
         }
       }
     }
 
+    // Counters: a zero-match run used to be indistinguishable from a healthy
+    // quiet week, which is the worst failure mode for a retention feature.
+    console.log(
+      `sendWeeklyRecaps: evaluated ${evaluated} couples, notified ${notified} users`
+    );
     return null;
   });
 

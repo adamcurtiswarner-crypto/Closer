@@ -387,10 +387,10 @@ export function CompletionMoment({
                       exchange={pendingForMe ?? answeredForMe}
                       partnerName={displayPartnerName}
                       pending={answerClarify.isPending}
-                      onAnswer={(answer) => {
+                      onAnswer={async (answer) => {
                         if (!pendingForMe) return;
-                        answerClarify.mutate(
-                          {
+                        try {
+                          await answerClarify.mutateAsync({
                             completionId: clarifyLive,
                             exchange: {
                               askerId: pendingForMe.askerId,
@@ -398,12 +398,11 @@ export function CompletionMoment({
                               askedAtRaw: pendingForMe.askedAtRaw,
                             },
                             answer,
-                          },
-                          {
-                            onError: (err) =>
-                              logger.error('Error answering clarify:', err),
-                          }
-                        );
+                          });
+                        } catch (err) {
+                          logger.error('Error answering clarify:', err);
+                          throw err; // composer keeps the text and says so
+                        }
                       }}
                     />
                   )}
@@ -440,15 +439,17 @@ export function CompletionMoment({
                       exchange={myClarify}
                       partnerName={displayPartnerName}
                       pending={askClarify.isPending}
-                      onAsk={(question) =>
-                        askClarify.mutate(
-                          { completionId: clarifyLive, question },
-                          {
-                            onError: (err) =>
-                              logger.error('Error asking clarify:', err),
-                          }
-                        )
-                      }
+                      onAsk={async (question) => {
+                        try {
+                          await askClarify.mutateAsync({
+                            completionId: clarifyLive,
+                            question,
+                          });
+                        } catch (err) {
+                          logger.error('Error asking clarify:', err);
+                          throw err; // composer keeps the text and says so
+                        }
+                      }}
                     />
                   )}
                 </Animated.View>
