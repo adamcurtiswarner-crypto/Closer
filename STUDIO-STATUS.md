@@ -1,5 +1,61 @@
 # Stoke Studio Status
-*Last updated: 2026-07-22 — **Build 67 cutting on EAS (id 77d2e35c; submits to TestFlight on completion — Adam lifted the build hold for this one).** Contents since 66: Categories tab in the prompt design language (ink hero category band, hero responding card, heading-voice questions), reveal typography unified to the prompt voice (headingLg question, bodyLg answers, new bodyLg token), reaction ring lights optimistically + "partner was moved" line centered. Already LIVE server-side since 7/21 (independent of builds): notification policy — exactly two push events (new prompt ready / partner responded); reminder/reaction/chat push functions deleted from prod. Build holds resume after this cut — no further builds without Adam's go. Submission runway still gated on Adam's founder items below.*
+*Last updated: 2026-08-03 — **CEO cycle: five heads in parallel (Engineering, Product, PM, Testing, Operations). Security + data-loss + two live prod defects fixed and DEPLOYED (commit `028cda5`). Build 72 is on TestFlight but is NOT the submission candidate.** The launch is gated on ~55 minutes of founder time that has been outstanding since July 6.*
+
+## THE HEADLINE (read this first)
+
+**Submission has slipped 11 days on a 15-minute task, not on engineering.**
+`firebase.json` still excludes `privacy.html` and `terms.html` from hosting deploys pending Adam's legal confirmations (entity, support email, governing law). Verified today: `/privacy` and `/terms` return **404**. Apple fetches the Privacy Policy URL during review — this is the hard gate, and it is 28 days old.
+
+Timeline evidence: `git log` shows **zero commits 7/23 → 8/01** (ten silent days), then 17 commits on 8/2 and 2 on 8/3. The feature work did not displace the submission; the silence did, and nobody escalated. PM Lead has recorded that as their own governance failure and is instituting a daily runway line until submit.
+
+## CEO Cycle 2026-08-03 — executed today (studio, no founder input needed)
+
+**SECURITY — was live in production rules:**
+- Reaction writes were constrained only by *which* top-level fields changed — no own-key pin, no type, no length. A member could **forge a reaction under their partner's uid** and store arbitrary text, which the push pipeline renders into the partner's notification **title and body**. Any-emoji reactions (8/2) turned that into an attacker-controlled push channel with no rate limit. `isReactionUpdate()` now pins `request.auth.uid` and enforces string ≤16 or null. **7 new emulator tests; 60 total. Rules deployed.**
+
+**DATA LOSS:**
+- A failed clarify write silently destroyed up to 1,000 characters of the user's typed text — the composer cleared synchronously before the write resolved, with only a Sentry log. Now holds the text until the write lands and shows an inline failure. (Violated CLAUDE.md's own mandatory rule.)
+
+**LIVE PROD DEFECTS — fixed and deployed, no build required:**
+- `sendWeeklyRecaps` **matched the wrong week**. Fires Sunday 18:00 PT = Monday 01:00 UTC, container clock is UTC, so the week string was the week that had just *started* — matching ~32 hours instead of 7 days. A couple active Mon–Sat but quiet on Sunday got **no recap at all**. Now an explicit 7-day `completed_at` window + evaluated/notified counters (a zero-match run was previously indistinguishable from a quiet week).
+- `onCompletionClarified` ignored `notify_partner_response` while `onReactionAdded` and `onResponseSubmitted` both honour it — the newest push type silently overrode a shipped user setting.
+- `checkErrorAlerts` stamped every error `alerted: true` **with zero admin recipients configured**, permanently suppressing failures nobody was ever told about. Now logs loudly and leaves errors unalerted so they resurface.
+
+## OPEN — P0s that still need a decision or a founder action
+
+| # | Item | Owner | Note |
+|---|---|---|---|
+| 1 | **`/admins` is empty — error alerting has NEVER worked** | Adam | Needs founder uid + a live push token. Proven by a **31-day** BigQuery outage nobody saw. Also locks `getDashboardMetrics`/`managePrompt`. |
+| 2 | **BigQuery dataset `stoke_analytics` does not exist** | Studio | Export has failed **31/31 days**. Every launch metric (pairing, D7, D30, trial→paid) is currently **unmeasurable**. `/events` also never prunes (2,036 docs). |
+| 3 | **Write-side completion race** | Studio | `e0e8908` fixed the *read* listeners; reaction/clarify **writes** still target a doc that may not exist. A failed reaction shows as permanently applied to the sender and never reaches the partner. |
+| 4 | **Crisis lexicon not applied to clarify text** | Studio | `STORE_METADATA.md` tells App Review the app detects crisis language in written notes. Clarify is a new free-text channel it does not cover — **we would be stating something untrue to Apple.** |
+| 5 | **Notification consent copy is now false** | Studio | Pre-permission copy promises two push types; the app sends **six**. 5.1.1 risk + trust defect. |
+| 6 | **In-app `privacy-policy.tsx` dated March 2026** | Studio | Mentions streaks and AI coaching; the paywall's own 3.1.2 links point at it. |
+| 7 | **Clarify question quoted verbatim on the lock screen** | Founder call | Intimate free text on a locked phone. Matches the existing explore precedent — decision, not defect. |
+
+## Build state
+
+| Build | Commit | Status |
+|---|---|---|
+| 72 | `2a8e6b8` | On TestFlight. **NOT submittable** — predates the completion-listener fix; live reactions and clarify die during a fresh reveal. |
+| **73** | from `028cda5`+ | **Required before submission.** Not cut — standing build hold; needs Adam's explicit go. Must use `EXPO_NO_CAPABILITY_SYNC=1`, and **bump `runtimeVersion` off "2.0.0"** (native changes since). |
+
+## Critical path to submission
+
+**Adam, ~55 minutes, today:** ① W-9 + banking in ASC (24–48h external processing — longest pole, startable for 28 days) ② **legal confirmations, 15 min — unblocks privacy/terms deploy, the Apple hard gate** ③ IAP review screenshots into both products ④ ASC subscription display names + RevenueCat check.
+
+**Studio, ~2 focused days, gated on ②:** deploy privacy/terms → replace the March-2026 in-app policy → fix consent copy → crisis lexicon over clarify → write-side race → nutrition labels for 3 new SDKs → rewrite `STORE_METADATA.md` (frozen at build 65) → **recapture all 8 screenshots × 2 sizes** (every surface in them has been redesigned).
+
+**Then:** build 73 → device pass (30-min checklist from Testing Lead, risk-ordered) → ASC assembly → submit.
+**Realistic: Thursday 2026-08-06. Conservative: Monday 2026-08-10.**
+
+## Governance change (effective now)
+While a submission runway is open, the studio does not open feature work unless the CEO moves the submit date **in writing** in this file first. Ten silent days should never have been possible.
+
+
+---
+
+# Prior cycles (history)
 
 ## CEO Cycle July 20 (night) — three-department review, findings executed
 Three heads consulted in parallel (Testing, Product, PM). All studio-side findings were fixed the same night and ride **build 66**; founder items are in "Adam's Monday List" below.
