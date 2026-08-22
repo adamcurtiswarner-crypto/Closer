@@ -453,8 +453,22 @@ service cloud.firestore {
           next.answered_at == request.time;
       }
 
+      // The reveal is optimistic: the client watches
+      // /prompt_completions/{assignmentId} BEFORE onResponseSubmitted has
+      // created it. Without the null guard `resource.data.couple_id` is a
+      // dereference of null — a rules EVALUATION ERROR, which Firestore
+      // returns as permission-denied rather than an empty snapshot, and
+      // onSnapshot tears the listener down for good. That denied the live
+      // reactions and clarify listeners on every fresh reveal (16 production
+      // denials, 2026-08-03 → 08-22, from the entire user base).
+      //
+      // A member reading a completion that does not exist now gets an empty
+      // result. The residual exposure is existence-probing a completion by
+      // document id; assignment ids are Firestore auto-ids, so this is not a
+      // practical leak. Non-members are still denied on both get and list —
+      // asserted in firestoreRules.emulator.test.ts.
       allow read: if isAuthenticated() &&
-        isCoupleMember(resource.data.couple_id);
+        (resource == null || isCoupleMember(resource.data.couple_id));
       // Created by Cloud Functions only
       allow create: if false;
       // Couple members may only make field-scoped updates: the Hearth

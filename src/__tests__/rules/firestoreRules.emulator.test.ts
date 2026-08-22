@@ -222,14 +222,42 @@ describe('prompt_completions reads', () => {
 describe('prompt_completions — the doc that does not exist yet', () => {
   // The reveal is optimistic: the client flips isComplete off its own
   // response_count the instant the second partner submits, which is BEFORE
-  // the server trigger creates the completion doc. This pins the resulting
-  // behaviour, which cost a production permission-denied on 2026-08-03
-  // (build 72) and had been silently killing live reactions long before.
-  it('denies a member reading a completion that has not been created yet', async () => {
-    // resource is null for a missing doc, so isCoupleMember(resource.data...)
-    // cannot be evaluated and the read is denied rather than returning empty.
+  // the server trigger creates the completion doc.
+  //
+  // Until 2026-08-22 the read rule dereferenced resource.data.couple_id
+  // unguarded, so a missing doc was a rules EVALUATION ERROR — returned as
+  // permission-denied, not as an empty snapshot — and onSnapshot tears the
+  // listener down for good on error. That killed the live reactions and
+  // clarify listeners on every fresh reveal: 16 production denials between
+  // 2026-08-03 and 2026-08-22, from the entire user base. The rule now
+  // carries `resource == null ||`; these tests pin the new behaviour and
+  // the exposure it does and does not create.
+  it('allows a member to read a completion that has not been created yet', async () => {
+    const snap = await asUser(MEMBER_A)
+      .doc('prompt_completions/not-created-yet')
+      .get();
+    expect(snap.exists).toBe(false);
+  });
+
+  it('leaks only non-existence to a stranger, never a real completion', async () => {
+    // The residual exposure of the null guard: any signed-in user can learn
+    // that a given document id has no completion. Assignment ids are
+    // Firestore auto-ids, so this is not a practical enumeration path — and
+    // the moment a real doc exists, membership is enforced again.
+    await assertSucceeds(
+      asUser(STRANGER).doc('prompt_completions/no-such-completion').get()
+    );
     await assertFails(
-      asUser(MEMBER_A).doc('prompt_completions/not-created-yet').get()
+      asUser(STRANGER).doc('prompt_completions/comp-active').get()
+    );
+  });
+
+  it('still denies a stranger listing the couple\'s completions', async () => {
+    await assertFails(
+      asUser(STRANGER)
+        .collection('prompt_completions')
+        .where('couple_id', '==', COUPLE_ID)
+        .get()
     );
   });
 

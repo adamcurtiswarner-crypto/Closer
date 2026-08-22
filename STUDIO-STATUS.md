@@ -1,7 +1,92 @@
 # Stoke Studio Status
-*Last updated: 2026-08-03 — **CEO cycle: five heads in parallel (Engineering, Product, PM, Testing, Operations). Security + data-loss + two live prod defects fixed and DEPLOYED (commit `028cda5`). Build 72 is on TestFlight but is NOT the submission candidate.** The launch is gated on ~55 minutes of founder time that has been outstanding since July 6.*
+*Last updated: 2026-08-22 — **CEO cycle: error-report review. Four heads in parallel (Engineering, Testing, Operations, PM). Root cause of all 20 production denials found and reproduced in the emulator. **D1 approved by Adam and DEPLOYED** — ruleset live 2026-08-22T22:36:03Z. The client fixes (D2/D3) are held for build 73.***
+
+**SUBMIT-BY: 2026-09-01** (target 2026-08-27). Moved in writing by the CEO on 2026-08-22, per the 8/3 governance rule. The 8/6 "realistic" and 8/10 "conservative" dates were missed and never moved — that is the failure this line exists to prevent.
 
 ## THE HEADLINE (read this first)
+
+**One bug explains every production error we have. `where(documentId(), 'in', [...])` is unsafe under any Firestore rule that dereferences `resource.data`.**
+
+Firestore fans that query out into per-key lookups and evaluates rules once per key — **including keys with no document**. `resource` is null, `resource.data.couple_id` raises an evaluation error, and the **whole query** returns `permission-denied`. The `where('couple_id','==',…)` filter does not protect it; it is applied after rules evaluation. There is a second, independent failure: a hard cap around **20 keys**, and both of our call sites chunk at **30**.
+
+Emulator-reproduced twice, independently, by Engineering and Testing against the live `firestore.rules`. Exactly two `documentId() in` call sites exist in the whole app — `useOpenDays.ts:78` and `useYourWords.ts:128` — and both are defective. That is the entire blast radius.
+
+**What it has cost us, unnoticed, for 20 days:**
+
+| Signature | Events | Reality |
+|---|---|---|
+| `useCompletionClarify.listener` | 16 | Fixed on main by `e0e8908`, **never shipped**. Also fixable on the *currently installed* build by a one-line rules change. |
+| `useYourWords.assignmentJoin` | 3 | **Your Words has never shown a question to either founder.** 74 distinct assignment ids → first chunk of 30 → over the cap → denied → answers render with no prompt text. Indistinguishable from the intended post-unlink degraded state, so nothing signalled a fault. |
+| `useOpenDays` | 2 | **Open Days has never worked once.** Not degraded — structurally dead. It returns non-empty only in a branch it can never reach: a real open day requires an absent response doc, and an absent doc denies the query. Shipped 8/2, has rendered nothing since. A missed question has no other entry point and the server expires it after 7 days. |
+
+Low event counts are not low severity. They are the *catch* firing; the silent healthy-looking path is the norm.
+
+**And we did not find out. Adam did, by exporting a CSV by hand.** `logger.reportQueryDenied` writes `client_error` docs to `/events` — and **nothing anywhere reads them.** `checkErrorAlerts` scans `error_logs` only (`functions/src/alerting.ts:22`). Populating `/admins` tomorrow would still not have surfaced these. The hourly canary writes through the Admin SDK, which bypasses rules by definition — our one live health probe is structurally incapable of detecting a rules regression, and it reported green throughout. Zero GCP alert policies, zero notification channels, zero log-based metrics exist.
+
+## CEO Cycle 2026-08-22 — decisions
+
+**D1. Fix the shipped build from the server, today.** `firestore.rules:456` → `allow read: if isAuthenticated() && (resource == null || isCoupleMember(resource.data.couple_id));`. Emulator-verified: member reads a missing completion → OK(0); member reads a real one → OK(1); stranger read and stranger list → still DENIED. Retires the largest error cluster (16/20) on build 72, which is what the founders are actually running. No build required.
+
+**DEPLOYED 2026-08-22 22:36:03Z** (prior ruleset dated 8/3). Rules suite **62 tests green** — the 8/3 test that *documented* the denial as expected behaviour was replaced by three that pin the new one: a member reads a missing completion and gets `exists === false`; a stranger reading a missing doc succeeds (learning only non-existence — the honest residual exposure of the null guard) while a stranger reading a real completion is still denied; a stranger listing the couple's completions is still denied. **No client build needed — the fix reaches the founders' installed build 72 immediately.**
+
+**D2. Hold build 73 until the two `documentId() in` fixes land.** Cutting today ships two known, reproducible, permanently-denying queries onto the path App Review walks: create account → pair → answer → reveal. A 2.1 rejection costs a full review requeue; the hold costs half a day and zero founder time. Build 72 already earned "NOT submittable" by shipping ahead of a known fix — we do not repeat that with a higher number. Target the cut for **Tue 8/25**, on Adam's explicit go, `runtimeVersion` bumped off "2.0.0", `EXPO_NO_CAPABILITY_SYNC=1`.
+
+**D3. Do not fix these by chunking smaller.** Chunking does not save `useOpenDays` — its ids deny at n=1 by construction. Both hooks move to value-field queries (`where('assignment_id','in',chunk)`) so the result set can only contain readable documents, chunked at ≤10. Standing rule from this cycle: **`documentId() in` is banned in client code** unless the id list is provably all-present and ≤20, which a mobile client can almost never guarantee.
+
+## The plan
+
+**Rules deploy — DONE 2026-08-22:**
+1. ~~`firestore.rules:456` null-guard + emulator tests for the missing-doc read and both stranger-deny regressions.~~ Shipped. Watch `/events` for `useCompletionClarify.listener`: it should now stop appearing. If it recurs, the cause is not the missing-doc race and the diagnosis needs reopening.
+
+**Client fixes, ride build 73:**
+2. `useOpenDays.ts:73-88` → `where('couple_id','==',c), where('user_id','==',u), where('assignment_id','in',chunk)`, chunk 10. Index `prompt_responses (assignment_id, user_id)` already exists (`firestore.indexes.json:152`) — confirm it covers the 3-clause form.
+3. `useYourWords.ts:110-135` → same shape now; **denormalise `prompt_text` + `category` onto the response doc in `onResponseSubmitted`** as the real fix, plus a backfill. That also makes Your Words correct after an unlink, which the current join design cannot be.
+4. Write-side completion race (P0 #3, still true in full): gate the reveal's write affordances on `completionWatch` having seen `snap.exists()`, and add the missing `onError` to `useReaction` — a denied reaction currently leaves the optimistic ring lit for the life of the sheet, reaches the partner never, and **emits no telemetry at all**.
+
+**Guards, so this class cannot return:**
+5. A plain unit test in `npm test` (no emulator, no Java) that greps `src/hooks/` for `documentId(), 'in'` and asserts the call-site set matches a checked-in allowlist. Highest-leverage single item — it survives the emulator being unrunnable.
+6. Every `documentId() in` emulator test must use production chunk size and a fixture containing a ghost id and an ex-couple id. The existing test used `['asg-1']` — n=1, one existing doc, one active couple. Green, and actively misleading.
+7. `npm run test:rules` **does not run on a stock machine** — dies on `Unable to locate a Java Runtime`; Homebrew openjdk is installed but keg-only and unlinked. Documented nowhere. Fix the PATH in a pretest step or the rules suite silently rots again.
+
+**Alerting — the mechanism failure, not the bug:**
+8. Sentry issue-alert rule keyed on **frequency, not first-seen** (`firestore_code:permission-denied`, >3 in 1h → email + phone). ~10 min in Adam's Sentry account, zero code, zero deploy. Would have fired on 8/9, on error #1. Sentry's own "no events received" monitor means the mechanism reports its own death. Also set `environment` in `Sentry.init` (`app/_layout.tsx:21`) — prod and preview are currently indistinguishable.
+9. Extend `checkErrorAlerts` to also scan `/events where event_name == 'client_error'`. ~15 lines, rides the existing 5-min schedule and push path, composite index already live. The durable fix for the write-only sink.
+10. Cloud Monitoring log-based metric + email channel on `checkErrorAlerts`'s `console.error`. The only path with **no dependency on Adam at all**.
+11. `SUBMIT-BY` above, enforced by a **`on: schedule`** GitHub Action that fails when the date passes. `.github/workflows/ci.yml` is push-only — with zero pushes for 19 days it ran zero times, so anything hung off it would have been equally silent.
+
+## Corrections to the 2026-08-03 record
+
+- **`/events` does prune** — but the 90-day sweep is welded into `exportEventsToBigQuery`, so a missing dataset disables retention as a side effect. 2,490 docs today (+454 in 19 days, ~24/day for two users); **908 are already past the cutoff** and unreclaimable until BigQuery exists. Give `/events` its own TTL policy.
+- **`/admins` is a 10-second task, not a blocked one.** The field is `push_tokens` (array), not `push_token` — Adam's uid `FwAjAreJ2…` already carries a live token. One document. Not created: it grants production admin and needs his explicit say-so.
+- **BigQuery outage is older than 31 days and its start date is being erased daily** — `cleanupErrorLogs` deletes at 30 days and the oldest surviving doc is exactly 30 days old. "31/31" is a floor, not a measurement. Zero datasets, zero jobs ever.
+- **Only 1.5 of the 8 studio items were ever actually gated on the legal answer.** Consent copy, crisis lexicon, write-side race, nutrition labels, screenshots and the in-app policy swap needed nothing from Adam and could have been done in the 19 silent days. The legal gate was real for the deploy; it became cover for everything behind it.
+- **`stoke.llc` is not Firebase Hosting at all.** Apex resolves to AWS-parked IPs (GoDaddy nameservers), 301s to `www.stoke.llc` = a Google Site behind a **Google login wall**. `/privacy`, `/terms`, `/support`, `/join` all 404 on the apex. Deploying to Firebase does not make `stoke.llc/privacy` resolve. `STORE_METADATA.md:103-106` points Apple at four dead URLs — including Support and Marketing, which were never gated on legal.
+- **`stoke.llc` has no MX records.** `support@stoke.llc` — shipped in `src/config/app.ts`, linked from the live support page, named in both policy drafts — receives no mail. The "confirm the support email" leg of the 15-minute gate **cannot be answered truthfully as drafted**. Recommend the `stoke-5f762.web.app` fallback the 3.1.2 checklist already sanctions; it removes the last external clock from the critical path.
+- **The legal drafts already contain the answers.** `hosting/privacy.html` and `terms.html` name **Omnific Collective LLC**; `terms.html` §14 already specifies **Georgia** governing law. Two of the three legs are a confirmation, not authorship.
+- **Test fixtures are live in production with `status: 'active'`** (`sandbox-couple`, premium through 9/20; `uitest-visualp`). Every scheduler iterating active couples processes them. **`last_active_at` is dead** — stale since 2026-02-28 on both real users. Clean both before quoting D7/D30 to anyone.
+- **Canonical test counts (measured today, both prior records stale):** app **91 suites / 929**, functions **22 / 505**, rules **60**. `tsc` clean. Two real flakes under parallel load (`ProfileCardPhotoAccess` upload, `nameScreen` save) — 5s default-timeout expiries, green on a serial re-run; give them explicit timeouts.
+
+## Founder actions (~1h45m, Monday 2026-08-24) — every date below moves 1:1 with this
+
+1. ~~Go / no-go on the rules deploy (D1).~~ **Approved and deployed 2026-08-22.**
+2. **Legal confirmations** — entity and governing law are a confirmation of drafted text. **Support email needs a decision, not a confirmation** (no MX).
+3. **Domain decision:** repoint `stoke.llc` to Firebase (registrar creds — studio cannot do this; up to 48h propagation + cert issuance) **or** take the `web.app` fallback. Recommend the fallback.
+4. **W-9 + banking in ASC** — 24–48h external processing, the longest pole, startable for 47 days. If not Active at submit, review proceeds but subscriptions cannot go live.
+5. IAP review screenshots into both products · ASC subscription display names + RevenueCat verify.
+6. **Sentry alert rule** (item 8 above) — needs his account.
+7. **Tue 8/25: explicit go for build 73.** **Wed 8/26: 45-min two-device pass** (the checklist is 45 min, not 30, and needs two physical devices).
+
+## Runway
+
+Sun 8/23 studio: rules fix + both client fixes + write-side race · Mon 8/24 founder AM, studio takes the six items that were never actually gated · Tue 8/25 build 73 + `STORE_METADATA` rewrite + alerting + regression · Wed 8/26 16-frame screenshot recapture (6h, must be shot against the final binary) + founder device pass · **Thu 8/27 submit (target)** · buffer to **Tue 9/1 (committed)**.
+
+Not binding: build 72 expires 10/31; distribution cert and provisioning profile 2027-02-25.
+
+---
+
+# Prior cycles (history)
+
+## CEO Cycle 2026-08-03 — headline at the time
 
 **Submission has slipped 11 days on a 15-minute task, not on engineering.**
 `firebase.json` still excludes `privacy.html` and `terms.html` from hosting deploys pending Adam's legal confirmations (entity, support email, governing law). Verified today: `/privacy` and `/terms` return **404**. Apple fetches the Privacy Policy URL during review — this is the hard gate, and it is 28 days old.
@@ -53,9 +138,9 @@ Timeline evidence: `git log` shows **zero commits 7/23 → 8/01** (ten silent da
 While a submission runway is open, the studio does not open feature work unless the CEO moves the submit date **in writing** in this file first. Ten silent days should never have been possible.
 
 
----
 
-# Prior cycles (history)
+
+## Earlier cycles
 
 ## CEO Cycle July 20 (night) — three-department review, findings executed
 Three heads consulted in parallel (Testing, Product, PM). All studio-side findings were fixed the same night and ride **build 66**; founder items are in "Adam's Monday List" below.
