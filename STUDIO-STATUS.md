@@ -25,7 +25,7 @@ Low event counts are not low severity. They are the *catch* firing; the silent h
 
 ## BUILD 73 — cut 2026-08-23, commit `938d1d6`
 
-Build id `917d7c0c-e73e-4a7c-8132-4cae79f9c7d6` · build number **73** · runtime **2.0.0** · cut with `EXPO_NO_CAPABILITY_SYNC=1`. **Not yet submitted** — `eas submit` needs Adam's go, same as the cut.
+Build id `917d7c0c-e73e-4a7c-8132-4cae79f9c7d6` · build number **73** · runtime **2.0.0** · cut with `EXPO_NO_CAPABILITY_SYNC=1`. Built in **9m28s** (09:06 → 09:16). **Submitted to TestFlight** on Adam's go — submission `cdf95fbf-5408-4648-85cf-58da4e1b5df8`, uploaded to App Store Connect, Apple processing ~5-10 min. **73 replaces 72 as the current TestFlight build; 72 is superseded and should not be tested against.**
 
 **`runtimeVersion` deliberately NOT bumped.** The 8/3 note called for moving off "2.0.0" because of native changes; `git diff 2a8e6b8..HEAD` over `ios/`, `plugins/`, `patches/`, `package.json` and `app.json` is **empty**, so 73 has the same native surface as the shipped 72 — those native changes had already gone out *in* 72. Bumping would have broken OTA compatibility with 72 for no cause.
 
