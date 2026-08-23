@@ -117,16 +117,22 @@ export const deleteAccount = functions.https.onCall(async (data, context) => {
     if (coupleDoc.exists) {
       const coupleData = coupleDoc.data()!;
 
-      // Set couple status to deleted
+      // Same dissolution shape as unlinkCouple — see the policy note there.
+      // The roster is read first, then cleared: everything below this point
+      // uses the captured `memberIds`, never the couple doc.
+      const memberIds: string[] = coupleData.member_ids || [];
+
+      // Set couple status to deleted and retire the live roster
       await coupleRef.update({
         status: 'deleted',
+        member_ids: [],
+        former_member_ids: memberIds,
         updated_at: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       // Null out couple_id for both users and clear the coupleId custom
       // claim (Storage rules key off it). Claim failures are reported but
       // never block deletion — denial is the safe direction.
-      const memberIds: string[] = coupleData.member_ids || [];
       for (const memberId of memberIds) {
         await db.collection('users').doc(memberId).update({
           couple_id: null,
@@ -640,8 +646,17 @@ export const unlinkCouple = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('permission-denied', 'Not a member of this couple');
   }
 
+  // POLICY (2026-08-23): `member_ids` is a LIVE roster, never a history and
+  // never a permission grant. Dissolution empties it and preserves the
+  // roster as `former_member_ids`, so a server path that fans out over
+  // member_ids without checking status reaches nobody instead of pushing
+  // both ex-partners. Two production defects came from the old shape.
+  // `memberIds` is captured above and used below for the cleanup and the
+  // partner push — those read the roster deliberately, before it is cleared.
   await coupleRef.update({
     status: 'deleted',
+    member_ids: [],
+    former_member_ids: memberIds,
     unlinked_at: admin.firestore.FieldValue.serverTimestamp(),
     updated_at: admin.firestore.FieldValue.serverTimestamp(),
   });

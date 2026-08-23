@@ -280,6 +280,70 @@ describe('unlinkCouple', () => {
 // deleteAccount — purge_couple_id snapshot + claim clearing
 // ---------------------------------------------------------------------------
 
+describe('the member_ids policy — a dissolved couple keeps no live roster', () => {
+  /*
+   * Policy set 2026-08-23 after member_ids caused two production defects.
+   *
+   * `member_ids` means "the two people this couple is FOR, right now". It is
+   * a live roster, NOT a history, and NOT a permission grant. Any server path
+   * that fans out over it without checking status reaches both ex-partners —
+   * which is how a deleted couple came to be assigned a fresh prompt every
+   * morning and push both exes for weeks.
+   *
+   * So dissolution EMPTIES it and moves the roster to `former_member_ids`.
+   * A forgotten status check is then a no-op instead of a leak, and every
+   * remaining call site reads as history because of the field's name.
+   */
+  it('unlink empties member_ids and preserves the roster as history', async () => {
+    seedActiveCouple();
+
+    await wrappedUnlink({}, { auth: { uid: USER_A } });
+
+    const couple = store.docs.get(`couples/${COUPLE_ID}`)!;
+    expect(couple.member_ids).toEqual([]);
+    expect(couple.former_member_ids).toEqual([USER_A, USER_B]);
+  });
+
+  it('unlink still reaches the partner before the roster is cleared', async () => {
+    // Ordering regression: the partner push and the per-member cleanup both
+    // read the roster, so emptying it too early silently drops them.
+    seedActiveCouple();
+
+    await wrappedUnlink({}, { auth: { uid: USER_A } });
+
+    expect(sendPushNotification).toHaveBeenCalledWith(
+      USER_B,
+      expect.objectContaining({ body: 'Your partner has left Stoke.' }),
+      expect.anything()
+    );
+    expect(store.docs.get(`users/${USER_A}`)!.couple_id).toBeNull();
+    expect(store.docs.get(`users/${USER_B}`)!.couple_id).toBeNull();
+  });
+
+  it('account deletion dissolves the same way', async () => {
+    seedActiveCouple();
+
+    await wrappedDelete({ confirmation: 'DELETE' }, { auth: { uid: USER_A } });
+
+    const couple = store.docs.get(`couples/${COUPLE_ID}`)!;
+    expect(couple.status).toBe('deleted');
+    expect(couple.member_ids).toEqual([]);
+    expect(couple.former_member_ids).toEqual([USER_A, USER_B]);
+  });
+
+  it('a fan-out that forgets the status check now reaches nobody', async () => {
+    // The whole point of the policy, asserted as behaviour rather than as a
+    // convention someone has to remember.
+    seedActiveCouple();
+    await wrappedUnlink({}, { auth: { uid: USER_A } });
+
+    const couple = store.docs.get(`couples/${COUPLE_ID}`)!;
+    const naiveFanOut = (couple.member_ids as string[]) || [];
+
+    expect(naiveFanOut).toHaveLength(0);
+  });
+});
+
 describe('deleteAccount (trust cluster additions)', () => {
   it('snapshots purge_couple_id before nulling couple_id', async () => {
     seedActiveCouple();

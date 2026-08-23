@@ -82,8 +82,11 @@ beforeEach(async () => {
       member_ids: [MEMBER_A, MEMBER_B],
       status: 'active',
     });
+    // The dissolved shape after the 2026-08-23 policy: the live roster is
+    // emptied and preserved as history, so nothing can fan out to it.
     await db.doc(`couples/${DELETED_COUPLE_ID}`).set({
-      member_ids: [MEMBER_A, MEMBER_B],
+      member_ids: [],
+      former_member_ids: [MEMBER_A, MEMBER_B],
       status: 'deleted',
     });
     await db.doc(`couples/${PENDING_COUPLE_ID}`).set({
@@ -746,6 +749,33 @@ describe('couples', () => {
         status: 'active',
       })
     );
+  });
+
+  // member_ids policy (2026-08-23): the live roster is emptied at
+  // dissolution, so read access for an ex has to come from the history
+  // field — otherwise clearing the roster would trade a send bug for a
+  // read denial, and a denial is what tears listeners down in this app.
+  it('lets a FORMER member still read their dissolved couple', async () => {
+    await assertSucceeds(asUser(MEMBER_A).doc(`couples/${DELETED_COUPLE_ID}`).get());
+  });
+
+  it('does not let a former member write it back to life', async () => {
+    await assertFails(
+      asUser(MEMBER_A).doc(`couples/${DELETED_COUPLE_ID}`).update({
+        member_ids: [MEMBER_A, MEMBER_B],
+        status: 'active',
+      })
+    );
+  });
+
+  it('gives a stranger nothing through the history field', async () => {
+    await assertFails(asUser(STRANGER).doc(`couples/${DELETED_COUPLE_ID}`).get());
+  });
+
+  it('still denies an ex the couple CONTENT, not just the couple doc', async () => {
+    // The history field must not become a back door into the answers.
+    await assertFails(asUser(MEMBER_A).doc('prompt_completions/comp-deleted').get());
+    await assertFails(asUser(MEMBER_B).doc('prompt_responses/resp-deleted').get());
   });
 });
 

@@ -43,7 +43,17 @@ Adam reported three identical "Today's prompt is ready." notifications back to b
 
 **Correction to an earlier claim in this file: we do NOT reliably prune dead push tokens.** `sendExpoPushNotifications` prunes only on an immediate *ticket* error; `DeviceNotRegistered` almost always arrives in the *receipt*, and **`getReceipts` is never called anywhere in the codebase**. A token for a deleted app therefore persists indefinitely. That is a second, independent way `push_tokens` accumulates — the sign-out fix does not address it, because the device never signs out, it just stops existing. Worth a scheduled receipt sweep; not launch-blocking, and now that each founder holds one token there is nothing accumulating today.
 
-**Also open — a founder decision, not a cleanup.** Two deleted couples still carry both exes in `member_ids`. What happens to `member_ids` at breakup needs deciding once and encoding, rather than being cleaned by hand each time it bites.
+**DECIDED AND IMPLEMENTED 2026-08-23 — the `member_ids` policy.**
+
+> `member_ids` is a **live roster** — the two people this couple is *for, right now*. It is never a history and never a permission grant. Dissolution (unlink or account deletion) **empties it** and preserves the roster as `former_member_ids`.
+
+Rejected the alternative — keep the roster and rely on every send path remembering a status check. That is the shape that already produced two production defects, and it fails toward *leaking to an ex*, which is the worst available direction. Under the new shape a forgotten status check is a no-op over an empty array, and every remaining call site reads as history because the field is named like history.
+
+The one real cost, paid deliberately: clearing the roster would have cost an ex the ability to read their own dissolved couple doc, turning a send bug into a **read denial** — and denials are what tear listeners down in this app (see the 8/22 cycle). So `wasCoupleMember()` in the rules restores exactly that one read from `former_member_ids`. **READ ONLY** — asserted in the emulator suite: an ex reads their dissolved couple doc, and is still denied its completions, its responses, and any write that would revive it. A stranger gets nothing through the history field.
+
+Shipped: `unlinkCouple` + `deleteAccount` write the new shape (roster read first, cleared second — the partner push and the per-member claim cleanup both depend on it); `wasCoupleMember()` added to `firestore.rules`. **Rules + both callables deployed.** app 91/935, functions 23/520, rules 66 — all green, tsc clean.
+
+**Both existing deleted couples migrated in prod.** Verified: zero deleted couples carry a live roster. `isActiveCouple` stays in place as belt-and-braces — the policy makes the failure harmless, the guard makes it explicit.
 
 **Worth noting about the delivery query:** `deliverDailyPrompts` filters `is_deleted == false`, and the sandbox/uitest fixture users have that field **missing** rather than false — which is the only reason those fixture couples are not also delivering. Set the field and a fourth push appears. Fixture accounts active in prod remain an unresolved ops item.
 
