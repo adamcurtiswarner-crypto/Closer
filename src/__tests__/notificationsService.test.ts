@@ -63,23 +63,49 @@ jest.mock('@/config/firebase', () => ({
   db: {},
 }));
 
+// The shared AsyncStorage mock is a no-op stub (getItem always resolves
+// null), which cannot exercise the cross-launch path unregisterPushToken
+// depends on. This suite needs storage that actually stores.
+jest.mock('@react-native-async-storage/async-storage', () => {
+  const store = new Map<string, string>();
+  return {
+    __esModule: true,
+    default: {
+      getItem: jest.fn(async (k: string) => store.get(k) ?? null),
+      setItem: jest.fn(async (k: string, v: string) => {
+        store.set(k, v);
+      }),
+      removeItem: jest.fn(async (k: string) => {
+        store.delete(k);
+      }),
+      clear: jest.fn(async () => {
+        store.clear();
+      }),
+    },
+  };
+});
+
 jest.mock('@/services/analytics', () => ({
   logEvent: jest.fn(),
 }));
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import {
+  PUSH_TOKEN_CACHE_KEY,
   registerForPushNotifications,
   registerPushIfAlreadyGranted,
   setupNotificationHandlers,
+  unregisterPushToken,
 } from '../services/notifications';
 
 function grantPermissions(): void {
   mockGetPermissionsAsync.mockResolvedValue({ granted: true, status: 'granted' });
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   jest.clearAllMocks();
+  await AsyncStorage.clear();
   grantPermissions();
   mockGetExpoPushTokenAsync.mockResolvedValue({ type: 'expo', data: EXPO_TOKEN });
   mockUpdateDoc.mockResolvedValue(undefined);
@@ -222,5 +248,83 @@ describe('registerPushIfAlreadyGranted', () => {
     expect(token).toBeNull();
     expect(mockRequestPermissionsAsync).not.toHaveBeenCalled();
     expect(mockGetExpoPushTokenAsync).not.toHaveBeenCalled();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sign-out must hand the device token back
+// ---------------------------------------------------------------------------
+
+describe('unregisterPushToken', () => {
+  /*
+   * The prod defect (2026-08-23): an Expo push token addresses a DEVICE, not
+   * an account, and sign-out never removed it. Every account ever signed in
+   * on a phone stayed addressable from that phone, so one device received a
+   * copy of the daily prompt for each of them — three identical pushes back
+   * to back for the founder. A July scrub of 10 stale tokens grew straight
+   * back for the same reason.
+   */
+  it('removes this device token from the signing-out user', async () => {
+    await registerForPushNotifications('user-1');
+    mockUpdateDoc.mockClear();
+
+    await unregisterPushToken('user-1');
+
+    expect(mockUpdateDoc).toHaveBeenCalledWith(
+      { path: 'users/user-1' },
+      expect.objectContaining({
+        push_tokens: { __op: 'arrayRemove', value: EXPO_TOKEN },
+      })
+    );
+  });
+
+  it('never calls the network — sign-out must not wait on Expo', async () => {
+    // Deliberately cache-only. getExpoPushTokenAsync is a round trip to
+    // Expo's servers; a hung or offline call here would stall sign-out,
+    // which is the one flow that must always work.
+    await registerForPushNotifications('user-1');
+    mockGetExpoPushTokenAsync.mockClear();
+
+    await unregisterPushToken('user-1');
+
+    expect(mockGetExpoPushTokenAsync).not.toHaveBeenCalled();
+  });
+
+  it('reads the token from storage when this launch never registered', async () => {
+    // Registration happens at launch, but a user who signed in on a previous
+    // launch and is offline this time still has to hand the token back.
+    await AsyncStorage.setItem(PUSH_TOKEN_CACHE_KEY, EXPO_TOKEN);
+
+    await unregisterPushToken('user-2');
+
+    expect(mockUpdateDoc).toHaveBeenCalledWith(
+      { path: 'users/user-2' },
+      expect.objectContaining({
+        push_tokens: { __op: 'arrayRemove', value: EXPO_TOKEN },
+      })
+    );
+  });
+
+  it('does nothing when this device has no token to hand back', async () => {
+    await unregisterPushToken('user-3');
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+
+  it('resolves even when the Firestore write fails — sign-out is never blocked', async () => {
+    await registerForPushNotifications('user-1');
+    mockUpdateDoc.mockRejectedValue(new Error('offline'));
+
+    await expect(unregisterPushToken('user-1')).resolves.toBeUndefined();
+  });
+
+  it('forgets the cached token, so a second sign-out is a no-op', async () => {
+    await registerForPushNotifications('user-1');
+    await unregisterPushToken('user-1');
+    mockUpdateDoc.mockClear();
+
+    await unregisterPushToken('user-1');
+
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+    expect(await AsyncStorage.getItem(PUSH_TOKEN_CACHE_KEY)).toBeNull();
   });
 });

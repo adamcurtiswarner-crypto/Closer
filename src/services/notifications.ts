@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { doc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { logEvent } from '@/services/analytics';
@@ -36,6 +37,79 @@ export async function getPushPermissionStatus(): Promise<PushPermissionStatus> {
   } catch (error) {
     logger.warn('Failed to read push permission status:', error);
     return 'undetermined';
+  }
+}
+
+/**
+ * Where this device's Expo push token is remembered between launches.
+ *
+ * An Expo push token addresses a DEVICE, not an account. Registration is
+ * additive (arrayUnion), and until 2026-08-23 sign-out removed nothing — so
+ * every account ever signed in on a phone stayed addressable from it, and the
+ * phone received one copy of every push for each of them. The founder was
+ * getting three identical daily prompts back to back, and a July scrub of ten
+ * stale tokens had regrown for the same reason.
+ *
+ * Cached here rather than re-fetched at sign-out on purpose: see
+ * unregisterPushToken.
+ */
+export const PUSH_TOKEN_CACHE_KEY = 'stoke.push_token';
+
+/** Set at registration so sign-out can hand the token back without a fetch. */
+let cachedPushToken: string | null = null;
+
+async function rememberPushToken(token: string): Promise<void> {
+  cachedPushToken = token;
+  try {
+    await AsyncStorage.setItem(PUSH_TOKEN_CACHE_KEY, token);
+  } catch {
+    // The in-memory copy still covers this session.
+  }
+}
+
+/**
+ * Hand this device's push token back before signing out.
+ *
+ * Deliberately cache-only: getExpoPushTokenAsync is a round trip to Expo's
+ * servers, and sign-out is the one flow that must always work — offline, on a
+ * dying connection, in an airport. A token we cannot name is left in place
+ * rather than stalling the user; it will be handed back at the next sign-out,
+ * and the server already prunes tokens Expo reports as DeviceNotRegistered.
+ *
+ * Must run BEFORE firebaseSignOut — the security rules only allow a user to
+ * write their own doc while they are still signed in.
+ *
+ * Never throws. A failure here must not strand someone in a session they
+ * asked to leave.
+ */
+export async function unregisterPushToken(userId: string): Promise<void> {
+  let token = cachedPushToken;
+  if (!token) {
+    try {
+      token = await AsyncStorage.getItem(PUSH_TOKEN_CACHE_KEY);
+    } catch {
+      token = null;
+    }
+  }
+  if (!token) return;
+
+  try {
+    await updateDoc(doc(db, 'users', userId), {
+      push_tokens: arrayRemove(token),
+      updated_at: serverTimestamp(),
+    });
+  } catch (error) {
+    logger.warn('Failed to unregister push token:', error);
+    return;
+  }
+
+  // Only forget it once the removal actually landed, so a failed attempt can
+  // be retried at the next sign-out.
+  cachedPushToken = null;
+  try {
+    await AsyncStorage.removeItem(PUSH_TOKEN_CACHE_KEY);
+  } catch {
+    // Nothing more to do — the token is already off the user doc.
   }
 }
 
@@ -111,6 +185,8 @@ export async function registerForPushNotifications(userId: string): Promise<stri
       push_tokens: arrayUnion(token),
       updated_at: serverTimestamp(),
     });
+    // Remembered so sign-out can hand it back without a network round trip.
+    await rememberPushToken(token);
 
     // Listen for device token rotation. The listener fires with the raw
     // device token, so re-mint the Expo token instead of storing that value.
@@ -128,6 +204,7 @@ export async function registerForPushNotifications(userId: string): Promise<stri
             push_tokens: arrayRemove(currentToken),
           });
           currentToken = refreshedToken;
+          await rememberPushToken(refreshedToken);
         }
       } catch {
         // Token refresh is best-effort

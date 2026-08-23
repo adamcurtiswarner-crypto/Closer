@@ -19,6 +19,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 import { auth, db } from '@/config/firebase';
+import { unregisterPushToken } from '@/services/notifications';
 import { logger } from '@/utils/logger';
 import { User, ToneCalibration, RelationshipStage } from '@/types';
 
@@ -332,6 +333,17 @@ function useAuthInternal(): AuthState & AuthActions {
   const signOut = useCallback(async () => {
     setIsLoading(true);
     try {
+      // Hand this device's push token back BEFORE signing out — the rules
+      // only allow a user to write their own doc while still signed in.
+      // A push token addresses a device, not an account, so leaving it
+      // behind means the next account signed in here does not replace the
+      // last one: the phone keeps receiving pushes for every account it has
+      // ever held. That is how the founder ended up with three identical
+      // daily prompts each morning (2026-08-23). Never throws.
+      const signingOutUserId = auth.currentUser?.uid;
+      if (signingOutUserId) {
+        await unregisterPushToken(signingOutUserId);
+      }
       await firebaseSignOut(auth);
       setUser(null);
     } finally {
