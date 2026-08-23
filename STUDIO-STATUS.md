@@ -23,6 +23,20 @@ Low event counts are not low severity. They are the *catch* firing; the silent h
 
 **And we did not find out. Adam did, by exporting a CSV by hand.** `logger.reportQueryDenied` writes `client_error` docs to `/events` — and **nothing anywhere reads them.** `checkErrorAlerts` scans `error_logs` only (`functions/src/alerting.ts:22`). Populating `/admins` tomorrow would still not have surfaced these. The hourly canary writes through the Admin SDK, which bypasses rules by definition — our one live health probe is structurally incapable of detecting a rules regression, and it reported green throughout. Zero GCP alert policies, zero notification channels, zero log-based metrics exist.
 
+## CEO Cycle 2026-08-23 — duplicate morning pushes (found by Adam, fixed and deployed)
+
+Adam reported three identical "Today's prompt is ready." notifications back to back every morning. Not a device or Expo problem — **three separate server sends**, all landing on his one registered token, at 08:14 local.
+
+**Cause 1 (fixed, deployed).** `deliverDailyPrompts` iterates onboarded users and delivers to `user.couple_id` **without ever checking the couple's status** — the comment above the query said "Find onboarded, active users with a couple" and the word *active* was enforced nowhere. `member_ids` is deliberately never cleared at breakup, so **both of the founders' long-deleted couples had been assigned a fresh prompt every single day and pushed both ex-partners.** `activateDueFollowUp` was also still firing for them. This is the 2026-07-09 SEV-0 "ex retains access / member_ids never cleared" resurfacing on a path the original fix did not cover. Beyond the noise, it means an ex keeps receiving notifications from a relationship that ended — a trust and review risk, not just a bug.
+
+`isActiveCouple()` added in `shared.ts`, **fails closed** (missing/unreadable/unexpected status is not a send) and excludes the `canary` couple. Guard moved to the **top** of `deliverPromptToCouple`, ahead of follow-up activation; the couple-doc read that sat further down is reused, so delivery now costs one read fewer. Applied to `sendResponseReminders` too — dormant, since that function is not exported from the v1 barrel. **functions 23 suites / 516 green** (was 505). Deployed `deliverDailyPrompts` + `triggerPromptDelivery`, commit `074f4f7`.
+
+**Cause 2 (OPEN — needs build 73).** Expo push tokens are per-device-per-app, and **sign-out never unregisters the token**, so every account ever signed in on a phone stays addressable from that phone. Adam's token is currently on three user docs (`adamcurtiswarner@gmail.com`, `awarner@everdriven.com`, `adam+stoke1@getstoke.io`); Masha's is on two. This is why the July scrub of 10 stale tokens regrew. Client fix: drop the device token from the user doc on sign-out.
+
+**Also open — a founder decision, not a cleanup.** Two deleted couples still carry both exes in `member_ids`, and stale accounts still hold live tokens. What happens to `member_ids` at breakup needs deciding once and encoding, rather than being cleaned by hand each time it bites.
+
+**Worth noting about the delivery query:** `deliverDailyPrompts` filters `is_deleted == false`, and the sandbox/uitest fixture users have that field **missing** rather than false — which is the only reason those fixture couples are not also delivering. Set the field and a fourth push appears. Fixture accounts active in prod remain an unresolved ops item.
+
 ## CEO Cycle 2026-08-22 — decisions
 
 **D1. Fix the shipped build from the server, today.** `firestore.rules:456` → `allow read: if isAuthenticated() && (resource == null || isCoupleMember(resource.data.couple_id));`. Emulator-verified: member reads a missing completion → OK(0); member reads a real one → OK(1); stranger read and stranger list → still DENIED. Retires the largest error cluster (16/20) on build 72, which is what the founders are actually running. No build required.
