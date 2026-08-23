@@ -23,6 +23,25 @@ Low event counts are not low severity. They are the *catch* firing; the silent h
 
 **And we did not find out. Adam did, by exporting a CSV by hand.** `logger.reportQueryDenied` writes `client_error` docs to `/events` — and **nothing anywhere reads them.** `checkErrorAlerts` scans `error_logs` only (`functions/src/alerting.ts:22`). Populating `/admins` tomorrow would still not have surfaced these. The hourly canary writes through the Admin SDK, which bypasses rules by definition — our one live health probe is structurally incapable of detecting a rules regression, and it reported green throughout. Zero GCP alert policies, zero notification channels, zero log-based metrics exist.
 
+## BUILD 73 — cut 2026-08-23, commit `938d1d6`
+
+Build id `917d7c0c-e73e-4a7c-8132-4cae79f9c7d6` · build number **73** · runtime **2.0.0** · cut with `EXPO_NO_CAPABILITY_SYNC=1`. **Not yet submitted** — `eas submit` needs Adam's go, same as the cut.
+
+**`runtimeVersion` deliberately NOT bumped.** The 8/3 note called for moving off "2.0.0" because of native changes; `git diff 2a8e6b8..HEAD` over `ios/`, `plugins/`, `patches/`, `package.json` and `app.json` is **empty**, so 73 has the same native surface as the shipped 72 — those native changes had already gone out *in* 72. Bumping would have broken OTA compatibility with 72 for no cause.
+
+**What 73 carries that 72 did not**
+- clarify/reactions listener survives the moment before the completion doc exists (`e0e8908` + the rules null-guard, already live on 72 via rules)
+- **Open Days works for the first time** — it had never rendered anything since shipping 8/2
+- **Your Words shows questions** — the journal now carries its own copy of the prompt, so it survives an unlink, which the old join design never could
+- sign-out hands the device push token back
+- `member_ids` policy + `notifyCoupleMembers` choke point (server side already live)
+
+**Pre-cut verification:** app 92 suites / 940 · functions 25 / 532 · rules 69 · tsc clean both sides. All 284 production responses backfilled with `prompt_text`/`category`.
+
+**Before submission:** the 45-minute two-device pass. Risk-ordered, the three new items first — Your Words with real history (≥30 answers + a dissolved prior couple), Open Days catch-up (skip 2–3 days, confirm the chips render), and the reveal-moment listener. Then the existing push/RevenueCat items. Screenshots (16 frames) must be shot against **this** binary.
+
+**Still gating submission, unchanged and founder-owned:** privacy/terms URLs (`/privacy` and `/terms` still 404; `stoke.llc` is not Firebase Hosting and has no MX records — recommend the `web.app` fallback), W-9 + banking, IAP screenshots, ASC display names.
+
 ## CEO Cycle 2026-08-23 — duplicate morning pushes (found by Adam, fixed and deployed)
 
 Adam reported three identical "Today's prompt is ready." notifications back to back every morning. Not a device or Expo problem — **three separate server sends**, all landing on his one registered token, at 08:14 local.
