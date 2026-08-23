@@ -284,6 +284,29 @@ export function containsCrisisLanguage(text: string): boolean {
 // ============================================
 
 // Returns the "more cautious" tone: struggling > distant > solid
+/**
+ * A couple may only be sent anything when it is ACTIVE.
+ *
+ * `member_ids` is never cleared at breakup (deliberately — the couple doc
+ * stays readable so each ex can see their own status), so any send path that
+ * reads member_ids without checking status will push a dissolved
+ * relationship's notifications to both ex-partners forever. Found in prod
+ * 2026-08-23: deliverDailyPrompts iterated onboarded users and delivered to
+ * `user.couple_id` with no status check, assigning a fresh prompt every
+ * morning to two long-deleted couples. The founders were each receiving
+ * three identical "Today's prompt is ready." pushes back to back.
+ *
+ * Fails CLOSED. A missing, unreadable or unexpected status is not a send —
+ * the other side of this call is a push to a real person's phone. Note this
+ * also excludes the `canary` couple, which drives the hourly pipeline probe
+ * and must never enter a user-facing send path.
+ */
+export function isActiveCouple(
+  couple: Record<string, unknown> | null | undefined
+): boolean {
+  return !!couple && couple.status === 'active';
+}
+
 export function getEffectiveTone(tones: string[]): string {
   if (tones.includes('struggling')) return 'struggling';
   if (tones.includes('distant')) return 'distant';

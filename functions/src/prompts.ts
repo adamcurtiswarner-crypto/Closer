@@ -10,6 +10,7 @@ import {
   DEFAULT_SCALE_CONFIG,
   getEffectiveTone,
   initializeDepthProgress,
+  isActiveCouple,
   sendPushNotification,
   enforceRateLimit,
   reportError,
@@ -395,6 +396,17 @@ export function isAlreadyExistsError(err: unknown): boolean {
  * deployed Cloud Function; the index barrel uses explicit named exports.
  */
 export async function deliverPromptToCouple(coupleId: string, timezone: string): Promise<void> {
+  // Status FIRST, before any work. A dissolved couple keeps its member_ids
+  // (both exes must still be able to read their own breakup state), so
+  // every send path here would otherwise push a relationship that ended —
+  // and activateDueFollowUp below would keep activating its follow-ups.
+  // This read used to happen further down, after the follow-up activation
+  // and the window query, which is why two deleted couples were receiving a
+  // fresh prompt every morning in prod (found 2026-08-23).
+  const coupleDoc = await db.collection('couples').doc(coupleId).get();
+  const coupleInfo = coupleDoc.data();
+  if (!isActiveCouple(coupleInfo)) return;
+
   // Compute the couple's local calendar day — the recipient's timezone is
   // authoritative, never server UTC (midnight UTC is 8 PM US/Eastern).
   const { yesterday, today, tomorrow } = assignmentDateWindow(timezone);
@@ -425,12 +437,8 @@ export async function deliverPromptToCouple(coupleId: string, timezone: string):
   );
   if (!deliver) return;
 
-  // Get couple info
-  const coupleDoc = await db.collection('couples').doc(coupleId).get();
-  if (!coupleDoc.exists) return;
-  // Initialize depth progress if not set
-  const coupleInfo = coupleDoc.data()!;
-  if (!coupleInfo.depth_progress) {
+  // Initialize depth progress if not set (couple doc read at the top)
+  if (!coupleInfo!.depth_progress) {
     await db.collection('couples').doc(coupleId).update({
       depth_progress: initializeDepthProgress(),
     });
@@ -493,8 +501,7 @@ export async function deliverPromptToCouple(coupleId: string, timezone: string):
   }
 
   // Send push notifications to both partners
-  const coupleData = coupleDoc.data()!;
-  for (const userId of coupleData.member_ids) {
+  for (const userId of coupleInfo!.member_ids as string[]) {
     await sendPushNotification(userId, {
       title: APP_NAME,
       body: "Today's prompt is ready.",

@@ -2,7 +2,13 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { format, subDays } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
-import { db, APP_NAME, sendPushNotification, reportError } from './shared';
+import {
+  db,
+  APP_NAME,
+  isActiveCouple,
+  sendPushNotification,
+  reportError,
+} from './shared';
 
 // ============================================
 // PURE: Reminder Quiet Hours (unit tested directly)
@@ -273,7 +279,11 @@ export const sendResponseReminders = functions
             .collection('couples')
             .doc(assignment.couple_id)
             .get();
-          if (!coupleDoc.exists) continue;
+          // Same guard as delivery: a dissolved couple keeps its member_ids,
+          // and its assignments are never answered, so without this every
+          // deleted couple generated reminder pushes to both exes for as
+          // long as the assignment survived expireStalePrompts.
+          if (!isActiveCouple(coupleDoc.data())) continue;
           const memberIds: string[] = coupleDoc.data()!.member_ids;
 
           // Find who has already responded

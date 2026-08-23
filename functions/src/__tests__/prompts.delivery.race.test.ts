@@ -104,6 +104,8 @@ jest.mock('../shared', () => {
     DEFAULT_SCALE_CONFIG: { min: 1, max: 10 },
     getEffectiveTone: () => 'solid',
     initializeDepthProgress: () => ({}),
+    isActiveCouple: (couple: Record<string, unknown> | null | undefined) =>
+      !!couple && couple.status === 'active',
     sendPushNotification: jest.fn().mockResolvedValue(undefined),
     enforceRateLimit: jest.fn().mockResolvedValue(undefined),
     reportError: jest.fn().mockResolvedValue(undefined),
@@ -232,6 +234,66 @@ describe('isAlreadyExistsError', () => {
     expect(isAlreadyExistsError(null)).toBe(false);
     expect(isAlreadyExistsError(undefined)).toBe(false);
     expect(isAlreadyExistsError('ALREADY_EXISTS')).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The prod defect: delivery to couples that no longer exist
+// ---------------------------------------------------------------------------
+
+describe('deliverPromptToCouple — a couple that is not active', () => {
+  // Found in prod 2026-08-23. deliverDailyPrompts iterates onboarded users
+  // and delivers to user.couple_id with no status check, so both of the
+  // founders' PRIOR DELETED couples were assigned a fresh prompt every
+  // morning. member_ids is never cleared at breakup, so every uid still
+  // listed there was pushed — the founders each received three identical
+  // "Today's prompt is ready." notifications back to back at 08:14 local,
+  // two of them from relationships that had ended.
+  const dissolve = (status: string) => {
+    store.docs.set(`couples/${COUPLE_ID}`, {
+      ...(store.docs.get(`couples/${COUPLE_ID}`) as Record<string, unknown>),
+      status,
+    });
+  };
+
+  it('creates no assignment for a dissolved couple', async () => {
+    dissolve('deleted');
+    await deliverPromptToCouple(COUPLE_ID, TZ);
+    expect(dailyAssignmentDocs()).toHaveLength(0);
+  });
+
+  it('pushes nobody — the ex-partner hears nothing', async () => {
+    dissolve('deleted');
+    await deliverPromptToCouple(COUPLE_ID, TZ);
+    expect(sendPushNotification).not.toHaveBeenCalled();
+  });
+
+  it('returns quietly — a dissolved couple is not an error to report', async () => {
+    dissolve('deleted');
+    await expect(deliverPromptToCouple(COUPLE_ID, TZ)).resolves.toBeUndefined();
+    expect(reportError).not.toHaveBeenCalled();
+  });
+
+  it('skips a couple still pending, and the canary couple', async () => {
+    dissolve('pending');
+    await deliverPromptToCouple(COUPLE_ID, TZ);
+    dissolve('canary');
+    await deliverPromptToCouple(COUPLE_ID, TZ);
+    expect(dailyAssignmentDocs()).toHaveLength(0);
+    expect(sendPushNotification).not.toHaveBeenCalled();
+  });
+
+  it('skips when the couple doc is missing entirely', async () => {
+    store.docs.delete(`couples/${COUPLE_ID}`);
+    await deliverPromptToCouple(COUPLE_ID, TZ);
+    expect(dailyAssignmentDocs()).toHaveLength(0);
+    expect(sendPushNotification).not.toHaveBeenCalled();
+  });
+
+  it('still delivers normally to an active couple (the guard is not too wide)', async () => {
+    await deliverPromptToCouple(COUPLE_ID, TZ);
+    expect(dailyAssignmentDocs()).toHaveLength(1);
+    expect(sendPushNotification).toHaveBeenCalledTimes(2);
   });
 });
 
