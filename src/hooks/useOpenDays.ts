@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   collection,
-  documentId,
   getDocs,
   orderBy,
   query,
@@ -9,8 +8,9 @@ import {
 } from 'firebase/firestore';
 import { format, subDays } from 'date-fns';
 import { db } from '@/config/firebase';
-import { mapAssignment, responseDocId, type PromptAssignment } from './usePrompt';
+import { mapAssignment, type PromptAssignment } from './usePrompt';
 import { todayLocalISO } from '@/utils/localDate';
+import { chunk } from './useYourWords';
 import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 
@@ -21,6 +21,8 @@ import { useAuth } from './useAuth';
 // same 7-day window (functions/src/prompts.ts expireStalePrompts).
 
 export const OPEN_DAYS_WINDOW = 7;
+/** Firestore `in` accepts up to 30 values; 10 keeps a comfortable margin. */
+export const OPEN_DAYS_IN_CHUNK = 10;
 /** How many open days the UI surfaces at once — never a pile. */
 export const OPEN_DAYS_VISIBLE = 3;
 
@@ -69,25 +71,37 @@ export function useOpenDays(excludeIds: string[] = []) {
 
         if (candidates.length === 0) return [];
 
-        // Which of these have I already answered? Deterministic response ids
-        // make this a direct chunked lookup, no index needed.
-        const ids = candidates.map((a) => responseDocId(a.id, userId!));
+        // Which of these have I already answered?
+        //
+        // This used to look the responses up by document id
+        // (`where(documentId(),'in', …)`), which was the one shape that
+        // could never work here: an OPEN day is by definition a day with no
+        // response doc, Firestore evaluates the rules once per key in the
+        // list including keys with no document, and a null `resource` fails
+        // the whole query with permission-denied. The hook therefore
+        // returned a non-empty list only in a branch it could never reach —
+        // Open Days rendered nothing from the day it shipped.
+        //
+        // Query by VALUE instead: only documents that exist can come back,
+        // and `user_id == me` satisfies the rules on ownership alone (no
+        // couple membership needed, so it survives an unlink). Matches the
+        // existing (assignment_id, user_id) index.
         const answered = new Set<string>();
-        for (let i = 0; i < ids.length; i += 30) {
-          const chunk = ids.slice(i, i + 30);
+        for (const ids of chunk(candidates.map((a) => a.id), OPEN_DAYS_IN_CHUNK)) {
           const respSnap = await getDocs(
             query(
               collection(db, 'prompt_responses'),
-              where('couple_id', '==', coupleId),
-              where(documentId(), 'in', chunk)
+              where('user_id', '==', userId),
+              where('assignment_id', 'in', ids)
             )
           );
-          for (const d of respSnap.docs) answered.add(d.id);
+          for (const d of respSnap.docs) {
+            const assignmentId = d.data().assignment_id;
+            if (typeof assignmentId === 'string') answered.add(assignmentId);
+          }
         }
 
-        return candidates.filter(
-          (a) => !answered.has(responseDocId(a.id, userId!))
-        );
+        return candidates.filter((a) => !answered.has(a.id));
       } catch (error) {
         // Catch-up is additive: a failure here must never break Today.
         logger.reportQueryDenied('useOpenDays', error);

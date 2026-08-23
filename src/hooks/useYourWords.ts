@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   collection,
-  documentId,
+  doc,
+  getDoc,
   getDocs,
   limit,
   orderBy,
@@ -19,8 +20,6 @@ import { useAuth } from './useAuth';
 // what the partner did or didn't do — never a resentment ledger.
 
 const WORDS_LIMIT = 100;
-/** Firestore `in` queries accept at most 30 values per chunk. */
-const IN_CHUNK = 30;
 
 export interface YourWordsEntry {
   /** Response doc id. */
@@ -52,9 +51,21 @@ export function mapYourWordsEntry(
   return {
     id,
     assignmentId: typeof data.assignment_id === 'string' ? data.assignment_id : '',
+    // The response carries its own copy of the question from 2026-08-23
+    // onward; the assignment is only consulted for answers written before
+    // that, and is unreadable once the couple it belonged to is dissolved.
     promptText:
-      typeof assignment?.prompt_text === 'string' ? assignment.prompt_text : '',
-    category: typeof assignment?.category === 'string' ? assignment.category : null,
+      typeof data.prompt_text === 'string' && data.prompt_text.length > 0
+        ? data.prompt_text
+        : typeof assignment?.prompt_text === 'string'
+          ? assignment.prompt_text
+          : '',
+    category:
+      typeof data.category === 'string'
+        ? data.category
+        : typeof assignment?.category === 'string'
+          ? assignment.category
+          : null,
     responseText: typeof data.response_text === 'string' ? data.response_text : '',
     responseScore:
       typeof data.response_score === 'number' ? data.response_score : null,
@@ -95,15 +106,12 @@ async function fetchYourWords(
   // same empty-prompt fallback as a deleted assignment. The user's words
   // never vanish (the whole point of this feature).
   const assignments = new Map<string, Record<string, any>>();
-  if (coupleId) {
-    try {
-      await joinAssignments(responseDocs, coupleId, assignments);
-    } catch (error) {
-      // The join only supplies prompt text. It is a SEPARATE round trip
-      // (and this user's history can span several ex-couples), so a failure
-      // here must degrade to date + answer — never empty the journal.
-      logger.reportQueryDenied('useYourWords.assignmentJoin', error);
-    }
+  try {
+    await joinAssignments(responseDocs, assignments);
+  } catch (error) {
+    // The join only supplies prompt text for pre-2026-08-23 answers, so a
+    // failure here must degrade to date + answer — never empty the journal.
+    logger.reportQueryDenied('useYourWords.assignmentJoin', error);
   }
 
   return responseDocs.map((d) =>
@@ -111,28 +119,42 @@ async function fetchYourWords(
   );
 }
 
+/**
+ * Backfill prompt text for answers written before the response doc carried
+ * its own copy.
+ *
+ * This used to be `where('couple_id','==',c), where(documentId(),'in',ids)`.
+ * Firestore evaluates the rules once per key in that list — including keys
+ * with no document, where `resource` is null and `resource.data.couple_id`
+ * raises an evaluation error — and fails the WHOLE query with
+ * permission-denied. A user's history legitimately spans dissolved couples,
+ * so the list always contained unreadable ids and the join never once
+ * succeeded for either founder. There is also a hard cap near 20 keys, and
+ * this chunked at 30.
+ *
+ * Per-id reads under allSettled instead: one unreadable assignment costs
+ * that single card its question, never the whole journal.
+ */
 async function joinAssignments(
   responseDocs: { data: () => Record<string, any> }[],
-  coupleId: string,
   assignments: Map<string, Record<string, any>>
 ): Promise<void> {
   const assignmentIds = [
     ...new Set(
       responseDocs
+        .filter((d) => typeof d.data().prompt_text !== 'string')
         .map((d) => d.data().assignment_id)
         .filter((id): id is string => typeof id === 'string' && id.length > 0)
     ),
   ];
+  if (assignmentIds.length === 0) return;
 
-  for (const ids of chunk(assignmentIds, IN_CHUNK)) {
-    const snap = await getDocs(
-      query(
-        collection(db, 'prompt_assignments'),
-        where('couple_id', '==', coupleId),
-        where(documentId(), 'in', ids)
-      )
-    );
-    for (const doc of snap.docs) assignments.set(doc.id, doc.data());
+  const results = await Promise.allSettled(
+    assignmentIds.map((id) => getDoc(doc(db, 'prompt_assignments', id)))
+  );
+  for (const result of results) {
+    if (result.status !== 'fulfilled' || !result.value.exists()) continue;
+    assignments.set(result.value.id, result.value.data() as Record<string, any>);
   }
 }
 

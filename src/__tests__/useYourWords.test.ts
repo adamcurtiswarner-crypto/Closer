@@ -72,6 +72,55 @@ describe('useYourWords helpers', () => {
     });
   });
 
+  describe('denormalized prompt text (2026-08-23)', () => {
+    /*
+     * The join that supplied prompt text was a `documentId() in` query, which
+     * Firestore denies outright if ANY id in the list has no document or
+     * belongs to another couple — and it caps out around 20 ids while the
+     * client chunked at 30. Both founders had 74 assignment ids spanning a
+     * dissolved couple, so the join failed every time and the journal showed
+     * answers with no questions. The response now carries its own copy.
+     */
+    it('prefers the copy stored on the response itself', () => {
+      const entry = mapYourWordsEntry(
+        'resp-1',
+        {
+          assignment_id: 'asg-1',
+          prompt_text: 'What made you laugh today?',
+          category: 'play',
+          response_text: 'the dog',
+        },
+        undefined
+      );
+
+      expect(entry.promptText).toBe('What made you laugh today?');
+      expect(entry.category).toBe('play');
+    });
+
+    it('falls back to the assignment for answers written before the change', () => {
+      const entry = mapYourWordsEntry(
+        'resp-1',
+        { assignment_id: 'asg-1', response_text: 'the dog' },
+        { prompt_text: 'What made you laugh today?', category: 'play' }
+      );
+
+      expect(entry.promptText).toBe('What made you laugh today?');
+      expect(entry.category).toBe('play');
+    });
+
+    it('degrades to date + answer when neither is available', () => {
+      // An ex-couple's assignment is unreadable by design. The words survive.
+      const entry = mapYourWordsEntry(
+        'resp-1',
+        { assignment_id: 'asg-1', response_text: 'the dog' },
+        undefined
+      );
+
+      expect(entry.promptText).toBe('');
+      expect(entry.responseText).toBe('the dog');
+    });
+  });
+
   describe('chunk (Firestore in-query limit)', () => {
     it('splits into chunks of the given size', () => {
       expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);

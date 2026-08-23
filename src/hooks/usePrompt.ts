@@ -729,6 +729,9 @@ async function performOfflineQueueFlush(userId: string, coupleId: string): Promi
         couple_id: coupleId,
         user_id: userId,
         prompt_id: assignmentData.prompt_id,
+        // See the online path — the question travels with the answer.
+        prompt_text: assignmentData.prompt_text ?? null,
+        category: assignmentData.category ?? null,
         response_text: item.responseText,
         response_score: typeof item.responseScore === 'number' ? item.responseScore : null,
         image_url: imageUrl,
@@ -895,6 +898,12 @@ export function useSubmitResponse() {
         couple_id: user.coupleId,
         user_id: user.id,
         prompt_id: assignmentData.prompt_id,
+        // The question, carried onto the answer. Your Words used to join back
+        // to the assignment for this, which is unreadable once the couple it
+        // belonged to is dissolved — the journal is meant to outlive the
+        // relationship. Canonical tokenized text, never personalized.
+        prompt_text: assignmentData.prompt_text ?? null,
+        category: assignmentData.category ?? null,
         response_text: responseText,
         response_score: responseScore ?? null,
         image_url: imageUrl,

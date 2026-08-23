@@ -622,13 +622,46 @@ describe('client LIST query shapes (the shapes the app actually issues)', () => 
     );
   });
 
-  it('Your Words: assignment join by documentId within the couple', async () => {
+  // 2026-08-23: `where(documentId(),'in', …)` is banned in client code —
+  // Firestore evaluates the rules once per key INCLUDING keys with no
+  // document, and a null `resource` fails the whole query. These pin the
+  // replacements, with the fixtures the old shape could not survive.
+  it('Open Days: my answers by assignment_id, with ids I never answered', async () => {
     await assertSucceeds(
       asUser(MEMBER_A)
-        .collection('prompt_assignments')
-        .where('couple_id', '==', COUPLE_ID)
-        .where(documentId(), 'in', ['asg-1'])
+        .collection('prompt_responses')
+        .where('user_id', '==', MEMBER_A)
+        .where('assignment_id', 'in', ['asg-1', 'asg-never-answered', 'asg-ghost'])
         .get()
+    );
+  });
+
+  it('Open Days: returns only the days actually answered', async () => {
+    const snap = await asUser(MEMBER_A)
+      .collection('prompt_responses')
+      .where('user_id', '==', MEMBER_A)
+      .where('assignment_id', 'in', ['asg-1', 'asg-never-answered'])
+      .get();
+
+    expect(snap.docs.map((d: { id: string }) => d.id)).toEqual(['resp-active']);
+  });
+
+  it("Open Days: denies reading the PARTNER's answers by assignment_id", async () => {
+    await assertFails(
+      asUser(MEMBER_B)
+        .collection('prompt_responses')
+        .where('user_id', '==', MEMBER_A)
+        .where('assignment_id', 'in', ['asg-1'])
+        .get()
+    );
+  });
+
+  it('Your Words: a per-id assignment read succeeds, and an ex-couple one denies', async () => {
+    // The join is now one getDoc per id under allSettled, so a denial costs
+    // that card its question instead of emptying the journal.
+    await assertSucceeds(asUser(MEMBER_A).doc('prompt_assignments/asg-1').get());
+    await assertFails(
+      asUser(MEMBER_A).doc('prompt_assignments/asg-deleted-couple').get()
     );
   });
 
