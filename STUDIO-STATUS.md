@@ -57,6 +57,26 @@ Shipped: `unlinkCouple` + `deleteAccount` write the new shape (roster read first
 
 **Worth noting about the delivery query:** `deliverDailyPrompts` filters `is_deleted == false`, and the sandbox/uitest fixture users have that field **missing** rather than false — which is the only reason those fixture couples are not also delivering. Set the field and a fourth push appears. Fixture accounts active in prod remain an unresolved ops item.
 
+### `notifyCoupleMembers` — the fan-out choke point (2026-08-23)
+
+`member_ids` was fanned out by hand in **nine** places. Two shipped without a status check, months apart, written by different code. The policy above made that harmless; this makes it hard to write.
+
+`notifyCoupleMembers(coupleId, notification, data)` in `shared.ts` is now the only sanctioned way to notify both halves of a couple. It puts four things in one place instead of nine:
+1. the couple must be **active** (`isActiveCouple`, fails closed);
+2. the roster is **de-duplicated** — the canary couple really is `[uid, uid]` in prod, and every raw loop pushed it twice;
+3. malformed roster entries are skipped, not thrown on;
+4. members are **isolated** — a raw `for` loop with an `await` inside aborts the rest, so one corrupt user doc silently cost the partner their notification.
+
+It deliberately **re-reads the couple doc** rather than accepting one from the caller: a caller-supplied doc is exactly how an unchecked status gets back in. Returns the number notified, because a zero-send run used to be indistinguishable from a quiet one.
+
+**Nine call sites migrated:** daily delivery, follow-up ready, weekly recap, churn risk, streak break, date-night reminder, morning check-in, evening reflection, coaching insight. TypeScript then flagged four now-unused `sendPushNotification` imports — the compiler confirming the raw fan-outs are gone.
+
+**Left alone, deliberately:** `notifications.ts` reminders decide per member (quiet hours, reminder count, set-aside) so they are not a uniform fan-out; `triggers.ts` notifies the *partner of the acting member*, never the roster; `users.ts` tells the partner the couple has ended, which must fire exactly as the couple dissolves; `alerting.ts` pushes `/admins`, not couples. Each is on the allowlist with its reason.
+
+**The guard:** `pushFanOut.guard.test.ts` fails when an unlisted file calls `sendPushNotification` directly, or when any file loops the roster straight into a push. **Verified by planting a violation in `hearth.ts` and watching both assertions go red**, then reverting — a guard that cannot fail is not a guard. A third assertion keeps the allowlist honest by failing on a stale entry.
+
+functions **25 suites / 532** (was 23/520). app 91/935. tsc clean both sides. `deliverDailyPrompts` + `triggerPromptDelivery` redeployed.
+
 ## CEO Cycle 2026-08-22 — decisions
 
 **D1. Fix the shipped build from the server, today.** `firestore.rules:456` → `allow read: if isAuthenticated() && (resource == null || isCoupleMember(resource.data.couple_id));`. Emulator-verified: member reads a missing completion → OK(0); member reads a real one → OK(1); stranger read and stranger list → still DENIED. Retires the largest error cluster (16/20) on build 72, which is what the founders are actually running. No build required.

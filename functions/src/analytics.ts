@@ -2,7 +2,13 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { BigQuery } from '@google-cloud/bigquery';
 import { format, subDays } from 'date-fns';
-import { db, APP_NAME, sendPushNotification, logEvent, reportError } from './shared';
+import {
+  APP_NAME,
+  db,
+  logEvent,
+  notifyCoupleMembers,
+  reportError,
+} from './shared';
 
 // ============================================
 // BigQuery Constants (private)
@@ -570,12 +576,14 @@ export const detectChurnRisk = functions
 
         // Send push notification only to high-risk couples
         if (riskLevel === 'high') {
-          for (const userId of coupleData.member_ids) {
-            await sendPushNotification(userId, {
+          await notifyCoupleMembers(
+            coupleDoc.id,
+            {
               title: APP_NAME,
               body: "It's been a while. A new prompt is waiting for you.",
-            }, { type: 'prompt' });
-          }
+            },
+            { type: 'prompt' }
+          );
         }
       }
     }

@@ -95,6 +95,30 @@ jest.mock('../shared', () => {
     },
   });
 
+  const isActiveCouple = (couple: Record<string, unknown> | null | undefined) =>
+    !!couple && couple.status === 'active';
+  const sendPushNotification = jest.fn().mockResolvedValue(undefined);
+
+  // Faithful stand-in for the real helper (shared.ts): re-reads the couple,
+  // refuses anything not active, de-duplicates the roster. Delivery goes
+  // through it, so the push assertions below still measure real behaviour.
+  const notifyCoupleMembers = async (
+    coupleId: string,
+    notification: { title: string; body: string },
+    data?: Record<string, string>
+  ) => {
+    const couple = docs.get(`couples/${coupleId}`);
+    if (!isActiveCouple(couple)) return 0;
+    const roster = ((couple!.member_ids as unknown[]) || []).filter(
+      (id): id is string => typeof id === 'string' && id.length > 0
+    );
+    const memberIds = [...new Set(roster)];
+    for (const memberId of memberIds) {
+      await sendPushNotification(memberId, notification, data);
+    }
+    return memberIds.length;
+  };
+
   return {
     db: { collection: makeCollection },
     __store: { docs, writeLog, failCreates },
@@ -104,9 +128,9 @@ jest.mock('../shared', () => {
     DEFAULT_SCALE_CONFIG: { min: 1, max: 10 },
     getEffectiveTone: () => 'solid',
     initializeDepthProgress: () => ({}),
-    isActiveCouple: (couple: Record<string, unknown> | null | undefined) =>
-      !!couple && couple.status === 'active',
-    sendPushNotification: jest.fn().mockResolvedValue(undefined),
+    isActiveCouple,
+    notifyCoupleMembers,
+    sendPushNotification,
     enforceRateLimit: jest.fn().mockResolvedValue(undefined),
     reportError: jest.fn().mockResolvedValue(undefined),
   };

@@ -2,15 +2,15 @@ import * as admin from 'firebase-admin';
 import { format, addDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import {
-  db,
   APP_NAME,
   DEFAULT_SCALE_CONFIG,
   FollowUpBranch,
   FollowUpTemplate,
   ScaleConfig,
   containsCrisisLanguage,
-  sendPushNotification,
+  db,
   logEvent,
+  notifyCoupleMembers,
   reportError,
 } from './shared';
 
@@ -429,14 +429,11 @@ export async function activateDueFollowUp(
   });
 
   // Neutral follow-up copy — warm, quiet, direct
-  const coupleDoc = await db.collection('couples').doc(coupleId).get();
-  const memberIds: string[] = coupleDoc.data()?.member_ids || [];
-  for (const userId of memberIds) {
-    await sendPushNotification(userId, {
-      title: APP_NAME,
-      body: "Today's follow-up is ready.",
-    }, { type: 'prompt' });
-  }
+  await notifyCoupleMembers(
+    coupleId,
+    { title: APP_NAME, body: "Today's follow-up is ready." },
+    { type: 'prompt' }
+  );
 
   console.log(`Activated scheduled follow-up for couple ${coupleId} on ${today}`);
   return true;

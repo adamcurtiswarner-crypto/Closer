@@ -1,14 +1,14 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import {
-  db,
-  VALID_PROMPT_TYPES,
   VALID_PROMPT_DEPTHS,
+  VALID_PROMPT_TYPES,
+  db,
+  enforceRateLimit,
+  formatDate,
   getEffectiveTone,
   getWeekId,
-  formatDate,
-  sendPushNotification,
-  enforceRateLimit,
+  notifyCoupleMembers,
   reportError,
 } from './shared';
 
@@ -486,17 +486,15 @@ export async function computePulseForCouple(coupleId: string, coupleData: admin.
       });
 
     // Notify both partners
-    const notifMemberIds: string[] = coupleData.member_ids || [];
-    for (const memberId of notifMemberIds) {
-      const notifBody = tier === 'cooling' || tier === 'needs_attention'
-        ? 'We put together something for you two this week'
-        : 'Your weekly relationship insight is ready';
+    const notifBody = tier === 'cooling' || tier === 'needs_attention'
+      ? 'We put together something for you two this week'
+      : 'Your weekly relationship insight is ready';
 
-      await sendPushNotification(memberId, {
-        title: 'Stoke',
-        body: notifBody,
-      }, { type: 'coaching_insight' });
-    }
+    await notifyCoupleMembers(
+      coupleId,
+      { title: 'Stoke', body: notifBody },
+      { type: 'coaching_insight' }
+    );
 
     console.log(`Coaching insight generated for couple ${coupleId}: ${actionType}`);
   }

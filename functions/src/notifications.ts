@@ -3,11 +3,12 @@ import * as admin from 'firebase-admin';
 import { format, subDays } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import {
-  db,
   APP_NAME,
+  db,
   isActiveCouple,
-  sendPushNotification,
+  notifyCoupleMembers,
   reportError,
+  sendPushNotification,
 } from './shared';
 
 // ============================================
@@ -200,14 +201,11 @@ export const sendWeeklyRecaps = functions
         .get();
 
       if (!completionsSnapshot.empty) {
-        const coupleData = coupleDoc.data();
-        for (const userId of coupleData.member_ids) {
-          await sendPushNotification(userId, {
-            title: APP_NAME,
-            body: 'Your week together is ready.',
-          }, { type: 'weekly_recap' });
-          notified += 1;
-        }
+        notified += await notifyCoupleMembers(
+          coupleDoc.id,
+          { title: APP_NAME, body: 'Your week together is ready.' },
+          { type: 'weekly_recap' }
+        );
       }
     }
 
@@ -381,8 +379,6 @@ export const dateNightReminder = functions
     let remindersSent = 0;
 
     for (const coupleDoc of couplesSnapshot.docs) {
-      const coupleData = coupleDoc.data();
-
       // Query scheduled (non-archived) date nights for this couple
       const dateNightsSnapshot = await db
         .collection('couples')
@@ -416,13 +412,11 @@ export const dateNightReminder = functions
 
         if (!body) continue;
 
-        for (const memberId of coupleData.member_ids) {
-          await sendPushNotification(
-            memberId,
-            { title: APP_NAME, body },
-            { type: 'date_night_reminder' }
-          );
-        }
+        await notifyCoupleMembers(
+          coupleDoc.id,
+          { title: APP_NAME, body },
+          { type: 'date_night_reminder' }
+        );
         remindersSent++;
       }
     }

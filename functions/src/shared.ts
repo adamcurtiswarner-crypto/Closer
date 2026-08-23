@@ -498,6 +498,58 @@ export async function sendPushNotification(
   }
 }
 
+/**
+ * Send one notification to BOTH halves of a couple. The only sanctioned way
+ * to fan out over `member_ids`.
+ *
+ * `member_ids` was fanned out by hand in eight places, and two of them
+ * shipped without a status check — one assigned a fresh prompt to
+ * long-deleted couples every morning and pushed both ex-partners for weeks
+ * (2026-08-23). The member_ids policy makes that harmless; this makes it
+ * hard to write, and puts four things in one place instead of eight:
+ *
+ * 1. the couple must be ACTIVE (isActiveCouple, which fails closed);
+ * 2. the roster is de-duplicated — the canary couple really is listed as
+ *    [uid, uid] in production, and every raw loop pushed it twice;
+ * 3. malformed entries are skipped rather than thrown on;
+ * 4. members are isolated — a raw `for` loop with an `await` inside aborts
+ *    the remaining members, so one corrupt user doc silently cost the
+ *    partner their notification.
+ *
+ * Deliberately re-reads the couple doc rather than accepting one from the
+ * caller: a caller-supplied doc is exactly how a stale or unchecked status
+ * would get back in.
+ *
+ * Never throws. Returns how many members were notified, which is worth
+ * logging — a zero-send run used to be indistinguishable from a quiet one.
+ */
+export async function notifyCoupleMembers(
+  coupleId: string,
+  notification: { title: string; body: string },
+  data?: Record<string, string>
+): Promise<number> {
+  const coupleDoc = await db.collection('couples').doc(coupleId).get();
+  if (!isActiveCouple(coupleDoc.data())) return 0;
+
+  const roster: unknown[] = coupleDoc.data()!.member_ids || [];
+  const memberIds = [
+    ...new Set(
+      roster.filter((id): id is string => typeof id === 'string' && id.length > 0)
+    ),
+  ];
+
+  let notified = 0;
+  for (const memberId of memberIds) {
+    try {
+      await sendPushNotification(memberId, notification, data);
+      notified += 1;
+    } catch (error) {
+      await reportError('notifyCoupleMembers', error, { userId: memberId, coupleId });
+    }
+  }
+  return notified;
+}
+
 export async function logEvent(
   eventName: string,
   userId: string,

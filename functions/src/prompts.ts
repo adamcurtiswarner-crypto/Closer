@@ -3,16 +3,16 @@ import * as admin from 'firebase-admin';
 import { format, subDays, addDays, startOfWeek, getDay, parseISO } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 import {
-  db,
   APP_NAME,
-  TONE_WEIGHTS,
-  PULSE_WEIGHTS,
   DEFAULT_SCALE_CONFIG,
+  PULSE_WEIGHTS,
+  TONE_WEIGHTS,
+  db,
+  enforceRateLimit,
   getEffectiveTone,
   initializeDepthProgress,
   isActiveCouple,
-  sendPushNotification,
-  enforceRateLimit,
+  notifyCoupleMembers,
   reportError,
 } from './shared';
 import { activateDueFollowUp } from './followUps';
@@ -501,12 +501,11 @@ export async function deliverPromptToCouple(coupleId: string, timezone: string):
   }
 
   // Send push notifications to both partners
-  for (const userId of coupleInfo!.member_ids as string[]) {
-    await sendPushNotification(userId, {
-      title: APP_NAME,
-      body: "Today's prompt is ready.",
-    }, { type: 'prompt' });
-  }
+  await notifyCoupleMembers(
+    coupleId,
+    { title: APP_NAME, body: "Today's prompt is ready." },
+    { type: 'prompt' }
+  );
 }
 
 // ============================================
@@ -701,12 +700,14 @@ export const checkStreakBreaks = functions.runWith({ timeoutSeconds: 540, memory
         });
 
         // Notify both users
-        for (const userId of coupleData.member_ids) {
-          await sendPushNotification(userId, {
+        await notifyCoupleMembers(
+          coupleDoc.id,
+          {
             title: APP_NAME,
             body: `Your ${endedAt}-day streak ended. Start a new one today!`,
-          }, { type: 'prompt' });
-        }
+          },
+          { type: 'prompt' }
+        );
         brokenStreaks++;
       }
     }

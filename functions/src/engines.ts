@@ -1,4 +1,12 @@
-import { functions, admin, db, APP_NAME, sendPushNotification, reportError } from './shared';
+import {
+  APP_NAME,
+  admin,
+  db,
+  functions,
+  notifyCoupleMembers,
+  reportError,
+  sendPushNotification,
+} from './shared';
 import { format } from 'date-fns';
 
 // ============================================
@@ -59,14 +67,11 @@ export const deliverMorningCheckin = functions.pubsub
       const couples = await getActiveCouples();
 
       for (const coupleDoc of couples) {
-        const coupleData = coupleDoc.data();
-        for (const memberId of coupleData.member_ids) {
-          await sendPushNotification(
-            memberId,
-            { title: APP_NAME, body: 'One question. Five seconds.' },
-            { type: 'morning_checkin', screen: 'morning-checkin' }
-          );
-        }
+        await notifyCoupleMembers(
+          coupleDoc.id,
+          { title: APP_NAME, body: 'One question. Five seconds.' },
+          { type: 'morning_checkin', screen: 'morning-checkin' }
+        );
       }
 
       console.log(`Delivered morning check-in to ${couples.length} couples`);
@@ -230,14 +235,11 @@ export const deliverEveningReflection = functions.pubsub
       const couples = await getActiveCouples();
 
       for (const coupleDoc of couples) {
-        const coupleData = coupleDoc.data();
-        for (const memberId of coupleData.member_ids) {
-          await sendPushNotification(
-            memberId,
-            { title: APP_NAME, body: 'How did today feel? Take a moment to reflect.' },
-            { type: 'evening_reflection', screen: 'evening-reflection' }
-          );
-        }
+        await notifyCoupleMembers(
+          coupleDoc.id,
+          { title: APP_NAME, body: 'How did today feel? Take a moment to reflect.' },
+          { type: 'evening_reflection', screen: 'evening-reflection' }
+        );
       }
 
       console.log(`Delivered evening reflection to ${couples.length} couples`);
