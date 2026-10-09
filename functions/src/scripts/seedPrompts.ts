@@ -5,8 +5,9 @@
  *
  * Seeds into Firestore:
  *   - prompts from app/data/seed-prompts-v4.json (legacy text prompts)
- *   - prompts from app/data/seed-prompts-v5.json (v1 scored/scale prompts)
- *     (v5 is in addition to v4 — v1 selection filters to scale prompts anyway)
+ *   - prompts from app/data/seed-prompts-v5.json (v1 scored/scale prompts, 60)
+ *   - prompts from app/data/seed-prompts-v6.json (v2 scored/scale prompts, 300)
+ *     (v5+v6 are in addition to v4 — v1 selection filters to scale prompts anyway)
  *   - follow_up_templates from app/data/follow-up-templates-v1.json
  *
  * For emulator usage, set FIRESTORE_EMULATOR_HOST=localhost:8080
@@ -32,7 +33,7 @@ const db = admin.firestore();
 
 // app/data/ — this script lives in app/functions/src/scripts/
 const DATA_DIR = path.join(__dirname, '../../../data');
-const PROMPT_FILES = ['seed-prompts-v4.json', 'seed-prompts-v5.json'];
+const PROMPT_FILES = ['seed-prompts-v4.json', 'seed-prompts-v5.json', 'seed-prompts-v6.json'];
 const FOLLOW_UP_TEMPLATES_FILE = 'follow-up-templates-v1.json';
 const BATCH_LIMIT = 400; // stay under Firestore's 500-writes-per-batch cap
 
