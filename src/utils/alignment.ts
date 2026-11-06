@@ -15,7 +15,68 @@ export interface AlignmentPoint {
 export interface AlignmentInput {
   category: string;
   completedAt: Date | null;
-  responses: { responseScore: number | null }[];
+  responses: { userId?: string; responseScore: number | null }[];
+}
+
+// ─── Per-partner radar data (Alignment Map visual) ───
+
+export interface RadarCategoryPoint {
+  category: string;
+  myAvg: number;
+  partnerAvg: number;
+  count: number;
+}
+
+/**
+ * Per-category average score for each partner over the trailing window.
+ * Returns one entry per v1 category that has at least one two-score
+ * completion — categories are ordered by the provided `categoryOrder`
+ * array (V1_PROMPT_CATEGORIES.map(c => c.type)) so the radar polygon
+ * has a stable spoke layout.
+ */
+export function deriveRadarData(
+  completions: AlignmentInput[],
+  myUid: string,
+  categoryOrder: string[],
+  now: Date = new Date()
+): RadarCategoryPoint[] {
+  const windowStart = new Date(
+    now.getTime() - ALIGNMENT_WINDOW_DAYS * 24 * 60 * 60 * 1000
+  );
+
+  const byCategory = new Map<
+    string,
+    { my: number[]; partner: number[] }
+  >();
+
+  for (const entry of completions) {
+    if (!entry.category || entry.completedAt == null) continue;
+    if (entry.completedAt < windowStart || entry.completedAt > now) continue;
+    const scores = entry.responses
+      .filter((r): r is { userId: string; responseScore: number } =>
+        typeof r.responseScore === 'number' && typeof r.userId === 'string'
+      );
+    if (scores.length !== 2) continue;
+
+    const bucket = byCategory.get(entry.category) ?? { my: [], partner: [] };
+    for (const r of scores) {
+      if (r.userId === myUid) bucket.my.push(r.responseScore);
+      else bucket.partner.push(r.responseScore);
+    }
+    byCategory.set(entry.category, bucket);
+  }
+
+  return categoryOrder
+    .filter((cat) => byCategory.has(cat))
+    .map((cat) => {
+      const b = byCategory.get(cat)!;
+      return {
+        category: cat,
+        myAvg: b.my.length > 0 ? average(b.my) : 0,
+        partnerAvg: b.partner.length > 0 ? average(b.partner) : 0,
+        count: Math.min(b.my.length, b.partner.length),
+      };
+    });
 }
 
 export const ALIGNMENT_WINDOW_DAYS = 90;

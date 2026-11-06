@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Redirect, Stack, useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -11,13 +11,14 @@ import { usePartnerName } from '@/hooks/usePartnerName';
 import { usePartnerLoveLanguage } from '@/hooks/usePartnerLoveLanguage';
 import { useSubscription } from '@/hooks/useSubscription';
 import { isTended, useHearth, type HearthCompletion } from '@/hooks/useHearth';
-import { deriveAlignment, movementPicks, type CategoryAlignment } from '@/utils/alignment';
+import { deriveAlignment, deriveRadarData, movementPicks, type CategoryAlignment } from '@/utils/alignment';
 import { isSameCalendarMonth, premiumGates } from '@/utils/premiumGates';
-import { getCategoryByType } from '@/config/promptCategories';
+import { getCategoryByType, V1_PROMPT_CATEGORIES } from '@/config/promptCategories';
 import { getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { FEATURES } from '@/config/features';
 import { getInitials } from '@/utils/initials';
 import { Icon } from '@/components/Icon';
+import { AlignmentRadar } from '@/components/AlignmentRadar';
 import { HearthSparkline } from '@/components/HearthSparkline';
 import { Paywall } from '@/components/Paywall';
 import { Skeleton } from '@/components/Skeleton';
@@ -55,6 +56,17 @@ export default function UsScreen() {
 
   const alignments = useMemo(() => deriveAlignment(completions), [completions]);
   const movements = useMemo(() => movementPicks(alignments), [alignments]);
+  const radarData = useMemo(
+    () =>
+      user?.id
+        ? deriveRadarData(
+            completions,
+            user.id,
+            V1_PROMPT_CATEGORIES.map((c) => c.type)
+          )
+        : [],
+    [completions, user?.id]
+  );
 
   // Repair/divergence/flagged entries both partners marked "we talked"
   // this calendar month. Counted by the DISCUSSED month (discussedAt), the
@@ -134,19 +146,9 @@ export default function UsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* Header — the couple, not the user */}
         <Animated.View entering={FadeIn.duration(400)}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-            accessibilityRole="button"
-            testID="us-back"
-          >
-            <Icon name="caret-left" size="md" color={colors.text.primary} />
-          </TouchableOpacity>
-
           <Text style={styles.eyebrow} maxFontSizeMultiplier={1.4}>
             {t('us.eyebrow')}
           </Text>
@@ -185,10 +187,23 @@ export default function UsScreen() {
           </View>
         </Animated.View>
 
-        {/* Alignment map. While entitlement resolves, hold a skeleton — the
-            unlocked-while-loading policy elsewhere protects premium couples,
-            but here it would flash the exact content being sold to free
-            couples before the blur lands. */}
+        {/* Alignment Map radar chart — visual overview of the couple */}
+        {!premiumLoading && !locked && radarData.length >= 3 && (
+          <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
+            <Text style={styles.sectionTitle}>Your alignment map</Text>
+            <Text style={styles.sectionSubtitle}>
+              How you each see the 12 dimensions of your relationship
+            </Text>
+            <AlignmentRadar
+              data={radarData}
+              myName={t('us.you')}
+              partnerName={partnerName}
+              onCategoryPress={openCategory}
+            />
+          </Animated.View>
+        )}
+
+        {/* Alignment detail rows — text breakdown below the radar */}
         <Animated.View entering={FadeInUp.duration(400).delay(150)} style={styles.section}>
           <Text style={styles.sectionTitle}>{t('us.alignmentTitle')}</Text>
           <Text style={styles.sectionSubtitle}>{t('us.alignmentSubtitle')}</Text>
@@ -317,12 +332,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: spacing.screen,
     paddingBottom: spacing.xxl,
-  },
-  backButton: {
-    minWidth: 44,
-    minHeight: 44,
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
   },
   eyebrow: {
     ...typography.eyebrow,

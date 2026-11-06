@@ -238,9 +238,16 @@ export default function AppLayout() {
       />
       <Tabs.Screen
         name="us"
-        options={{
-          href: null,
-        }}
+        options={
+          FEATURES.usView
+            ? {
+                title: 'Us',
+                tabBarIcon: ({ focused, color }) => (
+                  <Icon name="heart-half" size="md" color={color} weight={focused ? 'fill' : 'light'} />
+                ),
+              }
+            : { href: null }
+        }
       />
       <Tabs.Screen
         name="your-words"
