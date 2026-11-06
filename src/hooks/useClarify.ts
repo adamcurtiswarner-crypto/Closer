@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { logEvent } from '@/services/analytics';
+import { containsCrisisLanguage } from '@/utils/safetyLexicon';
 import { useAuth } from './useAuth';
 
 // Clarify exchange (founder feature 2026-08-02): one question about your
@@ -89,6 +90,7 @@ export function useAskClarify() {
       if (trimmed.length === 0 || trimmed.length > CLARIFY_QUESTION_MAX) {
         throw new Error('Invalid question');
       }
+      const safetyMatch = containsCrisisLanguage(trimmed);
       await updateDoc(doc(db, 'prompt_completions', completionId), {
         [`clarify.${user.id}`]: {
           question: trimmed,
@@ -99,6 +101,7 @@ export function useAskClarify() {
         updated_at: serverTimestamp(),
       });
       logEvent('clarify_asked', { completion_id: completionId });
+      return { safetyMatch };
     },
     onSuccess: () => invalidate(queryClient),
   });
@@ -126,6 +129,7 @@ export function useAnswerClarify() {
       if (trimmed.length === 0 || trimmed.length > CLARIFY_ANSWER_MAX) {
         throw new Error('Invalid answer');
       }
+      const safetyMatch = containsCrisisLanguage(trimmed);
       // The rules require question/asked_at preserved verbatim — send the
       // raw stored values back unchanged.
       await updateDoc(doc(db, 'prompt_completions', completionId), {
@@ -138,6 +142,7 @@ export function useAnswerClarify() {
         updated_at: serverTimestamp(),
       });
       logEvent('clarify_answered', { completion_id: completionId });
+      return { safetyMatch };
     },
     onSuccess: () => invalidate(queryClient),
   });

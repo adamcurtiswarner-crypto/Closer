@@ -1,8 +1,10 @@
+import { Alert } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
+import { logger } from '@/utils/logger';
 
 export type ReactionType = 'heart' | 'fire' | 'laughing' | 'teary';
 
@@ -66,6 +68,10 @@ export function useReaction() {
       }
 
       const completionRef = doc(db, 'prompt_completions', assignmentId);
+      const snap = await getDoc(completionRef);
+      if (!snap.exists()) {
+        throw new Error('Completion not ready yet');
+      }
       await updateDoc(completionRef, {
         [`reactions.${user.id}`]: reaction,
         updated_at: serverTimestamp(),
@@ -82,8 +88,15 @@ export function useReaction() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayPrompt'] });
-      // Explore reveals read reactions via useCompletionReactions
       queryClient.invalidateQueries({ queryKey: ['completionReactions'] });
+    },
+    onError: (error: Error) => {
+      logger.reportQueryDenied('useReaction', error);
+      if (error.message === 'Completion not ready yet') {
+        Alert.alert('Just a moment', 'Your answers are still being saved. Try again in a few seconds.');
+      } else {
+        Alert.alert('Could not save reaction', 'Something went wrong. Please try again.');
+      }
     },
   });
 }

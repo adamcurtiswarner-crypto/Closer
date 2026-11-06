@@ -1,5 +1,7 @@
 # Stoke Studio Status
-*Last updated: 2026-08-22 — **CEO cycle: error-report review. Four heads in parallel (Engineering, Testing, Operations, PM). Root cause of all 20 production denials found and reproduced in the emulator. **D1 approved by Adam and DEPLOYED** — ruleset live 2026-08-22T22:36:03Z. The client fixes (D2/D3) are held for build 73.***
+*Last updated: 2026-11-06 — **CEO cycle: Alignment Map shipped via OTA.** Radar chart + Us tab promotion committed (`31f0e11`), pushed, and published to production channel (update group `6f2c9787`). 940 tests green, tsc clean, functions build clean. Visual verification on device still pending.*
+
+*Previous: 2026-08-22 — CEO cycle: error-report review. D1 deployed. Build 73 cut 2026-08-23, submitted to TestFlight.*
 
 **SUBMIT-BY: 2026-09-01** (target 2026-08-27). Moved in writing by the CEO on 2026-08-22, per the 8/3 governance rule. The 8/6 "realistic" and 8/10 "conservative" dates were missed and never moved — that is the failure this line exists to prevent.
 
@@ -179,24 +181,52 @@ Timeline evidence: `git log` shows **zero commits 7/23 → 8/01** (ten silent da
 - `onCompletionClarified` ignored `notify_partner_response` while `onReactionAdded` and `onResponseSubmitted` both honour it — the newest push type silently overrode a shipped user setting.
 - `checkErrorAlerts` stamped every error `alerted: true` **with zero admin recipients configured**, permanently suppressing failures nobody was ever told about. Now logs loudly and leaves errors unalerted so they resurface.
 
-## OPEN — P0s that still need a decision or a founder action
+## OPEN — P0s (audited 2026-11-06, all 7 unchanged since Aug 22)
 
-| # | Item | Owner | Note |
-|---|---|---|---|
-| 1 | **`/admins` is empty — error alerting has NEVER worked** | Adam | Needs founder uid + a live push token. Proven by a **31-day** BigQuery outage nobody saw. Also locks `getDashboardMetrics`/`managePrompt`. |
-| 2 | **BigQuery dataset `stoke_analytics` does not exist** | Studio | Export has failed **31/31 days**. Every launch metric (pairing, D7, D30, trial→paid) is currently **unmeasurable**. `/events` also never prunes (2,036 docs). |
-| 3 | **Write-side completion race** | Studio | `e0e8908` fixed the *read* listeners; reaction/clarify **writes** still target a doc that may not exist. A failed reaction shows as permanently applied to the sender and never reaches the partner. |
-| 4 | **Crisis lexicon not applied to clarify text** | Studio | `STORE_METADATA.md` tells App Review the app detects crisis language in written notes. Clarify is a new free-text channel it does not cover — **we would be stating something untrue to Apple.** |
-| 5 | **Notification consent copy is now false** | Studio | Pre-permission copy promises two push types; the app sends **six**. 5.1.1 risk + trust defect. |
-| 6 | **In-app `privacy-policy.tsx` dated March 2026** | Studio | Mentions streaks and AI coaching; the paywall's own 3.1.2 links point at it. |
-| 7 | **Clarify question quoted verbatim on the lock screen** | Founder call | Intimate free text on a locked phone. Matches the existing explore precedent — decision, not defect. |
+| # | Item | Owner | Status | Note |
+|---|---|---|---|---|
+| 1 | **`/admins` is empty — error alerting has NEVER worked** | Adam | **OPEN 106 days** | 10-second task: create `/admins/{uid}` with Adam's uid + push token. Blocks all error alerting. `checkErrorAlerts` fires every 5 min, detects 30 BigQuery errors, sends to nobody. |
+| 2 | **BigQuery dataset `stoke_analytics` does not exist** | Studio | **OPEN 106 days** | Export has failed every day since launch. **3,861 events** in Firestore with no pruning (was 2,036 in Aug). Every launch metric is unmeasurable. Fix: `bq mk --dataset stoke-5f762:stoke_analytics` then backfill. |
+| 3 | **Write-side completion race** | Studio | **OPEN** | `useReaction` does blind `updateDoc` with no existence check, no `onError`, no telemetry. Failed reaction shows as applied to sender, never reaches partner. ~1h fix. |
+| 4 | **Crisis lexicon not applied to clarify text** | Studio | **OPEN** | `containsCrisisLanguage` only called in main response path. Clarify free-text channel is unguarded. App Review claim is false. ~30min fix. |
+| 5 | **Notification consent copy is now false** | Studio | **OPEN** | Pre-permission copy promises 2 push types; app sends 6+. 5.1.1 risk. ~30min fix. |
+| 6 | **In-app privacy policy dated March 2026** | Studio | **OPEN** | References streaks and AI coaching (hidden features). Does not reflect v1. Terms page also stale. ~1h fix. |
+| 7 | **Clarify question on lock screen** | Founder call | **OPEN** | Intimate free text visible in lock screen notifications. Product decision, not defect. |
 
-## Build state
+**Score: 0 of 7 resolved in 75 days.** Items 3-6 are studio-owned and could be fixed in a single afternoon.
+
+## Build state (audited 2026-11-06)
 
 | Build | Commit | Status |
 |---|---|---|
-| 72 | `2a8e6b8` | On TestFlight. **NOT submittable** — predates the completion-listener fix; live reactions and clarify die during a fresh reveal. |
-| **73** | from `028cda5`+ | **Required before submission.** Not cut — standing build hold; needs Adam's explicit go. Must use `EXPO_NO_CAPABILITY_SYNC=1`, and **bump `runtimeVersion` off "2.0.0"** (native changes since). |
+| 73 | `938d1d6` | **On TestFlight** since Aug 23. Carries Open Days fix, Your Words fix, sign-out token fix, member_ids policy. |
+| OTA | `31f0e11` | **Published 2026-11-06** via `eas update`. Alignment Map radar chart + Us tab promotion. Update group `6f2c9787`. Runtime 2.0.0. |
+| OTA (Oct) | `bd700c4` | 300 scored prompts (v6) to fix pool exhaustion. |
+
+**App Store submission remains blocked by:** privacy/terms URLs (stoke.llc still 404), W-9/banking, `/admins` empty, privacy policy content stale. **SUBMIT-BY 2026-09-01 missed by 66 days.**
+
+## Production health (audited 2026-11-06)
+
+| Metric | Value |
+|---|---|
+| Active couples (real) | 1 (Adam & Masha) |
+| Total completions | 141 (up from 136 on Oct 26) |
+| Current streak | 2 |
+| Completion rate | 81% over 167 days |
+| Events collection | 3,861 docs (unbounded, no pruning) |
+| Error logs | 30 (all BigQuery failures) |
+| Admin docs | **0** |
+| BigQuery dataset | **Does not exist** |
+| Canary pipeline | Healthy (6.3s round-trip) |
+| Test suites | 117/117 (1,472 tests, 100% pass) |
+| TypeScript | Clean (zero errors) |
+
+## Test coverage gaps (audited 2026-11-06)
+
+- **AlignmentRadar component: UNTESTED** — shipped today via OTA with zero tests
+- **deriveRadarData utility: UNTESTED** — feeds the radar chart, no unit tests
+- 13 of 43 hooks untested (30%), 44 of 93 components untested (47%)
+- Pre-existing, not introduced by this OTA — but the OTA increased exposure of untested code
 
 ## Critical path to submission
 

@@ -26,6 +26,7 @@ import { useCompletionClarify } from '@/hooks/useCompletionClarify';
 import { useAuth } from '@/hooks/useAuth';
 import { logger } from '@/utils/logger';
 import { ClarifyBlock } from './ClarifyBlock';
+import { SafetyResources } from './SafetyResources';
 
 // ─── Reveal choreography timeline (ms from mount) ───
 // Two beats: YOUR side lands first, then a held breath, then the partner's.
@@ -126,6 +127,7 @@ export function CompletionMoment({
   const { data: clarifyExchanges = [] } = useCompletionClarify(clarifyLive);
   const askClarify = useAskClarify();
   const answerClarify = useAnswerClarify();
+  const [showSafetyResources, setShowSafetyResources] = useState(false);
   const { mine: myClarify, pendingForMe } = splitClarify(
     clarifyExchanges,
     user?.id ?? ''
@@ -390,7 +392,7 @@ export function CompletionMoment({
                       onAnswer={async (answer) => {
                         if (!pendingForMe) return;
                         try {
-                          await answerClarify.mutateAsync({
+                          const result = await answerClarify.mutateAsync({
                             completionId: clarifyLive,
                             exchange: {
                               askerId: pendingForMe.askerId,
@@ -399,9 +401,10 @@ export function CompletionMoment({
                             },
                             answer,
                           });
+                          if (result.safetyMatch) setShowSafetyResources(true);
                         } catch (err) {
                           logger.error('Error answering clarify:', err);
-                          throw err; // composer keeps the text and says so
+                          throw err;
                         }
                       }}
                     />
@@ -441,13 +444,14 @@ export function CompletionMoment({
                       pending={askClarify.isPending}
                       onAsk={async (question) => {
                         try {
-                          await askClarify.mutateAsync({
+                          const result = await askClarify.mutateAsync({
                             completionId: clarifyLive,
                             question,
                           });
+                          if (result.safetyMatch) setShowSafetyResources(true);
                         } catch (err) {
                           logger.error('Error asking clarify:', err);
-                          throw err; // composer keeps the text and says so
+                          throw err;
                         }
                       }}
                     />
@@ -540,6 +544,10 @@ export function CompletionMoment({
           </>
         )}
       </View>
+      <SafetyResources
+        visible={showSafetyResources}
+        onClose={() => setShowSafetyResources(false)}
+      />
     </Animated.View>
   );
 }

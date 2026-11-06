@@ -30,10 +30,10 @@ describe('NotificationPrePrompt', () => {
 
   it('renders the brand copy with the partner name', () => {
     const { getByText } = render(<NotificationPrePrompt {...defaultProps} />);
-    expect(getByText('Know the moment they answer')).toBeTruthy();
+    expect(getByText('Stay in the loop, quietly')).toBeTruthy();
     expect(
       getByText(
-        "We'll only nudge when it matters — when Sam answers, and when a new question is ready."
+        "We'll let you know when Sam answers, when a new question is ready, when a follow-up lands, and with a quiet weekly recap. Nothing loud, nothing urgent."
       )
     ).toBeTruthy();
   });
@@ -54,7 +54,7 @@ describe('NotificationPrePrompt', () => {
     const { queryByText } = render(
       <NotificationPrePrompt {...defaultProps} visible={false} />
     );
-    expect(queryByText('Know the moment they answer')).toBeNull();
+    expect(queryByText('Stay in the loop, quietly')).toBeNull();
   });
 
   it('reads naturally with the lowercase fallback name mid-sentence', () => {
@@ -63,7 +63,7 @@ describe('NotificationPrePrompt', () => {
     );
     expect(
       getByText(
-        "We'll only nudge when it matters — when your partner answers, and when a new question is ready."
+        "We'll let you know when your partner answers, when a new question is ready, when a follow-up lands, and with a quiet weekly recap. Nothing loud, nothing urgent."
       )
     ).toBeTruthy();
   });
