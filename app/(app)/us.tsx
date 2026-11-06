@@ -12,6 +12,15 @@ import { usePartnerLoveLanguage } from '@/hooks/usePartnerLoveLanguage';
 import { useSubscription } from '@/hooks/useSubscription';
 import { isTended, useHearth, type HearthCompletion } from '@/hooks/useHearth';
 import { deriveAlignment, deriveRadarData, movementPicks, type CategoryAlignment } from '@/utils/alignment';
+import { deriveReactionSignals } from '@/utils/reactionSignals';
+import type { ReactionType } from '@/hooks/useReaction';
+
+const REACTION_LABELS: Record<ReactionType, string> = {
+  heart: 'Love',
+  fire: 'Spark',
+  laughing: 'Smile',
+  teary: 'Moved',
+};
 import { isSameCalendarMonth, premiumGates } from '@/utils/premiumGates';
 import { getCategoryByType, V1_PROMPT_CATEGORIES } from '@/config/promptCategories';
 import { getLoveLanguageDisplay } from '@/config/loveLanguages';
@@ -56,6 +65,7 @@ export default function UsScreen() {
 
   const alignments = useMemo(() => deriveAlignment(completions), [completions]);
   const movements = useMemo(() => movementPicks(alignments), [alignments]);
+  const reactionSignals = useMemo(() => deriveReactionSignals(completions), [completions]);
   const radarData = useMemo(
     () =>
       user?.id
@@ -273,6 +283,40 @@ export default function UsScreen() {
                 />
               </View>
             ))}
+          </Animated.View>
+        )}
+
+        {/* What lands — reaction learning signals (v1.5 #2) */}
+        {!premiumLoading && !locked && reactionSignals.outliers.length > 0 && (
+          <Animated.View entering={FadeInUp.duration(400).delay(300)} style={styles.section}>
+            <Text style={styles.sectionTitle}>What lands differently</Text>
+            <Text style={styles.sectionSubtitle}>
+              Categories where your reactions tell a different story
+            </Text>
+            <View style={styles.card}>
+              {reactionSignals.outliers.map((outlier) => (
+                <TouchableOpacity
+                  key={outlier.category}
+                  style={styles.alignmentRow}
+                  onPress={() => openCategory(outlier.category)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                >
+                  <View style={styles.alignmentInfo}>
+                    <Text style={styles.alignmentCategory}>
+                      {getCategoryByType(outlier.category)?.label ?? outlier.category}
+                    </Text>
+                    <Text style={styles.alignmentState}>
+                      {REACTION_LABELS[outlier.dominant ?? 'heart']} lands here most
+                      {reactionSignals.overallDominant
+                        ? ` (${REACTION_LABELS[reactionSignals.overallDominant]} everywhere else)`
+                        : ''}
+                    </Text>
+                  </View>
+                  <Icon name="caret-right" size="sm" color={colors.text.muted} />
+                </TouchableOpacity>
+              ))}
+            </View>
           </Animated.View>
         )}
 
