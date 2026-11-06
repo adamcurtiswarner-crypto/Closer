@@ -87,6 +87,8 @@ import {
 import { useOpenDays, OPEN_DAYS_VISIBLE } from '@/hooks/useOpenDays';
 import { HearthRevealSheet } from '@/components/HearthRevealSheet';
 import type { HearthCompletion } from '@/hooks/useHearth';
+import { usePartnerLoveLanguage } from '@/hooks/usePartnerLoveLanguage';
+import { pickSmallMove } from '@/utils/smallMoves';
 import {
   useExploreAssignments,
   useCompletionReactions,
@@ -248,6 +250,7 @@ export default function TodayScreen() {
   // Single source of truth for what to call the partner — real name first,
   // lowercase "your partner" fallback (never robot-register "Partner").
   const { name: partnerName, isFallback: partnerNameIsFallback } = usePartnerName();
+  const { data: partnerLoveLanguage } = usePartnerLoveLanguage();
   // Clarify questions waiting on me from OLDER completions (today's own
   // reveal carries its composer inline; the push routes here).
   const { data: pendingClarifies = [] } = usePendingClarify();
@@ -744,6 +747,14 @@ export default function TodayScreen() {
     setShowSecondaryReveal(true);
     logEvent('open_day_reveal_opened', { assignment_id: secondary.assignment.id });
   };
+
+  // Small move (v1.5 #1): one quiet suggestion while the seal holds,
+  // seeded from the partner's love language + today's category.
+  const smallMove = pickSmallMove(
+    partnerLoveLanguage ?? null,
+    assignment?.promptType ?? null,
+    new Date().getDay()
+  );
 
   // Waiting-card agency: sending a question is something to DO while the
   // seal holds. Explore owns the premium gate on sends — no gating here.
@@ -1247,21 +1258,35 @@ export default function TodayScreen() {
           </Animated.View>
         )}
 
-        {/* Agency while the seal holds: one quiet action, gated (if at all)
-            inside Explore where the send actually happens. */}
-        <TouchableOpacity
-          style={styles.waitingCtaRow}
-          onPress={handleWaitingCta}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel={t('today.waitingCta', { name: partnerName })}
-        >
-          <Icon name="campfire" size={16} color={colors.accent.primary} />
-          <Text style={styles.waitingCtaText}>
-            {t('today.waitingCta', { name: partnerName })}
-          </Text>
-          <Icon name="caret-right" size={14} color={colors.text.muted} />
-        </TouchableOpacity>
+        {/* Small move: one quiet suggestion while the seal holds,
+            seeded from the partner's love language + today's category.
+            Falls back to the Explore CTA when no love language is set. */}
+        {smallMove ? (
+          <Animated.View entering={FadeIn.duration(400).delay(300)}>
+            <View style={styles.smallMoveCard}>
+              <Text style={styles.smallMoveLabel}>
+                While you wait
+              </Text>
+              <Text style={styles.smallMoveText}>
+                {smallMove.text}
+              </Text>
+            </View>
+          </Animated.View>
+        ) : (
+          <TouchableOpacity
+            style={styles.waitingCtaRow}
+            onPress={handleWaitingCta}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={t('today.waitingCta', { name: partnerName })}
+          >
+            <Icon name="campfire" size={16} color={colors.accent.primary} />
+            <Text style={styles.waitingCtaText}>
+              {t('today.waitingCta', { name: partnerName })}
+            </Text>
+            <Icon name="caret-right" size={14} color={colors.text.muted} />
+          </TouchableOpacity>
+        )}
       </Animated.View>
 
       {openDayChip}
@@ -1887,6 +1912,21 @@ const styles = StyleSheet.create({
   waitingCtaText: {
     ...typography.body,
     color: colors.accent.primary,
+  },
+  smallMoveCard: {
+    backgroundColor: colors.surface.warmTint,
+    borderRadius: radius.md,
+    padding: spacing.cardPad,
+    marginTop: spacing.md,
+  },
+  smallMoveLabel: {
+    ...typography.caption,
+    color: colors.text.muted,
+    marginBottom: spacing.xs,
+  },
+  smallMoveText: {
+    ...typography.body,
+    color: colors.text.primary,
   },
   // ─── Open-day reveal sheet (mirrors the explore reveal) ───
   revealSheet: {
