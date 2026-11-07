@@ -11,6 +11,8 @@ import { useFonts } from 'expo-font';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useDeepLink } from '@/hooks/useDeepLink';
 import { useAuth, AuthProvider } from '@/hooks/useAuth';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/config/firebase';
 import { setAnalyticsContext, logEvent } from '@/services/analytics';
 import { registerPushIfAlreadyGranted, setupNotificationHandlers } from '@/services/notifications';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -129,10 +131,15 @@ function AppBootstrap() {
     }
   }, [isAuthenticated, user?.id]);
 
-  // Log session start once per app open when user is available
+  // Log session start + update last_active_at once per app open.
+  // last_active_at was previously only set at account creation and never
+  // updated — stale since Feb 2026 (security audit 2026-11-06 finding).
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       logEvent('session_started');
+      updateDoc(doc(db, 'users', user.id), {
+        last_active_at: serverTimestamp(),
+      }).catch(() => {}); // best-effort, never block the session
     }
   }, [isAuthenticated, user?.id]);
 
