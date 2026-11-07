@@ -4,7 +4,7 @@
     "category": "communication",
     "branch": "deepener",
     "step": 1,
-    "text": "What's one conversation from this week that earned this number? Name it — where you were, what made it easy.",
+    "text": "What's one conversation with {partner} this week that earned this number? Name it — where you were, what made it easy.",
     "closing_text": "Good talk isn't luck. You know what it looks like now.",
     "variant": 1,
     "active": true
@@ -24,7 +24,7 @@
     "category": "communication",
     "branch": "deepener",
     "step": 1,
-    "text": "When talking works this well between you, there's usually an ingredient — timing, place, no phones. What's yours?",
+    "text": "When talking with {partner} works this well, there's usually an ingredient — timing, place, no phones. What's yours?",
     "closing_text": "Worth keeping within reach for a harder week.",
     "variant": 3,
     "active": true
@@ -34,7 +34,7 @@
     "category": "communication",
     "branch": "repair",
     "step": 1,
-    "text": "Talking has felt harder than usual. From where you sit, what does the hard part look like? Just describe it — no fixing yet. You can skip this one. It'll keep.",
+    "text": "Talking with {partner} has felt harder than usual. From where you sit, what does the hard part look like? Just describe it — no fixing yet. You can skip this one. It'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -44,7 +44,7 @@
     "category": "communication",
     "branch": "repair",
     "step": 2,
-    "text": "What's one small thing that might make talking easier this week — under ten minutes? Offer it, don't assign it.",
+    "text": "What's one small thing that might make talking with {partner} easier this week — under ten minutes? Offer it, don't assign it.",
     "closing_text": "That's enough for now. This topic will come back around.",
     "variant": 1,
     "active": true
@@ -54,7 +54,7 @@
     "category": "communication",
     "branch": "repair",
     "step": 1,
-    "text": "Somewhere along the way, words between you got heavier. When did you first notice? Just the moment, from your side. If today isn't the day, skip it — it'll keep.",
+    "text": "Somewhere along the way, words between you and {partner} got heavier. When did you first notice? Just the moment, from your side. If today isn't the day, skip it — it'll keep.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -64,7 +64,7 @@
     "category": "communication",
     "branch": "repair",
     "step": 2,
-    "text": "Pick one ten-minute window this week to talk about something that isn't logistics. When would yours be?",
+    "text": "Pick one ten-minute window this week to talk with {partner} about something that isn't logistics. When would yours be?",
     "closing_text": "Small windows count. That's enough for today.",
     "variant": 2,
     "active": true
@@ -74,7 +74,7 @@
     "category": "communication",
     "branch": "repair",
     "step": 1,
-    "text": "When talking stalls, each person is usually protecting something. What might you be protecting? Describe it, don't solve it. Skipping is allowed.",
+    "text": "When talking with {partner} stalls, each person is usually protecting something. What might you be protecting? Describe it, don't solve it. Skipping is allowed.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -84,7 +84,7 @@
     "category": "communication",
     "branch": "repair",
     "step": 2,
-    "text": "What's one sentence you've been sitting on? Write it here — saying it out loud can come later.",
+    "text": "What's one sentence you've been sitting on with {partner}? Write it here — saying it out loud can come later.",
     "closing_text": "Writing it down is already a step. The rest can wait.",
     "variant": 3,
     "active": true
@@ -114,7 +114,7 @@
     "category": "intimacy",
     "branch": "deepener",
     "step": 1,
-    "text": "What made this number high — a moment, a stretch of days, a feeling? Name it plainly.",
+    "text": "What made this number with {partner} high — a moment, a stretch of days, a feeling? Name it plainly.",
     "closing_text": "You know what close looks like for you two. Worth remembering.",
     "variant": 1,
     "active": true
@@ -134,7 +134,7 @@
     "category": "intimacy",
     "branch": "deepener",
     "step": 1,
-    "text": "Closeness like this usually has conditions — rest, time, privacy, ease. Which were present lately?",
+    "text": "Closeness with {partner} like this usually has conditions — rest, time, privacy, ease. Which were present lately?",
     "closing_text": "Good conditions can be rebuilt on purpose. Now you know the recipe.",
     "variant": 3,
     "active": true
@@ -144,7 +144,7 @@
     "category": "intimacy",
     "branch": "repair",
     "step": 1,
-    "text": "This one is tender, so go gently. From your side, what does the distance feel like — not why, just what? You can skip this one. It'll keep.",
+    "text": "This one is tender, so go gently. From your side, what does the distance from {partner} feel like — not why, just what? You can skip this one. It'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -154,7 +154,7 @@
     "category": "intimacy",
     "branch": "repair",
     "step": 2,
-    "text": "What's one small, low-stakes way to be close this week — a longer hug, sitting nearer, lights out at the same time? Offer one.",
+    "text": "What's one small, low-stakes way to be close to {partner} this week — a longer hug, sitting nearer, lights out at the same time? Offer one.",
     "closing_text": "Small and doable beats big and postponed. That's enough for now.",
     "variant": 1,
     "active": true
@@ -164,7 +164,7 @@
     "category": "intimacy",
     "branch": "repair",
     "step": 1,
-    "text": "Distance rarely arrives all at once. When do you last remember closeness feeling easy? Just the memory, from where you sit. Skipping is fine — this will keep.",
+    "text": "Distance from {partner} rarely arrives all at once. When do you last remember closeness feeling easy? Just the memory, from where you sit. Skipping is fine — this will keep.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -174,7 +174,7 @@
     "category": "intimacy",
     "branch": "repair",
     "step": 2,
-    "text": "Name one thing that would make closeness feel a little more possible this week. Under ten minutes, nothing dramatic.",
+    "text": "Name one thing that would make closeness with {partner} feel a little more possible this week. Under ten minutes, nothing dramatic.",
     "closing_text": "A little more possible is how it starts. This will come back around.",
     "variant": 2,
     "active": true
@@ -184,7 +184,7 @@
     "category": "intimacy",
     "branch": "repair",
     "step": 1,
-    "text": "Sometimes distance is tiredness, timing, or something unsaid. Without solving anything, what sits between you right now, from your side? Skip if today's not the day.",
+    "text": "Sometimes distance from {partner} is tiredness, timing, or something unsaid. Without solving anything, what sits between you right now, from your side? Skip if today's not the day.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -194,7 +194,7 @@
     "category": "intimacy",
     "branch": "repair",
     "step": 2,
-    "text": "What's one gentle step toward each other this week — yours to offer, not theirs to owe?",
+    "text": "What's one gentle step toward {partner} this week — yours to offer, not theirs to owe?",
     "closing_text": "Offered, not owed. That's enough for now.",
     "variant": 3,
     "active": true
@@ -224,7 +224,7 @@
     "category": "affection",
     "branch": "deepener",
     "step": 1,
-    "text": "What's one small gesture from this week that made your number high? Name the actual moment.",
+    "text": "What's one small gesture between you and {partner} this week that made your number high? Name the actual moment.",
     "closing_text": "Small things, noticed, tend to multiply.",
     "variant": 1,
     "active": true
@@ -244,7 +244,7 @@
     "category": "affection",
     "branch": "deepener",
     "step": 1,
-    "text": "Warmth like this usually lives in routines — greetings, goodnights, passing touches. Which routine is carrying it?",
+    "text": "Warmth between you and {partner} like this usually lives in routines — greetings, goodnights, passing touches. Which routine is carrying it?",
     "closing_text": "Protect the routine and the warmth protects itself.",
     "variant": 3,
     "active": true
@@ -254,7 +254,7 @@
     "category": "affection",
     "branch": "repair",
     "step": 1,
-    "text": "Affection has felt thin lately. From your side, what does that look like day to day? Describe it, don't fix it yet. Skip if you'd rather — it'll keep.",
+    "text": "Affection with {partner} has felt thin lately. From your side, what does that look like day to day? Describe it, don't fix it yet. Skip if you'd rather — it'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -264,7 +264,7 @@
     "category": "affection",
     "branch": "repair",
     "step": 2,
-    "text": "What's one small act of warmth you could add this week — a real hello, a hand on a shoulder?",
+    "text": "What's one small act of warmth you could give {partner} this week — a real hello, a hand on a shoulder?",
     "closing_text": "Warmth comes back in small doses. That's enough for now.",
     "variant": 1,
     "active": true
@@ -274,7 +274,7 @@
     "category": "affection",
     "branch": "repair",
     "step": 1,
-    "text": "When affection fades it's usually crowded out, not withdrawn. What's been crowding it, from where you sit? Just describe. You can skip this one.",
+    "text": "When affection with {partner} fades it's usually crowded out, not withdrawn. What's been crowding it, from where you sit? Just describe. You can skip this one.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -284,7 +284,7 @@
     "category": "affection",
     "branch": "repair",
     "step": 2,
-    "text": "Pick one moment in your day — leaving, returning, going to sleep — and add one warm gesture this week. Which moment?",
+    "text": "Pick one moment in your day with {partner} — leaving, returning, going to sleep — and add one warm gesture this week. Which moment?",
     "closing_text": "One warm moment a day is a quiet fortune. That's enough.",
     "variant": 2,
     "active": true
@@ -294,7 +294,7 @@
     "category": "affection",
     "branch": "repair",
     "step": 1,
-    "text": "You each read affection in your own language. Describe what you've been missing, in yours — without a verdict on anyone. Skipping is fine.",
+    "text": "You and {partner} each read affection in your own language. Describe what you've been missing, in yours — without a verdict on anyone. Skipping is fine.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -334,7 +334,7 @@
     "category": "money",
     "branch": "deepener",
     "step": 1,
-    "text": "Money felt steady to both of you. What's actually working — a habit, an agreement, a regular check-in? Name it.",
+    "text": "Money felt steady between you and {partner}. What's actually working — a habit, an agreement, a regular check-in? Name it.",
     "closing_text": "Systems that work deserve to be noticed while they're working.",
     "variant": 1,
     "active": true
@@ -354,7 +354,7 @@
     "category": "money",
     "branch": "deepener",
     "step": 1,
-    "text": "When money feels this calm, something is being done regularly. What's the routine you'd protect?",
+    "text": "When money feels this calm between you and {partner}, something is being done regularly. What's the routine you'd protect?",
     "closing_text": "Calm around money is built, not found. You built this.",
     "variant": 3,
     "active": true
@@ -364,7 +364,7 @@
     "category": "money",
     "branch": "repair",
     "step": 1,
-    "text": "Money came in low, and money is rarely just money. From your side, what's the uncomfortable part? Describe it without solving it. You can skip this one. It'll keep.",
+    "text": "Money came in low between you and {partner}, and money is rarely just money. From your side, what's the uncomfortable part? Describe it without solving it. You can skip this one. It'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -374,7 +374,7 @@
     "category": "money",
     "branch": "repair",
     "step": 2,
-    "text": "One small money step this week, under ten minutes — checking one balance, naming one worry out loud. What's yours?",
+    "text": "One small money step with {partner} this week, under ten minutes — checking one balance, naming one worry out loud. What's yours?",
     "closing_text": "Ten minutes is plenty. This will come back around.",
     "variant": 1,
     "active": true
@@ -384,7 +384,7 @@
     "category": "money",
     "branch": "repair",
     "step": 1,
-    "text": "Behind most money stress there's a quieter fear. Without fixing anything, what's the fear from where you sit? Skip if it's too much today — it'll keep.",
+    "text": "Behind most money stress with {partner} there's a quieter fear. Without fixing anything, what's the fear from where you sit? Skip if it's too much today — it'll keep.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -394,7 +394,7 @@
     "category": "money",
     "branch": "repair",
     "step": 2,
-    "text": "Name one number you'd both like to be able to say out loud without flinching. Just looking at it together is the whole step.",
+    "text": "Name one number you and {partner} would both like to be able to say out loud without flinching. Just looking at it together is the whole step.",
     "closing_text": "Looking is enough for now. Deciding can wait.",
     "variant": 2,
     "active": true
@@ -404,7 +404,7 @@
     "category": "money",
     "branch": "repair",
     "step": 1,
-    "text": "You may be running different money stories — how you grew up, what safety costs. Briefly describe yours. No verdicts. It's fine to skip.",
+    "text": "You and {partner} may be running different money stories — how you each grew up, what safety costs. Briefly describe yours. No verdicts. It's fine to skip.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -414,7 +414,7 @@
     "category": "money",
     "branch": "repair",
     "step": 2,
-    "text": "What's one small agreement you could try for a single week — one purchase check-in, one shared note? Propose it lightly.",
+    "text": "What's one small money agreement you and {partner} could try for a single week — one purchase check-in, one shared note? Propose it lightly.",
     "closing_text": "One week is a trial, not a contract. That's enough for now.",
     "variant": 3,
     "active": true
@@ -444,7 +444,7 @@
     "category": "family",
     "branch": "deepener",
     "step": 1,
-    "text": "Family felt good to both of you. What went well — a visit, a boundary, a moment of backup? Name it.",
+    "text": "Family felt good to both you and {partner}. What went well — a visit, a boundary, a moment of backup? Name it.",
     "closing_text": "Worth knowing what well looks like, for next time.",
     "variant": 1,
     "active": true
@@ -464,7 +464,7 @@
     "category": "family",
     "branch": "deepener",
     "step": 1,
-    "text": "When family runs this smoothly, there's usually quiet coordination underneath. What's the move worth repeating?",
+    "text": "When family runs this smoothly for you and {partner}, there's usually quiet coordination underneath. What's the move worth repeating?",
     "closing_text": "Keep the move. It clearly works.",
     "variant": 3,
     "active": true
@@ -474,7 +474,7 @@
     "category": "family",
     "branch": "repair",
     "step": 1,
-    "text": "Family came in low, and family is complicated for almost everyone. From your side, what's the hard part right now? Describe, don't fix. You can skip this — it'll keep.",
+    "text": "Family came in low between you and {partner}, and family is complicated for almost everyone. From your side, what's the hard part right now? Describe, don't fix. You can skip this — it'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -484,7 +484,7 @@
     "category": "family",
     "branch": "repair",
     "step": 2,
-    "text": "One small thing this week — a text sent, a boundary named, a visit adjusted. What's your small thing?",
+    "text": "One small family thing for you and {partner} this week — a text sent, a boundary named, a visit adjusted. What's your small thing?",
     "closing_text": "Small moves with family go further than big speeches. That's enough for now.",
     "variant": 1,
     "active": true
@@ -494,7 +494,7 @@
     "category": "family",
     "branch": "repair",
     "step": 1,
-    "text": "Sometimes the hard part isn't the family — it's feeling alone in handling them. Where do you feel solo in this, from your side? Skipping is allowed.",
+    "text": "Sometimes the hard part isn't the family — it's feeling alone in handling them while {partner} isn't seeing it. Where do you feel solo in this, from your side? Skipping is allowed.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -504,7 +504,7 @@
     "category": "family",
     "branch": "repair",
     "step": 2,
-    "text": "Name one moment coming up where you'd like backup, and what backup would look like. Keep it small.",
+    "text": "Name one moment coming up where you'd like backup from {partner}, and what backup would look like. Keep it small.",
     "closing_text": "Knowing what backup looks like is most of getting it. That's enough for now.",
     "variant": 2,
     "active": true
@@ -514,7 +514,7 @@
     "category": "family",
     "branch": "repair",
     "step": 1,
-    "text": "Your families raised two different people with two different rulebooks. Which unspoken rule from yours might be in play here? Just notice it. Skip if you'd rather.",
+    "text": "Your families raised you and {partner} with two different rulebooks. Which unspoken rule from yours might be in play here? Just notice it. Skip if you'd rather.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -524,7 +524,7 @@
     "category": "family",
     "branch": "repair",
     "step": 2,
-    "text": "Propose one small adjustment for the next family moment — who answers, who drives, when you leave. One thing.",
+    "text": "Propose one small adjustment for the next family moment with {partner} — who answers, who drives, when you leave. One thing.",
     "closing_text": "One adjustment at a time. This will come back around.",
     "variant": 3,
     "active": true
@@ -554,7 +554,7 @@
     "category": "friends",
     "branch": "deepener",
     "step": 1,
-    "text": "Friendship felt healthy from both sides. What made the number high — a good night, easy room for separate plans?",
+    "text": "Friendship felt healthy from both you and {partner}'s side. What made the number high — a good night, easy room for separate plans?",
     "closing_text": "A social life that fits is worth noticing while it fits.",
     "variant": 1,
     "active": true
@@ -574,7 +574,7 @@
     "category": "friends",
     "branch": "deepener",
     "step": 1,
-    "text": "When social life works, a balance is being kept — together, apart, shared. What's the balance you'd keep?",
+    "text": "When your social life with {partner} works, a balance is being kept — together, apart, shared. What's the balance you'd keep?",
     "closing_text": "Now the balance has words. Easier to hold.",
     "variant": 3,
     "active": true
@@ -584,7 +584,7 @@
     "category": "friends",
     "branch": "repair",
     "step": 1,
-    "text": "Friends came in low. From where you sit, what's off — too little time, the wrong mix, feeling left out? Describe it plainly. Skip if you'd rather — it'll keep.",
+    "text": "Friends came in low between you and {partner}. From where you sit, what's off — too little time, the wrong mix, feeling left out? Describe it plainly. Skip if you'd rather — it'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -594,7 +594,7 @@
     "category": "friends",
     "branch": "repair",
     "step": 2,
-    "text": "One small social step this week — a text to an old friend, a plan made, an evening freed. What's yours?",
+    "text": "One small social step for you and {partner} this week — a text to an old friend, a plan made, an evening freed. What's yours?",
     "closing_text": "Friendships restart smaller than you'd think. That's enough for now.",
     "variant": 1,
     "active": true
@@ -604,7 +604,7 @@
     "category": "friends",
     "branch": "repair",
     "step": 1,
-    "text": "Couples can lose friendships slowly without anyone choosing it. What have you missed lately, from your side? No blame in it — just the missing. You can skip this one.",
+    "text": "Couples like you and {partner} can lose friendships slowly without anyone choosing it. What have you missed lately, from your side? No blame in it — just the missing. You can skip this one.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -614,7 +614,7 @@
     "category": "friends",
     "branch": "repair",
     "step": 2,
-    "text": "Name one friendship — yours, theirs, or shared — worth ten minutes of tending this week, and what you'd do.",
+    "text": "Name one friendship — yours, {partner}'s, or shared — worth ten minutes of tending this week, and what you'd do.",
     "closing_text": "Ten minutes of tending is real tending. This will come back around.",
     "variant": 2,
     "active": true
@@ -624,7 +624,7 @@
     "category": "friends",
     "branch": "repair",
     "step": 1,
-    "text": "Feeling crowded and feeling left out can happen in the same house. Which is closer to yours right now? Describe it, don't defend it. Skipping is fine.",
+    "text": "Feeling crowded and feeling left out can happen in the same house with {partner}. Which is closer to yours right now? Describe it, don't defend it. Skipping is fine.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -634,7 +634,7 @@
     "category": "friends",
     "branch": "repair",
     "step": 2,
-    "text": "Suggest one plan for the next two weeks — a night with your people, a night with theirs, or one with both.",
+    "text": "Suggest one plan for the next two weeks — a night with your people, a night with {partner}'s, or one with both.",
     "closing_text": "One plan on the calendar is enough for now.",
     "variant": 3,
     "active": true
@@ -664,7 +664,7 @@
     "category": "fun_play",
     "branch": "deepener",
     "step": 1,
-    "text": "You both landed high on fun. Name the moment from this week you'd most want to happen again.",
+    "text": "You and {partner} both landed high on fun. Name the moment from this week you'd most want to happen again.",
     "closing_text": "Fun leaves clues. You just found one.",
     "variant": 1,
     "active": true
@@ -684,7 +684,7 @@
     "category": "fun_play",
     "branch": "deepener",
     "step": 1,
-    "text": "Good fun usually has a setting — a time of day, a place, no plans. What were the conditions?",
+    "text": "Good fun with {partner} usually has a setting — a time of day, a place, no plans. What were the conditions?",
     "closing_text": "Now you have the recipe. Keep it somewhere handy.",
     "variant": 3,
     "active": true
@@ -694,7 +694,7 @@
     "category": "fun_play",
     "branch": "repair",
     "step": 1,
-    "text": "Fun came in low, which usually means life got heavy — not that you got boring. From your side, what's been squeezing it out? Just describe. You can skip this — it'll keep.",
+    "text": "Fun with {partner} came in low, which usually means life got heavy — not that you got boring. From your side, what's been squeezing it out? Just describe. You can skip this — it'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -704,7 +704,7 @@
     "category": "fun_play",
     "branch": "repair",
     "step": 2,
-    "text": "One small dose of fun this week — ten minutes, zero planning. A game, a walk, a ridiculous video. What's your offer?",
+    "text": "One small dose of fun with {partner} this week — ten minutes, zero planning. A game, a walk, a ridiculous video. What's your offer?",
     "closing_text": "Fun doesn't need a plan. That's enough for now.",
     "variant": 1,
     "active": true
@@ -714,7 +714,7 @@
     "category": "fun_play",
     "branch": "repair",
     "step": 1,
-    "text": "When did you two last laugh together properly? Describe that moment from your side — what allowed it. No need to recreate it yet. Skipping is fine.",
+    "text": "When did you and {partner} last laugh together properly? Describe that moment from your side — what allowed it. No need to recreate it yet. Skipping is fine.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -724,7 +724,7 @@
     "category": "fun_play",
     "branch": "repair",
     "step": 2,
-    "text": "Pick one ordinary moment this week — a commute, a chore, dinner — and make it slightly more ridiculous. Which one?",
+    "text": "Pick one ordinary moment with {partner} this week — a commute, a chore, dinner — and make it slightly more ridiculous. Which one?",
     "closing_text": "Ordinary plus slightly ridiculous is the whole formula. That's enough.",
     "variant": 2,
     "active": true
@@ -734,7 +734,7 @@
     "category": "fun_play",
     "branch": "repair",
     "step": 1,
-    "text": "Sometimes one of you carries the fun and quietly gets tired. From where you sit, who's been carrying it lately? Describe gently. It's fine to skip — this will keep.",
+    "text": "Sometimes one of you carries the fun and quietly gets tired. From where you sit, who's been carrying it between you and {partner} lately? Describe gently. It's fine to skip — this will keep.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -744,7 +744,7 @@
     "category": "fun_play",
     "branch": "repair",
     "step": 2,
-    "text": "Name one low-effort thing you'd genuinely enjoy doing together this week. Small counts double.",
+    "text": "Name one low-effort thing you'd genuinely enjoy doing with {partner} this week. Small counts double.",
     "closing_text": "That's enough for now. Fun comes back around faster than most things.",
     "variant": 3,
     "active": true
@@ -774,7 +774,7 @@
     "category": "future_dreams",
     "branch": "deepener",
     "step": 1,
-    "text": "The future feels good from both sides. What's the shared picture that earned the number? Sketch it in a sentence.",
+    "text": "The future feels good for both you and {partner}. What's the shared picture that earned the number? Sketch it in a sentence.",
     "closing_text": "A future you can say in a sentence is one you can steer by.",
     "variant": 1,
     "active": true
@@ -794,7 +794,7 @@
     "category": "future_dreams",
     "branch": "deepener",
     "step": 1,
-    "text": "When you talk about the future well, it tends to happen somewhere — long drives, late nights. Where does it happen for you?",
+    "text": "When you and {partner} talk about the future well, it tends to happen somewhere — long drives, late nights. Where does it happen for you?",
     "closing_text": "Protect the place and the talks will keep coming.",
     "variant": 3,
     "active": true
@@ -804,7 +804,7 @@
     "category": "future_dreams",
     "branch": "repair",
     "step": 1,
-    "text": "The future came in low, which can feel bigger than one day's answer. From your side, what feels foggy or stuck? Describe it — no plans required yet. You can skip this one. It'll keep.",
+    "text": "The future came in low between you and {partner}, which can feel bigger than one day's answer. From your side, what feels foggy or stuck? Describe it — no plans required yet. You can skip this one. It'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -814,7 +814,7 @@
     "category": "future_dreams",
     "branch": "repair",
     "step": 2,
-    "text": "One ten-minute future conversation this week — not the whole future, just one corner. Which corner would you pick?",
+    "text": "One ten-minute future conversation with {partner} this week — not the whole future, just one corner. Which corner would you pick?",
     "closing_text": "One corner at a time is how whole pictures get painted. That's enough for now.",
     "variant": 1,
     "active": true
@@ -824,7 +824,7 @@
     "category": "future_dreams",
     "branch": "repair",
     "step": 1,
-    "text": "Sometimes the future feels hard because two timelines quietly disagree. From your side, what timeline are you on? Just name it. Skipping is allowed.",
+    "text": "Sometimes the future feels hard because your timeline and {partner}'s quietly disagree. From your side, what timeline are you on? Just name it. Skipping is allowed.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -834,7 +834,7 @@
     "category": "future_dreams",
     "branch": "repair",
     "step": 2,
-    "text": "Name one small thing you could do this week that your future selves would be glad about. Tiny counts.",
+    "text": "Name one small thing you and {partner} could do this week that your future selves would be glad about. Tiny counts.",
     "closing_text": "Tiny and done beats grand and discussed. This will come back around.",
     "variant": 2,
     "active": true
@@ -844,7 +844,7 @@
     "category": "future_dreams",
     "branch": "repair",
     "step": 1,
-    "text": "A deferred dream can sit quietly in a relationship for years. Is one of yours sitting there? Describe it gently — nobody has to act on it today. You can skip this.",
+    "text": "A deferred dream can sit quietly in a relationship with {partner} for years. Is one of yours sitting there? Describe it gently — nobody has to act on it today. You can skip this.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -854,7 +854,7 @@
     "category": "future_dreams",
     "branch": "repair",
     "step": 2,
-    "text": "What's one question about the future you'd like to ask each other this week? Just write the question.",
+    "text": "What's one question about the future you'd like to ask {partner} this week? Just write the question.",
     "closing_text": "A good question is a step. The answer can take its time.",
     "variant": 3,
     "active": true
@@ -884,7 +884,7 @@
     "category": "everyday_life",
     "branch": "deepener",
     "step": 1,
-    "text": "The everyday machine is running well for both of you. Name one thing that's quietly working, before it turns invisible.",
+    "text": "The everyday machine with {partner} is running well. Name one thing that's quietly working, before it turns invisible.",
     "closing_text": "The quietly working things run the whole show. Good catch.",
     "variant": 1,
     "active": true
@@ -904,7 +904,7 @@
     "category": "everyday_life",
     "branch": "deepener",
     "step": 1,
-    "text": "Smooth weeks usually have a rhythm underneath. What's the rhythm — and what would you protect about it?",
+    "text": "Smooth weeks with {partner} usually have a rhythm underneath. What's the rhythm — and what would you protect about it?",
     "closing_text": "Rhythms hold when somebody minds them. Now you both are.",
     "variant": 3,
     "active": true
@@ -914,7 +914,7 @@
     "category": "everyday_life",
     "branch": "repair",
     "step": 1,
-    "text": "Daily life came in low. From your side, where does the day pinch — mornings, evenings, the list that never ends? Describe the pinch, not the fix. Skip if you'd rather — it'll keep.",
+    "text": "Daily life with {partner} came in low. From your side, where does the day pinch — mornings, evenings, the list that never ends? Describe the pinch, not the fix. Skip if you'd rather — it'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -924,7 +924,7 @@
     "category": "everyday_life",
     "branch": "repair",
     "step": 2,
-    "text": "One small trade this week — a task swapped, a chore dropped entirely. What would you offer?",
+    "text": "One small trade with {partner} this week — a task swapped, a chore dropped entirely. What would you offer?",
     "closing_text": "One trade is enough for now. The list will still be there, slightly shorter.",
     "variant": 1,
     "active": true
@@ -934,7 +934,7 @@
     "category": "everyday_life",
     "branch": "repair",
     "step": 1,
-    "text": "The invisible work — planning, remembering, noticing — is easy to miscount. From your side, what are you carrying that might not be seen? Just the list, no tallying. Skipping is fine.",
+    "text": "The invisible work with {partner} — planning, remembering, noticing — is easy to miscount. From your side, what are you carrying that might not be seen? Just the list, no tallying. Skipping is fine.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -944,7 +944,7 @@
     "category": "everyday_life",
     "branch": "repair",
     "step": 2,
-    "text": "Pick one recurring task to make easier this week — automate it, halve it, or share it. Which one?",
+    "text": "Pick one recurring task you share with {partner} to make easier this week — automate it, halve it, or share it. Which one?",
     "closing_text": "Easier, not perfect. That's enough for now.",
     "variant": 2,
     "active": true
@@ -954,7 +954,7 @@
     "category": "everyday_life",
     "branch": "repair",
     "step": 1,
-    "text": "Some days are fine and still exhausting. Describe what tired looks like for you lately — it's hard to see from inside someone else's day. You can skip this one.",
+    "text": "Some days with {partner} are fine and still exhausting. Describe what tired looks like for you lately — it's hard to see from inside someone else's day. You can skip this one.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -964,7 +964,7 @@
     "category": "everyday_life",
     "branch": "repair",
     "step": 2,
-    "text": "Name one ten-minute pocket this week that could be just yours — and one that could be just theirs.",
+    "text": "Name one ten-minute pocket this week that could be just yours — and one that could be just {partner}'s.",
     "closing_text": "Two small pockets of air. That's enough for now.",
     "variant": 3,
     "active": true
@@ -994,7 +994,7 @@
     "category": "conflict_repair",
     "branch": "deepener",
     "step": 1,
-    "text": "You both feel good about how you handle friction. What's the move — the thing one of you does that softens it?",
+    "text": "You and {partner} both feel good about how you handle friction. What's the move — the thing one of you does that softens it?",
     "closing_text": "A named move is a keepable move.",
     "variant": 1,
     "active": true
@@ -1014,7 +1014,7 @@
     "category": "conflict_repair",
     "branch": "deepener",
     "step": 1,
-    "text": "Couples who find their way back usually have a signal — a phrase, a touch, a cup of tea. What's yours?",
+    "text": "Couples like you and {partner} who find their way back usually have a signal — a phrase, a touch, a cup of tea. What's yours?",
     "closing_text": "If you have a signal, you have a way home. Worth remembering.",
     "variant": 3,
     "active": true
@@ -1024,7 +1024,7 @@
     "category": "conflict_repair",
     "branch": "repair",
     "step": 1,
-    "text": "This is about the hard stuff, so take it slowly. From your side, what happens between you when things go wrong? Just the shape of it — no fixing yet. You can skip this one. It'll keep.",
+    "text": "This is about the hard stuff with {partner}, so take it slowly. From your side, what happens between you when things go wrong? Just the shape of it — no fixing yet. You can skip this one. It'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -1034,7 +1034,7 @@
     "category": "conflict_repair",
     "branch": "repair",
     "step": 2,
-    "text": "What's one small thing that would make the next disagreement five percent softer — a pause, a code word, a walk first? Offer one.",
+    "text": "What's one small thing that would make the next disagreement with {partner} five percent softer — a pause, a code word, a walk first? Offer one.",
     "closing_text": "Five percent softer is a real number. That's enough for now.",
     "variant": 1,
     "active": true
@@ -1044,7 +1044,7 @@
     "category": "conflict_repair",
     "branch": "repair",
     "step": 1,
-    "text": "After a rough moment, people reach for repair differently. What do you tend to need first — space, words, touch? Describe yours, not theirs. Skipping is allowed.",
+    "text": "After a rough moment with {partner}, people reach for repair differently. What do you tend to need first — space, words, touch? Describe yours, not theirs. Skipping is allowed.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -1054,7 +1054,7 @@
     "category": "conflict_repair",
     "branch": "repair",
     "step": 2,
-    "text": "Tell each other one thing that reliably helps you come back together after friction. Ten minutes, once this week.",
+    "text": "Tell {partner} one thing that reliably helps you come back together after friction. Ten minutes, once this week.",
     "closing_text": "Knowing the way back matters more than never leaving. This will come back around.",
     "variant": 2,
     "active": true
@@ -1064,7 +1064,7 @@
     "category": "conflict_repair",
     "branch": "repair",
     "step": 1,
-    "text": "Some things get dropped instead of finished, and they hum in the background. Is something humming for you? Name only that it exists — not the whole case. It's fine to skip; this will keep.",
+    "text": "Some things between you and {partner} get dropped instead of finished, and they hum in the background. Is something humming for you? Name only that it exists — not the whole case. It's fine to skip; this will keep.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -1074,7 +1074,7 @@
     "category": "conflict_repair",
     "branch": "repair",
     "step": 2,
-    "text": "Choose the smallest true piece of one old topic and say just that piece out loud this week. What's the piece?",
+    "text": "Choose the smallest true piece of one old topic with {partner} and say just that piece out loud this week. What's the piece?",
     "closing_text": "The smallest piece still counts as begun. That's enough for now.",
     "variant": 3,
     "active": true
@@ -1094,7 +1094,7 @@
     "category": "conflict_repair",
     "branch": "divergence",
     "step": 1,
-    "text": "One of you may recover faster than the other. What might the slower recovery need that the faster one doesn't?",
+    "text": "One of you may recover faster than the other after a fight. What might {partner}'s slower recovery need that yours doesn't?",
     "closing_text": "Different speeds of coming back, same direction home.",
     "variant": 2,
     "active": true
@@ -1104,7 +1104,7 @@
     "category": "appreciation_trust",
     "branch": "deepener",
     "step": 1,
-    "text": "Feeling valued landed high for both of you. What's one recent moment you felt genuinely seen? Describe it.",
+    "text": "Feeling valued by {partner} landed high. What's one recent moment you felt genuinely seen by them? Describe it.",
     "closing_text": "Moments like that are load-bearing. Good to know where they are.",
     "variant": 1,
     "active": true
@@ -1124,7 +1124,7 @@
     "category": "appreciation_trust",
     "branch": "deepener",
     "step": 1,
-    "text": "Steady appreciation is usually a habit, not luck. Which habit is doing it — the thank yous, the noticing?",
+    "text": "Steady appreciation between you and {partner} is usually a habit, not luck. Which habit is doing it — the thank yous, the noticing?",
     "closing_text": "Habits fed are habits kept.",
     "variant": 3,
     "active": true
@@ -1134,7 +1134,7 @@
     "category": "appreciation_trust",
     "branch": "repair",
     "step": 1,
-    "text": "Feeling valued came in low, and that deserves a gentle approach. From your side, what's been going unnoticed? Describe it without keeping count. You can skip this one. It'll keep.",
+    "text": "Feeling valued by {partner} came in low, and that deserves a gentle approach. From your side, what's been going unnoticed? Describe it without keeping count. You can skip this one. It'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -1144,7 +1144,7 @@
     "category": "appreciation_trust",
     "branch": "repair",
     "step": 2,
-    "text": "One specific thank you this week — for a real thing, said plainly. What would you thank them for?",
+    "text": "One specific thank you to {partner} this week — for a real thing, said plainly. What would you thank them for?",
     "closing_text": "Specific beats grand. That's enough for now.",
     "variant": 1,
     "active": true
@@ -1154,7 +1154,7 @@
     "category": "appreciation_trust",
     "branch": "repair",
     "step": 1,
-    "text": "Dips in trust are usually small things repeated, not one big thing. From where you sit, what small thing has been repeating? Just describe it. Skipping is fine.",
+    "text": "Dips in trust with {partner} are usually small things repeated, not one big thing. From where you sit, what small thing has been repeating? Just describe it. Skipping is fine.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -1164,7 +1164,7 @@
     "category": "appreciation_trust",
     "branch": "repair",
     "step": 2,
-    "text": "Name one small promise you could make and keep this week. Small enough to be certain.",
+    "text": "Name one small promise you could make to {partner} and keep this week. Small enough to be certain.",
     "closing_text": "Kept promises add up quietly. That's enough for now.",
     "variant": 2,
     "active": true
@@ -1174,7 +1174,7 @@
     "category": "appreciation_trust",
     "branch": "repair",
     "step": 1,
-    "text": "Feeling unappreciated and being unappreciated aren't always the same thing — both are worth describing. What does it look like from your side? No verdicts. You can skip this.",
+    "text": "Feeling unappreciated by {partner} and being unappreciated aren't always the same thing — both are worth describing. What does it look like from your side? No verdicts. You can skip this.",
     "closing_text": null,
     "variant": 3,
     "active": true
@@ -1214,7 +1214,7 @@
     "category": "growth_independence",
     "branch": "deepener",
     "step": 1,
-    "text": "You both feel room to be yourselves. What made the number high — time protected, a pursuit supported, space given freely?",
+    "text": "You and {partner} both feel room to be yourselves. What made the number high — time protected, a pursuit supported, space given freely?",
     "closing_text": "Room, given freely, tends to bring people back closer.",
     "variant": 1,
     "active": true
@@ -1234,7 +1234,7 @@
     "category": "growth_independence",
     "branch": "deepener",
     "step": 1,
-    "text": "Couples who grow well trade freedom generously. What's the arrangement that's working? Say it out loud so it lasts.",
+    "text": "Couples like you and {partner} who grow well trade freedom generously. What's the arrangement that's working? Say it out loud so it lasts.",
     "closing_text": "Arrangements said out loud survive busy seasons.",
     "variant": 3,
     "active": true
@@ -1244,7 +1244,7 @@
     "category": "growth_independence",
     "branch": "repair",
     "step": 1,
-    "text": "This one can feel tangled — needing space and needing each other at once. From your side, where does it feel tight? Describe the tightness, not the fix. You can skip this one. It'll keep.",
+    "text": "This one can feel tangled — needing space from {partner} and needing them at once. From your side, where does it feel tight? Describe the tightness, not the fix. You can skip this one. It'll keep.",
     "closing_text": null,
     "variant": 1,
     "active": true
@@ -1254,7 +1254,7 @@
     "category": "growth_independence",
     "branch": "repair",
     "step": 2,
-    "text": "One small piece of room this week — an hour claimed, or an hour offered. What would yours be?",
+    "text": "One small piece of room between you and {partner} this week — an hour claimed, or an hour offered. What would yours be?",
     "closing_text": "An hour is enough for now. Room grows from there.",
     "variant": 1,
     "active": true
@@ -1264,7 +1264,7 @@
     "category": "growth_independence",
     "branch": "repair",
     "step": 1,
-    "text": "Sometimes one person's growing reads as distance to the other. From where you sit, which side of that are you on right now? Just describe it. Skipping is allowed.",
+    "text": "Sometimes your growing reads as distance to {partner}. From where you sit, which side of that are you on right now? Just describe it. Skipping is allowed.",
     "closing_text": null,
     "variant": 2,
     "active": true
@@ -1274,7 +1274,7 @@
     "category": "growth_independence",
     "branch": "repair",
     "step": 2,
-    "text": "Name one solo thing you'd like to do this week — and one way you'll share it with each other afterward.",
+    "text": "Name one solo thing you'd like to do this week — and one way you'll share it with {partner} afterward.",
     "closing_text": "Going and returning. That's the whole shape, and it's enough for now.",
     "variant": 2,
     "active": true
@@ -1284,7 +1284,7 @@
     "category": "growth_independence",
     "branch": "repair",
     "step": 1,
-    "text": "The person you chose keeps changing — that's the deal. What change in yourself have you not quite said out loud? Gently. It's fine to skip; this will keep.",
+    "text": "The person {partner} chose keeps changing — that's the deal. What change in yourself have you not quite said out loud? Gently. It's fine to skip; this will keep.",
     "closing_text": null,
     "variant": 3,
     "active": true
