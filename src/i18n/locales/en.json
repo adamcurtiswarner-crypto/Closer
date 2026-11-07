@@ -702,32 +702,88 @@
   "us": {
     "entryLabel": "Us",
     "entryValue": "How you two line up",
-    "eyebrow": "The two of you",
-    "title": "Us",
+    "eyebrow": "US",
+    "title": "The shape of you two",
     "daysTogether_one": "{{count}} day together",
     "daysTogether_other": "{{count}} days together",
-    "alignmentTitle": "Where you stand",
+    "alignmentTitle": "What's easy, what's asking for attention",
     "alignmentSubtitle": "From your daily answers, over the last three months.",
     "state": {
-      "close_strong": "Close, and strong here",
-      "close_tender": "Close, and carrying this together",
-      "apart": "You two see this differently",
-      "early": "Still early here"
+      "close_strong": "This is working. You both feel it.",
+      "close_tender": "You're carrying something here — and doing it together.",
+      "apart": "There's a gap here. Not a problem — a place to be curious.",
+      "early": "Still learning each other here. Keep going."
     },
     "movementTitle": "Which way it's moving",
     "movement": {
-      "closing": "This gap has been narrowing.",
-      "opening": "This gap has been widening. That's information, not a problem."
+      "closing": "Moving toward each other",
+      "opening": "Something shifted. Worth a conversation.",
+      "steady": "Consistent. This hasn't changed lately."
     },
-    "tendedTitle": "What you tended",
+    "tendedTitle": "What you turned toward",
     "tended_one": "You went back to {{count}} hard one this month.",
     "tended_other": "You went back to {{count}} hard ones this month.",
-    "tendedNone": "Nothing tended yet this month.",
-    "sideBySideTitle": "Side by side",
-    "loveLanguageLabel": "Love language",
+    "tendedNone": "No repair conversations this month. That might mean things are smooth. Or it might mean something's waiting.",
+    "sideBySideTitle": "How you each feel loved",
+    "loveLanguageLabel": "Love languages",
     "you": "You",
     "notSet": "Not set yet",
-    "emptyTitle": "Your map starts with your answers",
-    "emptyBody": "Answer the daily question together for a while and this page fills in — where you're close, where you differ, and which way it's moving."
+    "emptyTitle": "A few more days together",
+    "emptyBody": "Answer a few prompts and the picture will start to form.",
+    "cta": {
+      "close_strong": "Protect this. Ask each other what's making it work.",
+      "close_tender": "Check in here. A five-minute conversation goes a long way.",
+      "apart": "Start with curiosity. \"What does this mean to you?\"",
+      "early": "Keep checking in. The picture is still forming."
+    },
+    "prompts": {
+      "close_strong": {
+        "communication": "You hear each other. That's rarer than you think.",
+        "intimacy": "You're connected here. What made this week different?",
+        "affection": "The small things are landing.",
+        "money": "You're aligned on this. When did that start feeling easy?",
+        "family": "You're a team here. That takes work you might not notice.",
+        "friends": "Your worlds outside this relationship feel balanced.",
+        "fun_play": "You're still playing together.",
+        "future_dreams": "You want similar things. Have you said that out loud lately?",
+        "everyday_life": "The ordinary stuff isn't grinding. That's not nothing.",
+        "conflict_repair": "You're handling hard moments well right now.",
+        "appreciation_trust": "This is your foundation. It's solid.",
+        "growth_independence": "You're both still becoming. And making room for it."
+      },
+      "close_tender": {
+        "communication": "You're trying to reach each other. That counts.",
+        "intimacy": "This is tender ground. You're both still showing up.",
+        "affection": "The gestures might feel small. They're not.",
+        "money": "This one's heavy, and you're facing it side by side.",
+        "family": "Family stuff is complicated. You're not doing it alone.",
+        "friends": "There's some tension here, but you're aware of it.",
+        "fun_play": "It's been a lot. When's the last time you just laughed?",
+        "future_dreams": "Your visions aren't identical, but they overlap where it matters.",
+        "everyday_life": "The logistics are wearing. You're holding it anyway.",
+        "conflict_repair": "Arguments happen. You're still repairing.",
+        "appreciation_trust": "Trust is being rebuilt or tested. You're still in it.",
+        "growth_independence": "One of you might be changing faster. That's okay."
+      },
+      "apart": {
+        "communication": "You might be talking but not quite connecting. What's underneath?",
+        "intimacy": "You want different things here right now. That's worth naming.",
+        "affection": "One of you might need more. The other might not know.",
+        "money": "Money means something different to each of you. Start there.",
+        "family": "You're not on the same page with family. What's the hardest part?",
+        "friends": "Your social worlds feel out of balance. Is that new?",
+        "fun_play": "When's the last time you both enjoyed the same thing?",
+        "future_dreams": "Your futures look a little different right now. Is that scary or exciting?",
+        "everyday_life": "The day-to-day feels uneven. Who's carrying what?",
+        "conflict_repair": "You're handling friction differently. That's the friction.",
+        "appreciation_trust": "Something feels uncertain. You don't have to fix it tonight.",
+        "growth_independence": "You're growing in different directions. That doesn't mean apart."
+      },
+      "early": "A few more check-ins and this picture gets clearer."
+    },
+    "tended": "You had {{count}} hard conversations this month — and stayed. That's what repair looks like.",
+    "loveLanguageMatch": "You speak the same language. That's a head start.",
+    "loveLanguageDiffer": "You feel love differently. That's not a mismatch — it's a translation guide.",
+    "daysTogether": "{{count}} days together"
   }
 }

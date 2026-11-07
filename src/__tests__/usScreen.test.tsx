@@ -160,7 +160,7 @@ describe('UsScreen', () => {
   it('shows the alignment state for a divergent category (premium)', () => {
     const { getByText } = render(<UsScreen />);
     expect(getByText('Money')).toBeTruthy();
-    expect(getByText('You two see this differently')).toBeTruthy();
+    expect(getByText('Money means something different to each of you. Start there.')).toBeTruthy();
   });
 
   it('routes an alignment row into the Hearth category detail', () => {
@@ -200,7 +200,7 @@ describe('UsScreen', () => {
   it('shows the quiet empty state before any scored answers exist', () => {
     mockUseHearth.mockReturnValue({ data: [] });
     const { getByText, queryByText } = render(<UsScreen />);
-    expect(getByText('Your map starts with your answers')).toBeTruthy();
+    expect(getByText('A few more days together')).toBeTruthy();
     expect(queryByText('The full picture is part of Stoke Premium')).toBeNull();
   });
 });

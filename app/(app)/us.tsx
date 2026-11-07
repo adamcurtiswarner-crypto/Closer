@@ -113,7 +113,14 @@ export default function UsScreen() {
 
   const renderAlignmentRow = (alignment: CategoryAlignment, index: number) => {
     const categoryLabel = getCategoryByType(alignment.category)?.label ?? alignment.category;
-    const stateText = t(`us.state.${alignment.state}`);
+    // Category-specific prompt: us.prompts.<state>.<category>, fallback to state label
+    const promptKey = alignment.state === 'early'
+      ? 'us.prompts.early'
+      : `us.prompts.${alignment.state}.${alignment.category}`;
+    const prompt = t(promptKey);
+    // If the key didn't resolve (returns the key itself), fall back to state text
+    const displayText = prompt !== promptKey ? prompt : t(`us.state.${alignment.state}`);
+    const ctaText = t(`us.cta.${alignment.state}`);
     return (
       <Animated.View
         key={alignment.category}
@@ -125,27 +132,26 @@ export default function UsScreen() {
           disabled={locked}
           activeOpacity={0.7}
           accessibilityRole="button"
-          // When locked, pin the row's computed label to the category name so
-          // VoiceOver can never flatten the blurred state text into it.
           accessibilityLabel={locked ? categoryLabel : undefined}
           testID={`us-alignment-${alignment.category}`}
         >
           <View style={styles.alignmentInfo}>
             <Text style={styles.alignmentCategory}>{categoryLabel}</Text>
             {locked ? (
-              // Blurred state — visually present, unreadable, hidden from
-              // screen readers so the blur cannot be bypassed.
               <View
                 accessible={false}
                 accessibilityElementsHidden
                 importantForAccessibility="no-hide-descendants"
               >
                 <Text style={[styles.alignmentState, styles.blurredState]}>
-                  {stateText}
+                  {displayText}
                 </Text>
               </View>
             ) : (
-              <Text style={styles.alignmentState}>{stateText}</Text>
+              <>
+                <Text style={styles.alignmentState}>{displayText}</Text>
+                <Text style={styles.alignmentCta}>{ctaText}</Text>
+              </>
             )}
           </View>
           {!locked && <Icon name="caret-right" size="sm" color={colors.text.muted} />}
@@ -352,6 +358,13 @@ export default function UsScreen() {
                 </Text>
               </View>
             </View>
+            {myLoveLanguage && partnerLoveLanguageLabel && (
+              <Text style={styles.loveLanguageInsight}>
+                {myLoveLanguage === partnerLoveLanguageLabel
+                  ? t('us.loveLanguageMatch')
+                  : t('us.loveLanguageDiffer')}
+              </Text>
+            )}
           </View>
         </Animated.View>
       </ScrollView>
@@ -468,6 +481,11 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text.primary,
   },
+  alignmentCta: {
+    ...typography.caption,
+    color: colors.accent.primary,
+    marginTop: 4,
+  },
   blurredState: {
     // Blur: transparent glyphs, soft shadow where the text sits — the same
     // treatment as the locked follow-up question.
@@ -549,5 +567,11 @@ const styles = StyleSheet.create({
   sideValue: {
     ...typography.body,
     color: colors.text.primary,
+  },
+  loveLanguageInsight: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    marginTop: spacing.md,
+    fontStyle: 'italic',
   },
 });
