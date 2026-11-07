@@ -13,6 +13,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { isTended, useHearth, type HearthCompletion } from '@/hooks/useHearth';
 import { deriveAlignment, deriveRadarData, movementPicks, type CategoryAlignment } from '@/utils/alignment';
 import { deriveReactionSignals } from '@/utils/reactionSignals';
+import { getLoveLanguageTips } from '@/utils/loveLanguageTips';
 import type { ReactionType } from '@/hooks/useReaction';
 
 const REACTION_LABELS: Record<ReactionType, string> = {
@@ -354,13 +355,22 @@ export default function UsScreen() {
                 </Text>
               </View>
             </View>
-            {myLoveLanguage && partnerLoveLanguageLabel && (
-              <Text style={styles.loveLanguageInsight}>
-                {myLoveLanguage === partnerLoveLanguageLabel
-                  ? t('us.loveLanguageMatch')
-                  : t('us.loveLanguageDiffer')}
-              </Text>
-            )}
+            {user.loveLanguage && partnerLoveLanguage && (() => {
+              const tips = getLoveLanguageTips(user.loveLanguage, partnerLoveLanguage);
+              if (!tips) return null;
+              return (
+                <View style={styles.tipsSection}>
+                  <Text style={styles.tipLabel}>How you two work</Text>
+                  <Text style={styles.tipText}>{tips.theyNeed}</Text>
+
+                  <Text style={styles.tipLabel}>Try this week</Text>
+                  <Text style={styles.tipText}>{tips.tryThis}</Text>
+
+                  <Text style={styles.tipLabel}>Watch for</Text>
+                  <Text style={styles.tipText}>{tips.watchFor}</Text>
+                </View>
+              );
+            })()}
           </View>
         </Animated.View>
       </ScrollView>
@@ -564,10 +574,25 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text.primary,
   },
-  loveLanguageInsight: {
-    ...typography.bodySm,
-    color: colors.text.secondary,
+  tipsSection: {
     marginTop: spacing.md,
-    fontStyle: 'italic',
+    paddingTop: spacing.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border.default,
+    gap: spacing.smd,
+  },
+  tipLabel: {
+    ...typography.caption,
+    color: colors.accent.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontSize: 10,
+    fontFamily: 'Nunito-Bold',
+    fontWeight: '700',
+  },
+  tipText: {
+    ...typography.bodySm,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
 });
