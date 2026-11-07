@@ -106,7 +106,7 @@ export default function PrivacyPolicyScreen() {
 
         <Text style={styles.sectionTitle}>Contact</Text>
         <Text style={styles.body}>
-          For privacy questions or data requests, contact us at privacy@getstoke.io.
+          For privacy questions or data requests, contact us at privacy@stoke.llc.
         </Text>
 
         <View style={styles.bottomSpacer} />
