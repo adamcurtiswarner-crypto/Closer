@@ -157,22 +157,9 @@ describe('UsScreen', () => {
     expect(getByText(/days together/)).toBeTruthy();
   });
 
-  it('shows the alignment state for a divergent category (premium)', () => {
+  it('shows category tiles with scores in the grid (premium)', () => {
     const { getByText } = render(<UsScreen />);
     expect(getByText('Money')).toBeTruthy();
-    expect(getByText('Money means something different to each of you. Start there.')).toBeTruthy();
-  });
-
-  it('routes an alignment row into the Hearth category detail', () => {
-    const { getByTestId } = render(<UsScreen />);
-    fireEvent.press(getByTestId('us-alignment-money'));
-    expect(logEvent).toHaveBeenCalledWith('us_view_category_opened', {
-      category: 'money',
-    });
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: '/(app)/hearth',
-      params: { category: 'money' },
-    });
   });
 
   it('shows love languages side by side', () => {
@@ -181,20 +168,12 @@ describe('UsScreen', () => {
     expect(getByText('Words of Affirmation')).toBeTruthy();
   });
 
-  it('locks the map for free couples: gate line, CTA, no row navigation', () => {
+  it('locks the grid for free couples with gate CTA', () => {
     mockUseSubscription.mockReturnValue({ isPremium: false, isLoading: false });
     const { getByText, getByTestId } = render(<UsScreen />);
-
-    // Real category name stays visible (honest teaser)...
-    expect(getByText('Money')).toBeTruthy();
-    // ...the gate line and CTA are present...
-    expect(getByText('The full picture is part of Stoke Premium')).toBeTruthy();
+    expect(getByText('Your dimensions are building')).toBeTruthy();
     expect(getByTestId('us-gate-cta')).toBeTruthy();
     expect(logEvent).toHaveBeenCalledWith('gate_hit', { surface: 'us_view' });
-
-    // ...and tapping a row goes nowhere.
-    fireEvent.press(getByTestId('us-alignment-money'));
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('shows the quiet empty state before any scored answers exist', () => {

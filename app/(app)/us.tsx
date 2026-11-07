@@ -27,7 +27,7 @@ import { getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { FEATURES } from '@/config/features';
 import { getInitials } from '@/utils/initials';
 import { Icon } from '@/components/Icon';
-import { AlignmentRadar } from '@/components/AlignmentRadar';
+import { UsGrid } from '@/components/UsGrid';
 import { HearthSparkline } from '@/components/HearthSparkline';
 import { Paywall } from '@/components/Paywall';
 import { Skeleton } from '@/components/Skeleton';
@@ -203,26 +203,12 @@ export default function UsScreen() {
           </View>
         </Animated.View>
 
-        {/* Alignment Map radar chart — visual overview of the couple */}
-        {!premiumLoading && !locked && radarData.length >= 3 && (
-          <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
-            <Text style={styles.sectionTitle}>Your alignment map</Text>
-            <Text style={styles.sectionSubtitle}>
-              How you each see the 12 dimensions of your relationship
-            </Text>
-            <AlignmentRadar
-              data={radarData}
-              myName={t('us.you')}
-              partnerName={partnerName}
-              onCategoryPress={openCategory}
-            />
-          </Animated.View>
-        )}
-
-        {/* Alignment detail rows — text breakdown below the radar */}
-        <Animated.View entering={FadeInUp.duration(400).delay(150)} style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('us.alignmentTitle')}</Text>
-          <Text style={styles.sectionSubtitle}>{t('us.alignmentSubtitle')}</Text>
+        {/* Category grid — the game board */}
+        <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
+          <Text style={styles.sectionTitle}>Your 12 dimensions</Text>
+          <Text style={styles.sectionSubtitle}>
+            Tap any tile to see the full story
+          </Text>
           {premiumLoading ? (
             <View style={styles.card} testID="us-alignment-loading">
               {Array.from({ length: 3 }, (_, i) => (
@@ -234,13 +220,23 @@ export default function UsScreen() {
                 </View>
               ))}
             </View>
-          ) : alignments.length === 0 ? (
+          ) : radarData.length === 0 ? (
             <View style={styles.card}>
               <Text style={styles.emptyTitle}>{t('us.emptyTitle')}</Text>
               <Text style={styles.emptyBody}>{t('us.emptyBody')}</Text>
             </View>
+          ) : locked ? (
+            <View style={styles.card}>
+              <Text style={styles.emptyTitle}>Your dimensions are building</Text>
+              <Text style={styles.emptyBody}>Unlock the full picture with Premium.</Text>
+            </View>
           ) : (
-            <View style={styles.card}>{alignments.map(renderAlignmentRow)}</View>
+            <UsGrid
+              data={radarData}
+              myName={t('us.you')}
+              partnerName={partnerName}
+              onCategoryPress={openCategory}
+            />
           )}
         </Animated.View>
 
