@@ -46,12 +46,12 @@ const CTA_PILL_HEIGHT = 52;
 // Minimum tappable area for quiet text buttons.
 const MIN_TOUCH_TARGET = 44;
 
-// v1 scope: benefits describe only visible features (see src/config/features.ts)
 const PREMIUM_FEATURES = [
   { icon: 'flame' as const, key: 'paywall.features.daily' },
   { icon: 'lightbulb' as const, key: 'paywall.features.followUps' },
-  { icon: 'users' as const, key: 'paywall.features.usView' },
-  { icon: 'target' as const, key: 'paywall.features.categories' },
+  { icon: 'heart-half' as const, key: 'paywall.features.usView' },
+  { icon: 'compass' as const, key: 'paywall.features.categories' },
+  { icon: 'campfire' as const, key: 'paywall.features.history' },
   { icon: 'heart' as const, key: 'paywall.features.privacy' },
 ];
 
@@ -149,6 +149,11 @@ export function Paywall({ visible, onClose, source = 'unspecified' }: PaywallPro
               </Animated.View>
             ))}
           </View>
+
+          {/* Therapy anchor — the single most effective framing line */}
+          <Animated.View entering={FadeInUp.duration(400).delay(500)} style={styles.anchorWrap}>
+            <Text style={styles.anchorText}>{t('paywall.therapyAnchor')}</Text>
+          </Animated.View>
 
           {plansFailed ? (
             <View style={styles.plansErrorBox} testID="paywall-error">
@@ -320,6 +325,16 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text.primary,
     flex: 1,
+  },
+  anchorWrap: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  anchorText: {
+    ...typography.bodySm,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   sharedNote: {
     ...typography.h3,

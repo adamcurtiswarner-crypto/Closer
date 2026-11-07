@@ -77,7 +77,7 @@ describe('Paywall', () => {
 
       expect(getByTestId('paywall-plans-loading')).toBeTruthy();
       expect(getByTestId('paywall-cta-loading')).toBeTruthy();
-      expect(queryByText('Try 14 days free')).toBeNull();
+      expect(queryByText('Start your 21-day free trial')).toBeNull();
       expect(queryByText(/\$49\.99/)).toBeNull();
       expect(queryByText(/\$9\.99/)).toBeNull();
     });
@@ -115,13 +115,13 @@ describe('Paywall', () => {
         <Paywall visible onClose={jest.fn()} />
       );
 
-      expect(getByText('Try 14 days free')).toBeTruthy();
+      expect(getByText('Start your 21-day free trial')).toBeTruthy();
       expect(getByText('then $49.99/year, cancel anytime')).toBeTruthy();
       expect(getByText('$49.99/year')).toBeTruthy();
       expect(getByText('$9.99/month')).toBeTruthy();
       expect(getByText('Billed monthly')).toBeTruthy();
       expect(
-        getByText('One subscription covers you both. Your partner unlocks automatically.')
+        getByText('One subscription. Both of you. Your partner unlocks automatically.')
       ).toBeTruthy();
       expect(queryByTestId('paywall-plans-loading')).toBeNull();
       expect(queryByTestId('paywall-error')).toBeNull();
@@ -150,7 +150,7 @@ describe('Paywall', () => {
       mockUseSubscription.mockReturnValue(state);
       const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
 
-      fireEvent.press(getByText('Try 14 days free'));
+      fireEvent.press(getByText('Start your 21-day free trial'));
       expect(state.purchase).toHaveBeenCalledWith(annualPackage);
     });
 
@@ -234,7 +234,7 @@ describe('Paywall', () => {
       expect(getByTestId('paywall-error')).toBeTruthy();
       expect(getByText("Plans aren't loading right now.")).toBeTruthy();
       expect(getByText('Restore purchases')).toBeTruthy();
-      expect(queryByText('Try 14 days free')).toBeNull();
+      expect(queryByText('Start your 21-day free trial')).toBeNull();
       expect(queryByTestId('paywall-cta-loading')).toBeNull();
 
       fireEvent.press(getByText('Try again'));

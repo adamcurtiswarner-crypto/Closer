@@ -437,23 +437,24 @@
   },
   "paywall": {
     "title": "Stoke Premium",
-    "subtitle": "The follow-ups, the history, the whole fire — for both of you.",
+    "subtitle": "Less than one therapy session per year. For both of you.",
     "features": {
       "daily": "A new question for the two of you, every day",
-      "followUps": "Follow-ups that go deeper when it matters",
-      "usView": "The Us view — where the two of you stand",
-      "categories": "Twelve areas of your relationship, covered",
+      "followUps": "Unlimited follow-ups that go deeper when it matters",
+      "usView": "Your alignment map — where you are close, where you differ",
+      "categories": "Send each other questions from any category",
+      "history": "Your full relationship history, trends, and insights",
       "privacy": "Private between you two, always"
     },
     "plans": {
       "bestValue": "Best Value",
       "annual": "$49.99/year",
-      "annualMonthly": "$4.17/month",
+      "annualMonthly": "Just $2.08 per person, per month",
       "monthly": "$9.99/month",
       "billedMonthly": "Billed monthly"
     },
-    "sharedNote": "One subscription covers you both. Your partner unlocks automatically.",
-    "ctaTrial": "Try 14 days free",
+    "sharedNote": "One subscription. Both of you. Your partner unlocks automatically.",
+    "ctaTrial": "Start your 21-day free trial",
     "ctaSubline": "then {{price}}, cancel anytime",
     "plansError": "Plans aren't loading right now.",
     "tryAgain": "Try again",
@@ -461,7 +462,8 @@
     "renewalNote": "Renews automatically until cancelled. Billed to your Apple ID; manage or cancel in your Apple ID settings.",
     "termsLink": "Terms of Service",
     "privacyLink": "Privacy Policy",
-    "notNow": "Not now"
+    "notNow": "Not now",
+    "therapyAnchor": "One year of Stoke costs less than a single couples therapy session."
   },
   "resources": {
     "title": "Resources",
@@ -668,7 +670,11 @@
     "seePremium": "See Premium",
     "hearthTitle": "Your full history lives in Premium",
     "hearthBody": "This month glows right here, couch and all. Past months and your trends are kept for you in Premium.",
-    "usViewLine": "The full picture is part of Stoke Premium"
+    "usViewLine": "The full picture is part of Stoke Premium",
+    "followUpTaste": "You've had a taste. Unlock unlimited follow-ups with Premium.",
+    "exploreSendLimit": "You've used your {{count}} free questions this month.",
+    "exploreSendsRemaining": "{{count}} free questions left this month",
+    "followUpFree": "This one's on us"
   },
   "clarify": {
     "cardEyebrow": "{{name}} asked about your answer",
