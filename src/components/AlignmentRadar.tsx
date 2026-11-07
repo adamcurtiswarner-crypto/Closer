@@ -9,7 +9,7 @@ import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 const SCORE_MIN = 1;
 const SCORE_MAX = 10;
 const GUIDE_RINGS = [3, 5, 7, 9];
-const LABEL_OFFSET = 18;
+const LABEL_PADDING = 48;
 
 interface AlignmentRadarProps {
   data: RadarCategoryPoint[];
@@ -35,6 +35,25 @@ function scoreToRadius(score: number, maxRadius: number): number {
   return ((clamped - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)) * maxRadius;
 }
 
+/** Short label that fits the radar perimeter. */
+function shortLabel(cat: string): string {
+  const labels: Record<string, string> = {
+    communication: 'Comm',
+    intimacy: 'Intimacy',
+    affection: 'Affection',
+    money: 'Money',
+    family: 'Family',
+    friends: 'Friends',
+    fun_play: 'Fun',
+    future_dreams: 'Dreams',
+    everyday_life: 'Daily life',
+    conflict_repair: 'Conflict',
+    appreciation_trust: 'Trust',
+    growth_independence: 'Growth',
+  };
+  return labels[cat] || getCategoryByType(cat)?.label || cat;
+}
+
 /**
  * Radar / spider chart showing per-category averages for each partner.
  * Two overlapping semi-transparent polygons (coral = me, purple = partner)
@@ -53,7 +72,7 @@ export function AlignmentRadar({
 
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = (size / 2) - 40; // leave room for labels
+  const maxR = (size / 2) - LABEL_PADDING;
   const angleStep = (2 * Math.PI) / n;
 
   const buildPolygon = (accessor: (d: RadarCategoryPoint) => number): string =>
@@ -68,23 +87,17 @@ export function AlignmentRadar({
   const myPoints = buildPolygon((d) => d.myAvg);
   const partnerPoints = buildPolygon((d) => d.partnerAvg);
 
-  // Short labels for tight spaces
-  const shortLabel = (cat: string): string => {
-    const full = getCategoryByType(cat)?.label ?? cat;
-    // Truncate to first word if > 10 chars for radar fit
-    if (full.length <= 10) return full;
-    const words = full.split(' ');
-    return words.length > 1 ? words[0] : full.substring(0, 9);
-  };
-
   return (
     <Animated.View entering={FadeIn.duration(600)} style={styles.container}>
       <View style={styles.card}>
         <View
           style={styles.chartWrap}
-          onLayout={(e) => setSize(e.nativeEvent.layout.width)}
+          onLayout={(e) => {
+            const w = e.nativeEvent.layout.width;
+            if (w > 0 && w !== size) setSize(w);
+          }}
         >
-          {size > 0 && (
+          {size > 0 && maxR > 20 && (
             <Svg width={size} height={size}>
               {/* Guide rings */}
               {GUIDE_RINGS.map((ringScore) => {
@@ -163,24 +176,27 @@ export function AlignmentRadar({
                 );
               })}
 
-              {/* Category labels */}
+              {/* Category labels — rendered as short names around perimeter */}
               {data.map((d, i) => {
-                const labelR = maxR + LABEL_OFFSET;
-                const { x, y } = polarToCartesian(cx, cy, labelR, i * angleStep);
-                // Determine text anchor based on position
+                const labelR = maxR + 16;
                 const angle = i * angleStep;
+                const { x, y } = polarToCartesian(cx, cy, labelR, angle);
                 const isLeft = Math.sin(angle) < -0.1;
                 const isRight = Math.sin(angle) > 0.1;
                 const anchor = isLeft ? 'end' : isRight ? 'start' : 'middle';
+                // Nudge top/bottom labels vertically
+                const isTop = Math.cos(angle) > 0.5;
+                const isBottom = Math.cos(angle) < -0.5;
+                const yOffset = isTop ? -4 : isBottom ? 12 : 4;
 
                 return (
                   <SvgText
                     key={`label-${i}`}
                     x={x}
-                    y={y + 4}
+                    y={y + yOffset}
                     textAnchor={anchor}
-                    fontSize={10}
-                    fontFamily="Nunito-SemiBold"
+                    fontSize={11}
+                    fontWeight="600"
                     fill={colors.text.secondary}
                   >
                     {shortLabel(d.category)}
@@ -246,6 +262,7 @@ const styles = StyleSheet.create({
   chartWrap: {
     width: '100%',
     aspectRatio: 1,
+    minHeight: 280,
   },
   legend: {
     flexDirection: 'row',
