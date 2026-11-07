@@ -106,6 +106,7 @@ export const deleteAccount = functions.https.onCall(async (data, context) => {
     deleted_at: admin.firestore.FieldValue.serverTimestamp(),
     scheduled_purge_at: admin.firestore.Timestamp.fromDate(scheduledPurgeAt),
     purge_couple_id: userData.couple_id || null,
+    push_tokens: [],
     updated_at: admin.firestore.FieldValue.serverTimestamp(),
   });
 

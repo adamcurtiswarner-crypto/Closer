@@ -34,6 +34,11 @@ import type {
   FollowUpAssignmentInfo,
 } from '@/types';
 
+// Security note (audited 2026-11-06): the offline queue stores response text
+// in plaintext AsyncStorage. SecureStore is not viable (2048-byte limit).
+// Accepted risk: data-at-rest on-device is protected by the OS sandbox and
+// optional biometric lock (useBiometricAuth). Jailbroken device risk is
+// documented in the production launch checklist.
 const OFFLINE_QUEUE_KEY = '@closer_offline_responses';
 const SKIPPED_FOLLOW_UPS_KEY = '@closer_skipped_follow_ups';
 const SKIPPED_RETENTION_DAYS = 14;

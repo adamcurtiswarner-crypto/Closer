@@ -76,9 +76,11 @@ service cloud.firestore {
       // Members can read their couple in ANY status (the client checks
       // status on stale couple_ids); pending couples stay readable for the
       // invite-acceptance flow.
+      // Members read in any status; ex-members read only their dissolved doc.
+      // Pending couples are readable ONLY by the inviter (who is already a
+      // member). The acceptee joins via the acceptInvite callable (Admin SDK).
       allow read: if isCoupleMemberAnyStatus(coupleId) ||
-        wasCoupleMember(coupleId) ||
-        (isAuthenticated() && resource.data.status == 'pending');
+        wasCoupleMember(coupleId);
       allow create: if isAuthenticated() &&
         request.auth.uid in request.resource.data.member_ids;
       // Members can update pending/active couples (cancel invite, frequency,
@@ -196,8 +198,10 @@ service cloud.firestore {
 
     match /couples/{coupleId}/goals/{goalId} {
       allow read: if isCoupleMember(coupleId);
-      allow create: if isCoupleMember(coupleId);
-      allow update: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId) &&
+        request.resource.data.keys().size() <= 15;
+      allow update: if isCoupleMember(coupleId) &&
+        request.resource.data.keys().size() <= 15;
       allow delete: if false; // Soft delete via archived status
     }
 
@@ -215,8 +219,10 @@ service cloud.firestore {
 
     match /couples/{coupleId}/wishlist_items/{itemId} {
       allow read: if isCoupleMember(coupleId);
-      allow create: if isCoupleMember(coupleId);
-      allow update: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId) &&
+        request.resource.data.keys().size() <= 15;
+      allow update: if isCoupleMember(coupleId) &&
+        request.resource.data.keys().size() <= 15;
       allow delete: if false; // Soft delete via is_deleted field
     }
 
@@ -226,8 +232,10 @@ service cloud.firestore {
 
     match /couples/{coupleId}/date_nights/{dateNightId} {
       allow read: if isCoupleMember(coupleId);
-      allow create: if isCoupleMember(coupleId);
-      allow update: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId) &&
+        request.resource.data.keys().size() <= 20;
+      allow update: if isCoupleMember(coupleId) &&
+        request.resource.data.keys().size() <= 20;
       allow delete: if false;
     }
 

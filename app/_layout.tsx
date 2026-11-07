@@ -21,6 +21,7 @@ import { colors } from '@/config/theme';
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   enabled: !__DEV__,
+  environment: __DEV__ ? 'development' : 'production',
   // Performance monitoring
   tracesSampleRate: 0.2, // 20% of transactions
   profilesSampleRate: 0.1, // 10% of profiled transactions

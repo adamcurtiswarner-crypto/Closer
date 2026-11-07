@@ -5,15 +5,23 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/config/firebase';
 import { logger } from '@/utils/logger';
 
+/** Max upload size in bytes (10MB, matches Storage rules). */
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+
 /**
  * Read a local file URI as a Uint8Array for Firebase Storage upload.
  * More reliable than fetch(uri).blob() on React Native / Hermes.
+ * Validates size client-side before the upload attempt (matches the
+ * 10MB limit in storage.rules).
  */
 async function readFileAsBytes(uri: string): Promise<Uint8Array> {
   const base64 = await FileSystem.readAsStringAsync(uri, {
     encoding: FileSystem.EncodingType.Base64,
   });
   const binaryString = atob(base64);
+  if (binaryString.length > MAX_IMAGE_BYTES) {
+    throw new Error('Image too large. Please choose a smaller photo.');
+  }
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);

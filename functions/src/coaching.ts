@@ -199,7 +199,8 @@ Respond with a JSON array of objects, each with: text, hint, type, emotional_dep
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new functions.https.HttpsError('internal', `Claude API error: ${response.status} ${errorText}`);
+    await reportError('generateAIPrompts:claudeApi', new Error(`Claude API ${response.status}`), { extra: { errorText } });
+    throw new functions.https.HttpsError('internal', 'AI generation failed. Please try again later.');
   }
 
   const result = await response.json();

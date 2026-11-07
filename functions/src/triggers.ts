@@ -473,6 +473,7 @@ export const onReactionAdded = functions.firestore
     // stale completion still receives a reaction — drop quietly.
     const coupleData = coupleDoc.data();
     if (!coupleData || !Array.isArray(coupleData.member_ids)) return null;
+    if (coupleData.status !== 'active') return null;
     const partnerId = coupleData.member_ids.find(
       (id: string) => id !== reactorId
     );
@@ -591,6 +592,7 @@ export const onCompletionClarified = functions.firestore
     const coupleDoc = await db.collection('couples').doc(coupleId).get();
     const coupleData = coupleDoc.data();
     if (!coupleData || !Array.isArray(coupleData.member_ids)) return null;
+    if (coupleData.status !== 'active') return null;
 
     const partnerId = coupleData.member_ids.find(
       (id: string) => id !== event.askerId
@@ -608,6 +610,9 @@ export const onCompletionClarified = functions.firestore
     if (event.kind === 'question') {
       // The asker wrote a question about their PARTNER's answer — notify the
       // partner. Person-to-person, named human, reward-family push.
+      // Security note (audited 2026-11-06): user-authored question text
+      // (truncated to 60 chars) appears on the lock screen. Accepted risk
+      // per founder decision (P0 #7) — matches the explore-send precedent.
       const askerDoc = await db.collection('users').doc(event.askerId).get();
       const askerName = askerDoc.data()?.display_name || 'Your partner';
       await sendPushNotification(partnerId, {

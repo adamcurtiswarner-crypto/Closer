@@ -20,6 +20,7 @@ import { db } from '@/config/firebase';
 import { uploadChatImage } from '@/services/imageUpload';
 import { logEvent } from '@/services/analytics';
 import { logger } from '@/utils/logger';
+import { containsCrisisLanguage } from '@/utils/safetyLexicon';
 import { useAuth } from './useAuth';
 import { useCouple } from './useCouple';
 
@@ -154,6 +155,7 @@ export function useSendMessage() {
     }) => {
       if (!coupleId || !userId) throw new Error('Not authenticated');
 
+      const safetyMatch = text.trim().length > 0 && containsCrisisLanguage(text.trim());
       let imageUrl: string | null = null;
       let messageType: 'text' | 'image' = 'text';
 
@@ -186,6 +188,7 @@ export function useSendMessage() {
       }
 
       logEvent('chat_message_sent');
+      return { safetyMatch };
     },
   });
 }
