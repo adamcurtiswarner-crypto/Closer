@@ -90,6 +90,7 @@ import type { HearthCompletion } from '@/hooks/useHearth';
 import { usePartnerLoveLanguage } from '@/hooks/usePartnerLoveLanguage';
 import { pickSmallMove } from '@/utils/smallMoves';
 import { useFreeUsage } from '@/hooks/useFreeUsage';
+import { TryThisCard } from '@/components/TryThisCard';
 import {
   useExploreAssignments,
   useCompletionReactions,
@@ -942,6 +943,13 @@ export default function TodayScreen() {
     </View>
   ) : null;
 
+  // Daily action card — one love-language-aware micro-action per day
+  const tryThisCard = (
+    <View style={{ marginTop: spacing.md }}>
+      <TryThisCard partnerLoveLanguage={partnerLoveLanguage ?? null} />
+    </View>
+  );
+
   // Explore questions the partner answered that are waiting on you — a quiet
   // discovery card below the day's main card. Tapping a single question opens
   // its respond flow on the explore tab; multiple land on the tab itself.
@@ -1171,6 +1179,7 @@ export default function TodayScreen() {
 
       {openDayChip}
 
+      {tryThisCard}
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}
@@ -1295,6 +1304,7 @@ export default function TodayScreen() {
 
       {openDayChip}
 
+      {tryThisCard}
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}
@@ -1414,6 +1424,7 @@ export default function TodayScreen() {
 
       {openDayChip}
 
+      {tryThisCard}
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}
@@ -1578,6 +1589,7 @@ export default function TodayScreen() {
 
       {openDayChip}
 
+      {tryThisCard}
       {partnerQuestionCard}
       {clarifyCard}
       {clarifySheet}

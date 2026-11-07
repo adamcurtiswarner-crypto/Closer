@@ -239,6 +239,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Action feedback — "Try this today" landed/missed tracking
+    match /couples/{coupleId}/action_feedback/{feedbackId} {
+      allow read: if isCoupleMember(coupleId);
+      allow create: if isCoupleMember(coupleId) &&
+        request.resource.data.user_id == request.auth.uid &&
+        request.resource.data.keys().size() <= 10;
+      allow update: if false;
+      allow delete: if false;
+    }
+
     // ============================================
     // COUPLE INVITES
     // ============================================
