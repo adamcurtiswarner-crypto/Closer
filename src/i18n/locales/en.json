@@ -203,7 +203,7 @@
     "notePlaceholder": "What's one moment behind that number?",
     "notePlaceholders": {
       "communication": "What conversation is behind that number?",
-      "intimacy": "One moment behind that number, if you want."
+      "intimacy": "One moment behind that number."
     },
     "yourResponse": "Your response",
     "waitingFor": "Waiting for {{name}}...",

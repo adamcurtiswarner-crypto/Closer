@@ -22,8 +22,8 @@ interface ScalePromptCardProps {
   /**
    * Prompt category (assignment promptType). When a per-category placeholder
    * exists at today.notePlaceholders.<category> it replaces the default
-   * today.notePlaceholder nudge. The note stays optional either way — no
-   * validation, no nagging.
+   * today.notePlaceholder nudge. The note is required — a score without
+   * words does not create connection.
    */
   category?: string | null;
 }
@@ -47,7 +47,7 @@ export function ScalePromptCard({
 }: ScalePromptCardProps) {
   const { t } = useTranslation();
   const config = scaleConfig ?? DEFAULT_SCALE_CONFIG;
-  const canSubmit = value !== null && !isPending;
+  const canSubmit = value !== null && note.trim().length > 0 && !isPending;
 
   // The optional note is where the reveal, reactions, follow-ups, and Hearth
   // starters get their material — nudge gently with a per-category placeholder

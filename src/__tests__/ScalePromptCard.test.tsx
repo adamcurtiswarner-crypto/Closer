@@ -102,14 +102,20 @@ describe('ScalePromptCard', () => {
     ).toBeTruthy();
   });
 
-  it('the note stays optional — submit works with a score and an empty note', () => {
-    const { getByTestId, queryByText } = render(
+  it('does not submit with a score but empty note — words are required', () => {
+    const { getByTestId } = render(
       <ScalePromptCard {...defaultProps} value={6} note="" />
     );
     fireEvent.press(getByTestId('scale-submit'));
+    expect(defaultProps.onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('submits with a score and a non-empty note', () => {
+    const { getByTestId } = render(
+      <ScalePromptCard {...defaultProps} value={6} note="A quiet morning together" />
+    );
+    fireEvent.press(getByTestId('scale-submit'));
     expect(defaultProps.onSubmit).toHaveBeenCalledTimes(1);
-    // No validation nagging anywhere on the card
-    expect(queryByText(/required/i)).toBeNull();
   });
 
   it('reports slider selection through onChangeValue', () => {
@@ -124,10 +130,10 @@ describe('ScalePromptCard', () => {
     expect(defaultProps.onSubmit).not.toHaveBeenCalled();
   });
 
-  it('submits once a score is selected', () => {
+  it('does not submit with only a score and no note', () => {
     const { getByTestId } = render(<ScalePromptCard {...defaultProps} value={6} />);
     fireEvent.press(getByTestId('scale-submit'));
-    expect(defaultProps.onSubmit).toHaveBeenCalledTimes(1);
+    expect(defaultProps.onSubmit).not.toHaveBeenCalled();
   });
 
   it('notifies onNoteFocus when the note field gains focus', () => {
