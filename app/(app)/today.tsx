@@ -89,6 +89,7 @@ import { HearthRevealSheet } from '@/components/HearthRevealSheet';
 import type { HearthCompletion } from '@/hooks/useHearth';
 import { usePartnerLoveLanguage } from '@/hooks/usePartnerLoveLanguage';
 import { pickSmallMove } from '@/utils/smallMoves';
+import { useFreeUsage } from '@/hooks/useFreeUsage';
 import {
   useExploreAssignments,
   useCompletionReactions,
@@ -239,6 +240,7 @@ export default function TodayScreen() {
   const { hasPendingCheckIn, submitCheckIn, dismissCheckIn } = useCheckIn();
   const { latestInsight, dismissInsight, markActedOn } = useCoachingInsight();
   const { isPremium, isLoading: premiumLoading } = useSubscription();
+  const { data: freeUsage } = useFreeUsage();
   const { t } = useTranslation();
 
   const skipFollowUp = useSkipFollowUp();
@@ -425,6 +427,8 @@ export default function TodayScreen() {
     gatesEnabled: FEATURES.premiumGates,
     isPremium,
     isPremiumLoading: premiumLoading,
+    followUpsCompleted: freeUsage?.followUpsCompleted,
+    exploreSendsThisMonth: freeUsage?.exploreSendsThisMonth,
   });
   const followUpLocked = isFollowUp && gates.followUpLocked;
 

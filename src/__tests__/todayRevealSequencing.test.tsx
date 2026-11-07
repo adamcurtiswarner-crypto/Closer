@@ -197,6 +197,7 @@ jest.mock('@/hooks/useMonthlyActivity', () => ({
 }));
 jest.mock('@/hooks/useCouple', () => ({ useCouple: () => ({ data: null }) }));
 jest.mock('@/hooks/usePartnerLoveLanguage', () => ({ usePartnerLoveLanguage: () => ({ data: null }) }));
+jest.mock('@/hooks/useFreeUsage', () => ({ useFreeUsage: () => ({ data: { followUpsCompleted: 0, exploreSendsThisMonth: 0 } }) }));
 jest.mock('@/hooks/useCheckIn', () => ({
   useCheckIn: () => ({
     hasPendingCheckIn: false,

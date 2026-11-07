@@ -69,6 +69,8 @@ jest.mock('@/components/SafetyResources', () => ({ SafetyResources: () => null }
 
 // Couple-scoped entitlement — controllable per test (default: free couple)
 const mockSubscription = jest.fn();
+const mockFreeUsage = jest.fn().mockReturnValue({ data: { followUpsCompleted: 0, exploreSendsThisMonth: 0 } });
+jest.mock('@/hooks/useFreeUsage', () => ({ useFreeUsage: () => mockFreeUsage() }));
 jest.mock('@/hooks/useSubscription', () => ({
   useSubscription: () => mockSubscription(),
 }));
@@ -354,8 +356,10 @@ describe('ExploreScreen states', () => {
   });
 
   describe('premium gate on sending (premiumGates on)', () => {
-    it('free couple tapping Respond on a fresh prompt opens the paywall, not the editor', () => {
+    it('free couple tapping Respond on a fresh prompt opens the paywall after free sends exhausted', () => {
       const { logEvent } = require('@/services/analytics');
+      // Exhaust the 3 free explore sends
+      mockFreeUsage.mockReturnValue({ data: { followUpsCompleted: 0, exploreSendsThisMonth: 3 } });
       setQueries();
       const { getByText, getByTestId, queryByText } = render(<ExploreScreen />);
 

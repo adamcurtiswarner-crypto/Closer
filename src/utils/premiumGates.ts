@@ -12,13 +12,29 @@
 //       including the "we talked" mark — the talk ritual is the product's
 //       hook, never advertised in the header and then locked
 //
+//   Free taste (converts to locked after threshold):
+//     - first FREE_FOLLOW_UP_TASTE follow-up conversations (the "aha moment")
+//     - FREE_EXPLORE_SENDS_PER_MONTH explore sends per calendar month
+//
 //   Premium (trial / subscription):
-//     - the follow-up question itself (deepener / repair / divergence)
+//     - unlimited follow-up conversations
+//     - unlimited explore sends
 //     - Hearth history (pre-current-month) and trends
-//     - initiating an Explore send
+//     - Us view alignment map, movement, and reaction signals
+//
+//   Trial progressive unlock (21 days):
+//     - Days 1-7: full premium
+//     - Days 8-14: follow-ups limited to 3/week
+//     - Days 15-21: follow-ups limited to 1/week, Us view grays after viewing
 //
 // These functions are pure so the gate map is unit-testable without
 // rendering. Entitlement (couple-scoped) comes from useSubscription.
+
+/** Free users get this many follow-up conversations before the gate closes. */
+export const FREE_FOLLOW_UP_TASTE = 1;
+
+/** Free users can initiate this many explore sends per calendar month. */
+export const FREE_EXPLORE_SENDS_PER_MONTH = 3;
 
 export interface PremiumGateInput {
   /** FEATURES.premiumGates — the single flag that turns the model on. */
@@ -27,6 +43,10 @@ export interface PremiumGateInput {
   isPremium: boolean;
   /** True while entitlement is still resolving — never lock during it. */
   isPremiumLoading?: boolean;
+  /** Total follow-up conversations this couple has completed (all time). */
+  followUpsCompleted?: number;
+  /** Explore sends initiated by this couple in the current calendar month. */
+  exploreSendsThisMonth?: number;
 }
 
 export interface PremiumGateMap {
@@ -50,6 +70,10 @@ export interface PremiumGateMap {
    * teaser (real category names, blurred states).
    */
   usViewLocked: boolean;
+  /** How many free follow-up tastes remain (0 = locked). */
+  freeFollowUpsRemaining: number;
+  /** How many free explore sends remain this month (0 = locked). */
+  freeExploreSendsRemaining: number;
 }
 
 /**
@@ -58,15 +82,30 @@ export interface PremiumGateMap {
  * couple must never see a flash of locked content.
  */
 export function premiumGates(input: PremiumGateInput): PremiumGateMap {
-  const locked =
-    input.gatesEnabled && !input.isPremium && !(input.isPremiumLoading ?? false);
+  const loading = input.isPremiumLoading ?? false;
+  const locked = input.gatesEnabled && !input.isPremium && !loading;
+
+  // Follow-up taste: free users get FREE_FOLLOW_UP_TASTE before the gate
+  // closes. Once they have completed that many, the gate is locked.
+  const followUpsUsed = input.followUpsCompleted ?? 0;
+  const freeFollowUpsRemaining = Math.max(0, FREE_FOLLOW_UP_TASTE - followUpsUsed);
+  const followUpLocked = locked && freeFollowUpsRemaining === 0;
+
+  // Explore send limit: free users get FREE_EXPLORE_SENDS_PER_MONTH per
+  // calendar month. The count resets at the start of each month.
+  const exploreSendsUsed = input.exploreSendsThisMonth ?? 0;
+  const freeExploreSendsRemaining = Math.max(0, FREE_EXPLORE_SENDS_PER_MONTH - exploreSendsUsed);
+  const exploreSendLocked = locked && freeExploreSendsRemaining === 0;
+
   return {
     dailyPromptLocked: false,
     exploreAnswerLocked: false,
-    followUpLocked: locked,
-    exploreSendLocked: locked,
+    followUpLocked,
+    exploreSendLocked,
     hearthHistoryLocked: locked,
     usViewLocked: locked,
+    freeFollowUpsRemaining: input.isPremium ? Infinity : freeFollowUpsRemaining,
+    freeExploreSendsRemaining: input.isPremium ? Infinity : freeExploreSendsRemaining,
   };
 }
 

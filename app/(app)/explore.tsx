@@ -43,6 +43,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePartner } from '@/hooks/usePartner';
 import { usePersonalize } from '@/hooks/usePersonalize';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useFreeUsage } from '@/hooks/useFreeUsage';
 import { FEATURES } from '@/config/features';
 import { premiumGates } from '@/utils/premiumGates';
 import { Icon } from '@/components/Icon';
@@ -91,6 +92,7 @@ export default function ExploreScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { isPremium, isLoading: premiumLoading } = useSubscription();
+  const { data: freeUsage } = useFreeUsage();
   const { data: partner } = usePartner();
   const partnerName = partner?.displayName || t('explore.partnerFallback');
   // Display-time only: {partner}/{me} tokens render with real first names here,
@@ -201,6 +203,7 @@ export default function ExploreScreen() {
       gatesEnabled: FEATURES.premiumGates,
       isPremium,
       isPremiumLoading: premiumLoading,
+      exploreSendsThisMonth: freeUsage?.exploreSendsThisMonth,
     }).exploreSendLocked;
     if (!partnerAskedThis && sendLocked) {
       logEvent('gate_hit', { surface: 'explore_send' });

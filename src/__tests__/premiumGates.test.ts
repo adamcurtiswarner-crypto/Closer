@@ -3,29 +3,42 @@ import {
   currentMonthOnly,
   isSameCalendarMonth,
   shouldShowPairingPaywall,
+  FREE_FOLLOW_UP_TASTE,
+  FREE_EXPLORE_SENDS_PER_MONTH,
 } from '@/utils/premiumGates';
 
 describe('premiumGates', () => {
   describe('flag off (premiumGates: false)', () => {
     it('leaves every surface open — the app behaves exactly as before', () => {
       const gates = premiumGates({ gatesEnabled: false, isPremium: false });
-      expect(gates).toEqual({
-        dailyPromptLocked: false,
-        exploreAnswerLocked: false,
-        followUpLocked: false,
-        exploreSendLocked: false,
-        hearthHistoryLocked: false,
-        usViewLocked: false,
-      });
+      expect(gates.dailyPromptLocked).toBe(false);
+      expect(gates.exploreAnswerLocked).toBe(false);
+      expect(gates.followUpLocked).toBe(false);
+      expect(gates.exploreSendLocked).toBe(false);
+      expect(gates.hearthHistoryLocked).toBe(false);
+      expect(gates.usViewLocked).toBe(false);
     });
   });
 
-  describe('flag on, couple free', () => {
-    const gates = premiumGates({ gatesEnabled: true, isPremium: false });
+  describe('flag on, couple free, no usage', () => {
+    const gates = premiumGates({
+      gatesEnabled: true,
+      isPremium: false,
+      followUpsCompleted: 0,
+      exploreSendsThisMonth: 0,
+    });
 
-    it('locks follow-ups, explore sends, and hearth history (past months + trends)', () => {
-      expect(gates.followUpLocked).toBe(true);
-      expect(gates.exploreSendLocked).toBe(true);
+    it('allows the first follow-up taste (not locked)', () => {
+      expect(gates.followUpLocked).toBe(false);
+      expect(gates.freeFollowUpsRemaining).toBe(FREE_FOLLOW_UP_TASTE);
+    });
+
+    it('allows the first explore sends (not locked)', () => {
+      expect(gates.exploreSendLocked).toBe(false);
+      expect(gates.freeExploreSendsRemaining).toBe(FREE_EXPLORE_SENDS_PER_MONTH);
+    });
+
+    it('locks hearth history and us view', () => {
       expect(gates.hearthHistoryLocked).toBe(true);
       expect(gates.usViewLocked).toBe(true);
     });
@@ -37,24 +50,54 @@ describe('premiumGates', () => {
     it('never locks answering a question the partner sent', () => {
       expect(gates.exploreAnswerLocked).toBe(false);
     });
+  });
 
-    it('exposes NO couch-queue lock — the current-month queue is free (the talk ritual is the hook)', () => {
-      // hearthHistoryLocked covers pre-current-month entries and trends only.
-      // Consumers derive the free queue from the currentMonthOnly() slice;
-      // there is deliberately no key that could lock the visible queue.
-      expect(Object.keys(gates).sort()).toEqual([
-        'dailyPromptLocked',
-        'exploreAnswerLocked',
-        'exploreSendLocked',
-        'followUpLocked',
-        'hearthHistoryLocked',
-        'usViewLocked',
-      ]);
+  describe('flag on, couple free, follow-up taste exhausted', () => {
+    it('locks follow-ups after FREE_FOLLOW_UP_TASTE completions', () => {
+      const gates = premiumGates({
+        gatesEnabled: true,
+        isPremium: false,
+        followUpsCompleted: FREE_FOLLOW_UP_TASTE,
+      });
+      expect(gates.followUpLocked).toBe(true);
+      expect(gates.freeFollowUpsRemaining).toBe(0);
+    });
+
+    it('locks follow-ups when well past the threshold', () => {
+      const gates = premiumGates({
+        gatesEnabled: true,
+        isPremium: false,
+        followUpsCompleted: 10,
+      });
+      expect(gates.followUpLocked).toBe(true);
+      expect(gates.freeFollowUpsRemaining).toBe(0);
+    });
+  });
+
+  describe('flag on, couple free, explore sends exhausted', () => {
+    it('locks explore sends after FREE_EXPLORE_SENDS_PER_MONTH', () => {
+      const gates = premiumGates({
+        gatesEnabled: true,
+        isPremium: false,
+        exploreSendsThisMonth: FREE_EXPLORE_SENDS_PER_MONTH,
+      });
+      expect(gates.exploreSendLocked).toBe(true);
+      expect(gates.freeExploreSendsRemaining).toBe(0);
+    });
+
+    it('allows explore sends below the threshold', () => {
+      const gates = premiumGates({
+        gatesEnabled: true,
+        isPremium: false,
+        exploreSendsThisMonth: 2,
+      });
+      expect(gates.exploreSendLocked).toBe(false);
+      expect(gates.freeExploreSendsRemaining).toBe(1);
     });
   });
 
   describe('flag on, couple premium', () => {
-    it('leaves everything open', () => {
+    it('leaves everything open with infinite remaining', () => {
       const gates = premiumGates({ gatesEnabled: true, isPremium: true });
       expect(gates.followUpLocked).toBe(false);
       expect(gates.exploreSendLocked).toBe(false);
@@ -62,6 +105,8 @@ describe('premiumGates', () => {
       expect(gates.usViewLocked).toBe(false);
       expect(gates.dailyPromptLocked).toBe(false);
       expect(gates.exploreAnswerLocked).toBe(false);
+      expect(gates.freeFollowUpsRemaining).toBe(Infinity);
+      expect(gates.freeExploreSendsRemaining).toBe(Infinity);
     });
   });
 
@@ -71,10 +116,38 @@ describe('premiumGates', () => {
         gatesEnabled: true,
         isPremium: false,
         isPremiumLoading: true,
+        followUpsCompleted: 100,
+        exploreSendsThisMonth: 100,
       });
       expect(gates.followUpLocked).toBe(false);
       expect(gates.exploreSendLocked).toBe(false);
       expect(gates.hearthHistoryLocked).toBe(false);
+    });
+  });
+
+  describe('backward compatibility (no usage counts provided)', () => {
+    it('defaults to zero usage — first taste available', () => {
+      const gates = premiumGates({ gatesEnabled: true, isPremium: false });
+      expect(gates.followUpLocked).toBe(false);
+      expect(gates.exploreSendLocked).toBe(false);
+      expect(gates.freeFollowUpsRemaining).toBe(FREE_FOLLOW_UP_TASTE);
+      expect(gates.freeExploreSendsRemaining).toBe(FREE_EXPLORE_SENDS_PER_MONTH);
+    });
+  });
+
+  describe('gate map keys', () => {
+    it('includes the new remaining counters', () => {
+      const gates = premiumGates({ gatesEnabled: true, isPremium: false });
+      expect(Object.keys(gates).sort()).toEqual([
+        'dailyPromptLocked',
+        'exploreAnswerLocked',
+        'exploreSendLocked',
+        'followUpLocked',
+        'freeExploreSendsRemaining',
+        'freeFollowUpsRemaining',
+        'hearthHistoryLocked',
+        'usViewLocked',
+      ]);
     });
   });
 });
