@@ -617,7 +617,7 @@ export const onCompletionClarified = functions.firestore
       const askerName = askerDoc.data()?.display_name || 'Your partner';
       await sendPushNotification(partnerId, {
         title: askerName,
-        body: `asked about your answer: "${truncatePromptText(event.question)}"`,
+        body: 'asked a question about your answer.',
       }, { type: 'clarify_question' });
     } else {
       // The partner answered the asker's question — notify the asker.
