@@ -138,6 +138,7 @@ jest.mock('@/hooks/useExplorePrompts', () => {
     // Real filter logic — expired assignments behave as "never started"
     isLiveExploreAssignment: (a: { status: string }) => a.status !== 'expired',
     usePromptsByCategory: (category: string | null) => mockPromptsQuery(category),
+    usePromptsByCollection: (collectionId: string | null) => mockPromptsQuery(collectionId),
     useExploreAssignments: () => mockAssignmentsQuery(),
     useStartExplorePrompt: () => ({ mutateAsync: mockStartExplore, isPending: false }),
     useExploreResponses: (assignmentId: string | null, status?: string) =>
@@ -209,7 +210,7 @@ describe('ExploreScreen states', () => {
       const { getByText } = render(<ExploreScreen />);
 
       // Shell stays put
-      expect(getByText('Categories')).toBeTruthy();
+      expect(getByText('Explore')).toBeTruthy();
       expect(getByText('Browse by category')).toBeTruthy();
       // Error card with one-line message and retry
       expect(

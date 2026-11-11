@@ -24,6 +24,8 @@ export interface ExplorePrompt {
   hint: string | null;
   type: string;
   emotionalDepth: string;
+  intensity?: string | null;
+  exploreCollection?: string | null;
 }
 
 /**
@@ -115,7 +117,7 @@ export function pendingPartnerQuestions(
     .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
 }
 
-// Fetch all active prompts for a given category
+// Fetch all active prompts for a given category (legacy — used by follow-up system)
 export function usePromptsByCategory(category: string | null) {
   return useQuery({
     queryKey: ['explorePrompts', category],
@@ -136,10 +138,42 @@ export function usePromptsByCategory(category: string | null) {
           hint: data.hint || null,
           type: data.type,
           emotionalDepth: data.emotional_depth,
+          intensity: data.intensity || null,
+          exploreCollection: data.explore_collection || null,
         } as ExplorePrompt;
       });
     },
     enabled: !!category,
+  });
+}
+
+// Fetch all active prompts for a given explore collection (v2 taxonomy)
+export function usePromptsByCollection(collectionId: string | null) {
+  return useQuery({
+    queryKey: ['exploreCollection', collectionId],
+    queryFn: async () => {
+      if (!collectionId) return [];
+      const promptsRef = collection(db, 'prompts');
+      const q = query(
+        promptsRef,
+        where('explore_collection', '==', collectionId),
+        where('status', '==', 'active')
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: d.id,
+          text: data.text,
+          hint: data.hint || null,
+          type: data.type,
+          emotionalDepth: data.emotional_depth,
+          intensity: data.intensity || null,
+          exploreCollection: data.explore_collection || null,
+        } as ExplorePrompt;
+      });
+    },
+    enabled: !!collectionId,
   });
 }
 

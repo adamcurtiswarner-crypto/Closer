@@ -25,9 +25,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { hapticImpact, hapticNotification, NotificationFeedbackType } from '@utils/haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PROMPT_CATEGORIES, getCategoryByType } from '@/config/promptCategories';
+import { getCategoryByType } from '@/config/promptCategories';
+import { EXPLORE_COLLECTIONS, getCollectionById } from '@/config/exploreCollections';
 import {
   usePromptsByCategory,
+  usePromptsByCollection,
   useExploreAssignments,
   useStartExplorePrompt,
   useExploreResponses,
@@ -71,7 +73,11 @@ export default function ExploreScreen() {
   }>();
   const router = useRouter();
 
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory || PROMPT_CATEGORIES[0].type);
+  const [selectedCollection, setSelectedCollection] = useState(
+    initialCategory ? null : EXPLORE_COLLECTIONS[0].id
+  );
+  // Legacy: if routed with a category param (from Us grid tap), use category query
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || null);
   const [mode, setMode] = useState<ScreenMode>('browse');
   const [activePrompt, setActivePrompt] = useState<ExplorePrompt | null>(null);
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
@@ -99,12 +105,14 @@ export default function ExploreScreen() {
   // while every write (useStartExplorePrompt copies prompt_text into the
   // assignment) keeps the canonical tokenized text.
   const personalize = usePersonalize();
-  const {
-    data: prompts,
-    isLoading,
-    isError: promptsFailed,
-    refetch: refetchPrompts,
-  } = usePromptsByCategory(selectedCategory);
+  // Use collection query when browsing collections, category query when routed from Us grid
+  const collectionQuery = usePromptsByCollection(selectedCategory ? null : selectedCollection);
+  const categoryQuery = usePromptsByCategory(selectedCategory);
+  const activeQuery = selectedCategory ? categoryQuery : collectionQuery;
+  const prompts = activeQuery.data;
+  const isLoading = activeQuery.isLoading;
+  const promptsFailed = activeQuery.isError;
+  const refetchPrompts = activeQuery.refetch;
   const { data: assignments } = useExploreAssignments();
   const startExplore = useStartExplorePrompt();
   const submitResponse = useSubmitResponse();
@@ -142,7 +150,16 @@ export default function ExploreScreen() {
     transform: [{ scale: submitScale.value }],
   }));
 
-  const currentCategory = getCategoryByType(selectedCategory);
+  const currentCategory = selectedCategory
+    ? getCategoryByType(selectedCategory)
+    : null;
+  const currentCollection = selectedCollection
+    ? getCollectionById(selectedCollection)
+    : null;
+  // Unified display info for the hero section
+  const heroLabel = currentCategory?.label ?? currentCollection?.label ?? '';
+  const heroDescription = currentCategory?.description ?? currentCollection?.description ?? '';
+  const heroIcon = currentCategory?.icon ?? currentCollection?.icon ?? 'compass';
 
   // The live (non-expired) explore assignment for a prompt, if any —
   // expired ones behave as if the prompt was never started.
@@ -370,26 +387,29 @@ export default function ExploreScreen() {
         <Text style={styles.headerTitle}>{t('explore.title')}</Text>
       </View>
 
-      {/* Category tabs */}
+      {/* Collection chips */}
       <View style={styles.categoryScrollContainer}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryRow}
         >
-        {PROMPT_CATEGORIES.map((cat) => {
-          const isActive = cat.type === selectedCategory;
+        {EXPLORE_COLLECTIONS.map((coll) => {
+          const isActive = !selectedCategory && coll.id === selectedCollection;
           return (
             <Pressable
-              key={cat.type}
+              key={coll.id}
               style={[
                 styles.categoryChip,
                 isActive ? styles.categoryChipActive : styles.categoryChipInactive,
               ]}
-              onPress={() => setSelectedCategory(cat.type)}
+              onPress={() => {
+                setSelectedCollection(coll.id);
+                setSelectedCategory(null);
+              }}
             >
               <Icon
-                name={cat.icon}
+                name={coll.icon}
                 size={18}
                 color={isActive ? colors.text.inverse : colors.accent.primary}
               />
@@ -401,7 +421,7 @@ export default function ExploreScreen() {
                     : styles.categoryChipLabelInactive,
                 ]}
               >
-                {cat.label}
+                {coll.label}
               </Text>
             </Pressable>
           );
@@ -409,25 +429,24 @@ export default function ExploreScreen() {
         </ScrollView>
       </View>
 
-      {/* Selected category — the same ink hero surface as the daily prompt
-          card, so the category itself reads in the prompt design language. */}
-      {currentCategory && (
+      {/* Collection/category hero */}
+      {(currentCategory || currentCollection) && (
         <Animated.View
-          key={currentCategory.type}
+          key={heroLabel}
           entering={FadeIn.duration(300)}
           style={styles.categoryHero}
         >
           <ToneShapes variant="black" />
           <View style={styles.heroEyebrowRow}>
             <Icon
-              name={currentCategory.icon}
+              name={heroIcon}
               size="sm"
               color={colors.onDark.muted}
               weight="regular"
             />
-            <Text style={styles.heroEyebrow}>{currentCategory.label}</Text>
+            <Text style={styles.heroEyebrow}>{heroLabel}</Text>
           </View>
-          <Text style={styles.categoryHeroText}>{currentCategory.description}</Text>
+          <Text style={styles.categoryHeroText}>{heroDescription}</Text>
         </Animated.View>
       )}
 

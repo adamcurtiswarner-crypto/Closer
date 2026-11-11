@@ -126,6 +126,11 @@ async function seedPromptsFromFile(fileName: string): Promise<number> {
       response_format: prompt.response_format ?? 'text',
       scale_config: prompt.scale_config ?? null,
 
+      // v2 explore taxonomy (Phase 2)
+      explore_collection: (prompt as any).explore_collection ?? null,
+      intensity: (prompt as any).intensity ?? null,
+      scoring_dimensions: (prompt as any).scoring_dimensions ?? null,
+
       // Initialize metrics
       times_assigned: 0,
       times_completed: 0,

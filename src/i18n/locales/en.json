@@ -487,7 +487,7 @@
   },
   "explore": {
     "eyebrow": "Browse by category",
-    "title": "Categories",
+    "title": "Explore",
     "respond": "Respond",
     "waitingOn": "Waiting on {{name}}",
     "sealedLine": "Your answer is sealed until they respond.",
