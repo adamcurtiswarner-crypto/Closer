@@ -10,7 +10,14 @@ import { useCouple } from '@/hooks/useCouple';
 import { usePartnerName } from '@/hooks/usePartnerName';
 import { usePartnerLoveLanguage } from '@/hooks/usePartnerLoveLanguage';
 import { useSubscription } from '@/hooks/useSubscription';
-import { isTended, useHearth, type HearthCompletion } from '@/hooks/useHearth';
+import {
+  couchQueue,
+  isTended,
+  monthlyStats,
+  useHearth,
+  useMarkDiscussed,
+  type HearthCompletion,
+} from '@/hooks/useHearth';
 import { deriveAlignment, deriveRadarData, movementPicks, type CategoryAlignment } from '@/utils/alignment';
 import { deriveReactionSignals } from '@/utils/reactionSignals';
 import { getLoveLanguageTips } from '@/utils/loveLanguageTips';
@@ -29,7 +36,6 @@ import { FEATURES } from '@/config/features';
 import { getInitials } from '@/utils/initials';
 import { Icon } from '@/components/Icon';
 import { UsGrid } from '@/components/UsGrid';
-import { HearthSparkline } from '@/components/HearthSparkline';
 import { Paywall } from '@/components/Paywall';
 import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
@@ -78,6 +84,12 @@ export default function UsScreen() {
         : [],
     [completions, user?.id]
   );
+
+  // Couch queue: conversations that need attention (repair/divergence/flagged, not yet tended)
+  const queue = useMemo(() => couchQueue(completions), [completions]);
+
+  // Monthly engagement stats
+  const monthly = useMemo(() => monthlyStats(completions), [completions]);
 
   // Repair/divergence/flagged entries both partners marked "we talked"
   // this calendar month. Counted by the DISCUSSED month (discussedAt), the
@@ -204,6 +216,32 @@ export default function UsScreen() {
           </View>
         </Animated.View>
 
+        {/* Monthly pulse — quick stats */}
+        {monthly.answered > 0 && (
+          <Animated.View entering={FadeInUp.duration(400).delay(100)} style={styles.pulseRow}>
+            <View style={styles.pulseItem}>
+              <Text style={styles.pulseNumber}>{monthly.answered}</Text>
+              <Text style={styles.pulseLabel}>answered</Text>
+            </View>
+            {tendedCount > 0 && (
+              <View style={styles.pulseItem}>
+                <Text style={styles.pulseNumber}>{tendedCount}</Text>
+                <Text style={styles.pulseLabel}>tended</Text>
+              </View>
+            )}
+            {queue.length > 0 && (
+              <TouchableOpacity
+                style={styles.pulseItem}
+                onPress={() => router.push('/(app)/hearth')}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.pulseNumber, { color: colors.accent.primary }]}>{queue.length}</Text>
+                <Text style={[styles.pulseLabel, { color: colors.accent.primary }]}>waiting</Text>
+              </TouchableOpacity>
+            )}
+          </Animated.View>
+        )}
+
         {/* Category grid — the game board */}
         <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
           <Text style={styles.sectionTitle}>Your 12 dimensions</Text>
@@ -265,29 +303,6 @@ export default function UsScreen() {
           </Animated.View>
         )}
 
-        {/* Movement — premium only; held back while entitlement resolves so
-            it never flashes for free couples. Gap series plot on a 0-9
-            domain (last 10 points, the component's designed density). */}
-        {!premiumLoading && !locked && movements.length > 0 && (
-          <Animated.View entering={FadeInUp.duration(400).delay(250)} style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('us.movementTitle')}</Text>
-            {movements.map((m) => (
-              <View key={m.category} style={styles.movementBlock}>
-                <Text style={styles.alignmentCategory}>
-                  {getCategoryByType(m.category)?.label ?? m.category}
-                </Text>
-                <Text style={styles.movementLine}>
-                  {t(`us.movement.${m.movement}`)}
-                </Text>
-                <HearthSparkline
-                  series={m.gapSeries.slice(-10)}
-                  domainMin={0}
-                  domainMax={9}
-                />
-              </View>
-            ))}
-          </Animated.View>
-        )}
 
         {/* What lands — reaction learning signals (v1.5 #2) */}
         {!premiumLoading && !locked && reactionSignals.outliers.length > 0 && (
@@ -449,6 +464,25 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: 2,
   },
+  pulseRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.xl,
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  pulseItem: {
+    alignItems: 'center',
+  },
+  pulseNumber: {
+    ...typography.h3,
+    color: colors.text.primary,
+  },
+  pulseLabel: {
+    ...typography.caption,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
   section: {
     marginTop: spacing.lg,
   },
@@ -525,15 +559,6 @@ const styles = StyleSheet.create({
   premiumButtonText: {
     ...typography.btn,
     color: colors.accent.primary,
-  },
-  movementBlock: {
-    marginTop: spacing.smd,
-    gap: spacing.xs,
-  },
-  movementLine: {
-    ...typography.bodySm,
-    color: colors.text.secondary,
-    marginBottom: spacing.xs,
   },
   tendedLine: {
     ...typography.body,

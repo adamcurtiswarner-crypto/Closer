@@ -215,7 +215,7 @@ export default function AppLayout() {
         options={
           FEATURES.explore
             ? {
-                title: 'Categories',
+                title: 'Explore',
                 tabBarIcon: ({ focused, color }) => (
                   <Icon name="compass" size="md" color={color} weight={focused ? 'fill' : 'light'} />
                 ),
@@ -225,16 +225,7 @@ export default function AppLayout() {
       />
       <Tabs.Screen
         name="hearth"
-        options={
-          FEATURES.hearth
-            ? {
-                title: 'Hearth',
-                tabBarIcon: ({ focused, color }) => (
-                  <Icon name="campfire" size="md" color={color} weight={focused ? 'fill' : 'light'} />
-                ),
-              }
-            : { href: null }
-        }
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="us"
