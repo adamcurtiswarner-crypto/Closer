@@ -55,6 +55,7 @@ import { ToneShapes } from '@/components/ToneShapes';
 import { QueryError } from '@/components/QueryError';
 import { Skeleton } from '@/components/Skeleton';
 import { SafetyResources } from '@/components/SafetyResources';
+import { ExploreRevisit } from '@/components/ExploreRevisit';
 import { logEvent } from '@/services/analytics';
 import { useTranslation } from 'react-i18next';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
@@ -114,6 +115,13 @@ export default function ExploreScreen() {
   const promptsFailed = activeQuery.isError;
   const refetchPrompts = activeQuery.refetch;
   const { data: assignments } = useExploreAssignments();
+  // Completed explore assignments for the Revisit section
+  const completedAssignments = React.useMemo(
+    () => (assignments ?? [])
+      .filter((a) => a.status === 'completed')
+      .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0)),
+    [assignments]
+  );
   const startExplore = useStartExplorePrompt();
   const submitResponse = useSubmitResponse();
   const viewingAssignment = assignments?.find((a) => a.id === viewingAssignmentId) ?? null;
@@ -613,6 +621,19 @@ export default function ExploreScreen() {
             );
           })
         )}
+
+        {/* Revisit section — questions the couple already answered */}
+        {completedAssignments.length > 0 && (
+          <View style={styles.revisitSection}>
+            <ExploreRevisit
+              assignments={completedAssignments}
+              onPress={(a) => {
+                setViewingAssignmentId(a.id);
+                logEvent('explore_prompt_completed' as any, { assignment_id: a.id });
+              }}
+            />
+          </View>
+        )}
       </ScrollView>
 
       {/* ─── Reveal sheet: a completed explore question gets the same
@@ -781,6 +802,14 @@ const styles = StyleSheet.create({
 
   // Prompt list
   promptList: { paddingHorizontal: spacing.screen, paddingBottom: spacing.xl, gap: spacing.smd },
+  revisitSection: {
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border.default,
+    marginTop: spacing.md,
+  },
   loadingContainer: { paddingTop: spacing.xl, alignItems: 'center' },
   emptyState: { paddingTop: spacing.xl, alignItems: 'center' },
   emptyText: {
