@@ -21,6 +21,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { logEvent } from '@/services/analytics';
 import { hapticImpact, ImpactFeedbackStyle } from '@utils/haptics';
 import { ConversationStarterModal } from '@/components/ConversationStarterModal';
+import { featureRoute } from '@/components/featureRoute';
 
 const TIER_COLORS: Record<string, string> = {
   thriving: '#22c55e',
@@ -50,7 +51,7 @@ function StatusIcon({ actedOn, dismissedAt }: { actedOn: Date | null; dismissedA
   return <Icon name="minus" size="xs" color="#d6d3d1" />;
 }
 
-export default function CoachingScreen() {
+function CoachingScreen() {
   const { user, refreshUser } = useAuth();
   const { data: couple } = useCouple();
   const { latestInsight, markActedOn, requestInsight } = useCoachingInsight();
@@ -656,3 +657,8 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 });
+
+// coaching is flagged off for v1. Hiding the tab hides the entrance; this
+// makes the route itself unreachable, so the screen never mounts and its
+// hooks never run. See src/components/featureRoute.tsx.
+export default featureRoute('coaching', CoachingScreen);

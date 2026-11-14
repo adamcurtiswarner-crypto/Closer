@@ -27,6 +27,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { featureRoute } from '@/components/featureRoute';
 
 function StatPill({ value, label }: { value: number; label: string }) {
   return (
@@ -160,7 +161,7 @@ function AnimatedLoveLanguageCircle({ children, delay }: { children: React.React
   );
 }
 
-export default function InsightsScreen() {
+function InsightsScreen() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { data: insights, isLoading, refetch, isRefetching } = useInsights();
@@ -1099,3 +1100,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 });
+
+// insights is flagged off for v1. Hiding the tab hides the entrance; this
+// makes the route itself unreachable, so the screen never mounts and its
+// hooks never run. See src/components/featureRoute.tsx.
+export default featureRoute('insights', InsightsScreen);

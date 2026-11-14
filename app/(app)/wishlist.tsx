@@ -26,8 +26,9 @@ import { AddWishlistModal } from '@/components/AddWishlistModal';
 import { AnimatedCheckbox } from '@/components/AnimatedCheckbox';
 import { SwipeableRow } from '@/components/SwipeableRow';
 import { Icon } from '@/components';
+import { featureRoute } from '@/components/featureRoute';
 
-export default function WishlistScreen() {
+function WishlistScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { data: items, isLoading, refetch } = useWishlistItems();
@@ -494,3 +495,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Bold',
   },
 });
+
+// wishlist is flagged off for v1. Hiding the tab hides the entrance; this
+// makes the route itself unreachable, so the screen never mounts and its
+// hooks never run. See src/components/featureRoute.tsx.
+export default featureRoute('wishlist', WishlistScreen);

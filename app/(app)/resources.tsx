@@ -8,8 +8,9 @@ import { ResourceCard } from '@/components/ResourceCard';
 import { Icon } from '@/components';
 import { useTranslation } from 'react-i18next';
 import { logEvent } from '@/services/analytics';
+import { featureRoute } from '@/components/featureRoute';
 
-export default function ResourcesScreen() {
+function ResourcesScreen() {
   const { t } = useTranslation();
   useEffect(() => {
     logEvent('resource_viewed');
@@ -164,3 +165,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
+
+// resources is flagged off for v1. Hiding the tab hides the entrance; this
+// makes the route itself unreachable, so the screen never mounts and its
+// hooks never run. See src/components/featureRoute.tsx.
+export default featureRoute('resources', ResourcesScreen);

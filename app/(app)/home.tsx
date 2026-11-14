@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
-import { Redirect, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,6 +31,7 @@ import { RelationshipStats } from '@/components/RelationshipStats';
 import { MilestoneBadges } from '@/components/MilestoneBadges';
 import { Icon } from '@/components/Icon';
 import { format, differenceInDays } from 'date-fns';
+import { featureRoute } from '@/components/featureRoute';
 
 function getDaysAsCouple(anniversaryDate: Date | null, linkedAt: Date | null): number {
   const startDate = anniversaryDate || linkedAt;
@@ -57,26 +58,7 @@ const QUICK_ACTIONS = [
   { key: 'games', icon: 'game-controller' as const, label: 'Games', route: '/(app)/games' },
 ];
 
-export default function TogetherScreen() {
-  // This screen is flagged OFF for v1 (FEATURES.home) and its tab is hidden
-  // with href: null — but hiding a tab does not make the ROUTE unreachable.
-  // On 2026-11-14 backing out of a dimension landed here, because the
-  // dimension route is itself a hidden tab and going back from a tab
-  // returns to the first screen declared in the navigator, which is this
-  // one. A user saw a screen that does not exist in v1 — including
-  // "16 best streak" and "1 day streak", which the product doctrine bans
-  // outright (no streaks, anywhere).
-  //
-  // A flag that only hides the entrance is not a flag. This sends anyone
-  // who reaches the route by any means to the tab that does exist.
-  if (!FEATURES.home) {
-    return <Redirect href="/(app)/today" />;
-  }
-
-  return <TogetherScreenContent />;
-}
-
-function TogetherScreenContent() {
+function TogetherScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -460,3 +442,9 @@ const styles = StyleSheet.create({
     height: 24,
   },
 });
+
+// home is flagged off for v1. Backing out of a dimension landed here on
+// 2026-11-14 — a screen that does not exist in this product, showing streak
+// copy the doctrine bans, and mounting a disabled feature's listener that
+// threw FAILED_PRECONDITION into production Sentry.
+export default featureRoute('home', TogetherScreen);

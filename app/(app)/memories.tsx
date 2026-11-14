@@ -31,10 +31,11 @@ import { Icon } from '@components';
 import { pickImage, showPhotoAccessDeniedAlert } from '@/services/imageUpload';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { featureRoute } from '@/components/featureRoute';
 
 type Tab = 'recap' | 'photos' | 'milestones';
 
-export default function MemoriesScreen() {
+function MemoriesScreen() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('recap');
@@ -451,3 +452,8 @@ const styles = StyleSheet.create({
     color: '#D4522A',
   },
 });
+
+// memories is flagged off for v1. Hiding the tab hides the entrance; this
+// makes the route itself unreachable, so the screen never mounts and its
+// hooks never run. See src/components/featureRoute.tsx.
+export default featureRoute('memories', MemoriesScreen);

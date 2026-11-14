@@ -38,8 +38,9 @@ import { SwipeableRow } from '@/components/SwipeableRow';
 import { Icon } from '@/components';
 
 import type { DateNight, DateNightCategory, DateNightIdea } from '@/types';
+import { featureRoute } from '@/components/featureRoute';
 
-export default function DateNightsScreen() {
+function DateNightsScreen() {
   const { user } = useAuth();
   const { data: dateNights, isLoading, refetch } = useDateNights();
   const archiveDateNight = useArchiveDateNight();
@@ -877,3 +878,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Bold',
   },
 });
+
+// dateNights is flagged off for v1. Hiding the tab hides the entrance; this
+// makes the route itself unreachable, so the screen never mounts and its
+// hooks never run. See src/components/featureRoute.tsx.
+export default featureRoute('dateNights', DateNightsScreen);

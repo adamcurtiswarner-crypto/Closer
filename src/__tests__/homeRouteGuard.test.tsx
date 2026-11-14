@@ -32,7 +32,21 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('@/config/features', () => ({
-  FEATURES: { home: false, streaks: false, goals: false, dateNights: false },
+  FEATURES: {
+    home: false,
+    memories: false,
+    insights: false,
+    wishlist: false,
+    games: false,
+    resources: false,
+    dateNights: false,
+    coaching: false,
+    streaks: false,
+    goals: false,
+    chat: false,
+    engines: false,
+    checkIns: false,
+  },
 }));
 
 // If any of these run, the guard has already failed — the whole point is
@@ -77,6 +91,70 @@ jest.mock('firebase/firestore', () => ({
 }));
 
 import TogetherScreen from '../../app/(app)/home';
+
+/**
+ * Structural guard: every flagged-off route is wrapped in featureRoute.
+ *
+ * home was not special — it was just the screen the navigator happened to
+ * fall back to. Seven more v1-disabled screens were reachable the same way
+ * on 2026-11-14, each able to mount a disabled feature's listeners; one of
+ * them put FAILED_PRECONDITION into production Sentry.
+ *
+ * Checked at the source rather than by rendering: these screens pull in
+ * native modules (haptics, firebase, reanimated) that a unit environment
+ * cannot load, and a guard that only works when every mock is present is
+ * not a guard. The behavioural proof — that the wrapper redirects and runs
+ * no hooks — is the home suite below.
+ */
+describe('every flagged-off route is guarded', () => {
+  const fs = require('fs');
+  const path = require('path');
+
+  // route file -> the FEATURES key it must be gated on
+  const ROUTE_FLAGS: Record<string, string> = {
+    'home.tsx': 'home',
+    'memories.tsx': 'memories',
+    'insights.tsx': 'insights',
+    'wishlist.tsx': 'wishlist',
+    'games.tsx': 'games',
+    'resources.tsx': 'resources',
+    'date-nights.tsx': 'dateNights',
+    'coaching.tsx': 'coaching',
+  };
+
+  const appDir = path.join(__dirname, '..', '..', 'app', '(app)');
+
+  it.each(Object.entries(ROUTE_FLAGS))(
+    '%s exports its screen through featureRoute',
+    (file, flag) => {
+      const src = fs.readFileSync(path.join(appDir, file), 'utf8');
+
+      expect(src).toContain(`export default featureRoute('${flag}'`);
+    }
+  );
+
+  it('flags every route file that is off but unguarded', () => {
+    const { FEATURES } = jest.requireActual('@/config/features');
+    const offenders: string[] = [];
+
+    for (const [file, flag] of Object.entries(ROUTE_FLAGS)) {
+      if (FEATURES[flag as keyof typeof FEATURES]) continue; // shipped — no guard needed
+      const src = fs.readFileSync(path.join(appDir, file), 'utf8');
+      if (!src.includes('featureRoute(')) offenders.push(file);
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
+  it('detects an unguarded screen', () => {
+    // A guard that cannot fail is not a guard.
+    const guarded = "export default featureRoute('games', GamesScreen);";
+    const unguarded = 'export default function GamesScreen() {}';
+
+    expect(guarded).toContain("featureRoute('games'");
+    expect(unguarded).not.toContain('featureRoute(');
+  });
+});
 
 describe('the flagged-off home route', () => {
   beforeEach(() => {

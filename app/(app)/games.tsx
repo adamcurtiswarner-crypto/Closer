@@ -9,8 +9,9 @@ import { GameLauncher, type GameMode } from '@/components/GameLauncher';
 import { WouldYouRather } from '@/components/WouldYouRather';
 import { HowWellDoYouKnowMe } from '@/components/HowWellDoYouKnowMe';
 import { TruthOrDare } from '@/components/TruthOrDare';
+import { featureRoute } from '@/components/featureRoute';
 
-export default function GamesScreen() {
+function GamesScreen() {
   const { user } = useAuth();
   const [activeMode, setActiveMode] = useState<GameMode | null>(null);
 
@@ -125,3 +126,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 });
+
+// games is flagged off for v1. Hiding the tab hides the entrance; this
+// makes the route itself unreachable, so the screen never mounts and its
+// hooks never run. See src/components/featureRoute.tsx.
+export default featureRoute('games', GamesScreen);
