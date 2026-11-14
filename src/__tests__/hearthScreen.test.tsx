@@ -206,7 +206,16 @@ describe('the dimension route', () => {
     expect(lastProps(mockRevealSheetProps).visible).toBe(true);
   });
 
-  it('backing out pops the route — the Hearth home it used to reveal is gone', () => {
+  /**
+   * Not router.back(). This route is a hidden TAB, so "back" from it
+   * returns to the FIRST screen declared in the navigator — home, which is
+   * flagged off for v1. On 2026-11-14 that is exactly what happened: a
+   * founder backed out of a dimension and landed on a screen that does not
+   * exist in v1, showing "16 best streak" on a product whose doctrine bans
+   * streak language outright. Navigating explicitly is deterministic from
+   * every entry point.
+   */
+  it('backing out goes to Us explicitly, never wherever the tab stack lands', () => {
     mockSearchParams.mockReturnValue({ category: 'communication' });
     mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
 
@@ -216,7 +225,8 @@ describe('the dimension route', () => {
       lastProps(mockCategoryDetailProps).onBack();
     });
 
-    expect(mockBack).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith('/(app)/us');
+    expect(mockBack).not.toHaveBeenCalled();
   });
 
   it('redirects to Us when opened without a category', () => {

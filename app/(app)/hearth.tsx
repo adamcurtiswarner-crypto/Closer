@@ -126,9 +126,12 @@ export default function HearthScreen() {
         series={historyLocked ? [] : trendSeries(completions, detailCategory.type)}
         myUid={myUid}
         partnerName={partnerName}
-        // The route exists for this detail, so back pops it and returns
-        // wherever it was opened from — the Us map, or a notification.
-        onBack={() => router.back()}
+        // Explicit, not router.back(): this route is a hidden TAB, so
+        // "back" from it returns to the first screen declared in the
+        // navigator (home, which is flagged off) rather than wherever the
+        // dimension was opened from. Navigating to Us is deterministic and
+        // correct from every entry point — the map, and a notification.
+        onBack={() => router.replace(FEATURES.usView ? '/(app)/us' : '/(app)/today')}
         onOpenTalkSheet={openTalkSheet}
         onOpenReveal={openReveal}
       />
