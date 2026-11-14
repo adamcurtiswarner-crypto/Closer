@@ -1,5 +1,15 @@
 # Stoke — App Store Listing (v1.0)
 
+> **SUPERSEDED 2026-11-14 — do not paste from this file.**
+> It was last refreshed against **build 65** (July 2026) and describes the app
+> before the Nov 11 restructure: 12 explore categories rather than six
+> collections, a separate Hearth tab, and a radar chart that no longer exists.
+> The current listing lives in
+> [docs/plans/app-store-metadata.md](docs/plans/app-store-metadata.md), which
+> also records what was verified and what is still blocked.
+> Kept for history: the reviewer-path notes and the 3.1.2 checklist below are
+> still useful and have no equivalent in the new file yet.
+
 Paste-ready copy for App Store Connect. Voice: warm, quiet, direct. No exclamation
 points, no emojis. Every claim below reflects what v1 actually does — no hidden
 features (streaks, games, coaching, chat, etc.), no "research/Gottman/encrypted"
