@@ -112,17 +112,30 @@ describe('FollowUpSource', () => {
       <FollowUpSource parentAssignmentId="assign-parent" partnerName="Masha" />
     );
 
-    expect(getByText("From yesterday's question")).toBeTruthy();
+    expect(getByText('Yesterday · 6 apart')).toBeTruthy();
     expect(queryByTestId('follow-up-source-panel')).toBeNull();
   });
 
-  it('opens by default on divergence, where the gap is the question', () => {
+  it('stays collapsed even on divergence, so today\'s question keeps the screen', () => {
+    // The first version opened automatically on divergence and pushed the
+    // ink prompt card — the thing the screen is FOR — below the fold.
     setSource(FULL);
-    const { getByTestId } = render(
-      <FollowUpSource parentAssignmentId="assign-parent" partnerName="Masha" defaultOpen />
+    const { queryByTestId } = render(
+      <FollowUpSource parentAssignmentId="assign-parent" partnerName="Masha" />
     );
 
-    expect(getByTestId('follow-up-source-panel')).toBeTruthy();
+    expect(queryByTestId('follow-up-source-panel')).toBeNull();
+  });
+
+  it('shows the gap and the scale without being opened', () => {
+    setSource(FULL);
+    const { getByText, getByTestId } = render(
+      <FollowUpSource parentAssignmentId="assign-parent" partnerName="Masha" />
+    );
+
+    // The headline fact is readable from the collapsed strip.
+    expect(getByText('Yesterday · 6 apart')).toBeTruthy();
+    expect(getByTestId('score-gap-scale')).toBeTruthy();
   });
 
   it('shows the originating question and both answers when opened', () => {
@@ -143,15 +156,17 @@ describe('FollowUpSource', () => {
 
   it('states the gap that triggered the follow-up', () => {
     setSource(FULL);
-    const { getByText, getByTestId } = render(
+    const { getByText, getAllByText, getByTestId } = render(
       <FollowUpSource parentAssignmentId="assign-parent" partnerName="Masha" />
     );
 
     fireEvent.press(getByTestId('follow-up-source-toggle'));
 
-    expect(getByText('You were 6 apart')).toBeTruthy();
-    expect(getByText('9')).toBeTruthy();
-    expect(getByText('3')).toBeTruthy();
+    expect(getByText('6')).toBeTruthy();
+    expect(getByText('points apart · Yesterday')).toBeTruthy();
+    // Scores appear on the scale and on each answer card.
+    expect(getAllByText('9').length).toBeGreaterThan(0);
+    expect(getAllByText('3').length).toBeGreaterThan(0);
   });
 
   it('omits the gap line when the two agreed, or when a score is missing', () => {
@@ -164,7 +179,8 @@ describe('FollowUpSource', () => {
       <FollowUpSource parentAssignmentId="assign-parent" partnerName="Masha" />
     );
     fireEvent.press(getByTestId('follow-up-source-toggle'));
-    expect(queryByText('You were 0 apart')).toBeNull();
+    // Equal scores: there is no gap to headline, and no span to draw.
+    expect(queryByText('points apart · Yesterday')).toBeNull();
 
     jest.clearAllMocks();
     setSource({
@@ -176,6 +192,7 @@ describe('FollowUpSource', () => {
     );
     fireEvent.press(second.getByTestId('follow-up-source-toggle'));
     expect(second.queryByText(/apart/)).toBeNull();
+    expect(second.queryByTestId('score-gap-scale')).toBeNull();
   });
 
   it('collapses again on a second tap', () => {

@@ -1399,7 +1399,6 @@ export default function TodayScreen() {
                   <FollowUpSource
                     parentAssignmentId={assignment.followUp.parentAssignmentId}
                     partnerName={partnerNameSentenceCase}
-                    defaultOpen={assignment.followUp.branch === 'divergence'}
                   />
                 </>
               )}
@@ -1570,7 +1569,6 @@ export default function TodayScreen() {
                 <FollowUpSource
                   parentAssignmentId={assignment!.followUp.parentAssignmentId}
                   partnerName={partnerNameSentenceCase}
-                  defaultOpen={assignment!.followUp.branch === 'divergence'}
                 />
               </>
             )}

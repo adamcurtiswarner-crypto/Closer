@@ -787,10 +787,13 @@
     "daysTogether": "{{count}} days together"
   },
   "followUpSource": {
+    "stripGap": "{{when}} · {{gap}} apart",
+    "stripGapNoDate": "{{gap}} apart",
     "fromDated": "From {{when}}",
     "from": "From the question before this",
+    "apartOn": "points apart · {{when}}",
+    "apart": "points apart",
     "show": "Show the question this came from",
-    "hide": "Hide the question this came from",
-    "gap": "You were {{gap}} apart"
+    "hide": "Hide the question this came from"
   }
 }

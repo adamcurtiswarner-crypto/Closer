@@ -82,6 +82,56 @@ export function describeSourceDate(
 }
 
 /**
+ * A short day label for the collapsed strip — "Today", "Yesterday", "Thu",
+ * or "Nov 7". Kept to a few characters so the strip stays one line beside
+ * the score scale, even at larger text sizes.
+ */
+export function shortSourceLabel(
+  assignedDate: string | null | undefined,
+  today: Date = new Date()
+): string | null {
+  if (!assignedDate) return null;
+  const source = parseLocalDay(assignedDate);
+  if (!source) return null;
+
+  const delta = dayDelta(source, today);
+  if (delta < 0) return null;
+  if (delta === 0) return 'Today';
+  if (delta === 1) return 'Yesterday';
+  if (delta < 7) return WEEKDAYS[source.getDay()].slice(0, 3);
+  return `${MONTHS[source.getMonth()]} ${source.getDate()}`;
+}
+
+/**
+ * The same day, spelled out, for the expanded card's header: "Today",
+ * "Yesterday", "Thursday", or "Nov 7".
+ */
+export function longSourceLabel(
+  assignedDate: string | null | undefined,
+  today: Date = new Date()
+): string | null {
+  if (!assignedDate) return null;
+  const source = parseLocalDay(assignedDate);
+  if (!source) return null;
+
+  const delta = dayDelta(source, today);
+  if (delta < 0) return null;
+  if (delta === 0) return 'Today';
+  if (delta === 1) return 'Yesterday';
+  if (delta < 7) return WEEKDAYS[source.getDay()];
+  return `${MONTHS[source.getMonth()]} ${source.getDate()}`;
+}
+
+/**
+ * Where a 1-10 score sits on the scale, as a 0-1 fraction. Clamped, because
+ * a legacy or malformed score must not push a dot outside the rail.
+ */
+export function scorePosition(score: number): number {
+  const clamped = Math.min(10, Math.max(1, score));
+  return (clamped - 1) / 9;
+}
+
+/**
  * The gap between two scores, or null when either side has no score.
  * Only scored daily prompts can trigger a follow-up, but a response can
  * still be missing a score (an explore answer, or legacy data), and the

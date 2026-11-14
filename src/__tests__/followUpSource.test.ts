@@ -6,7 +6,12 @@
  * the question that triggered them. A follow-up can also sit unanswered,
  * so "yesterday's question" cannot be hardcoded.
  */
-import { describeSourceDate, scoreGap } from '@/utils/followUpSource';
+import {
+  describeSourceDate,
+  longSourceLabel,
+  scoreGap,
+  shortSourceLabel,
+} from '@/utils/followUpSource';
 
 describe('describeSourceDate', () => {
   // Saturday 2026-11-14, matching the screenshot that prompted this work.
@@ -73,5 +78,33 @@ describe('scoreGap', () => {
     expect(scoreGap(null, 5)).toBeNull();
     expect(scoreGap(5, null)).toBeNull();
     expect(scoreGap(undefined, undefined)).toBeNull();
+  });
+});
+
+describe('shortSourceLabel and longSourceLabel', () => {
+  const today = new Date(2026, 10, 14, 8, 35); // Saturday
+
+  it('name today and yesterday the same way in both forms', () => {
+    expect(shortSourceLabel('2026-11-14', today)).toBe('Today');
+    expect(longSourceLabel('2026-11-14', today)).toBe('Today');
+    expect(shortSourceLabel('2026-11-13', today)).toBe('Yesterday');
+    expect(longSourceLabel('2026-11-13', today)).toBe('Yesterday');
+  });
+
+  it('abbreviates the weekday only in the short form', () => {
+    // The strip has to stay one line beside the scale.
+    expect(shortSourceLabel('2026-11-10', today)).toBe('Tue');
+    expect(longSourceLabel('2026-11-10', today)).toBe('Tuesday');
+  });
+
+  it('falls back to a date in both forms once a weekday is ambiguous', () => {
+    expect(shortSourceLabel('2026-11-07', today)).toBe('Nov 7');
+    expect(longSourceLabel('2026-11-07', today)).toBe('Nov 7');
+  });
+
+  it('returns null rather than guessing', () => {
+    expect(shortSourceLabel(null, today)).toBeNull();
+    expect(longSourceLabel('nonsense', today)).toBeNull();
+    expect(shortSourceLabel('2026-11-16', today)).toBeNull();
   });
 });

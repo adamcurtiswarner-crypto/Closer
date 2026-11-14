@@ -5,44 +5,46 @@ import { useTranslation } from 'react-i18next';
 
 import { Icon } from './Icon';
 import { ResponseCard } from './ResponseCard';
+import { ScoreGapScale } from './ScoreGapScale';
 import { Skeleton } from './Skeleton';
 import { usePersonalize } from '@/hooks/usePersonalize';
 import { useFollowUpSource } from '@/hooks/usePrompt';
-import { describeSourceDate, scoreGap } from '@/utils/followUpSource';
+import {
+  describeSourceDate,
+  longSourceLabel,
+  scoreGap,
+  shortSourceLabel,
+} from '@/utils/followUpSource';
 import { colors, radius, spacing, typography } from '@/config/theme';
 
 interface FollowUpSourceProps {
   parentAssignmentId: string | null;
   partnerName: string;
-  /** Starts open on the divergence branch, where the gap IS the question. */
-  defaultOpen?: boolean;
 }
 
 /**
  * "What this came from" — the question and both answers that produced this
- * follow-up.
+ * follow-up, with the score gap shown rather than described.
  *
  * A follow-up card asserts something about a conversation you already had
  * ("You two saw this one differently") and used to name none of it.
  * Divergence and repair are delivered the day AFTER the question that
  * triggered them, so by the time the card is read the context is gone.
  *
- * Collapsed by default so the follow-up question itself stays the hero, and
- * because re-reading your own answers before writing a new one can anchor
- * you to them. Opening is a deliberate act.
+ * Collapsed to a single strip by default, including on divergence. The
+ * first version opened automatically there, which pushed the ink prompt
+ * card — today's actual question, and the thing the screen is for — fully
+ * below the fold. The strip keeps the gap visible at a glance, so opening
+ * is a choice rather than a cost.
  *
- * Degrades quietly: if the join fails or the parent is missing, it renders
- * nothing at all and the plain context line above it still carries the
- * card. It never blocks answering.
+ * Degrades quietly: if the join fails or the parent is missing it renders
+ * nothing and the plain context line above still carries the card. It never
+ * blocks answering.
  */
-export function FollowUpSource({
-  parentAssignmentId,
-  partnerName,
-  defaultOpen = false,
-}: FollowUpSourceProps) {
+export function FollowUpSource({ parentAssignmentId, partnerName }: FollowUpSourceProps) {
   const { t } = useTranslation();
   const personalize = usePersonalize();
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(false);
   const { data, isLoading } = useFollowUpSource(parentAssignmentId);
 
   if (!parentAssignmentId) return null;
@@ -50,20 +52,40 @@ export function FollowUpSource({
   if (isLoading) {
     return (
       <View style={styles.wrap} testID="follow-up-source-loading">
-        <Skeleton width={160} height={12} />
+        <View style={styles.strip}>
+          <Skeleton width={120} height={12} />
+        </View>
       </View>
     );
   }
 
-  // No parent, no answers, or a denied read: say nothing rather than
-  // offering to open an empty drawer.
   if (!data || (!data.myResponse && !data.partnerResponse)) return null;
 
+  const myScore = data.myResponse?.responseScore ?? null;
+  const partnerScore = data.partnerResponse?.responseScore ?? null;
+  const gap = scoreGap(myScore, partnerScore);
+  const hasScale = typeof myScore === 'number' && typeof partnerScore === 'number';
+
+  const short = shortSourceLabel(data.assignedDate);
+  const long = longSourceLabel(data.assignedDate);
   const when = describeSourceDate(data.assignedDate);
-  const gap = scoreGap(data.myResponse?.responseScore, data.partnerResponse?.responseScore);
-  const summary = when
-    ? t('followUpSource.fromDated', { when })
-    : t('followUpSource.from');
+
+  // A gap of zero is not a gap — the two of you said the same thing, which
+  // is what a deepener is built on. Leading with a coral "0 points apart"
+  // would dress agreement up as distance, so the day label carries it and
+  // the scale shows the two dots sitting together.
+  const hasGap = gap !== null && gap > 0;
+
+  // With a real gap the strip leads with it, because that is the whole
+  // reason the block exists. Otherwise it names the day.
+  const stripLabel =
+    hasGap && short
+      ? t('followUpSource.stripGap', { when: short, gap })
+      : hasGap
+        ? t('followUpSource.stripGapNoDate', { gap })
+        : when
+          ? t('followUpSource.fromDated', { when })
+          : t('followUpSource.from');
 
   return (
     <View style={styles.wrap}>
@@ -73,50 +95,72 @@ export function FollowUpSource({
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         accessibilityLabel={open ? t('followUpSource.hide') : t('followUpSource.show')}
-        style={styles.toggle}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        style={styles.strip}
         testID="follow-up-source-toggle"
       >
-        <Text style={styles.toggleText} maxFontSizeMultiplier={1.4}>
-          {summary}
+        <Text style={styles.stripLabel} maxFontSizeMultiplier={1.3} numberOfLines={1}>
+          {stripLabel}
         </Text>
+
+        {hasScale && (
+          <ScoreGapScale
+            myScore={myScore}
+            partnerScore={partnerScore}
+            partnerName={partnerName}
+            variant="strip"
+          />
+        )}
+
         {/* The Icon map has no caret-down, so the shared right caret is
             rotated rather than widening that map for one use. */}
         <View style={open ? styles.caretOpen : styles.caretClosed}>
-          <Icon name="caret-right" size={14} color={colors.text.secondary} />
+          <Icon name="caret-right" size={13} color={colors.text.muted} />
         </View>
       </TouchableOpacity>
 
       {open && (
         <Animated.View
-          entering={FadeIn.duration(300)}
+          entering={FadeIn.duration(260)}
           style={styles.panel}
           testID="follow-up-source-panel"
         >
-          <Text style={styles.question} maxFontSizeMultiplier={1.6}>
-            {personalize(data.promptText)}
-          </Text>
-
-          {typeof gap === 'number' && gap > 0 && (
-            <Text style={styles.gapLine} maxFontSizeMultiplier={1.4}>
-              {t('followUpSource.gap', { gap })}
-            </Text>
-          )}
-
-          {data.myResponse && (
-            <View style={styles.answer}>
-              <ResponseCard
-                label={t('us.you')}
-                responseText={data.myResponse.responseText}
-                imageUrl={data.myResponse.imageUrl}
-                isYours
-                score={data.myResponse.responseScore}
-              />
+          {hasGap && (
+            <View style={styles.gapHead}>
+              <Text style={styles.gapNumeral} maxFontSizeMultiplier={1.3}>
+                {gap}
+              </Text>
+              <Text style={styles.gapWord} maxFontSizeMultiplier={1.3}>
+                {long
+                  ? t('followUpSource.apartOn', { when: long })
+                  : t('followUpSource.apart')}
+              </Text>
             </View>
           )}
 
+          <Text style={styles.question} maxFontSizeMultiplier={1.5}>
+            {personalize(data.promptText)}
+          </Text>
+
+          {hasScale && (
+            <ScoreGapScale
+              myScore={myScore}
+              partnerScore={partnerScore}
+              partnerName={partnerName}
+            />
+          )}
+
+          {data.myResponse && (
+            <ResponseCard
+              label={t('us.you')}
+              responseText={data.myResponse.responseText}
+              imageUrl={data.myResponse.imageUrl}
+              isYours
+              score={data.myResponse.responseScore}
+            />
+          )}
+
           {data.partnerResponse && (
-            <View style={styles.answer}>
+            <View style={data.myResponse ? styles.secondAnswer : undefined}>
               <ResponseCard
                 label={partnerName}
                 responseText={data.partnerResponse.responseText}
@@ -134,19 +178,22 @@ export function FollowUpSource({
 const styles = StyleSheet.create({
   wrap: {
     marginBottom: spacing.smd,
-    paddingHorizontal: spacing.sm,
   },
-  toggle: {
+  strip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
+    gap: spacing.smd,
     minHeight: 44,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface.card,
+    borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border.default,
   },
-  toggleText: {
+  stripLabel: {
     ...typography.eyebrow,
     color: colors.text.secondary,
-    textAlign: 'center',
   },
   caretClosed: {
     transform: [{ rotate: '0deg' }],
@@ -155,20 +202,35 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '90deg' }],
   },
   panel: {
-    backgroundColor: colors.surface.background,
+    marginTop: spacing.sm,
+    backgroundColor: colors.surface.card,
     borderRadius: radius.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border.default,
     padding: spacing.cardPad,
-    gap: spacing.smd,
+  },
+  gapHead: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.sm,
+  },
+  gapNumeral: {
+    ...typography.display,
+    color: colors.accent.primary,
+  },
+  gapWord: {
+    ...typography.eyebrow,
+    color: colors.text.secondary,
+    flexShrink: 1,
   },
   question: {
-    ...typography.bodyLg,
+    // h3, not heading: the originating question is context for today's
+    // prompt, and must not compete with the ink hero above it.
+    ...typography.h3,
     color: colors.text.primary,
+    marginTop: spacing.smd,
   },
-  gapLine: {
-    ...typography.caption,
-    color: colors.text.secondary,
-  },
-  answer: {
-    marginTop: 0,
+  secondAnswer: {
+    marginTop: spacing.sm,
   },
 });
