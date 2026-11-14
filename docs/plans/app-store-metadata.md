@@ -151,8 +151,8 @@ previous shot list was redesigned between Nov 6 and Nov 14.
 | 2 | Today — sealed | Sealed state while you wait, with the Try This card below | Your answer waits until theirs arrives. |
 | 3 | Today — reveal | Both answers side by side with both scores | See what the other said. |
 | 4 | Follow-up — divergence | The follow-up card with the source block OPEN, showing the originating question and both answers | When your scores disagree, that is the conversation. |
-| 5 | Us — the grid | The 12-dimension tile grid, several tiles lit | Where you are close. Where you differ. |
-| 6 | Us — category detail | One dimension opened, trend over time | Which way it is moving. |
+| 5 | Us — the lead card | The ink card for the widest gap, with both scores on the shared rail | Where you are close. Where you differ. |
+| 6 | Us — the map | The shared-scale rows, widest gap first, legend visible | Every dimension on one scale. |
 | 7 | Explore — collections | The six collections | Six collections. More than 400 questions. |
 | 8 | Explore — reveal | A question you sent, both answers open | Ask what the daily question would not have reached. |
 | 9 | Reactions | The reaction row on a revealed answer | Love. Spark. Smile. Moved. |
@@ -161,9 +161,16 @@ previous shot list was redesigned between Nov 6 and Nov 14.
 | 12 | Onboarding | The welcome hero | Tend your relationship daily. |
 
 Frames 5 and 6 replace the old "Hearth grid" and "Hearth reveal": Hearth was
-merged into Us on Nov 11 and is no longer a tab. The old frames 7 and 8 showed
-a radar chart that was replaced by the tile grid. The old frame 9 said "12
-category cards"; Explore has six collections.
+merged into Us on Nov 11 and is no longer a tab. They also replace the
+12-tile grid, which was itself retired on Nov 14 — the Us view now leads with
+the widest gap as an ink card and shows every dimension on one shared scale
+beneath it. The old frames 7 and 8 showed a radar chart, unmounted since the
+November restructure and now deleted. The old frame 9 said "12 category
+cards"; Explore has six collections.
+
+**Nothing in this shot list has been captured yet**, and three of the twelve
+surfaces changed on Nov 14 alone. Shoot them against the live OTA, not from
+memory of an earlier build.
 
 Frame 4 is the one to shoot carefully — the source block is the clearest
 single image of what makes Stoke different from an app that just compares

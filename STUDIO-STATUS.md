@@ -121,6 +121,20 @@ Also shipped, on Adam's explicit go after he hit it on a live divergence card: *
 
 CI is green on all three jobs, including the rules + flows emulator job on its first ever run: the Java resolver works on a Linux runner.
 
+**Later on 2026-11-14 — two surfaces rebuilt on Adam's call, both live via OTA:**
+
+**Follow-up source block** (`2316745`, redesigned in `26d4390`, OTA `f4a34e7c`). A follow-up asserted something about a conversation you already had and named none of it; divergence and repair arrive the day after, so the context was gone. The join always existed (`follow_up.parent_assignment_id`) and the client never used it. Shipped collapsed to a strip — the first version opened by default on divergence and pushed the ink prompt card below the fold, which Adam caught immediately. The gap is now drawn on a shared 1-10 rail (`ScoreGapScale`) rather than stated in caption text.
+
+**Us view rebuilt** (`4d06d81`, OTA `c30d7320`). The 12-tile grid was a report card — the one thing PRODUCT-DIRECTION says this view must not be — and it broke visibly (overlapping tiles from 12 staggered entrance animations, a truncated label, four identical "Spark lands here most" rows).
+
+> **The root cause is worth remembering: `us.tsx` computed `deriveAlignment` — which knows per-category state, movement, counts, and an `early` state for "not enough data to speak" — and then rendered `deriveRadarData` instead, raw averages with invented status words on top. The honest engine ran every render and its output was discarded.** That is how the screen came to grade 12 categories green and print 5.9 vs 7.4 from one or two completions. When a surface feels wrong, check whether the right derivation is already there and simply unused.
+
+Now: an ink lead card for the widest gap, a movement card (never the same category twice), and every measurable dimension on one shared rail, widest gap first. Categories under the threshold say "1 of 3" instead of being scored. `UsGrid` and `AlignmentRadar` deleted — the radar had been unmounted since the November restructure while still carrying its code. `reactionSignals` outliers now need six reactions and a real majority, capped at two.
+
+app **101 suites / 1052 tests** green · tsc clean · design lint **888** (down from 890). The App Store shot list was updated in the same cycle, because frames 5 and 6 described the grid that had just been deleted — the drift this file exists to catch.
+
+**Still unseen by anyone but Adam's phone:** both surfaces were confirmed working by him today, but neither has been through the device pass with a second device or an App Review path.
+
 **Remaining, in order:**
 1. **Adam, ~1h:** the ASC trial length (21 in the app vs 14 last recorded — a 3.1.2 risk); a mailbox that receives mail (`stoke.llc` has no MX, so the addresses printed in the app, the policy and the support page all bounce); W-9 / banking status; and the free-vs-premium decision for the merged Us/Hearth.
 2. **Legal read on `hosting/privacy.html`**, then `firebase deploy --only hosting`. The page is rewritten and committed; hosting still serves the July 9 version, which is what Apple would fetch today.
