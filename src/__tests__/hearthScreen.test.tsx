@@ -1,14 +1,29 @@
+/**
+ * Tests for the /(app)/hearth route, which is now ONE dimension in full —
+ * its trend and the answers behind it — and nothing else.
+ *
+ * It used to be the Hearth home: a second grid of the same twelve
+ * categories with its own vocabulary (Glowing / Compare notes / warming)
+ * competing with the Us map's (Steady / Closing / Opening), on a screen with
+ * no tab that a user could land on by pressing Back out of a dimension.
+ * The November restructure called Hearth "merged into Us" and left that
+ * screen standing; 2026-11-14 finished the job.
+ *
+ * The grid, header-metrics and tile-tally tests are gone with the UI they
+ * described. The queue, stats and gate tests moved to usTogether.test.tsx.
+ */
 import React from 'react';
 import { act, fireEvent, render } from '@testing-library/react-native';
 
 // ─── Mocks ───
 
 const mockBack = jest.fn();
+const mockReplace = jest.fn();
 const mockPush = jest.fn();
 const mockSearchParams = jest.fn(() => ({}) as Record<string, string>);
 jest.mock('expo-router', () => ({
   Stack: { Screen: () => null },
-  useRouter: () => ({ push: mockPush, back: mockBack, setParams: jest.fn() }),
+  useRouter: () => ({ push: mockPush, back: mockBack, replace: mockReplace, setParams: jest.fn() }),
   useLocalSearchParams: () => mockSearchParams(),
 }));
 
@@ -151,24 +166,51 @@ beforeEach(() => {
   mockPartnerName.mockReturnValue({ name: 'Jordan', isFallback: false });
 });
 
-/**
- * Hearth has no tab (href: null) and is reached three ways: a dimension tap
- * in the Us view, the "waiting" pill, and a push notification. When the
- * route was pushed FOR a category, the detail is the whole reason it exists
- * — so back has to pop the route.
- *
- * Until 2026-11-14 back cleared local state instead, which revealed the
- * Hearth screen underneath. Tapping a dimension in Us and pressing back
- * dropped you on a screen you had never asked for and had no tab for.
- */
-describe('HearthScreen — back out of a deep-linked category', () => {
-  it('pops the route when the category was deep-linked', () => {
+describe('the dimension route', () => {
+  it('renders the detail for the category it was opened with', () => {
     mockSearchParams.mockReturnValue({ category: 'communication' });
     mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
 
-    const { queryByTestId } = render(<HearthScreen />);
-    // The detail is rendered (the route was pushed for it), not the grid.
-    expect(queryByTestId('hearth-tile-communication')).toBeNull();
+    render(<HearthScreen />);
+
+    const detail = lastProps(mockCategoryDetailProps);
+    expect(detail.category.type).toBe('communication');
+    expect(detail.entries.length).toBeGreaterThan(0);
+  });
+
+  it('passes the resolved partner name into the detail', () => {
+    mockSearchParams.mockReturnValue({ category: 'communication' });
+    mockPartnerName.mockReturnValue({ name: 'Casey', isFallback: false });
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+
+    render(<HearthScreen />);
+
+    expect(lastProps(mockCategoryDetailProps).partnerName).toBe('Casey');
+  });
+
+  it('routes a detail entry through the reveal sheet', () => {
+    mockSearchParams.mockReturnValue({ category: 'communication' });
+    const completion = makeCompletion();
+    mockHearthQuery.mockReturnValue({ data: [completion], isLoading: false });
+
+    render(<HearthScreen />);
+    const detail = lastProps(mockCategoryDetailProps);
+
+    act(() => {
+      detail.onOpenReveal(detail.entries[0]);
+    });
+
+    expect(logEvent).toHaveBeenCalledWith('hearth_reveal_opened', {
+      assignment_id: completion.id,
+    });
+    expect(lastProps(mockRevealSheetProps).visible).toBe(true);
+  });
+
+  it('backing out pops the route — the Hearth home it used to reveal is gone', () => {
+    mockSearchParams.mockReturnValue({ category: 'communication' });
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+
+    render(<HearthScreen />);
 
     act(() => {
       lastProps(mockCategoryDetailProps).onBack();
@@ -177,446 +219,35 @@ describe('HearthScreen — back out of a deep-linked category', () => {
     expect(mockBack).toHaveBeenCalledTimes(1);
   });
 
-  it('returns to the grid when the detail was opened from within Hearth', () => {
+  it('redirects to Us when opened without a category', () => {
+    // Nothing lives at this route without one any more, so it must not
+    // render an empty screen and strand the user.
+    mockSearchParams.mockReturnValue({});
     mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
 
-    const { getByTestId } = render(<HearthScreen />);
-    fireEvent.press(getByTestId('hearth-tile-communication'));
-
-    act(() => {
-      lastProps(mockCategoryDetailProps).onBack();
-    });
-
-    // No route to pop — this detail was opened in place.
-    expect(mockBack).not.toHaveBeenCalled();
-    expect(getByTestId('hearth-tile-communication')).toBeTruthy();
-  });
-});
-
-describe('HearthScreen first-run states', () => {
-  describe('loading', () => {
-    it('shows neutral shimmer tiles — never the 12 dead Steady embers', () => {
-      mockHearthQuery.mockReturnValue({ data: [], isLoading: true });
-      const { getByTestId, queryByTestId, queryAllByText, queryByText } = render(
-        <HearthScreen />
-      );
-
-      expect(getByTestId('hearth-loading')).toBeTruthy();
-      // No ember grid flash while loading
-      expect(queryByTestId('hearth-tile-communication')).toBeNull();
-      expect(queryAllByText('Steady')).toHaveLength(0);
-      // And no premature empty state either
-      expect(queryByText('Your first answered question will glow here.')).toBeNull();
-    });
-
-    /**
-     * Gates stay deliberately OPEN while entitlement resolves, so a premium
-     * couple never sees a flash of locked content. Until 2026-11-14 that
-     * also meant a FREE couple rendered its full history — every past month
-     * — for the length of three RevenueCat network calls. The shimmer now
-     * covers entitlement load too.
-     */
-    it('shimmers while entitlement is still resolving, instead of leaking history', () => {
-      mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-      mockSubscription.mockReturnValue({ isPremium: false, isLoading: true });
-
-      const { getByTestId, queryByTestId } = render(<HearthScreen />);
-
-      expect(getByTestId('hearth-loading')).toBeTruthy();
-      expect(queryByTestId('hearth-tile-communication')).toBeNull();
-    });
-
-    it('renders the grid once entitlement has resolved', () => {
-      mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-      mockSubscription.mockReturnValue({ isPremium: false, isLoading: false });
-
-      const { getByTestId, queryByTestId } = render(<HearthScreen />);
-
-      expect(getByTestId('hearth-tile-communication')).toBeTruthy();
-      expect(queryByTestId('hearth-loading')).toBeNull();
-    });
-  });
-
-  describe('zero completions (brand-new couple)', () => {
-    it('shows the first-ember empty state INSTEAD of the grid', () => {
-      mockHearthQuery.mockReturnValue({ data: [], isLoading: false });
-      const { getByTestId, getByText, queryByTestId, queryAllByText } = render(
-        <HearthScreen />
-      );
-
-      expect(getByTestId('hearth-empty')).toBeTruthy();
-      expect(getByText('Your first answered question will glow here.')).toBeTruthy();
-      expect(getByText("It starts with today's question.")).toBeTruthy();
-      // The grid of unlit tiles never renders for a couple with no completions
-      expect(queryByTestId('hearth-tile-communication')).toBeNull();
-      expect(queryAllByText('Steady')).toHaveLength(0);
-      // Nothing to gate on an empty hearth
-      expect(queryByTestId('hearth-gate')).toBeNull();
-    });
-  });
-
-  describe('with completions', () => {
-    it('renders the ember grid with the completed category glowing', () => {
-      mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-      const { getByTestId, queryByTestId } = render(<HearthScreen />);
-
-      expect(getByTestId('hearth-tile-communication')).toBeTruthy();
-      expect(getByTestId('hearth-tile-intimacy')).toBeTruthy();
-      expect(queryByTestId('hearth-empty')).toBeNull();
-      expect(queryByTestId('hearth-loading')).toBeNull();
-    });
-
-    it('keeps the HearthGateCard below the grid for free couples', () => {
-      mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-      const { getByTestId } = render(<HearthScreen />);
-
-      expect(getByTestId('hearth-gate')).toBeTruthy();
-    });
-
-    it('premium couples see no gate card', () => {
-      mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-      mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-      const { queryByTestId } = render(<HearthScreen />);
-
-      expect(queryByTestId('hearth-gate')).toBeNull();
-    });
-  });
-});
-
-describe('HearthScreen header metrics strip', () => {
-  function repairCompletion(overrides: Record<string, unknown> = {}) {
-    return makeCompletion({
-      id: 'c-2',
-      category: 'money',
-      signal: 'repair' as const,
-      responses: [
-        { userId: 'user-1', responseText: 'a', responseScore: 2, imageUrl: null, submittedAt: null },
-        { userId: 'user-2', responseText: 'b', responseScore: 3, imageUrl: null, submittedAt: null },
-      ],
-      ...overrides,
-    });
-  }
-
-  it('composes answered and glowing from live data, omitting zero segments', () => {
-    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-    const { getByText } = render(<HearthScreen />);
-
-    // 1 answered, communication glowing (8/9 average), nothing waiting —
-    // the waiting segment is omitted, not rendered as zero.
-    expect(getByText('1 answered this month · 1 glowing')).toBeTruthy();
-  });
-
-  it('adds the waiting segment when the couch queue has entries', () => {
-    mockHearthQuery.mockReturnValue({
-      data: [makeCompletion(), repairCompletion()],
-      isLoading: false,
-    });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(
-      getByText('2 answered this month · 1 glowing · 1 waiting for you two')
-    ).toBeTruthy();
-  });
-
-  it('omits the glowing segment when no category glows', () => {
-    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(getByText('1 answered this month · 1 waiting for you two')).toBeTruthy();
-  });
-
-  it('falls back to the waiting copy when nothing was answered this month', () => {
-    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-    const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
-    mockHearthQuery.mockReturnValue({
-      data: [repairCompletion({ completedAt: lastMonth })],
-      isLoading: false,
-    });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(getByText('1 conversation waiting for you two')).toBeTruthy();
-  });
-
-  it('falls back to the steady copy when nothing answered and nothing waiting', () => {
-    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-    const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
-    mockHearthQuery.mockReturnValue({
-      data: [makeCompletion({ completedAt: lastMonth })],
-      isLoading: false,
-    });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(getByText('Nothing waiting — your fire is steady')).toBeTruthy();
-  });
-});
-
-describe('HearthScreen tile states and tallies', () => {
-  it('the answered category shows Glowing with its tally; the rest sit unlit with the invite line', () => {
-    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-    const { getByText, queryAllByText } = render(<HearthScreen />);
-
-    expect(getByText('Glowing')).toBeTruthy();
-    expect(getByText('1 answered')).toBeTruthy();
-    expect(queryAllByText('Not yet lit')).toHaveLength(11);
-    expect(queryAllByText('Ask one tonight')).toHaveLength(11);
-  });
-
-  it('a couch-flagged steady entry says Talk about it on BOTH the tile and the queue card', () => {
-    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-    mockHearthQuery.mockReturnValue({
-      data: [
-        makeCompletion({
-          signal: 'steady' as const,
-          couchFlagged: true,
-          couchFlaggedBy: 'user-2',
-          responses: [
-            { userId: 'user-1', responseText: 'a', responseScore: 6, imageUrl: null, submittedAt: null },
-            { userId: 'user-2', responseText: 'b', responseScore: 6, imageUrl: null, submittedAt: null },
-          ],
-        }),
-      ],
-      isLoading: false,
-    });
-    const { getByTestId, queryAllByText } = render(<HearthScreen />);
-
-    // The founder-caught contradiction: tile and queue can never disagree.
-    expect(getByTestId('hearth-queue-c-1')).toBeTruthy();
-    expect(queryAllByText('Talk about it')).toHaveLength(2);
-  });
-});
-
-describe('HearthScreen queue meta partner name (via usePartnerName)', () => {
-  function repairCompletion(overrides: Record<string, unknown> = {}) {
-    return makeCompletion({
-      id: 'c-meta',
-      category: 'money',
-      signal: 'repair' as const,
-      responses: [
-        { userId: 'user-1', responseText: 'a', responseScore: 2, imageUrl: null, submittedAt: null },
-        { userId: 'user-2', responseText: 'b', responseScore: 3, imageUrl: null, submittedAt: null },
-      ],
-      ...overrides,
-    });
-  }
-
-  it('shows the partner display name in the queue meta line', () => {
-    mockPartnerName.mockReturnValue({ name: 'Casey', isFallback: false });
-    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(getByText('You 2 · Casey 3')).toBeTruthy();
-  });
-
-  it('falls back to the quiet lowercase "your partner" when no name is known', () => {
-    mockPartnerName.mockReturnValue({ name: 'your partner', isFallback: true });
-    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(getByText('You 2 · your partner 3')).toBeTruthy();
-  });
-
-  it('passes the resolved name into the category detail meta too', () => {
-    mockPartnerName.mockReturnValue({ name: 'Casey', isFallback: false });
-    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-    const { getByTestId } = render(<HearthScreen />);
-
-    fireEvent.press(getByTestId('hearth-tile-communication'));
-    expect(lastProps(mockCategoryDetailProps).partnerName).toBe('Casey');
-  });
-});
-
-describe('HearthScreen monthly stat labels pluralize', () => {
-  it('1 answered reads singular; 0 tended stays plural', () => {
-    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(getByText('question answered together')).toBeTruthy();
-    expect(getByText('conversations tended')).toBeTruthy();
-  });
-
-  it('2 answered reads plural; 1 tended reads singular', () => {
-    mockHearthQuery.mockReturnValue({
-      data: [
-        makeCompletion(),
-        makeCompletion({ id: 'c-2', category: 'money', discussedAt: new Date() }),
-      ],
-      isLoading: false,
-    });
-    const { getByText } = render(<HearthScreen />);
-
-    expect(getByText('questions answered together')).toBeTruthy();
-    expect(getByText('conversation tended')).toBeTruthy();
-  });
-});
-
-describe('HearthScreen free-couple couch queue (current month free, history gated)', () => {
-  function repairCompletion(overrides: Record<string, unknown> = {}) {
-    return makeCompletion({
-      id: 'c-repair',
-      category: 'money',
-      signal: 'repair' as const,
-      responses: [
-        { userId: 'user-1', responseText: 'a', responseScore: 2, imageUrl: null, submittedAt: null },
-        { userId: 'user-2', responseText: 'b', responseScore: 3, imageUrl: null, submittedAt: null },
-      ],
-      ...overrides,
-    });
-  }
-  const now = new Date();
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
-
-  it('free couples see the current-month couch queue — the advertised conversation is never locked', () => {
-    // Default free subscription from beforeEach.
-    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
-    const { getByTestId, getByText } = render(<HearthScreen />);
-
-    // Header advertises it AND the queue delivers it, on the same screen.
-    expect(getByText('1 answered this month · 1 waiting for you two')).toBeTruthy();
-    expect(getByTestId('hearth-queue-c-repair')).toBeTruthy();
-    // History/trends stay gated below.
-    expect(getByTestId('hearth-gate')).toBeTruthy();
-  });
-
-  it('hides past-month queue entries from free couples and keeps the header count matching', () => {
-    mockHearthQuery.mockReturnValue({
-      data: [
-        repairCompletion({ id: 'c-now' }),
-        repairCompletion({ id: 'c-old', completedAt: lastMonth }),
-      ],
-      isLoading: false,
-    });
-    const { getByTestId, queryByTestId, getByText } = render(<HearthScreen />);
-
-    expect(getByTestId('hearth-queue-c-now')).toBeTruthy();
-    expect(queryByTestId('hearth-queue-c-old')).toBeNull();
-    // The metrics strip counts only what the queue below actually shows.
-    expect(getByText('1 answered this month · 1 waiting for you two')).toBeTruthy();
-  });
-
-  it('a free couple whose only waiting entry is last month sees the steady header, no queue, and the gate', () => {
-    mockHearthQuery.mockReturnValue({
-      data: [repairCompletion({ completedAt: lastMonth })],
-      isLoading: false,
-    });
-    const { getByTestId, queryByTestId, getByText } = render(<HearthScreen />);
-
-    expect(getByText('Nothing waiting — your fire is steady')).toBeTruthy();
-    expect(queryByTestId('hearth-queue-c-repair')).toBeNull();
-    expect(getByTestId('hearth-gate')).toBeTruthy();
-  });
-
-  it('premium couples keep the full queue, past months included, with no gate card', () => {
-    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-    mockHearthQuery.mockReturnValue({
-      data: [repairCompletion({ completedAt: lastMonth })],
-      isLoading: false,
-    });
-    const { getByTestId, queryByTestId } = render(<HearthScreen />);
-
-    expect(getByTestId('hearth-queue-c-repair')).toBeTruthy();
-    expect(queryByTestId('hearth-gate')).toBeNull();
-  });
-
-  it('the talk flow works on a free couple queue entry (open the sheet, no paywall in the way)', () => {
-    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
-    const { getByTestId } = render(<HearthScreen />);
-
-    fireEvent.press(getByTestId('hearth-queue-c-repair'));
-
-    expect(logEvent).toHaveBeenCalledWith('talk_sheet_opened', {
-      completion_id: 'c-repair',
-      signal: 'repair',
-    });
-  });
-});
-
-describe('HearthScreen past-day reveal wiring', () => {
-  it('the reveal sheet starts closed', () => {
-    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
     render(<HearthScreen />);
 
-    const sheet = lastProps(mockRevealSheetProps);
-    expect(sheet.visible).toBe(false);
-    expect(sheet.completion).toBeNull();
+    expect(mockReplace).toHaveBeenCalledWith('/(app)/us');
   });
 
-  it('the queue card’s "Read the answers" line opens the reveal and logs it', () => {
-    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-    mockHearthQuery.mockReturnValue({
-      data: [makeCompletion({ signal: 'repair' })],
-      isLoading: false,
-    });
-    const { getByTestId } = render(<HearthScreen />);
+  it('redirects when the category is not one we recognise', () => {
+    mockSearchParams.mockReturnValue({ category: 'not_a_category' });
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
 
-    fireEvent.press(getByTestId('hearth-queue-c-1-read'));
+    render(<HearthScreen />);
 
-    expect(logEvent).toHaveBeenCalledWith('hearth_reveal_opened', {
-      assignment_id: 'c-1',
-    });
-    const sheet = lastProps(mockRevealSheetProps);
-    expect(sheet.visible).toBe(true);
-    expect(sheet.completion?.id).toBe('c-1');
-    expect(sheet.myUid).toBe('user-1');
-    expect(sheet.partnerName).toBe('Jordan');
+    expect(mockReplace).toHaveBeenCalled();
   });
 
-  it('the queue card body still opens the talk sheet, not the reveal', () => {
-    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-    mockHearthQuery.mockReturnValue({
-      data: [makeCompletion({ signal: 'repair' })],
-      isLoading: false,
-    });
-    const { getByTestId } = render(<HearthScreen />);
+  it('gives a free couple current-month entries and no trend series', () => {
+    mockSearchParams.mockReturnValue({ category: 'communication' });
+    mockSubscription.mockReturnValue({ isPremium: false, isLoading: false });
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
 
-    fireEvent.press(getByTestId('hearth-queue-c-1'));
+    render(<HearthScreen />);
 
-    expect(logEvent).toHaveBeenCalledWith('talk_sheet_opened', {
-      completion_id: 'c-1',
-      signal: 'repair',
-    });
-    expect(lastProps(mockRevealSheetProps).visible).toBe(false);
-  });
-
-  it('category detail entries route through the same reveal opener', () => {
-    const completion = makeCompletion();
-    mockHearthQuery.mockReturnValue({ data: [completion], isLoading: false });
-    const { getByTestId } = render(<HearthScreen />);
-
-    // Enter detail mode via the ember tile, then open a day from the
-    // captured detail props (the detail view itself is prop-tested).
-    fireEvent.press(getByTestId('hearth-tile-communication'));
-    const detail = lastProps(mockCategoryDetailProps);
-
-    act(() => {
-      detail.onOpenReveal(detail.entries[0]);
-    });
-
-    expect(logEvent).toHaveBeenCalledWith('hearth_reveal_opened', {
-      assignment_id: 'c-1',
-    });
-    const sheet = lastProps(mockRevealSheetProps);
-    expect(sheet.visible).toBe(true);
-    expect(sheet.completion?.id).toBe('c-1');
-  });
-
-  it('closing the sheet settles it back to closed', () => {
-    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
-    mockHearthQuery.mockReturnValue({
-      data: [makeCompletion({ signal: 'repair' })],
-      isLoading: false,
-    });
-    const { getByTestId } = render(<HearthScreen />);
-
-    fireEvent.press(getByTestId('hearth-queue-c-1-read'));
-    expect(lastProps(mockRevealSheetProps).visible).toBe(true);
-
-    act(() => {
-      lastProps(mockRevealSheetProps).onClose();
-    });
-    const sheet = lastProps(mockRevealSheetProps);
-    expect(sheet.visible).toBe(false);
-    expect(sheet.completion).toBeNull();
+    // The talk ritual on those entries stays open; only the trend is gated.
+    expect(lastProps(mockCategoryDetailProps).series).toEqual([]);
+    expect(lastProps(mockCategoryDetailProps).entries.length).toBeGreaterThan(0);
   });
 });

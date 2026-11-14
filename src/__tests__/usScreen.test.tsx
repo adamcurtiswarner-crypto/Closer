@@ -3,6 +3,12 @@ import { fireEvent, render } from '@testing-library/react-native';
 
 // ─── Mocks ───
 
+// The tending half of the screen is covered by usTogether.test.tsx. Stubbed
+// here so these tests stay about the map, the lead and the gate — and so the
+// whole ritual stack (reveal sheet, CompletionMoment, haptics, the
+// markDiscussed mutation and its QueryClient) stays out of this suite.
+jest.mock('@/components/UsTogether', () => ({ UsTogether: () => null }));
+
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   Stack: { Screen: () => null },

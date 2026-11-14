@@ -282,7 +282,11 @@ export function setupNotificationHandlers(): () => void {
       }
     } else if (type === 'recap' || type === 'weekly_recap') {
       // The weekly recap lives on Hearth (memories tab stays hidden in v1).
-      router.push(FEATURES.hearth ? '/(app)/hearth' : '/(app)/today');
+      // The Hearth home is retired (2026-11-14) — /(app)/hearth is now the
+      // single-dimension detail and needs a category. A notification about
+      // the couple's shared history belongs on the Us view, which owns the
+      // dimensions and the couch queue.
+      router.push(FEATURES.usView ? '/(app)/us' : '/(app)/today');
     } else if (type === 'date_night' || type === 'date_night_reminder') {
       // Date nights is feature-flagged off for v1 — fall back to today
       router.push(FEATURES.dateNights ? '/(app)/date-nights' : '/(app)/today');

@@ -37,6 +37,7 @@ import { FEATURES } from '@/config/features';
 import { getInitials } from '@/utils/initials';
 import { Icon } from '@/components/Icon';
 import { UsLeadCard, UsMap, UsMovementCard } from '@/components/UsMap';
+import { UsTogether } from '@/components/UsTogether';
 import { Paywall } from '@/components/Paywall';
 import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
@@ -239,15 +240,14 @@ export default function UsScreen() {
                 <Text style={styles.pulseLabel}>tended</Text>
               </View>
             )}
+            {/* Not a link any more: the couch queue lives further down this
+                same screen, so there is nowhere to send anyone. It used to
+                push the Hearth home, which no longer exists. */}
             {queue.length > 0 && (
-              <TouchableOpacity
-                style={styles.pulseItem}
-                onPress={() => router.push('/(app)/hearth')}
-                activeOpacity={0.7}
-              >
+              <View style={styles.pulseItem}>
                 <Text style={[styles.pulseNumber, { color: colors.accent.primary }]}>{queue.length}</Text>
                 <Text style={[styles.pulseLabel, { color: colors.accent.primary }]}>waiting</Text>
-              </TouchableOpacity>
+              </View>
             )}
           </Animated.View>
         )}
@@ -395,6 +395,12 @@ export default function UsScreen() {
           </Animated.View>
         )}
 
+
+        {/* The tending half: the week, the couch queue, the month's two
+            numbers, and the sheets they open. Moved out of the retired
+            Hearth home on 2026-11-14 so the dimensions and the ritual
+            finally live on one screen. */}
+        {!locked && <UsTogether />}
 
         {/* What lands — reaction learning signals (v1.5 #2) */}
         {!premiumLoading && !locked && reactionSignals.outliers.length > 0 && (
