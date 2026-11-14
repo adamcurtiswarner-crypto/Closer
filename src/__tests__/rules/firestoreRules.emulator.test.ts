@@ -743,8 +743,22 @@ describe('couple_invites', () => {
 // ---------------------------------------------------------------------------
 
 describe('couples', () => {
-  it('still allows an authed user to read a pending couple (invite flow)', async () => {
-    await assertSucceeds(asUser(STRANGER).doc(`couples/${PENDING_COUPLE_ID}`).get());
+  /**
+   * Updated 2026-11-14. This test asserted the OPPOSITE until today, and had
+   * been red since commit b62ba46 (2026-11-06) deliberately restricted a
+   * pending couple to its inviter — acceptance now runs through the
+   * acceptInvite callable on the Admin SDK, so a stranger never needs the
+   * read. Nobody noticed, because the rules suite is in neither `npm test`
+   * nor CI and will not run at all without a Java PATH fix. That is the
+   * exact condition that hid the 20-day permission-denied outage, which is
+   * why this cycle also wires the suite into CI.
+   */
+  it('denies a stranger reading a pending couple (acceptance goes through the callable)', async () => {
+    await assertFails(asUser(STRANGER).doc(`couples/${PENDING_COUPLE_ID}`).get());
+  });
+
+  it('allows the inviter to read their own pending couple', async () => {
+    await assertSucceeds(asUser(INVITER).doc(`couples/${PENDING_COUPLE_ID}`).get());
   });
 
   it('allows a member to read their own deleted couple (stale-couple check)', async () => {

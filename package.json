@@ -13,8 +13,8 @@
     "postinstall": "patch-package",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:rules": "firebase emulators:exec --only firestore,storage \"npx jest -c jest.rules.config.js\"",
-    "test:flows": "npm --prefix functions run build && firebase emulators:exec --only auth,firestore,functions --project demo-stoke-flows \"npx jest -c jest.flows.config.js\"",
+    "test:rules": "node scripts/with-java.js \"firebase emulators:exec --only firestore,storage \\\"npx jest -c jest.rules.config.js\\\"\"",
+    "test:flows": "npm --prefix functions run build && node scripts/with-java.js \"firebase emulators:exec --only auth,firestore,functions --project demo-stoke-flows \\\"npx jest -c jest.flows.config.js\\\"\"",
     "test:integration": "npm run test:rules && npm run test:flows"
   },
   "dependencies": {

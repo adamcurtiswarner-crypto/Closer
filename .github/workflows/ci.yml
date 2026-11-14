@@ -55,3 +55,40 @@ jobs:
 
       - name: Run tests
         run: npm test -- --ci --silent
+
+  # Security rules are the ONE surface a unit test cannot see: a rule change
+  # can deny a shipped query, and the client renders stale or empty data with
+  # no crash. This suite existed and was run nowhere — not in `npm test`, not
+  # in CI — and by 2026-11-14 it had silently drifted red against the live
+  # rules. The 20-day permission-denied outage happened under exactly those
+  # conditions, so this job is the guard that makes it non-repeatable.
+  rules:
+    name: Security Rules + Flows — Emulator
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # The Firestore emulator needs a JRE. setup-java exports JAVA_HOME,
+      # which scripts/with-java.js picks up.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install functions dependencies
+        run: npm ci --prefix functions
+
+      - name: Firestore + Storage rules
+        run: npm run test:rules
+
+      - name: Two-client flow tests
+        run: npm run test:flows

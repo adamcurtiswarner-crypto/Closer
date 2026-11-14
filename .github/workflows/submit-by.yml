@@ -1,0 +1,27 @@
+name: Submission runway
+
+# Deliberately `schedule`, not `push`. ci.yml is push-only, and during the
+# ten silent days of August it ran zero times — so a check hung off a push
+# would have been exactly as quiet as the humans were. This one fires whether
+# or not anyone commits, which is the entire point.
+on:
+  schedule:
+    - cron: '0 14 * * *' # 14:00 UTC daily (09:00 ET)
+  workflow_dispatch:
+
+jobs:
+  submit-by:
+    name: SUBMIT-BY date has not passed
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Reads the committed date out of STUDIO-STATUS.md, so the control and
+      # the record cannot drift apart.
+      - name: Check the committed submission date
+        run: node scripts/check-submit-by.js
