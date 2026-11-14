@@ -1,11 +1,136 @@
 # Stoke Studio Status
-*Last updated: 2026-11-06 — **CEO cycle: Alignment Map shipped via OTA.** Radar chart + Us tab promotion committed (`31f0e11`), pushed, and published to production channel (update group `6f2c9787`). 940 tests green, tsc clean, functions build clean. Visual verification on device still pending.*
+*Last updated: 2026-11-14 — **CEO cycle: the submission gate is already open and nobody checked.** Privacy/terms are live (200), rules are deployed and byte-identical to HEAD, every changed Cloud Function is deployed, prod content is verified (405 scored prompts, all 6 Explore collections populated), and build 75 + OTA `53ea17ab` is the current product with no native change. What remains is four founder items and about a day of studio copy/gating work. Two scheduled functions have been failing silently since Nov 10.*
 
-*Previous: 2026-08-22 — CEO cycle: error-report review. D1 deployed. Build 73 cut 2026-08-23, submitted to TestFlight.*
+*Previous: 2026-11-12 — CEO cycle: P0 fixes shipped via OTA `53ea17ab`. Previous: 2026-08-22 — error-report review, D1 deployed, build 73 submitted.*
 
-**SUBMIT-BY: 2026-09-01** (target 2026-08-27). Moved in writing by the CEO on 2026-08-22, per the 8/3 governance rule. The 8/6 "realistic" and 8/10 "conservative" dates were missed and never moved — that is the failure this line exists to prevent.
+**SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21.** Moved in writing by the CEO on 2026-11-14, per the 8/3 governance rule. The 9/1 commitment was missed by 74 days and never moved — the second time that failure mode has run unchecked. Thanksgiving is Thu 11/26, so 11/24 keeps a two-day buffer ahead of the holiday.
 
 ## THE HEADLINE (read this first)
+
+**Two scheduled functions have been failing every day since at least Nov 10, and one of them is the account-purge job we promise in the privacy policy.**
+
+Both fail with `FAILED_PRECONDITION: query requires an index`:
+
+| Function | Missing composite index | Consequence |
+|---|---|---|
+| `cleanupDeletedAccounts` | `users(is_deleted, scheduled_purge_at)` | **The 30-day purge of deleted accounts did not run.** The privacy policy and the App Store account-deletion commitment both rest on it. |
+| `aggregateWeeklyMetrics` | `prompt_assignments(prompt_id, delivered_at)` | Weekly metrics silently stopped aggregating (`functions/src/analytics.ts:~105`). |
+
+**Measured, so the claim stays honest: production holds ZERO deleted users.** The purge job was broken and would have failed the first time it was actually needed, but nothing was waiting for it, so no user's data outlived the 30-day promise. A broken control, not a breached one — worth fixing at exactly this urgency and not overstating to Adam or to anyone else.
+
+Neither index existed in `firestore.indexes.json`. **And nothing alerted, again.** `error_logs` holds 0 docs, so `checkErrorAlerts` never saw these — it scanned `error_logs` only, and neither scheduler wrapped its top-level failure in `reportError`. `cleanupDeletedAccounts` guarded every per-user step but not the query that selects the users; `aggregateWeeklyMetrics` had no try/catch at all. This is the identical mechanism that hid the `documentId() in` outage for 20 days and the BigQuery outage for 24 days: **the failure is visible in Cloud Logging and invisible to every alerting path we own.** Three outages, one cause.
+
+## Shipped this cycle (2026-11-14, studio — on Adam's go)
+
+Everything below is on main's working tree, green, and NOT yet committed. The only production change made today is the index deploy.
+
+**1. The compliance fix, deployed.** Both missing composite indexes added to `firestore.indexes.json` and deployed; both verified **READY**, and both previously-failing queries re-run against production successfully. Tonight's 03:00 PT run will work.
+
+**2. The mechanism behind all three outages, closed.** New `runScheduled(name, fn)` wrapper in `shared.ts` puts a scheduled function's *entire* body inside one reporting path, so a top-level failure writes `error_logs` and reaches `checkErrorAlerts`, then rethrows so Cloud Scheduler still records the failure. Applied to `cleanupDeletedAccounts`, `aggregateWeeklyMetrics` and `checkErrorAlerts` itself (which had no try/catch — the alerting function could fail silently). Wrapping the whole body, not the one query we happened to know about, is the point.
+
+**3. The write-only sink, finally read.** `checkErrorAlerts` now scans `/events` for `client_error` docs — the telemetry `logger.reportQueryDenied` has written since July that *nothing has ever read*. Uses a cursor in `admin_state/client_error_alerts`, not an `alerted` flag, because those docs are client-written and have no such field (a Firestore equality on a missing field matches nothing, so the obvious implementation would have silently never fired). First run initializes the cursor instead of alerting on months of diagnosed backlog; with no admin recipients the cursor is **not** advanced, so denials resurface. The alert names the failing call site and groups by context.
+
+**4. Explore Revisit works.** The tap now opens the reveal sheet (`setRevealAssignmentId`) instead of setting state only a `partial` branch could consume, and logs `explore_revisit_opened` instead of inflating `explore_prompt_completed`. Both event names are now in the typed union, removing two `as any` casts.
+
+**5. Try This card.** Device-local date key (was UTC, so it wrote tomorrow's doc after ~7 PM ET); a denied write is reported via `logger.reportQueryDenied` instead of an empty `catch {}`; copy no longer promises a learning loop that does not exist ("Noted." / "Got it."); and `pickDailyAction` falls back to the full pool for an unrecognised `love_language`, which previously made the index `NaN` and threw inside a render path — taking the whole app down through the root ErrorBoundary, not just the card.
+
+**6. Every client listener now reports its errors.** Added `onError` to both `usePrompt` listeners — the two that drive the entire Today screen and had none, which is precisely how a denial stayed invisible for 20 days — plus `useGoals`, `useWishlist`, `useDateNights` and `home.tsx`. Those four are flagged-off features; fixed rather than allowlisted so re-enabling one cannot reintroduce the hole.
+
+**7. Hearth no longer leaks history during entitlement load.** Gates stay deliberately open while RevenueCat resolves so a premium couple never sees a lock flash; the cost was a free couple rendering its full history for three network calls. The shimmer now covers entitlement load, as the Us view already did.
+
+**8. The rules suite runs again, and cannot rot again.** `scripts/with-java.js` resolves a working JRE (the macOS `/usr/bin/java` stub and keg-only Homebrew openjdk made `npm run test:rules` impossible on a stock machine, documented nowhere). The one red test was stale — it asserted a stranger could read a pending couple, which `b62ba46` deliberately ended — now flipped, plus a new test for the inviter's own read. **Rules: 70/70 green from a clean shell.** A new CI job runs `test:rules` and `test:flows` with `actions/setup-java`; neither had ever run in CI.
+
+**9. The governance control that was promised in August.** `scripts/check-submit-by.js` + a `schedule`-triggered workflow fail once SUBMIT-BY passes, reading the date out of this file so the control and the record cannot drift. Verified both ways: it reports 10 days remaining today, and against the old 9/1 date it fails with "74 days ago".
+
+**New guards, each proved to fail when the behaviour regresses** (a guard that cannot fail is not a guard): `shared.runScheduled.test.ts` (4), `alerting.clientErrors.test.ts` (6), `tryThisCard.test.tsx` (9), Revisit tests in `exploreStates.test.tsx` (3), Hearth entitlement-load tests (2), and the query-shape guard extended to scan **all** of `src/` and `app/` — not just `src/hooks/` — plus a new structural assertion that every `onSnapshot` in the client passes an error callback.
+
+**Verification:** app **97 suites / 1005 tests** (was 96/988) · functions **27 / 542** (was 25/532) · rules **70/70** · `tsc` clean both sides · design lint 0 errors (890 warnings, unchanged).
+
+**Corrections to the department reports themselves:** `promptText` is normalized to `''` at the read boundary (`useExplorePrompts.ts:84`), so ExploreRevisit cannot throw on it; `getSkippedFollowUpIds` already catches internally, so the `usePrompt` unhandled-rejection concern does not hold; the Us view's entitlement-loading skeleton survived the November redesign (`us.tsx:251`) — only Hearth was exposed; and today's "Delivered prompts to 5 couples" counts *attempts*, not sends, because `deliverPromptToCouple` returns silently for an inactive couple while the caller still records the id (`prompts.ts:408` vs `:571`). The active-couple guard itself is sound — no push reached an ex. The misleading counter is logged in the backlog below, not fixed, because changing delivery accounting the day before a device pass is not worth the risk.
+
+**The second headline: the gate everyone was waiting on has been open for days and the status file still said 404.**
+
+`stoke.llc/privacy`, `/terms`, `/support` and the `web.app` equivalents all return **200**. The `firebase.json` hosting exclusion was removed and deployed — **from an uncommitted working tree**, which is why no record of it exists. "Apple's hard gate" was carried as the top blocker in this file for 103 days and had already been cleared.
+
+## Verified state (2026-11-14 — measured, not claimed)
+
+| Thing | Verified value | What the file said before |
+|---|---|---|
+| Hosted privacy / terms / support | **200** (both domains) | "stoke.llc still 404" — wrong |
+| Deployed Firestore ruleset | released **2026-11-07T20:16Z**, byte-identical to HEAD `firestore.rules`; `action_feedback`, `wasCoupleMember`, `former_member_ids` all present | unverified |
+| Cloud Functions | 32 deployed; every function changed since Aug is live (`onCompletionClarified` Nov 9, `onReactionAdded` + `deleteAccount` + `generateAIPrompts` Nov 7). `onResponseSubmitted` unchanged since its Aug 2 deploy | unverified; P0 #7 wrongly credited to OTA |
+| Current binary | **build 75** (`66d0b0e`), fingerprint `5fe901bb…` — **identical to build 73's fingerprint** | "73 is current" — wrong |
+| Native surface since 75 | `git diff 66d0b0e..HEAD -- ios plugins patches package.json app.json` is **empty**. No runtimeVersion bump. **No build 76 required** | open question |
+| Prod content | **405 scored prompts** (= seed exactly); all 6 Explore collections populated (65/75/25/25/130/25 = 345); 60 v5 prompts carry no collection (daily pool, correct); 132 follow-up templates | "60 scored prompts live" — stale by 345 |
+| Tests | app **96 suites / 988** green · functions **25 / 532** green · tsc clean both sides | 96/988 confirmed |
+| Rules suite | **68 / 69 — one RED**, and it cannot run at all without a Java PATH fix | "rules 69" — wrong |
+| CI | runs tsc + `npm test` only. **Never runs `test:rules` or `test:flows`** | not recorded |
+| BigQuery | dataset healthy, 6,192 rows, exports ran Nov 12/13/14 | resolved — confirmed |
+| `/admins` | 1 doc, 1 live push token | resolved — confirmed |
+| `/events` | 1,747 docs and shrinking (pruning works); 9 `client_error` docs, newest Aug 22 | "~4,000, unbounded" — stale |
+
+## Live defects found this cycle (all new; none were on any list)
+
+1. **Explore Revisit is a dead tap** — shipped 3 days ago. `explore.tsx:628-633` sets `viewingAssignmentId`, but the only consumer (`:579`) also requires `status === 'partial'` while Revisit lists only `completed`. Tapping a Revisit card does nothing, on the feature whose entire purpose is reopening answers. It also fires `logEvent('explore_prompt_completed')` on every tap, corrupting the completion metric. One-line fix: `setRevealAssignmentId(a.id)`.
+2. **Free users cannot reach the Hearth at all**, while `gates.hearthBody` ("This month glows right here") and the draft listing both promise the current month. Hearth is no longer a tab (`_layout.tsx:226-228`, `href: null`); the only entries are the Us tile grid (locked for free users) and a "waiting" pill that renders only when the couch queue is non-empty. `hearth.tsx:51-100` implements the free window that nothing links to.
+3. **Premium gates open during entitlement load.** `premiumGates.ts:86` locks only when `!loading`, and `useSubscription` starts `isLoading: true` at each of 10 call sites, clearing only after three RevenueCat network calls. Free users — and an App Review device on a slow sandbox network — see premium content, then a lock.
+4. **Trial length contradicts itself.** Paywall CTA and both Terms documents say **21 days** (`en.json:457`, `terms-of-service.tsx:64`, `hosting/terms.html:92`); the last ASC record and `hosting/index.html` say **14**. A 3.1.2 accuracy rejection if ASC is still 14.
+5. **The progressive trial does not exist.** `src/utils/trialPhase.ts` / `computeTrialState` is imported by nothing but its own test. Never advertise it.
+6. **Try This card:** UTC date key (`TryThisCard.tsx:44`) violates the user-local-date doctrine and rolls over mid-evening in the US; a second tap hits `allow update: if false` and is swallowed by `catch {}`; the copy ("More like this coming") promises a learning loop that no code implements; hardcoded English; `dailyActions.ts:168-173` can throw into the root ErrorBoundary if `love_language` is an unexpected non-empty string.
+7. **Today's two core listeners have no `onError`** (`usePrompt.ts:474`, `:516`) — the exact telemetry hole that hid the 20-day outage. A denial leaves Today showing stale data and reports nothing.
+8. **`deliverDailyPrompts` overstates its own work.** `deliverPromptToCouple` returns silently for a non-active couple (`prompts.ts:408`), but the caller adds the id to `deliveredCouples` anyway (`:571`) — so today's "Delivered prompts to 5 couples" counts attempts, not sends. The guard is sound; the metric is not. Same defect `notifyCoupleMembers` was built to fix.
+9. **The rules suite is red and unrunnable as shipped.** `/usr/bin/java` is the macOS stub; Homebrew openjdk is unlinked. Forced to run, it is 68/69 — the failure is a stale test (`firestoreRules.emulator.test.ts:746`) that still expects strangers to read pending couples, which `b62ba46` deliberately ended. Proof the suite has not run since Nov 6.
+
+## Still structurally open (carried, confirmed open today)
+
+- `checkErrorAlerts` still ignores `/events` `client_error` docs — the write-only sink, now implicated in a third outage.
+- The hourly canary writes through the Admin SDK, so it structurally cannot detect a rules regression. It reported green through all three outages.
+- `getReceipts` is called nowhere, so dead push tokens are never pruned.
+- `/events` retention is still welded to the BigQuery export — a dataset outage disables pruning as a side effect.
+- Zero GCP alert policies, notification channels or log-based metrics. `checkErrorAlerts` reaches Adam through one Expo push token with no email or SMS fallback.
+- Sentry `environment` is set (`app/_layout.tsx:26`) but preview and TestFlight both report as "production".
+- `deliverDailyPrompts` runs an unbounded serial `users` scan 96×/day. Not a cost problem (~$3.50/mo at 1,000 couples) but a 540s timeout risk at scale.
+- Fixture couples (`sandbox-couple`, `uitest-visualp`) are still in prod, now `paused`.
+- The hosted privacy page is dated **July 9, 2026** while the in-app policy says November 2026. Apple fetches the hosted one.
+- `support@stoke.llc` and `privacy@stoke.llc` **receive no mail** — `dig MX stoke.llc` returns nothing — and both are published on the live site, in the policy, and in the in-app contact row.
+
+## Critical path to submission
+
+**Adam (~1h, and only he can do these):**
+1. **ASC trial length** — set the annual intro offer to 21 days, or we change the copy back to 14. Decide which. Confirm whether the trial covers monthly. (15 min)
+2. **A working support mailbox** — MX records for `stoke.llc` or a forwarder, then studio makes the address consistent everywhere. (20 min, external propagation)
+3. **W-9 + banking / Paid Apps Agreement status** — unverifiable from here, startable for 100+ days. Blocks subscriptions going live, not review itself. (15 min + 24-48h external)
+4. **The free-vs-premium decision for the merged Us/Hearth** — open since July and now distorting the gating code, the gate copy, the listing and the screenshots. Can a free couple see the tile grid and the current month, or is the whole screen premium? (defect 2 above)
+5. **Device pass** — 75 min, 6 of 12 items need two phones. Then the explicit go for submission.
+
+**Studio (~1.5 days, unattended, in this order):**
+~~1. Deploy the two missing composite indexes; wrap both schedulers in `reportError`.~~ **DONE — indexes READY, both queries verified against prod.**
+~~4. Fix Revisit, the premium-gate load flash, the Try This date/copy/throw, and add `onError` to the `usePrompt` listeners.~~ **DONE.**
+~~5. Extend `checkErrorAlerts` to scan `/events` `client_error`.~~ **DONE.**
+~~6. Fix the stale rules test, the Java PATH, and add `test:rules` + `test:flows` to CI.~~ **DONE — 70/70 from a clean shell.**
+~~8. Build the `on: schedule` GitHub Action that fails once SUBMIT-BY passes.~~ **DONE.**
+
+**Remaining, in order:**
+1. **Commit the working tree** (today's fixes, `firebase.json`, the metadata doc, this file). Production hosting is live from an uncommitted tree — that is how the privacy/terms deploy went unrecorded for days.
+2. **Deploy the functions** carrying items 2, 3 and the scheduler wrappers: `cleanupDeletedAccounts`, `aggregateWeeklyMetrics`, `checkErrorAlerts`. The indexes are live, so tonight's runs already succeed; the alerting improvements need this deploy.
+3. **Publish an OTA** for the client fixes (Revisit, Try This, Hearth flash, listener telemetry). Runtime 2.0.0, no binary needed. Adam's call.
+4. **Rewrite `hosting/privacy.html`** to match the in-app November policy, then redeploy hosting from a clean tree. Needs Adam's 15-minute legal read.
+5. **Rewrite the listing** against the real app — 6 collections not 12 categories, Hearth merged into Us, "400+ questions" (405 verified in prod), drop "No other app does this", drop the insights and progressive-trial claims — then recapture the 16 frames on build 75 + OTA.
+6. **Resolve the trial length** (21 in the app, 14 last recorded in ASC) and the free-vs-premium decision for the merged Us/Hearth. Both are Adam's.
+
+**Backlog, deliberately not done today:** the `deliverDailyPrompts` attempt-vs-send counter (changing delivery accounting the day before a device pass is not worth the risk); `getReceipts` token pruning; `/events` TTL independent of BigQuery; GCP alert policies and a non-push alert channel; the Us/Hearth i18n gaps and the hardcoded English in TryThisCard and ExploreRevisit; splitting `explore.tsx` (1019 lines) and `us.tsx` (623) under the 800-line rule; deleting the dormant streak and churn code.
+
+**No new binary.** Build 75 + OTA `53ea17ab` is the product. Cut 76 only if the device pass shows the first-launch bundle mismatch matters, and only on Adam's explicit ask.
+
+## Governance
+
+The 8/3 rule — no feature work while a submission runway is open unless the CEO moves the submit date in writing first — **was breached.** The Explore restructure, the Us/Hearth merge, Try This, collections, Love Language Tips and the paywall rewrite all landed Nov 6-11 against a submit date that had been missed since Sept 1 and never moved. The cost is not hypothetical: it produced defects 1-6 above, invalidated the screenshots and the listing, and shipped 12K lines to production that no device pass has ever touched.
+
+Effective now: **feature freeze on main** until submission. Only device-pass fixes and ASC work. `docs/plans/v2-information-architecture.md` Phase 3 is post-launch and is not to be started. A daily one-line runway entry goes in this file until submit.
+
+---
+
+## CEO Cycle 2026-11-12 and earlier — prior headline (the `documentId() in` outage, now resolved and guarded)
 
 **One bug explains every production error we have. `where(documentId(), 'in', [...])` is unsafe under any Firestore rule that dereferences `resource.data`.**
 
@@ -181,52 +306,54 @@ Timeline evidence: `git log` shows **zero commits 7/23 → 8/01** (ten silent da
 - `onCompletionClarified` ignored `notify_partner_response` while `onReactionAdded` and `onResponseSubmitted` both honour it — the newest push type silently overrode a shipped user setting.
 - `checkErrorAlerts` stamped every error `alerted: true` **with zero admin recipients configured**, permanently suppressing failures nobody was ever told about. Now logs loudly and leaves errors unalerted so they resurface.
 
-## OPEN — P0s (audited 2026-11-06, all 7 unchanged since Aug 22)
+## P0s (audited 2026-11-12)
 
 | # | Item | Owner | Status | Note |
 |---|---|---|---|---|
-| 1 | **`/admins` is empty — error alerting has NEVER worked** | Adam | **OPEN 106 days** | 10-second task: create `/admins/{uid}` with Adam's uid + push token. Blocks all error alerting. `checkErrorAlerts` fires every 5 min, detects 30 BigQuery errors, sends to nobody. |
-| 2 | **BigQuery dataset `stoke_analytics` does not exist** | Studio | **OPEN 106 days** | Export has failed every day since launch. **3,861 events** in Firestore with no pruning (was 2,036 in Aug). Every launch metric is unmeasurable. Fix: `bq mk --dataset stoke-5f762:stoke_analytics` then backfill. |
-| 3 | **Write-side completion race** | Studio | **OPEN** | `useReaction` does blind `updateDoc` with no existence check, no `onError`, no telemetry. Failed reaction shows as applied to sender, never reaches partner. ~1h fix. |
-| 4 | **Crisis lexicon not applied to clarify text** | Studio | **OPEN** | `containsCrisisLanguage` only called in main response path. Clarify free-text channel is unguarded. App Review claim is false. ~30min fix. |
-| 5 | **Notification consent copy is now false** | Studio | **OPEN** | Pre-permission copy promises 2 push types; app sends 6+. 5.1.1 risk. ~30min fix. |
-| 6 | **In-app privacy policy dated March 2026** | Studio | **OPEN** | References streaks and AI coaching (hidden features). Does not reflect v1. Terms page also stale. ~1h fix. |
-| 7 | **Clarify question on lock screen** | Founder call | **OPEN** | Intimate free text visible in lock screen notifications. Product decision, not defect. |
+| 1 | **`/admins` was empty — error alerting never worked** | Adam | **RESOLVED (Nov 12)** | `/admins/FwAjAreJ21VurOnbK8kO60tqKxT2` created with push token. `checkErrorAlerts` now has a recipient. 112 days of silence ended. |
+| 2 | **BigQuery export pipeline** | Studio | **RESOLVED (Nov 12)** | Dataset was deleted sometime after Aug 13, recreated later. Pipeline errored daily Oct 14 – Nov 6 ("Not found: Dataset"). Manual export of 15 backlogged events completed. 27 stale error_logs cleaned. BigQuery: 6,132 rows (Feb 26 – Aug 14). Firestore: 1,787 events (< 90 days, awaiting natural export). Pipeline verified working — daily 4 AM PT run will process events as they age past 90 days. |
+| 3 | **Write-side completion race** | Studio | **SHIPPED (OTA Nov 12)** | `useReaction` checks existence before write, surfaces Alert + telemetry. |
+| 4 | **Crisis lexicon not applied to clarify text** | Studio | **SHIPPED (OTA Nov 12)** | `containsCrisisLanguage` on both clarify paths. SafetyResources modal on match. |
+| 5 | **Notification consent copy is now false** | Studio | **SHIPPED (OTA Nov 12)** | Pre-prompt copy accurately describes all 6 push types. |
+| 6 | **In-app privacy policy dated March 2026** | Studio | **SHIPPED (OTA Nov 12)** | Privacy + TOS rewritten for Nov 2026. |
+| 7 | **Clarify question on lock screen** | Studio | **SHIPPED (OTA Nov 12)** | Clarify text redacted from lock screen notifications. |
 
-**Score: 0 of 7 resolved in 75 days.** Items 3-6 are studio-owned and could be fixed in a single afternoon.
+**Score: 7 of 7 resolved (Nov 12).** P0s 3-7 shipped via OTA `53ea17ab`. P0 #1 admin doc created. P0 #2 BigQuery pipeline verified working, backlog exported, stale errors cleaned.
 
-## Build state (audited 2026-11-06)
+## Build state (audited 2026-11-12)
 
 | Build | Commit | Status |
 |---|---|---|
 | 73 | `938d1d6` | **On TestFlight** since Aug 23. Carries Open Days fix, Your Words fix, sign-out token fix, member_ids policy. |
-| OTA | `31f0e11` | **Published 2026-11-06** via `eas update`. Alignment Map radar chart + Us tab promotion. Update group `6f2c9787`. Runtime 2.0.0. |
+| OTA (live) | `31f0e11` | **Published 2026-11-06** via `eas update`. Alignment Map radar chart + Us tab promotion. Update group `6f2c9787`. Runtime 2.0.0. |
 | OTA (Oct) | `bd700c4` | 300 scored prompts (v6) to fix pool exhaustion. |
+| OTA (Nov 12) | `4609dde` | **Published 2026-11-12** via `eas update`. Update group `53ea17ab`. P0 fixes 3-7, security audit, explore restructure, Us redesign, paywall, small moves, love language tips, 45 new prompts. 54 files, 12K+ lines. Runtime 2.0.0. |
 
-**App Store submission remains blocked by:** privacy/terms URLs (stoke.llc still 404), W-9/banking, `/admins` empty, privacy policy content stale. **SUBMIT-BY 2026-09-01 missed by 66 days.**
+**App Store submission remains blocked by:** privacy/terms URLs (stoke.llc still 404), W-9/banking, `/admins` empty. **SUBMIT-BY 2026-09-01 missed by 72 days.**
 
-## Production health (audited 2026-11-06)
+## Production health (audited 2026-11-12)
 
 | Metric | Value |
 |---|---|
 | Active couples (real) | 1 (Adam & Masha) |
-| Total completions | 141 (up from 136 on Oct 26) |
-| Current streak | 2 |
-| Completion rate | 81% over 167 days |
-| Events collection | 3,861 docs (unbounded, no pruning) |
-| Error logs | 30 (all BigQuery failures) |
+| Total completions | ~145 (est. from 81% rate over 173 days) |
+| Completion rate | 81% over 173 days |
+| Events collection | ~4,000+ docs (unbounded, no pruning) |
+| Error logs | 30+ (all BigQuery failures) |
 | Admin docs | **0** |
 | BigQuery dataset | **Does not exist** |
-| Canary pipeline | Healthy (6.3s round-trip) |
-| Test suites | 117/117 (1,472 tests, 100% pass) |
+| Canary pipeline | Healthy |
+| Test suites | 96/96 (988 tests, 100% pass) |
 | TypeScript | Clean (zero errors) |
+| Unpublished commits | **20+** (54 files, 12K lines) |
 
-## Test coverage gaps (audited 2026-11-06)
+## Test coverage gaps (audited 2026-11-12)
 
-- **AlignmentRadar component: UNTESTED** — shipped today via OTA with zero tests
+- **AlignmentRadar component: UNTESTED** — shipped via Nov 6 OTA with zero tests
 - **deriveRadarData utility: UNTESTED** — feeds the radar chart, no unit tests
-- 13 of 43 hooks untested (30%), 44 of 93 components untested (47%)
-- Pre-existing, not introduced by this OTA — but the OTA increased exposure of untested code
+- **Explore Revisit, Collections, Try This, Love Language Tips: UNTESTED** — all new features on main with no tests
+- **Paywall restructure (progressive trial): UNTESTED**
+- Pre-existing gap: ~30% of hooks and ~47% of components untested
 
 ## Critical path to submission
 
