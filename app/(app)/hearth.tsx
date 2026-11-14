@@ -206,11 +206,19 @@ export default function HearthScreen() {
           myUid={myUid}
           partnerName={partnerName}
           onBack={() => {
+            // Arrived by deep link from the Us view (or a notification): the
+            // detail is the whole reason this route was pushed, so back pops
+            // the route and returns where you came from.
+            //
+            // Until 2026-11-14 this cleared local state instead, which
+            // revealed the Hearth screen underneath — a screen the user had
+            // not asked for, had no tab for, and had never seen. Tapping a
+            // dimension in Us and pressing back landed you somewhere new.
+            if (categoryParam) {
+              router.back();
+              return;
+            }
             setSelectedCategory(null);
-            // Clear the deep-link param so re-entering the same category from
-            // the Us view re-fires the effect (and a state restore doesn't
-            // reopen the detail uninvited).
-            if (categoryParam) router.setParams({ category: undefined });
           }}
           onOpenTalkSheet={openTalkSheet}
           onOpenReveal={openReveal}

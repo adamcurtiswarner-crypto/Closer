@@ -3,10 +3,13 @@ import { act, fireEvent, render } from '@testing-library/react-native';
 
 // ─── Mocks ───
 
+const mockBack = jest.fn();
+const mockPush = jest.fn();
+const mockSearchParams = jest.fn(() => ({}) as Record<string, string>);
 jest.mock('expo-router', () => ({
   Stack: { Screen: () => null },
-  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
-  useLocalSearchParams: () => ({}),
+  useRouter: () => ({ push: mockPush, back: mockBack, setParams: jest.fn() }),
+  useLocalSearchParams: () => mockSearchParams(),
 }));
 
 jest.mock('react-native-safe-area-context', () => {
@@ -143,8 +146,51 @@ function makeCompletion(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSearchParams.mockReturnValue({});
   mockSubscription.mockReturnValue({ isPremium: false, isLoading: false });
   mockPartnerName.mockReturnValue({ name: 'Jordan', isFallback: false });
+});
+
+/**
+ * Hearth has no tab (href: null) and is reached three ways: a dimension tap
+ * in the Us view, the "waiting" pill, and a push notification. When the
+ * route was pushed FOR a category, the detail is the whole reason it exists
+ * — so back has to pop the route.
+ *
+ * Until 2026-11-14 back cleared local state instead, which revealed the
+ * Hearth screen underneath. Tapping a dimension in Us and pressing back
+ * dropped you on a screen you had never asked for and had no tab for.
+ */
+describe('HearthScreen — back out of a deep-linked category', () => {
+  it('pops the route when the category was deep-linked', () => {
+    mockSearchParams.mockReturnValue({ category: 'communication' });
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+
+    const { queryByTestId } = render(<HearthScreen />);
+    // The detail is rendered (the route was pushed for it), not the grid.
+    expect(queryByTestId('hearth-tile-communication')).toBeNull();
+
+    act(() => {
+      lastProps(mockCategoryDetailProps).onBack();
+    });
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns to the grid when the detail was opened from within Hearth', () => {
+    mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+
+    const { getByTestId } = render(<HearthScreen />);
+    fireEvent.press(getByTestId('hearth-tile-communication'));
+
+    act(() => {
+      lastProps(mockCategoryDetailProps).onBack();
+    });
+
+    // No route to pop — this detail was opened in place.
+    expect(mockBack).not.toHaveBeenCalled();
+    expect(getByTestId('hearth-tile-communication')).toBeTruthy();
+  });
 });
 
 describe('HearthScreen first-run states', () => {
