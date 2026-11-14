@@ -369,6 +369,34 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "prompt_assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "prompt_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "delivered_at",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "is_deleted",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "scheduled_purge_at",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

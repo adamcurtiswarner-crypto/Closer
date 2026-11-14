@@ -133,6 +133,12 @@ jest.mock('../shared', () => {
     sendPushNotification: jest.fn().mockResolvedValue(undefined),
     logEvent: jest.fn().mockResolvedValue(undefined),
     reportError: jest.fn().mockResolvedValue(undefined),
+    // Scheduled handlers run inside runScheduled (2026-11-14) so a top-level
+    // failure reaches error_logs and therefore alerting. The real wrapper is
+    // used here rather than a passthrough stub, so these tests keep
+    // exercising the actual call shape; its own contract is covered in
+    // shared.runScheduled.test.ts.
+    runScheduled: async <T>(_name: string, run: () => Promise<T>): Promise<T> => run(),
   };
 });
 

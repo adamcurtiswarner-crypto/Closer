@@ -8,6 +8,7 @@ import {
   logEvent,
   notifyCoupleMembers,
   reportError,
+  runScheduled,
 } from './shared';
 
 // ============================================
@@ -93,87 +94,89 @@ export const aggregateWeeklyMetrics = functions
   .runWith({ timeoutSeconds: 540, memory: '512MB' })
   .pubsub.schedule('every day 03:00')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    // Update prompt metrics
-    const promptsSnapshot = await db
-      .collection('prompts')
-      .where('status', 'in', ['active', 'testing'])
-      .get();
-
-    for (const promptDoc of promptsSnapshot.docs) {
-      const assignmentsSnapshot = await db
-        .collection('prompt_assignments')
-        .where('prompt_id', '==', promptDoc.id)
-        .where('delivered_at', '>=', subDays(new Date(), 28))
+  .onRun(async () =>
+    runScheduled('aggregateWeeklyMetrics', async () => {
+      // Update prompt metrics
+      const promptsSnapshot = await db
+        .collection('prompts')
+        .where('status', 'in', ['active', 'testing'])
         .get();
 
-      const total = assignmentsSnapshot.size;
-      const completed = assignmentsSnapshot.docs.filter(
-        (d) => d.data().status === 'completed'
-      ).length;
+      for (const promptDoc of promptsSnapshot.docs) {
+        const assignmentsSnapshot = await db
+          .collection('prompt_assignments')
+          .where('prompt_id', '==', promptDoc.id)
+          .where('delivered_at', '>=', subDays(new Date(), 28))
+          .get();
 
-      const completionRate = total > 0 ? completed / total : 0;
+        const total = assignmentsSnapshot.size;
+        const completed = assignmentsSnapshot.docs.filter(
+          (d) => d.data().status === 'completed'
+        ).length;
 
-      // Get positive response rate
-      const responsesSnapshot = await db
-        .collection('prompt_responses')
-        .where('prompt_id', '==', promptDoc.id)
-        .where('emotional_response', '!=', null)
+        const completionRate = total > 0 ? completed / total : 0;
+
+        // Get positive response rate
+        const responsesSnapshot = await db
+          .collection('prompt_responses')
+          .where('prompt_id', '==', promptDoc.id)
+          .where('emotional_response', '!=', null)
+          .get();
+
+        const totalResponses = responsesSnapshot.size;
+        const positiveResponses = responsesSnapshot.docs.filter(
+          (d) => d.data().emotional_response === 'positive'
+        ).length;
+
+        const positiveRate = totalResponses > 0 ? positiveResponses / totalResponses : 0;
+
+        await promptDoc.ref.update({
+          times_assigned: total,
+          times_completed: completed,
+          completion_rate: completionRate,
+          positive_response_rate: positiveRate,
+          updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
+      // Store WMEER weekly snapshot
+      const currentWeek = format(new Date(), "yyyy-'W'ww");
+      const activeCouplesSnap = await db
+        .collection('couples')
+        .where('status', '==', 'active')
         .get();
 
-      const totalResponses = responsesSnapshot.size;
-      const positiveResponses = responsesSnapshot.docs.filter(
-        (d) => d.data().emotional_response === 'positive'
-      ).length;
+      const activeCouplesCount = activeCouplesSnap.size;
+      let meetingCriteria = 0;
+      let weeklyCompletions = 0;
 
-      const positiveRate = totalResponses > 0 ? positiveResponses / totalResponses : 0;
+      for (const coupleDoc of activeCouplesSnap.docs) {
+        const completionsSnap = await db
+          .collection('prompt_completions')
+          .where('couple_id', '==', coupleDoc.id)
+          .where('week', '==', currentWeek)
+          .get();
 
-      await promptDoc.ref.update({
-        times_assigned: total,
-        times_completed: completed,
-        completion_rate: completionRate,
-        positive_response_rate: positiveRate,
-        updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        weeklyCompletions += completionsSnap.size;
+        if (completionsSnap.size >= 3) meetingCriteria++;
+      }
+
+      const weeklyWmeer = activeCouplesCount > 0 ? meetingCriteria / activeCouplesCount : 0;
+
+      await db.collection('metrics').doc(`wmeer_${currentWeek}`).set({
+        type: 'wmeer_weekly',
+        week: currentWeek,
+        wmeer: weeklyWmeer,
+        active_couples: activeCouplesCount,
+        couples_meeting_criteria: meetingCriteria,
+        total_completions: weeklyCompletions,
+        computed_at: admin.firestore.FieldValue.serverTimestamp(),
       });
-    }
 
-    // Store WMEER weekly snapshot
-    const currentWeek = format(new Date(), "yyyy-'W'ww");
-    const activeCouplesSnap = await db
-      .collection('couples')
-      .where('status', '==', 'active')
-      .get();
-
-    const activeCouplesCount = activeCouplesSnap.size;
-    let meetingCriteria = 0;
-    let weeklyCompletions = 0;
-
-    for (const coupleDoc of activeCouplesSnap.docs) {
-      const completionsSnap = await db
-        .collection('prompt_completions')
-        .where('couple_id', '==', coupleDoc.id)
-        .where('week', '==', currentWeek)
-        .get();
-
-      weeklyCompletions += completionsSnap.size;
-      if (completionsSnap.size >= 3) meetingCriteria++;
-    }
-
-    const weeklyWmeer = activeCouplesCount > 0 ? meetingCriteria / activeCouplesCount : 0;
-
-    await db.collection('metrics').doc(`wmeer_${currentWeek}`).set({
-      type: 'wmeer_weekly',
-      week: currentWeek,
-      wmeer: weeklyWmeer,
-      active_couples: activeCouplesCount,
-      couples_meeting_criteria: meetingCriteria,
-      total_completions: weeklyCompletions,
-      computed_at: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    console.log('Weekly metrics aggregation complete');
-    return null;
-  });
+      console.log('Weekly metrics aggregation complete');
+      return null;
+    })
+  );
 
 // ============================================
 // CALLABLE: Dashboard Metrics (Admin)

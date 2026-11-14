@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
-import { db, APP_NAME, sendPushNotification, logEvent, reportError } from './shared';
+import { db, APP_NAME, sendPushNotification, logEvent, reportError, runScheduled } from './shared';
 import { setCoupleClaim } from './invites';
 import { personalizeText } from './personalize';
 import {
@@ -179,109 +179,111 @@ export const deleteAccount = functions.https.onCall(async (data, context) => {
 export const cleanupDeletedAccounts = functions.pubsub
   .schedule('every day 03:00')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    const now = admin.firestore.Timestamp.now();
+  .onRun(async () =>
+    runScheduled('cleanupDeletedAccounts', async () => {
+      const now = admin.firestore.Timestamp.now();
 
-    // Find users past their purge date
-    const deletedUsers = await db
-      .collection('users')
-      .where('is_deleted', '==', true)
-      .where('scheduled_purge_at', '<=', now)
-      .get();
+      // Find users past their purge date
+      const deletedUsers = await db
+        .collection('users')
+        .where('is_deleted', '==', true)
+        .where('scheduled_purge_at', '<=', now)
+        .get();
 
-    let purgedCount = 0;
+      let purgedCount = 0;
 
-    for (const userDoc of deletedUsers.docs) {
-      const userId = userDoc.id;
+      for (const userDoc of deletedUsers.docs) {
+        const userId = userDoc.id;
 
-      try {
-        // deleteAccount nulls couple_id when the couple dissolves, so the
-        // purge reads the snapshot it took at deletion time. couple_id is
-        // kept as a fallback for users deleted before purge_couple_id existed.
-        const userData = userDoc.data();
-        const purgeCoupleId: string | null =
-          userData?.purge_couple_id || userData?.couple_id || null;
+        try {
+          // deleteAccount nulls couple_id when the couple dissolves, so the
+          // purge reads the snapshot it took at deletion time. couple_id is
+          // kept as a fallback for users deleted before purge_couple_id existed.
+          const userData = userDoc.data();
+          const purgeCoupleId: string | null =
+            userData?.purge_couple_id || userData?.couple_id || null;
 
-        // Delete prompt_responses and their attached images, and scrub the
-        // embedded copies inside prompt_completions.responses[]
-        const responsesSnap = await db
-          .collection('prompt_responses')
-          .where('user_id', '==', userId)
-          .get();
-        for (const responseDoc of responsesSnap.docs) {
-          const rData = responseDoc.data();
-          if (rData.image_url && rData.couple_id && rData.assignment_id) {
-            try {
-              const bucket = admin.storage().bucket();
-              await bucket.file(`responses/${rData.couple_id}/${rData.assignment_id}/${userId}.jpg`).delete();
-            } catch (e) {
-              // Image may not exist
-            }
-          }
-          if (rData.assignment_id) {
-            await scrubUserFromCompletion(rData.assignment_id, userId);
-          }
-          await responseDoc.ref.delete();
-        }
-
-        // Scrub embedded copies inside the couple's memory_artifacts
-        if (purgeCoupleId) {
-          await scrubUserFromMemoryArtifacts(purgeCoupleId, userId);
-        }
-
-        // Delete events
-        const eventsSnap = await db
-          .collection('events')
-          .where('user_id', '==', userId)
-          .get();
-        for (const doc of eventsSnap.docs) {
-          await doc.ref.delete();
-        }
-
-        // Delete chat messages and images
-        if (purgeCoupleId) {
-          const chatSnap = await db
-            .collection('couples')
-            .doc(purgeCoupleId)
-            .collection('messages')
-            .where('sender_id', '==', userId)
+          // Delete prompt_responses and their attached images, and scrub the
+          // embedded copies inside prompt_completions.responses[]
+          const responsesSnap = await db
+            .collection('prompt_responses')
+            .where('user_id', '==', userId)
             .get();
-          for (const chatDoc of chatSnap.docs) {
-            const chatData = chatDoc.data();
-            if (chatData.image_url) {
+          for (const responseDoc of responsesSnap.docs) {
+            const rData = responseDoc.data();
+            if (rData.image_url && rData.couple_id && rData.assignment_id) {
               try {
                 const bucket = admin.storage().bucket();
-                const urlPath = new URL(chatData.image_url).pathname;
-                const filePath = decodeURIComponent(urlPath.split('/o/')[1]?.split('?')[0] || '');
-                if (filePath) await bucket.file(filePath).delete();
+                await bucket.file(`responses/${rData.couple_id}/${rData.assignment_id}/${userId}.jpg`).delete();
               } catch (e) {
                 // Image may not exist
               }
             }
-            await chatDoc.ref.delete();
+            if (rData.assignment_id) {
+              await scrubUserFromCompletion(rData.assignment_id, userId);
+            }
+            await responseDoc.ref.delete();
           }
+
+          // Scrub embedded copies inside the couple's memory_artifacts
+          if (purgeCoupleId) {
+            await scrubUserFromMemoryArtifacts(purgeCoupleId, userId);
+          }
+
+          // Delete events
+          const eventsSnap = await db
+            .collection('events')
+            .where('user_id', '==', userId)
+            .get();
+          for (const doc of eventsSnap.docs) {
+            await doc.ref.delete();
+          }
+
+          // Delete chat messages and images
+          if (purgeCoupleId) {
+            const chatSnap = await db
+              .collection('couples')
+              .doc(purgeCoupleId)
+              .collection('messages')
+              .where('sender_id', '==', userId)
+              .get();
+            for (const chatDoc of chatSnap.docs) {
+              const chatData = chatDoc.data();
+              if (chatData.image_url) {
+                try {
+                  const bucket = admin.storage().bucket();
+                  const urlPath = new URL(chatData.image_url).pathname;
+                  const filePath = decodeURIComponent(urlPath.split('/o/')[1]?.split('?')[0] || '');
+                  if (filePath) await bucket.file(filePath).delete();
+                } catch (e) {
+                  // Image may not exist
+                }
+              }
+              await chatDoc.ref.delete();
+            }
+          }
+
+          // Delete profile photo from Storage
+          try {
+            const bucket = admin.storage().bucket();
+            await bucket.file(`users/${userId}/profile.jpg`).delete();
+          } catch (e) {
+            // Photo may not exist
+          }
+
+          // Delete the user doc itself
+          await userDoc.ref.delete();
+
+          purgedCount++;
+        } catch (error) {
+          await reportError('cleanupDeletedAccounts', error, { userId });
         }
-
-        // Delete profile photo from Storage
-        try {
-          const bucket = admin.storage().bucket();
-          await bucket.file(`users/${userId}/profile.jpg`).delete();
-        } catch (e) {
-          // Photo may not exist
-        }
-
-        // Delete the user doc itself
-        await userDoc.ref.delete();
-
-        purgedCount++;
-      } catch (error) {
-        await reportError('cleanupDeletedAccounts', error, { userId });
       }
-    }
 
-    console.log(`Purged ${purgedCount} deleted accounts`);
-    return null;
-  });
+      console.log(`Purged ${purgedCount} deleted accounts`);
+      return null;
+    })
+  );
 
 // ============================================
 // CALLABLE: Export User Data

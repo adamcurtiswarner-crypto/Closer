@@ -608,5 +608,33 @@ export async function reportError(
   console.error(`[${functionName}]`, message);
 }
 
+/**
+ * Runs a scheduled handler's body so that a top-level failure reaches
+ * `error_logs`, and therefore `checkErrorAlerts`.
+ *
+ * Why this exists (2026-11-14): `cleanupDeletedAccounts` guarded every
+ * per-user step but not the query that selects the users, and
+ * `aggregateWeeklyMetrics` had no try/catch at all. Both then failed every
+ * day for at least four days on a missing composite index — visible in Cloud
+ * Logging, invisible to every alerting path we own, because nothing wrote an
+ * `error_logs` doc. That is the same shape as the 20-day `documentId() in`
+ * outage and the 24-day BigQuery outage. A scheduled function that can fail
+ * outside a catch block is a silent outage waiting to happen, so the wrapper
+ * goes around the WHOLE body, not around the query we happen to know about.
+ *
+ * Rethrows, so Cloud Scheduler still records the run as failed.
+ */
+export async function runScheduled<T>(
+  functionName: string,
+  run: () => Promise<T>
+): Promise<T | null> {
+  try {
+    return await run();
+  } catch (error) {
+    await reportError(functionName, error);
+    throw error;
+  }
+}
+
 // Re-export commonly needed items from dependencies
 export { admin, functions };
