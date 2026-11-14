@@ -14,6 +14,12 @@ interface ScoreGapScaleProps {
    * 'full' is the expanded form: numerals above each dot and the 1/10 ends.
    */
   variant?: 'strip' | 'full';
+  /**
+   * Rendered on the ink hero surface: the rail and "your" dot flip to white
+   * so the pair stays legible, and the dot borders match ink instead of the
+   * page background.
+   */
+  onInk?: boolean;
 }
 
 /**
@@ -32,6 +38,7 @@ export function ScoreGapScale({
   partnerScore,
   partnerName,
   variant = 'full',
+  onInk = false,
 }: ScoreGapScaleProps) {
   const mine = scorePosition(myScore);
   const theirs = scorePosition(partnerScore);
@@ -53,7 +60,13 @@ export function ScoreGapScale({
       )} apart on a one to ten scale`}
       testID="score-gap-scale"
     >
-      <View style={[styles.rail, full ? styles.railFull : styles.railStrip]} />
+      <View
+        style={[
+          styles.rail,
+          full ? styles.railFull : styles.railStrip,
+          onInk && styles.railOnInk,
+        ]}
+      />
       <View
         style={[
           styles.span,
@@ -64,11 +77,17 @@ export function ScoreGapScale({
 
       {full && (
         <>
-          <Text style={[styles.numeral, styles.numeralMine, { left: pct(mine) }]}>
-            {myScore}
+          <Text
+            style={[
+              styles.numeral,
+              onInk ? styles.numeralMineOnInk : styles.numeralMine,
+              { left: pct(mine) },
+            ]}
+          >
+            {display(myScore)}
           </Text>
           <Text style={[styles.numeral, styles.numeralTheirs, { left: pct(theirs) }]}>
-            {partnerScore}
+            {display(partnerScore)}
           </Text>
         </>
       )}
@@ -76,13 +95,34 @@ export function ScoreGapScale({
       {/* Partner first, so an exact tie leaves YOUR dot on top rather than
           hiding it under theirs. */}
       <View
-        style={[styles.dot, styles.dotTheirs, full ? styles.dotFull : styles.dotStrip, { left: pct(theirs) }]}
+        style={[
+          styles.dot,
+          styles.dotTheirs,
+          full ? styles.dotFull : styles.dotStrip,
+          onInk && styles.dotBorderOnInk,
+          { left: pct(theirs) },
+        ]}
       />
       <View
-        style={[styles.dot, styles.dotMine, full ? styles.dotFull : styles.dotStrip, { left: pct(mine) }]}
+        style={[
+          styles.dot,
+          onInk ? styles.dotMineOnInk : styles.dotMine,
+          full ? styles.dotFull : styles.dotStrip,
+          onInk && styles.dotBorderOnInk,
+          { left: pct(mine) },
+        ]}
       />
     </View>
   );
+}
+
+/**
+ * Daily answers are whole numbers; the Us view passes trailing averages.
+ * Print an integer plainly and an average to a single decimal — never the
+ * raw float, which would claim precision the ritual does not have.
+ */
+function display(score: number): string {
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
 }
 
 const DOT_FULL = 13;
@@ -137,6 +177,9 @@ const styles = StyleSheet.create({
     marginLeft: -DOT_FULL / 2,
   },
   dotMine: { backgroundColor: colors.text.primary },
+  dotMineOnInk: { backgroundColor: '#FFFFFF' },
+  dotBorderOnInk: { borderColor: colors.surface.ink },
+  railOnInk: { backgroundColor: colors.onDark.outline },
   dotTheirs: { backgroundColor: colors.accent.primary },
   numeral: {
     position: 'absolute',
@@ -147,5 +190,6 @@ const styles = StyleSheet.create({
     ...typography.h3,
   },
   numeralMine: { color: colors.text.primary },
+  numeralMineOnInk: { color: '#FFFFFF' },
   numeralTheirs: { color: colors.accent.primary },
 });

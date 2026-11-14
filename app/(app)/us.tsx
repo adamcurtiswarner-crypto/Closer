@@ -19,6 +19,7 @@ import {
   type HearthCompletion,
 } from '@/hooks/useHearth';
 import { deriveAlignment, deriveRadarData, movementPicks, type CategoryAlignment } from '@/utils/alignment';
+import { deriveUsView } from '@/utils/usView';
 import { deriveReactionSignals } from '@/utils/reactionSignals';
 import { getLoveLanguageTips } from '@/utils/loveLanguageTips';
 import type { ReactionType } from '@/hooks/useReaction';
@@ -35,7 +36,7 @@ import { getLoveLanguageDisplay } from '@/config/loveLanguages';
 import { FEATURES } from '@/config/features';
 import { getInitials } from '@/utils/initials';
 import { Icon } from '@/components/Icon';
-import { UsGrid } from '@/components/UsGrid';
+import { UsLeadCard, UsMap, UsMovementCard } from '@/components/UsMap';
 import { Paywall } from '@/components/Paywall';
 import { Skeleton } from '@/components/Skeleton';
 import { logEvent } from '@/services/analytics';
@@ -86,6 +87,15 @@ export default function UsScreen() {
   );
 
   // Couch queue: conversations that need attention (repair/divergence/flagged, not yet tended)
+  const usView = useMemo(() => deriveUsView(alignments, radarData), [alignments, radarData]);
+
+  // One honest sentence about the whole picture, rather than a grade.
+  const usSummary = useMemo(() => {
+    if (usView.rows.length === 0) return t('us.summaryEarly');
+    if (!usView.lead) return t('us.summaryAllClose', { count: usView.rows.length });
+    return t('us.summaryLead', { close: usView.closeCount });
+  }, [usView, t]);
+
   const queue = useMemo(() => couchQueue(completions), [completions]);
 
   // Monthly engagement stats
@@ -242,13 +252,13 @@ export default function UsScreen() {
           </Animated.View>
         )}
 
-        {/* Category grid — the game board */}
-        <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
-          <Text style={styles.sectionTitle}>Your 12 dimensions</Text>
-          <Text style={styles.sectionSubtitle}>
-            Tap any tile to see the full story
-          </Text>
-          {premiumLoading ? (
+        {/* What's worth a conversation, then the whole map beneath it.
+            Replaced the 12-tile grid on 2026-11-14: that grid rendered raw
+            averages with invented status words ("GOOD", "GROWING") and
+            one-decimal scores built from one or two completions, which is a
+            report card — the one thing this view must not be. */}
+        {premiumLoading ? (
+          <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
             <View style={styles.card} testID="us-alignment-loading">
               {Array.from({ length: 3 }, (_, i) => (
                 <View key={i} style={styles.alignmentRow}>
@@ -259,25 +269,107 @@ export default function UsScreen() {
                 </View>
               ))}
             </View>
-          ) : radarData.length === 0 ? (
+          </Animated.View>
+        ) : radarData.length === 0 ? (
+          <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
             <View style={styles.card}>
               <Text style={styles.emptyTitle}>{t('us.emptyTitle')}</Text>
               <Text style={styles.emptyBody}>{t('us.emptyBody')}</Text>
             </View>
-          ) : locked ? (
+          </Animated.View>
+        ) : locked ? (
+          <Animated.View entering={FadeInUp.duration(400).delay(120)} style={styles.section}>
             <View style={styles.card}>
               <Text style={styles.emptyTitle}>Your dimensions are building</Text>
               <Text style={styles.emptyBody}>Unlock the full picture with Premium.</Text>
             </View>
-          ) : (
-            <UsGrid
-              data={radarData}
-              myName={t('us.you')}
-              partnerName={partnerName}
-              onCategoryPress={openCategory}
-            />
-          )}
-        </Animated.View>
+          </Animated.View>
+        ) : (
+          <>
+            {(usView.lead || usView.movement) && (
+              <Animated.View
+                entering={FadeInUp.duration(400).delay(120)}
+                style={styles.section}
+              >
+                <Text style={styles.sectionTitle}>{t('us.worthTitle')}</Text>
+                <Text style={styles.sectionSubtitle}>{usSummary}</Text>
+
+                {usView.lead && (
+                  <UsLeadCard
+                    row={usView.lead}
+                    partnerName={partnerName}
+                    eyebrow={t('us.leadEyebrow')}
+                    headline={t('us.leadHeadline', {
+                      category: (
+                        getCategoryByType(usView.lead.category)?.label ??
+                        usView.lead.category
+                      ).toLowerCase(),
+                    })}
+                    cta={t('us.leadCta')}
+                    onPress={() => openCategory(usView.lead!.category)}
+                  />
+                )}
+
+                {usView.movement && (
+                  <View style={usView.lead ? styles.secondLead : undefined}>
+                    <UsMovementCard
+                      row={usView.movement}
+                      eyebrow={t('us.movementEyebrow')}
+                      headline={t(
+                        usView.movement.movement === 'closing'
+                          ? 'us.movementClosing'
+                          : 'us.movementOpening',
+                        {
+                          category:
+                            getCategoryByType(usView.movement.category)?.label ??
+                            usView.movement.category,
+                        }
+                      )}
+                      body={t(
+                        usView.movement.movement === 'closing'
+                          ? 'us.movementClosingBody'
+                          : 'us.movementOpeningBody'
+                      )}
+                      cta={t('us.movementCta')}
+                      onPress={() => openCategory(usView.movement!.category)}
+                    />
+                  </View>
+                )}
+              </Animated.View>
+            )}
+
+            <Animated.View entering={FadeInUp.duration(400).delay(180)} style={styles.section}>
+              <Text style={styles.sectionTitle}>{t('us.mapTitle')}</Text>
+              <Text style={styles.sectionSubtitle}>{t('us.mapSubtitle')}</Text>
+              <View style={styles.legend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.text.primary }]} />
+                  <Text style={styles.legendText}>{t('us.you')}</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, { backgroundColor: colors.accent.primary }]} />
+                  <Text style={styles.legendText}>{partnerName}</Text>
+                </View>
+              </View>
+              <UsMap
+                rows={usView.rows}
+                stillForming={usView.stillForming}
+                partnerName={partnerName}
+                movementLabel={(movement) =>
+                  movement === 'closing'
+                    ? t('us.moveClosing')
+                    : movement === 'opening'
+                      ? t('us.moveOpening')
+                      : t('us.moveSteady')
+                }
+                stillFormingLabel={(item) =>
+                  t('us.formingCount', { count: item.count, needed: item.needed })
+                }
+                onCategoryPress={openCategory}
+              />
+            </Animated.View>
+          </>
+        )}
 
         {/* Locked: quiet gate line + CTA under the blurred map */}
         {locked && alignments.length > 0 && (
@@ -400,6 +492,31 @@ export default function UsScreen() {
 }
 
 const styles = StyleSheet.create({
+  secondLead: {
+    marginTop: spacing.sm,
+  },
+  // The legend lives on the screen now rather than inside the retired grid:
+  // the two dot colours are the only key the map needs.
+  legend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing.lg,
+    marginBottom: spacing.smd,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    ...typography.caption,
+    color: colors.text.secondary,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.surface.background,

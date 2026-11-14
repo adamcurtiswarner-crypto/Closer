@@ -81,22 +81,60 @@ describe('deriveReactionSignals', () => {
   it('identifies outlier categories where dominant differs from overall', () => {
     const completions = [
       // Heart dominates overall
-      makeCompletion('communication', { u1: 'heart' }),
-      makeCompletion('communication', { u1: 'heart' }),
-      makeCompletion('communication', { u1: 'heart' }),
-      makeCompletion('intimacy', { u1: 'heart' }),
-      makeCompletion('intimacy', { u1: 'heart' }),
-      makeCompletion('intimacy', { u1: 'heart' }),
-      // But teary dominates in money (outlier)
-      makeCompletion('money', { u1: 'teary' }),
-      makeCompletion('money', { u1: 'teary' }),
-      makeCompletion('money', { u1: 'teary' }),
+      ...Array.from({ length: 6 }, () => makeCompletion('communication', { u1: 'heart' })),
+      ...Array.from({ length: 6 }, () => makeCompletion('intimacy', { u1: 'heart' })),
+      // But teary dominates in money, with enough weight to mean something
+      ...Array.from({ length: 6 }, () => makeCompletion('money', { u1: 'teary' })),
     ];
     const result = deriveReactionSignals(completions);
     expect(result.overallDominant).toBe('heart');
     expect(result.outliers).toHaveLength(1);
     expect(result.outliers[0].category).toBe('money');
     expect(result.outliers[0].dominant).toBe('teary');
+  });
+
+  /**
+   * Tightened 2026-11-14. The old bar was three reactions, so on the
+   * founders' data four separate categories each qualified and the Us view
+   * printed the identical sentence four times — "Spark lands here most
+   * (Love everywhere else)". Restating a tally is not an insight, and four
+   * rows saying one thing is noise.
+   */
+  it('ignores a category with too few reactions to mean anything', () => {
+    const completions = [
+      ...Array.from({ length: 6 }, () => makeCompletion('communication', { u1: 'heart' })),
+      // Three taps: the old threshold, and not enough to claim a pattern.
+      ...Array.from({ length: 3 }, () => makeCompletion('money', { u1: 'teary' })),
+    ];
+
+    expect(deriveReactionSignals(completions).outliers).toHaveLength(0);
+  });
+
+  it('ignores a category whose "dominant" reaction is only the top of a split', () => {
+    const completions = [
+      ...Array.from({ length: 6 }, () => makeCompletion('communication', { u1: 'heart' })),
+      // 3 teary / 2 spark / 2 smile: teary leads but does not dominate.
+      ...Array.from({ length: 3 }, () => makeCompletion('money', { u1: 'teary' })),
+      ...Array.from({ length: 2 }, () => makeCompletion('money', { u1: 'spark' })),
+      ...Array.from({ length: 2 }, () => makeCompletion('money', { u1: 'smile' })),
+    ];
+
+    expect(deriveReactionSignals(completions).outliers).toHaveLength(0);
+  });
+
+  it('returns at most two outliers, strongest first', () => {
+    const completions = [
+      // Heart has to outweigh ALL the teary categories combined, or teary
+      // becomes the overall dominant and these stop being outliers at all.
+      ...Array.from({ length: 30 }, () => makeCompletion('communication', { u1: 'heart' })),
+      ...Array.from({ length: 8 }, () => makeCompletion('money', { u1: 'teary' })),
+      ...Array.from({ length: 7 }, () => makeCompletion('family', { u1: 'teary' })),
+      ...Array.from({ length: 6 }, () => makeCompletion('friends', { u1: 'teary' })),
+    ];
+
+    const outliers = deriveReactionSignals(completions).outliers;
+    expect(outliers).toHaveLength(2);
+    expect(outliers.map((o) => o.category)).toEqual(['money', 'family']);
   });
 
   it('requires minimum 3 reactions to be an outlier', () => {

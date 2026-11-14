@@ -157,9 +157,42 @@ describe('UsScreen', () => {
     expect(getByText(/days together/)).toBeTruthy();
   });
 
-  it('shows category tiles with scores in the grid (premium)', () => {
-    const { getByText } = render(<UsScreen />);
-    expect(getByText('Money')).toBeTruthy();
+  /**
+   * Replaced 2026-11-14. The old assertion was `getByText('Money')`, which
+   * passed whether the category rendered as a graded tile, a map row, or a
+   * "not enough answers yet" line — so it never actually tested the grid it
+   * was named for.
+   */
+  it('leads with the widest gap as a conversation, not a grade', () => {
+    const { getByTestId, getByText, queryByText } = render(<UsScreen />);
+
+    // money is 2v9, 3v8, 2v8 — far and away the widest gap here.
+    expect(getByTestId('us-lead-money')).toBeTruthy();
+    expect(getByText(/see money differently/i)).toBeTruthy();
+
+    // None of the report-card vocabulary the tile grid invented.
+    expect(queryByText('GOOD')).toBeNull();
+    expect(queryByText('GROWING')).toBeNull();
+    expect(queryByText('STRONG')).toBeNull();
+  });
+
+  it('puts every measurable category on the shared map', () => {
+    const { getByTestId } = render(<UsScreen />);
+
+    expect(getByTestId('us-map')).toBeTruthy();
+    expect(getByTestId('us-row-money')).toBeTruthy();
+  });
+
+  it('says a thin category is still forming instead of scoring it', () => {
+    // One answer is not a measurement, and the old grid would still have
+    // printed an average to one decimal and graded it.
+    mockUseHearth.mockReturnValue({
+      data: [...APART_MONEY, scoredCompletion('f1', 'family', 1, 7, 8)],
+    });
+    const { getByTestId, queryByTestId } = render(<UsScreen />);
+
+    expect(getByTestId('us-forming-family')).toBeTruthy();
+    expect(queryByTestId('us-row-family')).toBeNull();
   });
 
   it('shows love languages side by side', () => {

@@ -19,6 +19,7 @@ export { ScalePromptCard } from './ScalePromptCard';
 export { FollowUpContextLine, FollowUpSkip, getFollowUpContextLine } from './FollowUpContext';
 export { FollowUpSource } from './FollowUpSource';
 export { ScoreGapScale } from './ScoreGapScale';
+export { UsLeadCard, UsMap, UsMovementCard } from './UsMap';
 
 // Partnership components
 export { PartnershipSection } from './PartnershipSection';

@@ -50,6 +50,15 @@ const EMPTY_CURATED: Record<ReactionType, number> = {
   teary: 0,
 };
 
+/**
+ * How many curated reactions a category needs before its "different"
+ * reaction means anything. Three taps is noise at this sample size.
+ */
+export const OUTLIER_MIN_REACTIONS = 6;
+
+/** At most this many outliers — a short list of real signals, not a catalogue. */
+export const OUTLIER_MAX = 2;
+
 function dominantReaction(
   curated: Record<ReactionType, number>
 ): ReactionType | null {
@@ -134,13 +143,26 @@ export function deriveReactionSignals(
     }))
     .sort((a, b) => b.total - a.total);
 
-  const outliers = categories.filter(
-    (c) =>
-      c.dominant !== null &&
-      overallDominant !== null &&
-      c.dominant !== overallDominant &&
-      c.total >= 3 // need enough data to be meaningful
-  );
+  // Tightened 2026-11-14. At `total >= 3` with one dominant reaction
+  // elsewhere, almost any category qualifies on a handful of taps, and the
+  // Us view printed the SAME sentence — "Spark lands here most (Love
+  // everywhere else)" — under four different categories. Four rows saying
+  // one thing is noise, and restating a tally is not an insight.
+  //
+  // A category now has to carry real weight (OUTLIER_MIN_REACTIONS) AND
+  // have its dominant reaction actually dominate (a majority of that
+  // category's curated reactions, not merely the top of a three-way split).
+  // Only the strongest few are returned, because the point is "this one is
+  // different", not a catalogue.
+  const outliers = categories
+    .filter((c) => {
+      if (c.dominant === null || overallDominant === null) return false;
+      if (c.dominant === overallDominant) return false;
+      if (c.total < OUTLIER_MIN_REACTIONS) return false;
+      const dominantCount = c.curated[c.dominant] ?? 0;
+      return dominantCount * 2 > c.total;
+    })
+    .slice(0, OUTLIER_MAX);
 
   return {
     categories,
