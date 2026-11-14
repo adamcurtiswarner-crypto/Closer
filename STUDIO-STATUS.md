@@ -110,13 +110,23 @@ Everything below is on main's working tree, green, and NOT yet committed. The on
 ~~6. Fix the stale rules test, the Java PATH, and add `test:rules` + `test:flows` to CI.~~ **DONE — 70/70 from a clean shell.**
 ~~8. Build the `on: schedule` GitHub Action that fails once SUBMIT-BY passes.~~ **DONE.**
 
+**Done since (all pushed to origin, commits `1b85dff`…`f27acd7`):**
+~~1. Commit the working tree.~~ Four commits, tree clean, origin in sync.
+~~2. Deploy the functions.~~ `cleanupDeletedAccounts`, `aggregateWeeklyMetrics`, `checkErrorAlerts` deployed 13:40Z. Verified: `checkErrorAlerts` logged "client_error cursor initialized" at 13:45:05Z — that sink is being read for the first time since July, starting from now rather than alerting on the August backlog.
+~~3. Publish an OTA.~~ Group `13263588-37a1-4709-a659-dd445872658f`, runtime 2.0.0, from commit `2316745`.
+~~4. Rewrite `hosting/privacy.html`.~~ Committed, **NOT deployed** — see below.
+~~5. Rewrite the listing.~~ `docs/plans/app-store-metadata.md` rewritten against build 75 + the live OTA, with a verification table and the shot list redone. `STORE_METADATA.md` marked superseded. **It caught a review-failing error: the draft pointed Apple at `stoke.llc/privacy.html`, which 404s — the live URL is the extensionless `/privacy`.**
+
+Also shipped, on Adam's explicit go after he hit it on a live divergence card: **follow-ups now show the question and both answers that produced them** (`2316745`). The join always existed — `follow_up.parent_assignment_id` — and the client never used it. Collapsed by default except on divergence, where the gap is the question.
+
+CI is green on all three jobs, including the rules + flows emulator job on its first ever run: the Java resolver works on a Linux runner.
+
 **Remaining, in order:**
-1. **Commit the working tree** (today's fixes, `firebase.json`, the metadata doc, this file). Production hosting is live from an uncommitted tree — that is how the privacy/terms deploy went unrecorded for days.
-2. **Deploy the functions** carrying items 2, 3 and the scheduler wrappers: `cleanupDeletedAccounts`, `aggregateWeeklyMetrics`, `checkErrorAlerts`. The indexes are live, so tonight's runs already succeed; the alerting improvements need this deploy.
-3. **Publish an OTA** for the client fixes (Revisit, Try This, Hearth flash, listener telemetry). Runtime 2.0.0, no binary needed. Adam's call.
-4. **Rewrite `hosting/privacy.html`** to match the in-app November policy, then redeploy hosting from a clean tree. Needs Adam's 15-minute legal read.
-5. **Rewrite the listing** against the real app — 6 collections not 12 categories, Hearth merged into Us, "400+ questions" (405 verified in prod), drop "No other app does this", drop the insights and progressive-trial claims — then recapture the 16 frames on build 75 + OTA.
-6. **Resolve the trial length** (21 in the app, 14 last recorded in ASC) and the free-vs-premium decision for the merged Us/Hearth. Both are Adam's.
+1. **Adam, ~1h:** the ASC trial length (21 in the app vs 14 last recorded — a 3.1.2 risk); a mailbox that receives mail (`stoke.llc` has no MX, so the addresses printed in the app, the policy and the support page all bounce); W-9 / banking status; and the free-vs-premium decision for the merged Us/Hearth.
+2. **Legal read on `hosting/privacy.html`**, then `firebase deploy --only hosting`. The page is rewritten and committed; hosting still serves the July 9 version, which is what Apple would fetch today.
+3. **Recapture the 12 frames** on build 75 + OTA `13263588`, per the rewritten shot list. Frame 4 (the follow-up source block, open) is the one that earns the listing.
+4. **The 75-minute device pass**, 6 of 12 items needing two phones. First item: the follow-up source block, which has tests but has never been seen against real data.
+5. **ASC assembly and submit.**
 
 **Backlog, deliberately not done today:** the `deliverDailyPrompts` attempt-vs-send counter (changing delivery accounting the day before a device pass is not worth the risk); `getReceipts` token pruning; `/events` TTL independent of BigQuery; GCP alert policies and a non-push alert channel; the Us/Hearth i18n gaps and the hardcoded English in TryThisCard and ExploreRevisit; splitting `explore.tsx` (1019 lines) and `us.tsx` (623) under the 800-line rule; deleting the dormant streak and churn code.
 
