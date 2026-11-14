@@ -7,6 +7,13 @@ interface ResponseCardProps {
   responseText: string;
   imageUrl?: string | null;
   isYours?: boolean;
+  /**
+   * The 1-10 score given with this answer, shown quietly beside the name.
+   * Only passed where the score is the point — the follow-up source block,
+   * where the gap between the two is what produced the question. The reveal
+   * has its own score choreography and does not pass it.
+   */
+  score?: number | null;
 }
 
 export function ResponseCard({
@@ -14,6 +21,7 @@ export function ResponseCard({
   responseText,
   imageUrl,
   isYours = false,
+  score = null,
 }: ResponseCardProps) {
   return (
     <View style={[styles.card, isYours ? styles.yoursCard : styles.partnersCard]}>
@@ -22,6 +30,14 @@ export function ResponseCard({
         <Text style={[styles.label, isYours ? styles.yoursLabel : styles.partnersLabel]}>
           {label}
         </Text>
+        {typeof score === 'number' && (
+          <Text
+            style={[styles.score, isYours ? styles.yoursLabel : styles.partnersLabel]}
+            accessibilityLabel={`scored ${score} out of 10`}
+          >
+            {score}
+          </Text>
+        )}
       </View>
       <Text style={styles.responseText}>{responseText}</Text>
       {imageUrl ? (
@@ -61,6 +77,11 @@ const styles = StyleSheet.create({
   },
   label: {
     ...typography.caption,
+  },
+  score: {
+    ...typography.caption,
+    marginLeft: 'auto',
+    fontVariant: ['tabular-nums'],
   },
   yoursLabel: {
     color: colors.text.secondary,

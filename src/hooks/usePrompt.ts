@@ -633,6 +633,82 @@ export function useAssignmentReveal(assignmentId: string | null) {
   });
 }
 
+export interface FollowUpSourceData {
+  /** The originating question, as asked (still tokenized — personalize at render). */
+  promptText: string;
+  /** The originating question's local calendar day, YYYY-MM-DD. */
+  assignedDate: string | null;
+  myResponse: PromptResponse | null;
+  partnerResponse: PromptResponse | null;
+}
+
+/**
+ * The question and both answers that produced a follow-up.
+ *
+ * A follow-up card asserts something about a conversation you already had
+ * — "You two saw this one differently" — and named none of it. Divergence
+ * and repair arrive the day AFTER the question that triggered them, so the
+ * context is gone by the time it is read. Every follow-up assignment
+ * already carries `follow_up.parent_assignment_id`, so this is a join, not
+ * new data.
+ *
+ * One-shot, not a listener: the parent is completed by definition (both
+ * scores existed, or there would be no follow-up) and nothing about it
+ * moves. Both reads are couple-pinned shapes the rules already allow — the
+ * assignment by id, and the responses filtered by couple_id first (the
+ * filter is load-bearing: see the documentId() ban).
+ */
+export function useFollowUpSource(parentAssignmentId: string | null) {
+  const { user } = useAuth();
+
+  return useQuery<FollowUpSourceData | null>({
+    queryKey: ['followUpSource', parentAssignmentId],
+    queryFn: async () => {
+      if (!parentAssignmentId || !user?.id || !user?.coupleId) return null;
+
+      try {
+        const [assignmentSnap, responsesSnap] = await Promise.all([
+          getDoc(doc(db, 'prompt_assignments', parentAssignmentId)),
+          getDocs(
+            query(
+              collection(db, 'prompt_responses'),
+              where('couple_id', '==', user.coupleId),
+              where('assignment_id', '==', parentAssignmentId)
+            )
+          ),
+        ]);
+
+        if (!assignmentSnap.exists()) return null;
+        const assignment = mapAssignment(assignmentSnap.id, assignmentSnap.data());
+
+        let myResponse: PromptResponse | null = null;
+        let partnerResponse: PromptResponse | null = null;
+        for (const responseDoc of responsesSnap.docs) {
+          const data = responseDoc.data();
+          const mapped = mapResponse(responseDoc.id, data);
+          if (data.user_id === user.id) myResponse = mapped;
+          else partnerResponse = mapped;
+        }
+
+        return {
+          promptText: assignment.promptText,
+          assignedDate: assignment.assignedDate ?? null,
+          myResponse,
+          partnerResponse,
+        };
+      } catch (error) {
+        // Never silent: a denial here is how a shipped query shape drifting
+        // from the rules stays invisible. The card degrades to its plain
+        // context line, which is the pre-2026-11-14 behaviour.
+        logger.reportQueryDenied('useFollowUpSource', error);
+        return null;
+      }
+    },
+    enabled: !!parentAssignmentId && !!user?.coupleId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 interface OfflineQueuedResponse {
   assignmentId: string;
   responseText: string;

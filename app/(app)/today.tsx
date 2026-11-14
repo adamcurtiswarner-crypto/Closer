@@ -54,6 +54,7 @@ import {
   SafetyResources,
   ScalePromptCard,
   FollowUpContextLine,
+  FollowUpSource,
   FollowUpSkip,
   FollowUpLockedCard,
   getFollowUpContextLine,
@@ -1393,7 +1394,14 @@ export default function TodayScreen() {
           ) : (
             <>
               {assignment.followUp && (
-                <FollowUpContextLine branch={assignment.followUp.branch} />
+                <>
+                  <FollowUpContextLine branch={assignment.followUp.branch} />
+                  <FollowUpSource
+                    parentAssignmentId={assignment.followUp.parentAssignmentId}
+                    partnerName={partnerNameSentenceCase}
+                    defaultOpen={assignment.followUp.branch === 'divergence'}
+                  />
+                </>
               )}
               {isScalePrompt ? (
                 <ScalePromptCard
@@ -1557,7 +1565,14 @@ export default function TodayScreen() {
         ) : (
           <>
             {isFollowUp && assignment!.followUp && (
-              <FollowUpContextLine branch={assignment!.followUp.branch} />
+              <>
+                <FollowUpContextLine branch={assignment!.followUp.branch} />
+                <FollowUpSource
+                  parentAssignmentId={assignment!.followUp.parentAssignmentId}
+                  partnerName={partnerNameSentenceCase}
+                  defaultOpen={assignment!.followUp.branch === 'divergence'}
+                />
+              </>
             )}
             {isScalePrompt ? (
               <ScalePromptCard

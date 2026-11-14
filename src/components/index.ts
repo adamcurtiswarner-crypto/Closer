@@ -17,6 +17,7 @@ export { CompletionMoment } from './CompletionMoment';
 export { ScaleSlider } from './ScaleSlider';
 export { ScalePromptCard } from './ScalePromptCard';
 export { FollowUpContextLine, FollowUpSkip, getFollowUpContextLine } from './FollowUpContext';
+export { FollowUpSource } from './FollowUpSource';
 
 // Partnership components
 export { PartnershipSection } from './PartnershipSection';

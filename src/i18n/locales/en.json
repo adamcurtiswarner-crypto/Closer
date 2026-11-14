@@ -785,5 +785,12 @@
     "loveLanguageMatch": "You speak the same language. That's a head start.",
     "loveLanguageDiffer": "You feel love differently. That's not a mismatch — it's a translation guide.",
     "daysTogether": "{{count}} days together"
+  },
+  "followUpSource": {
+    "fromDated": "From {{when}}",
+    "from": "From the question before this",
+    "show": "Show the question this came from",
+    "hide": "Hide the question this came from",
+    "gap": "You were {{gap}} apart"
   }
 }
