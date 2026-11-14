@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from '@/hooks/useAuth';
 import { useCouple } from '@/hooks/useCouple';
 import { useStreak } from '@/hooks/useStreak';
@@ -78,6 +79,8 @@ export default function TogetherScreen() {
       if (snap.exists()) {
         setPartnerLoveLanguage(snap.data().love_language || null);
       }
+    }, (error) => {
+      logger.reportQueryDenied('home.partnerListener', error);
     });
     return () => unsub();
   }, [partnerId]);

@@ -162,6 +162,33 @@ describe('HearthScreen first-run states', () => {
       // And no premature empty state either
       expect(queryByText('Your first answered question will glow here.')).toBeNull();
     });
+
+    /**
+     * Gates stay deliberately OPEN while entitlement resolves, so a premium
+     * couple never sees a flash of locked content. Until 2026-11-14 that
+     * also meant a FREE couple rendered its full history — every past month
+     * — for the length of three RevenueCat network calls. The shimmer now
+     * covers entitlement load too.
+     */
+    it('shimmers while entitlement is still resolving, instead of leaking history', () => {
+      mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+      mockSubscription.mockReturnValue({ isPremium: false, isLoading: true });
+
+      const { getByTestId, queryByTestId } = render(<HearthScreen />);
+
+      expect(getByTestId('hearth-loading')).toBeTruthy();
+      expect(queryByTestId('hearth-tile-communication')).toBeNull();
+    });
+
+    it('renders the grid once entitlement has resolved', () => {
+      mockHearthQuery.mockReturnValue({ data: [makeCompletion()], isLoading: false });
+      mockSubscription.mockReturnValue({ isPremium: false, isLoading: false });
+
+      const { getByTestId, queryByTestId } = render(<HearthScreen />);
+
+      expect(getByTestId('hearth-tile-communication')).toBeTruthy();
+      expect(queryByTestId('hearth-loading')).toBeNull();
+    });
   });
 
   describe('zero completions (brand-new couple)', () => {

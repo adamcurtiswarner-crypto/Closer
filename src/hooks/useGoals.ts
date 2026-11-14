@@ -15,6 +15,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import {
@@ -84,6 +85,8 @@ export function useGoals() {
     const unsub = onSnapshot(q, (snap) => {
       const goals = snap.docs.map(mapGoalDoc);
       queryClient.setQueryData(['goals', coupleId], goals);
+    }, (error) => {
+      logger.reportQueryDenied('useGoals.listener', error);
     });
     return () => unsub();
   }, [coupleId, queryClient]);

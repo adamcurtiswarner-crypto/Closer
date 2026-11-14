@@ -628,8 +628,13 @@ export default function ExploreScreen() {
             <ExploreRevisit
               assignments={completedAssignments}
               onPress={(a) => {
-                setViewingAssignmentId(a.id);
-                logEvent('explore_prompt_completed' as any, { assignment_id: a.id });
+                // Revisit lists COMPLETED assignments, and a completed
+                // answer is read in the reveal sheet. Setting
+                // viewingAssignmentId here (as it did until 2026-11-14) was
+                // a dead tap: the only consumer of that state also requires
+                // status === 'partial', which Revisit never lists.
+                setRevealAssignmentId(a.id);
+                logEvent('explore_revisit_opened', { assignment_id: a.id });
               }}
             />
           </View>

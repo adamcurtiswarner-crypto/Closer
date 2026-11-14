@@ -7,6 +7,8 @@ import { Icon } from './Icon';
 import { useAuth } from '@/hooks/useAuth';
 import { usePersonalize } from '@/hooks/usePersonalize';
 import { logEvent } from '@/services/analytics';
+import { logger } from '@/utils/logger';
+import { todayLocalISO } from '@/utils/localDate';
 import { pickDailyAction, type DailyAction } from '@/utils/dailyActions';
 import { colors, radius, shadow, spacing, typography } from '@/config/theme';
 
@@ -31,17 +33,19 @@ export function TryThisCard({ partnerLoveLanguage }: TryThisCardProps) {
 
   const handleFeedback = async (result: 'landed' | 'missed') => {
     setFeedback(result);
-    logEvent('daily_action_feedback' as any, {
+    logEvent('daily_action_feedback', {
       action_id: action.id,
       action_type: action.type,
       language: action.language,
       result,
     });
 
-    // Store feedback for learning loop
     if (user?.coupleId) {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        // Device-local day, not UTC: `toISOString()` rolls over at 8 PM
+        // Eastern, so an evening tap used to write tomorrow's document and
+        // the next morning's tap collided with it.
+        const today = todayLocalISO();
         await setDoc(
           doc(db, 'couples', user.coupleId, 'action_feedback', `${today}_${user.id}`),
           {
@@ -53,8 +57,13 @@ export function TryThisCard({ partnerLoveLanguage }: TryThisCardProps) {
             created_at: serverTimestamp(),
           }
         );
-      } catch {
-        // best-effort — never block the UI
+      } catch (error) {
+        // The rule is create-only (`allow update: if false`), so changing
+        // the answer for the same day is denied by design. Previously this
+        // was an empty catch, so a denial was indistinguishable from a
+        // write — the exact write-only-sink shape that hid three outages.
+        // The tap stays acknowledged in the UI; the failure is reported.
+        logger.reportQueryDenied('TryThisCard.feedback', error);
       }
     }
   };
@@ -105,9 +114,11 @@ export function TryThisCard({ partnerLoveLanguage }: TryThisCardProps) {
       ) : (
         <Animated.View entering={FadeIn.duration(300)} style={styles.feedbackDone}>
           <Text style={styles.feedbackDoneText}>
-            {feedback === 'landed'
-              ? 'Noted. More like this coming.'
-              : 'Got it. We will try a different angle.'}
+            {/* No learning loop exists: pickDailyAction is a deterministic
+                day-of-year pick and nothing reads action_feedback yet.
+                "More like this coming" was a promise the code does not
+                keep, so the copy says only what is true. */}
+            {feedback === 'landed' ? 'Noted.' : 'Got it.'}
           </Text>
         </Animated.View>
       )}

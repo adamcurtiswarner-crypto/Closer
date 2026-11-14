@@ -555,8 +555,17 @@ export function useTodayPrompt() {
           secondaryAssignment,
           needsDailyDelivery: needsDelivery,
         } as TodayPrompt);
+      }, (error) => {
+        // Added 2026-11-14. These two listeners drive the whole Today
+        // screen and had NO error callback: a rules denial or a network
+        // failure left Today rendering stale or empty data and reported
+        // nothing anywhere. That is precisely how the `documentId() in`
+        // denial went unnoticed for 20 days.
+        logger.reportQueryDenied('usePrompt.responsesListener', error);
       });
 
+    }, (error) => {
+      logger.reportQueryDenied('usePrompt.assignmentsListener', error);
     });
 
     return () => {

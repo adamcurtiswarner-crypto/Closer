@@ -165,9 +165,15 @@ export function pickDailyAction(
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
   )
 ): DailyAction {
-  const pool = partnerLoveLanguage
+  // love_language is a free-form string in Firestore (the rules only check
+  // ownership), so an unexpected value filters the pool to nothing. Without
+  // this fallback `dayOfYear % 0` is NaN, pool[NaN] is undefined, and the
+  // card dereferences `action.text` — a throw inside a render path, which
+  // the root ErrorBoundary turns into a blank app rather than a missing card.
+  const matching = partnerLoveLanguage
     ? ACTIONS.filter((a) => a.language === partnerLoveLanguage)
-    : ACTIONS;
+    : [];
+  const pool = matching.length > 0 ? matching : ACTIONS;
 
   const index = Math.abs(dayOfYear) % pool.length;
   return pool[index];

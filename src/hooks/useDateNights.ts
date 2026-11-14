@@ -13,6 +13,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 import type { DateNight, DateNightCategory } from '@/types';
@@ -62,6 +63,8 @@ export function useDateNights() {
       const nights = snap.docs.map(mapDateNightDoc);
       nights.sort((a, b) => STATUS_SORT_ORDER[a.status] - STATUS_SORT_ORDER[b.status]);
       queryClient.setQueryData(['dateNights', coupleId], nights);
+    }, (error) => {
+      logger.reportQueryDenied('useDateNights.listener', error);
     });
     return () => unsub();
   }, [coupleId, queryClient]);

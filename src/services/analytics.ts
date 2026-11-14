@@ -49,6 +49,8 @@ type AnalyticsEvent =
   | 'explore_category_tapped'
   | 'explore_prompt_started'
   | 'explore_prompt_completed'
+  | 'explore_revisit_opened'
+  | 'daily_action_feedback'
   | 'checkin_viewed'
   | 'checkin_submitted'
   | 'checkin_dismissed'

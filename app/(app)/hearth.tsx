@@ -254,9 +254,16 @@ export default function HearthScreen() {
           )}
         </View>
 
-        {isLoading ? (
+        {isLoading || premiumLoading ? (
           // Quiet loading — neutral shimmer tiles, never the 12 dead "Steady"
           // embers flashing before the data (or the empty state) settles in.
+          //
+          // premiumLoading is part of this (added 2026-11-14): gates stay
+          // deliberately OPEN while entitlement resolves, so that a premium
+          // couple never sees a flash of locked content. The cost is the
+          // mirror image — a free couple rendering its FULL history for the
+          // length of three RevenueCat network calls. The shimmer covers
+          // both, which is what the Us view already does.
           <View style={styles.grid} testID="hearth-loading">
             {Array.from({ length: 6 }, (_, i) => (
               <View key={i} style={styles.tileWrap}>

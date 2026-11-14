@@ -14,6 +14,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+import { logger } from '@/utils/logger';
 import { useAuth } from './useAuth';
 import { logEvent } from '@/services/analytics';
 
@@ -65,6 +66,8 @@ export function useWishlistItems() {
     const unsub = onSnapshot(q, (snap) => {
       const items = snap.docs.map(mapWishlistDoc);
       queryClient.setQueryData(['wishlist', coupleId], items);
+    }, (error) => {
+      logger.reportQueryDenied('useWishlist.listener', error);
     });
     return () => unsub();
   }, [coupleId, queryClient]);

@@ -537,4 +537,58 @@ describe('ExploreScreen states', () => {
       expect(await findByText('You both answered')).toBeTruthy();
     });
   });
+
+  /**
+   * Revisit shipped 2026-11-11 with a dead tap and no test. Its onPress set
+   * `viewingAssignmentId`, but the only consumer of that state also requires
+   * `status === 'partial'`, and Revisit lists only completed assignments —
+   * so tapping a Revisit card did nothing at all, on the one feature whose
+   * entire purpose is reopening an answered question. It also logged
+   * `explore_prompt_completed` on every tap, corrupting that metric.
+   */
+  describe('Revisit — reopening an already-answered question', () => {
+    const completed = makeAssignment({ status: 'completed', responseCount: 2 });
+    const bothResponses = {
+      data: [
+        { id: 'r1', userId: 'user-1', text: 'Mine', isCurrentUser: true, submittedAt: null },
+        { id: 'r2', userId: 'user-2', text: 'Theirs', isCurrentUser: false, submittedAt: null },
+      ],
+      isLoading: false,
+    };
+
+    it('lists a completed question under Revisit', () => {
+      setQueries({ assignments: { data: [completed] }, responses: bothResponses });
+      const { getByText } = render(<ExploreScreen />);
+
+      expect(getByText('Revisit')).toBeTruthy();
+      expect(getByText('Both answered')).toBeTruthy();
+    });
+
+    it('opens the reveal sheet when a Revisit card is tapped', async () => {
+      setQueries({ assignments: { data: [completed] }, responses: bothResponses });
+      const { getByText, findByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('Both answered'));
+      await act(async () => {});
+
+      // The reveal sheet is the only surface that shows a completed answer.
+      expect(await findByText('You both answered')).toBeTruthy();
+    });
+
+    it('logs a revisit, not a completion', () => {
+      const { logEvent } = require('@/services/analytics');
+      setQueries({ assignments: { data: [completed] }, responses: bothResponses });
+      const { getByText } = render(<ExploreScreen />);
+
+      fireEvent.press(getByText('Both answered'));
+
+      expect(logEvent).toHaveBeenCalledWith('explore_revisit_opened', {
+        assignment_id: 'assign-1',
+      });
+      expect(logEvent).not.toHaveBeenCalledWith(
+        'explore_prompt_completed',
+        expect.anything()
+      );
+    });
+  });
 });
