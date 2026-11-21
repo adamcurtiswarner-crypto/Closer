@@ -165,6 +165,57 @@ beforeEach(() => {
   mockPartnerName.mockReturnValue({ name: 'Jordan', isFallback: false });
 });
 
+/**
+ * The talk ritual is free, forever.
+ *
+ * premiumGates.ts: "current-month Hearth embers AND the current-month couch
+ * queue, including the 'we talked' mark — the talk ritual is the product's
+ * hook, never advertised in the header and then locked."
+ *
+ * The 2026-11-14 Hearth merge rendered this section as `{!locked &&
+ * <UsTogether />}`, which hid the queue, the week and the month's numbers
+ * from every free couple — the exact thing that sentence forbids. Before
+ * the merge they reached it through the Hearth home. This pins the
+ * component's own gating so the wrapper cannot be reintroduced without a
+ * test going red.
+ */
+describe('UsTogether gates itself and is free for the current month', () => {
+  function repairCompletion(overrides: Record<string, unknown> = {}) {
+    return makeCompletion({
+      id: 'c-free',
+      category: 'money',
+      signal: 'repair' as const,
+      responses: [
+        { userId: 'user-1', responseText: 'a', responseScore: 2, imageUrl: null, submittedAt: null },
+        { userId: 'user-2', responseText: 'b', responseScore: 3, imageUrl: null, submittedAt: null },
+      ],
+      ...overrides,
+    });
+  }
+
+  it('shows a FREE couple the current-month queue, the week and the stats', () => {
+    mockSubscription.mockReturnValue({ isPremium: false, isLoading: false });
+    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
+
+    const { getByTestId } = render(<UsTogether />);
+
+    expect(getByTestId('us-queue-c-free')).toBeTruthy();
+    expect(getByTestId('us-stats')).toBeTruthy();
+    // ...and the gate card for the history it does hold back.
+    expect(getByTestId('hearth-gate')).toBeTruthy();
+  });
+
+  it('shows a PREMIUM couple the same ritual with no gate', () => {
+    mockSubscription.mockReturnValue({ isPremium: true, isLoading: false });
+    mockHearthQuery.mockReturnValue({ data: [repairCompletion()], isLoading: false });
+
+    const { getByTestId, queryByTestId } = render(<UsTogether />);
+
+    expect(getByTestId('us-queue-c-free')).toBeTruthy();
+    expect(queryByTestId('hearth-gate')).toBeNull();
+  });
+});
+
 describe('UsTogether queue meta partner name (via usePartnerName)', () => {
   function repairCompletion(overrides: Record<string, unknown> = {}) {
     return makeCompletion({

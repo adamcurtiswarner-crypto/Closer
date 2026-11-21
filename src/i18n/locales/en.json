@@ -803,7 +803,10 @@
     "moveClosing": "Closing",
     "moveOpening": "Opening",
     "moveSteady": "Steady",
-    "formingCount": "{{count}} of {{needed}}"
+    "formingCount": "{{count}} of {{needed}}",
+    "summaryAllCloseOne": "You're close on the one dimension you've answered so far.",
+    "summaryLeadOne": "You're close on one dimension. This one stands out.",
+    "summaryLeadOnly": "This is the one that stands out so far."
   },
   "followUpSource": {
     "stripGap": "{{when}} · {{gap}} apart",

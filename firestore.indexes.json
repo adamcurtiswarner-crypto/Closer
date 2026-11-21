@@ -397,6 +397,20 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "prompt_responses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "prompt_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "emotional_response",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

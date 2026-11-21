@@ -92,8 +92,19 @@ export default function UsScreen() {
 
   // One honest sentence about the whole picture, rather than a grade.
   const usSummary = useMemo(() => {
+    // Explicit keys rather than one interpolated sentence: a new couple is
+    // the FIRST person to see this line, and the counts that read worst are
+    // exactly theirs. "close across all 1 dimensions" and "close on 0 of
+    // your dimensions" were both reachable on a first-run account, which is
+    // also the account an App Review tester creates.
     if (usView.rows.length === 0) return t('us.summaryEarly');
-    if (!usView.lead) return t('us.summaryAllClose', { count: usView.rows.length });
+    if (!usView.lead) {
+      return usView.rows.length === 1
+        ? t('us.summaryAllCloseOne')
+        : t('us.summaryAllClose', { count: usView.rows.length });
+    }
+    if (usView.closeCount === 0) return t('us.summaryLeadOnly');
+    if (usView.closeCount === 1) return t('us.summaryLeadOne');
     return t('us.summaryLead', { close: usView.closeCount });
   }, [usView, t]);
 
@@ -400,7 +411,16 @@ export default function UsScreen() {
             numbers, and the sheets they open. Moved out of the retired
             Hearth home on 2026-11-14 so the dimensions and the ritual
             finally live on one screen. */}
-        {!locked && <UsTogether />}
+        {/* NOT gated on `locked` (fixed 2026-11-21). UsTogether gates itself:
+            it computes historyLocked, narrows a free couple to the current
+            month, and renders the quiet gate card for the rest. Wrapping it
+            in `!locked` hid the couch queue and the "we talked" ritual from
+            free couples entirely — and premiumGates.ts states those are
+            "always free, forever ... never advertised in the header and then
+            locked". Before the Hearth merge a free couple reached them
+            through the Hearth home; retiring that screen moved them behind a
+            gate they were never meant to be behind. */}
+        <UsTogether />
 
         {/* What lands — reaction learning signals (v1.5 #2) */}
         {!premiumLoading && !locked && reactionSignals.outliers.length > 0 && (
