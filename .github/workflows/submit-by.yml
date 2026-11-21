@@ -25,3 +25,15 @@ jobs:
       # the record cannot drift apart.
       - name: Check the committed submission date
         run: node scripts/check-submit-by.js
+
+      # Probes the world, not the record: commit silence, MX on the domain
+      # whose addresses the policy publishes, and the age of the privacy
+      # page App Review actually fetches.
+      #
+      # Added 2026-11-21. The date check above only fails AFTER the date
+      # passes, so it reported green through seven silent days in which a
+      # scheduler failed daily, a retention loop failed weekly, CI went red
+      # and four founder items did not move. A control that can only tell
+      # you afterwards is not a control.
+      - name: Probe the runway against reality
+        run: node scripts/check-runway.js
