@@ -9,6 +9,26 @@
 
 *Superseded:* **SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21.** Moved in writing by the CEO on 2026-11-14, per the 8/3 governance rule. The 9/1 commitment was missed by 74 days and never moved — the second time that failure mode has run unchecked. Thanksgiving is Thu 11/26, so 11/24 keeps a two-day buffer ahead of the holiday.
 
+## RESOLVED 2026-11-21 — the W-9 and banking were done on Nov 7
+
+Confirmed from App Store Connect (founder screenshot):
+
+| Item | Status | Since |
+|---|---|---|
+| Paid Apps Agreement | **Active** | Nov 7 2026 (through Feb 24 2027) |
+| Free Apps Agreement | Active | Nov 6 2026 |
+| Bank account — Omnific Collective LLC (0648), USD | **Active** | — |
+| U.S. Form W-9 | **Active** | submitted Nov 7 2026 |
+| Digital Services Act compliance | Active | Jul 5 2026 |
+
+**Subscriptions can go live.** This was carried as an open founder item and "the longest external pole, startable for 100+ days" from the August cycles through 2026-11-14 — and it had already been finished on Nov 7, a week before that cycle ran. The studio recorded it as *unverifiable from here* and never simply asked. **Unverifiable is not the same as not done**; the cost of asking was one question.
+
+With this gone, the longest remaining external clock is DNS propagation on the mailbox (up to 24h). Everything else on the path is studio work or the founder's own hands.
+
+**Founder items remaining: three.** A working mailbox · the legal read of the privacy policy · the 75-minute two-device pass. (Plus one lookup: what trial length ASC actually holds, which only confirms or reverses D1 above.)
+
+---
+
 ## CEO DECISIONS 2026-11-21 — two taken off Adam's plate (veto open until Mon 11/23)
 
 Adam asked the CEO to default the two reversible decisions rather than decide them cold. Both are recorded here so a veto is a one-line reply, not a reopening.

@@ -183,7 +183,8 @@ answers, and it shipped on 2026-11-14.
 
 1. ~~**Trial length.**~~ **DECIDED 2026-11-21 (CEO, reversible, founder may veto):** the app says **14 days, annual only**, in the paywall CTA, the subline, the in-app Terms and the hosted Terms. Rationale — the asymmetry: under-promising a trial is harmless, over-promising it is a 3.1.2 rejection, and 14/annual-only is what the last ASC record says. Adam still needs to CONFIRM what ASC holds; if it is 21, or if monthly carries a trial, the copy goes up and nothing else changes.
 2. **Support and privacy contact.** `stoke.llc` has no MX records; both published
-   addresses bounce.
+   addresses bounce. **This is now the longest remaining external clock** — DNS
+   propagation can take up to 24 hours.
 3. **The hosted privacy policy** is still the July version.
 4. ~~**Free-vs-premium for the merged Us/Hearth.**~~ **DECIDED 2026-11-21 (CEO,
    founder may veto):** keep exactly what `premiumGates.ts` already documents.
