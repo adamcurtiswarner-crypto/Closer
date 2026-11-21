@@ -127,7 +127,7 @@ https://stoke.llc
 
 | Product | Price | Notes |
 |---|---|---|
-| `stoke_premium_annual` | $49.99/year | **14-day free trial.** CEO decision 2026-11-21: the app now says 14 days everywhere, matching the last recorded ASC configuration. If ASC actually carries 21, raise the app copy to match — but DO NOT leave them different. |
+| `stoke_premium_annual` | $49.99/year | **14-day free trial — CONFIRMED in ASC by Adam on 2026-11-21.** The app says 14 days, annual only, in the paywall CTA, the subline and both Terms documents. App and StoreKit agree. |
 | `stoke_premium_monthly` | $9.99/month | **No trial.** The paywall CTA and subline now drop the trial language when monthly is selected. If ASC does carry a monthly trial, tell the studio and the copy comes back. |
 
 Display name in ASC should carry the couple framing — "Stoke Premium (Couple)" —
@@ -181,7 +181,11 @@ answers, and it shipped on 2026-11-14.
 
 ## BLOCKED — do not submit until these are settled
 
-1. ~~**Trial length.**~~ **DECIDED 2026-11-21 (CEO, reversible, founder may veto):** the app says **14 days, annual only**, in the paywall CTA, the subline, the in-app Terms and the hosted Terms. Rationale — the asymmetry: under-promising a trial is harmless, over-promising it is a 3.1.2 rejection, and 14/annual-only is what the last ASC record says. Adam still needs to CONFIRM what ASC holds; if it is 21, or if monthly carries a trial, the copy goes up and nothing else changes.
+0. **The IAP review screenshot is missing**, and the subscription's **Review Information** section is empty. Apple requires it. Found 2026-11-21 on the Stoke Premium Annual page.
+0b. **The subscription has never been approved** — status is *Prepare for Submission*, and ASC states the first auto-renewable subscription must be submitted WITH a new app version. The subscription and the app go to review together; this is not a step that can be cleared in advance, so its metadata must be complete at submission time.
+0c. **Display name is "Annual"**, which is what a customer sees at the purchase sheet. Recommend **"Stoke Premium (Couple)"** — one subscription covering both partners is the differentiator competitors lack, and the purchase sheet is where it lands hardest. The description beneath it is already right.
+
+1. ~~**Trial length.**~~ **CLOSED 2026-11-21.** Adam confirmed in App Store Connect: the annual product carries a **14-day introductory offer**. The app was defaulted to 14/annual-only earlier the same day and is already live via OTA `e7a472a2`, so app copy and StoreKit now agree. One loose end: nobody has checked whether `stoke_premium_monthly` also carries an offer — the app currently promises none there, which is the safe direction.
 2. **Support and privacy contact.** `stoke.llc` has no MX records; both published
    addresses bounce. **This is now the longest remaining external clock** — DNS
    propagation can take up to 24 hours.

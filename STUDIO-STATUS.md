@@ -39,7 +39,9 @@ Confirmed from App Store Connect (founder screenshot):
 
 With this gone, the longest remaining external clock is DNS propagation on the mailbox (up to 24h). Everything else on the path is studio work or the founder's own hands.
 
-**Founder items remaining: three.** A working mailbox · the legal read of the privacy policy · the 75-minute two-device pass. (Plus one lookup: what trial length ASC actually holds, which only confirms or reverses D1 above.)
+**Founder items remaining: four.** A working mailbox · the legal read of the privacy policy · the 75-minute two-device pass · and the subscription's ASC metadata (IAP review screenshot, which is required and missing, plus the display name).
+
+The trial lookup is **closed**: Adam confirmed a 14-day introductory offer on annual, matching the default taken earlier the same day. Two things surfaced while he was in there, both new: the subscription has never been approved and must be submitted alongside the app version, and its Review Information screenshot is empty, which Apple requires.
 
 ---
 
@@ -47,7 +49,7 @@ With this gone, the longest remaining external clock is DNS propagation on the m
 
 Adam asked the CEO to default the two reversible decisions rather than decide them cold. Both are recorded here so a veto is a one-line reply, not a reopening.
 
-**D1. The trial is 14 days, annual only.** The paywall CTA, its subline, the in-app Terms and the hosted Terms all now say so, and the CTA drops trial language entirely when the monthly plan is selected.
+**D1. The trial is 14 days, annual only. — CONFIRMED by Adam in ASC the same day.** The default turned out to match reality, so this is now verified rather than assumed. The paywall CTA, its subline, the in-app Terms and the hosted Terms all now say so, and the CTA drops trial language entirely when the monthly plan is selected.
 
 > Decided on the asymmetry, not on a preference: **under-promising a trial costs nothing; over-promising one is a 3.1.2 rejection.** The app said 21 days on both plans while the last recorded ASC configuration is 14, annual-only. If ASC turns out to hold 21, or a monthly trial, the copy goes up and nothing else changes — a one-line edit either way. **Adam still has to look and confirm**; this removes the risk of shipping a contradiction while he does.
 
