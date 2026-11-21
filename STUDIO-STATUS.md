@@ -3,7 +3,35 @@
 
 *Previous: 2026-11-12 — CEO cycle: P0 fixes shipped via OTA `53ea17ab`. Previous: 2026-08-22 — error-report review, D1 deployed, build 73 submitted.*
 
-**SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21.** Moved in writing by the CEO on 2026-11-14, per the 8/3 governance rule. The 9/1 commitment was missed by 74 days and never moved — the second time that failure mode has run unchecked. Thanksgiving is Thu 11/26, so 11/24 keeps a two-day buffer ahead of the holiday.
+**SUBMIT-BY: 2026-12-04 (committed) · gate Mon 2026-11-23.** Moved in writing by the CEO on 2026-11-21. The 11/24 date is not reachable: seven days passed with zero commits, none of the four founder items moved, nothing has been captured for screenshots, and the device pass has never run. Submitting into Thanksgiving week also means any Apple feedback lands while the founder is away. The PREVIOUS line read: "SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21" — and 11/21 was a Saturday, which nobody caught.
+
+**This is the third date. If the 11/23 gate is missed, the next CEO cycle does not set a fourth — it asks whether this is still a launch.**
+
+*Superseded:* **SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21.** Moved in writing by the CEO on 2026-11-14, per the 8/3 governance rule. The 9/1 commitment was missed by 74 days and never moved — the second time that failure mode has run unchecked. Thanksgiving is Thu 11/26, so 11/24 keeps a two-day buffer ahead of the holiday.
+
+## CEO Cycle 2026-11-21 — the week nothing happened, and what that proved
+
+**Zero commits between 2026-11-14 and today.** None of the four founder items moved: `stoke.llc` and `getstoke.io` still have no MX records, so the `privacy@` and `support@` addresses published in the app, the policy and the marketing site still bounce; and `stoke.llc/privacy` still serves the **July 9** version, so the policy rewritten and committed on 11/14 was never deployed. Apple would fetch the old one today.
+
+**The alerting worked perfectly and changed nothing.** `aggregateWeeklyMetrics` failed every single day from 11/15 to 11/21. All seven failures were captured in `error_logs` by the `runScheduled` wrapper and all seven show `alerted: true` — `checkErrorAlerts` found them and pushed the one admin device, seven times. Before 11/14 this would have been invisible. It is now visible, reported, and still unfixed.
+
+> **The lesson, and it is the important one in this file: detection was never the gap.** An alert with one recipient, no owner and no response loop is a quieter kind of silence. Adding more alerts to the same phone will not help. What is missing is a second reader and a response obligation.
+
+**Three defects of my own, found by review rather than by use:**
+
+1. **The talk ritual was gated.** The Hearth merge rendered the tending section as `{!locked && <UsTogether />}`, so free couples lost the couch queue, the week, the month's numbers and the "we talked" mark — which `premiumGates.ts` calls "always free, forever … never advertised in the header and then locked". Before the merge they reached it through the Hearth home. Retiring that screen moved a documented free feature behind the gate. Fixed (`ad8b053`); `UsTogether` already gates itself.
+2. **The index fix was half a fix.** On 11/14 I deployed the index for `aggregateWeeklyMetrics`'s first query and verified that query. The function has four. Getting past the first exposed the next. **Verifying one query and declaring a function fixed is the mistake** — the run has to be checked, not the query.
+3. **`runScheduled` was applied to instances, not the class.** I wrapped the three functions failing that day and left nine bare. One of the nine, `sendWeeklyRecaps`, had already been failing **every Sunday for at least four weeks** on its own missing index — writing no error_log, raising no alert, appearing in no report. A retention loop re-enabled on 8/2 has silently not run for a month. All nine are now wrapped, with a guard test (`97f56eb`).
+
+**And CI has been red for seven days.** I reported "CI green on all three jobs" on 11/14 from the run for `8c1b445`, then pushed two more commits and never re-checked. Both failed. The cause is one flow test timing out at exactly 20s on a CI runner while passing locally every time — the functions emulator cold-starting a trigger container. Fixed by raising the timeout under CI only (`e256df6`). A red CI that everyone ignores is worse than no CI: it sat red beside a daily production failure that was also being reported and also ignored.
+
+**What is actually healthy** (Ops audit, 7 days): the daily loop ran every day — an assignment created and completed for the founders on 11/15-11/20, 11/21 partial as expected. 9 of 11 schedulers fine. Canary 167/167. BigQuery export working (6,353 rows). `/events` pruning works. Zero `client_error` docs since 11/14.
+
+**Carried, unresolved:** Masha holds **two push tokens again** (the 8/23 cleanup did not stick, so she is getting doubled pushes). Deploy drift — most functions were last deployed 8/2-8/3 and predate the 8/23 refactor. 61% of BigQuery rows have NULL timestamps. `getstoke.io` now 301s to an unrelated domain.
+
+**Pending founder approval, blocked on permission:** the two-index deploy (`firebase deploy --only firestore:indexes`). **The recap runs again Sun 11/22 18:00 PT — deploying before then is the difference between a fifth silent failure and a working retention loop.**
+
+---
 
 ## THE HEADLINE (read this first)
 
