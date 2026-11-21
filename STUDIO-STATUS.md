@@ -3,7 +3,7 @@
 
 *Previous: 2026-11-12 — CEO cycle: P0 fixes shipped via OTA `53ea17ab`. Previous: 2026-08-22 — error-report review, D1 deployed, build 73 submitted.*
 
-**SUBMIT-BY: 2026-12-04 (committed) · gate Mon 2026-11-23.** Moved in writing by the CEO on 2026-11-21. The 11/24 date is not reachable: seven days passed with zero commits, none of the four founder items moved, nothing has been captured for screenshots, and the device pass has never run. Submitting into Thanksgiving week also means any Apple feedback lands while the founder is away. The PREVIOUS line read: "SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21" — and 11/21 was a Saturday, which nobody caught.
+**SUBMIT-BY: 2026-12-04 (committed) · gate Mon 2026-11-23.** Moved in writing by the CEO on 2026-11-21 and **confirmed by Adam the same day** — the first time a date on this project has been agreed rather than inherited. Held at 12-04 rather than pulled earlier even after the W-9 cleared, because the device pass has not run and is the step most likely to cost a cycle. The 11/24 date is not reachable: seven days passed with zero commits, none of the four founder items moved, nothing has been captured for screenshots, and the device pass has never run. Submitting into Thanksgiving week also means any Apple feedback lands while the founder is away. The PREVIOUS line read: "SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21" — and 11/21 was a Saturday, which nobody caught.
 
 **This is the third date. If the 11/23 gate is missed, the next CEO cycle does not set a fourth — it asks whether this is still a launch.**
 
