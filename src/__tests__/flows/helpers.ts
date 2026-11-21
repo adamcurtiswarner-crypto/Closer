@@ -123,10 +123,29 @@ export async function withAdminDb<T>(fn: (db: AdminDb) => Promise<T>): Promise<T
  * Functions emulator's async trigger work (completion creation, status
  * repair, discussed_at settle).
  */
+/**
+ * How long a flow waits for a Cloud Functions trigger to land.
+ *
+ * 20s is comfortable locally and NOT enough on a CI runner: the functions
+ * emulator cold-starts a trigger container on first invocation, and the
+ * explore completion assertion — the first test to drive
+ * `onResponseSubmitted` through both answers — timed out at exactly 20s on
+ * two consecutive CI runs while passing locally every time. The trigger
+ * demonstrably ran ("Finished us-central1-onResponseSubmitted" in the same
+ * log), so this is emulator start-up, not a product fault.
+ *
+ * Raised on CI only, so a local run still fails fast when something is
+ * genuinely stuck rather than hanging for a minute.
+ */
+export const DEFAULT_WAIT_MS = process.env.CI ? 60000 : 20000;
+
 export async function waitFor<T>(
   check: () => Promise<T | null | undefined | false>,
   label: string,
-  { timeoutMs = 20000, intervalMs = 250 }: { timeoutMs?: number; intervalMs?: number } = {}
+  {
+    timeoutMs = DEFAULT_WAIT_MS,
+    intervalMs = 250,
+  }: { timeoutMs?: number; intervalMs?: number } = {}
 ): Promise<T> {
   const deadline = Date.now() + timeoutMs;
   let last: T | null | undefined | false = null;
