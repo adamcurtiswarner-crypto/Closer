@@ -136,8 +136,14 @@ export async function withAdminDb<T>(fn: (db: AdminDb) => Promise<T>): Promise<T
  *
  * Raised on CI only, so a local run still fails fast when something is
  * genuinely stuck rather than hanging for a minute.
+ *
+ * MUST stay below jest.flows.config.js `testTimeout`. Set equal to it on
+ * 2026-11-21 and the result was worse than the original bug: jest killed
+ * the test first, so the failure read "Exceeded timeout of 60000 ms for a
+ * test" instead of naming what waitFor was waiting for. A diagnostic you
+ * destroy while fixing a flake costs more than the flake.
  */
-export const DEFAULT_WAIT_MS = process.env.CI ? 60000 : 20000;
+export const DEFAULT_WAIT_MS = process.env.CI ? 45000 : 20000;
 
 export async function waitFor<T>(
   check: () => Promise<T | null | undefined | false>,

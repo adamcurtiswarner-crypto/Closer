@@ -30,9 +30,16 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   // Real timers + real network I/O against the emulators.
   fakeTimers: { enableGlobally: false },
-  testTimeout: 60000,
+  // 120s so a waitFor (45s on CI) always expires FIRST and reports what it
+  // was waiting for. When these were both 60s, jest won the race and every
+  // failure arrived as a bare "Exceeded timeout" with no clue attached.
+  testTimeout: 120000,
   // All files share one emulator instance; run serially for determinism.
   maxWorkers: 1,
+  // Retries one intermittent emulator/gRPC flake (see flows/setup.ts) so a
+  // known-unstable test cannot hold CI permanently red. A real break still
+  // fails all three attempts.
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/flows/setup.ts'],
   // The web SDK keeps gRPC/listen channels open; the harness owns process
   // lifetime inside emulators:exec, so exit once the suites finish.
   forceExit: true,
