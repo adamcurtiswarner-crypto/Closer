@@ -61,7 +61,7 @@ export default function TermsOfServiceScreen() {
         <Section title="6. Subscriptions and Payments">
           <P><B>Free tier:</B> The daily prompt loop, one follow-up conversation, up to three explore sends per month, and current-month Hearth are always free.</P>
           <P><B>Premium:</B> Unlocks unlimited follow-ups, unlimited explore sends, full Hearth history and trends, and the Us view. One subscription covers both linked partners.</P>
-          <P><B>Trial:</B> 21-day free trial for new subscribers. Transitions to paid unless cancelled at least 24 hours before the trial ends.</P>
+          <P><B>Trial:</B> 14-day free trial for new annual subscribers. Transitions to paid unless cancelled at least 24 hours before the trial ends. The monthly plan has no trial.</P>
           <P><B>Billing:</B> Annual ($49.99/year) or monthly ($9.99/month) via the App Store. Subscriptions auto-renew unless turned off at least 24 hours before the end of the current period. No cancellation during the active period. Manage subscriptions in your Apple ID Account Settings. Deleting your account does not cancel your subscription.</P>
         </Section>
 

@@ -454,7 +454,7 @@
       "billedMonthly": "Billed monthly"
     },
     "sharedNote": "One subscription. Both of you. Your partner unlocks automatically.",
-    "ctaTrial": "Start your 21-day free trial",
+    "ctaTrial": "Start your 14-day free trial",
     "ctaSubline": "then {{price}}, cancel anytime",
     "plansError": "Plans aren't loading right now.",
     "tryAgain": "Try again",
@@ -463,7 +463,9 @@
     "termsLink": "Terms of Service",
     "privacyLink": "Privacy Policy",
     "notNow": "Not now",
-    "therapyAnchor": "One year of Stoke costs less than a single couples therapy session."
+    "therapyAnchor": "One year of Stoke costs less than a single couples therapy session.",
+    "ctaNoTrial": "Start Premium",
+    "ctaSublineNoTrial": "{{price}}, cancel anytime"
   },
   "resources": {
     "title": "Resources",

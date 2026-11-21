@@ -9,6 +9,24 @@
 
 *Superseded:* **SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21.** Moved in writing by the CEO on 2026-11-14, per the 8/3 governance rule. The 9/1 commitment was missed by 74 days and never moved — the second time that failure mode has run unchecked. Thanksgiving is Thu 11/26, so 11/24 keeps a two-day buffer ahead of the holiday.
 
+## CEO DECISIONS 2026-11-21 — two taken off Adam's plate (veto open until Mon 11/23)
+
+Adam asked the CEO to default the two reversible decisions rather than decide them cold. Both are recorded here so a veto is a one-line reply, not a reopening.
+
+**D1. The trial is 14 days, annual only.** The paywall CTA, its subline, the in-app Terms and the hosted Terms all now say so, and the CTA drops trial language entirely when the monthly plan is selected.
+
+> Decided on the asymmetry, not on a preference: **under-promising a trial costs nothing; over-promising one is a 3.1.2 rejection.** The app said 21 days on both plans while the last recorded ASC configuration is 14, annual-only. If ASC turns out to hold 21, or a monthly trial, the copy goes up and nothing else changes — a one-line edit either way. **Adam still has to look and confirm**; this removes the risk of shipping a contradiction while he does.
+
+**D2. Free vs premium: exactly what `premiumGates.ts` already documents.** Free forever — the daily loop, the reveal, reactions, answering a question your partner sent, skipping, the first follow-up, three explore sends a month, and **the current month's history including the couch queue and the "we talked" mark**. Premium — unlimited follow-ups, unlimited sends, full history and trends, and the Us alignment map.
+
+> This is not a new policy. It is the policy the code has documented since the SEV-0 #8 work, which the studio then broke twice: the Hearth merge hid the free current month behind the premium gate, and the 11/14 listing rewrite therefore had to drop the free-month claim as untrue. Both are repaired (`ad8b053`), so the listing now claims it again because it is now true. The decision that was "open since July" turns out to have been answered in code all along; what was missing was anyone enforcing it.
+
+Consequences shipped with these: paywall CTA is plan-aware, in-app and hosted Terms corrected, the listing's blocked-items list reduced from four to two, and `app-store-metadata.md` now claims the free current month.
+
+**Still genuinely Adam's, and not defaultable:** a working mailbox, the W-9 and banking, the legal read of the privacy policy, and the device pass.
+
+---
+
 ## CEO Cycle 2026-11-21 — the week nothing happened, and what that proved
 
 **Zero commits between 2026-11-14 and today.** None of the four founder items moved: `stoke.llc` and `getstoke.io` still have no MX records, so the `privacy@` and `support@` addresses published in the app, the policy and the marketing site still bounce; and `stoke.llc/privacy` still serves the **July 9** version, so the policy rewritten and committed on 11/14 was never deployed. Apple would fetch the old one today.

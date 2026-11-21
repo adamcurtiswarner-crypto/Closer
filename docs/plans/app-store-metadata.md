@@ -40,6 +40,7 @@ What you get free, forever:
 - Your first follow-up conversation
 - Three questions a month to send your partner from the Explore library
 - Reactions on every answer — Love, Spark, Smile, Moved
+- This month's history, and the conversations waiting for the two of you
 
 What Premium adds:
 - Unlimited follow-up conversations — the deepener, the repair, the divergence question
@@ -126,8 +127,8 @@ https://stoke.llc
 
 | Product | Price | Notes |
 |---|---|---|
-| `stoke_premium_annual` | $49.99/year | **BLOCKED:** the paywall says a 21-day free trial; the last recorded ASC configuration is 14 days. Make them match before submitting — a trial length in the app that differs from the StoreKit product is a 3.1.2 rejection. |
-| `stoke_premium_monthly` | $9.99/month | Confirm whether the trial applies here too, or only to annual. |
+| `stoke_premium_annual` | $49.99/year | **14-day free trial.** CEO decision 2026-11-21: the app now says 14 days everywhere, matching the last recorded ASC configuration. If ASC actually carries 21, raise the app copy to match — but DO NOT leave them different. |
+| `stoke_premium_monthly` | $9.99/month | **No trial.** The paywall CTA and subline now drop the trial language when monthly is selected. If ASC does carry a monthly trial, tell the studio and the copy comes back. |
 
 Display name in ASC should carry the couple framing — "Stoke Premium (Couple)" —
 because one subscription covering both partners is the thing competitors do not
@@ -180,18 +181,22 @@ answers, and it shipped on 2026-11-14.
 
 ## BLOCKED — do not submit until these are settled
 
-1. **Trial length.** App copy says 21 days; last recorded ASC config says 14.
+1. ~~**Trial length.**~~ **DECIDED 2026-11-21 (CEO, reversible, founder may veto):** the app says **14 days, annual only**, in the paywall CTA, the subline, the in-app Terms and the hosted Terms. Rationale — the asymmetry: under-promising a trial is harmless, over-promising it is a 3.1.2 rejection, and 14/annual-only is what the last ASC record says. Adam still needs to CONFIRM what ASC holds; if it is 21, or if monthly carries a trial, the copy goes up and nothing else changes.
 2. **Support and privacy contact.** `stoke.llc` has no MX records; both published
    addresses bounce.
 3. **The hosted privacy policy** is still the July version.
-4. **Free-vs-premium for the merged Us/Hearth.** `premiumGates.ts` intends the
-   current month of history to be free ("never advertised in the header and then
-   locked"), but with Hearth no longer a tab, a free couple can only reach it
-   through the Us grid — which is locked for them — or a queue pill that renders
-   only when the queue is non-empty. **This listing therefore does NOT claim
-   current-month history as a free benefit**, because that claim is currently
-   false. Either open the free path or leave the claim out; the gate copy
-   (`gates.hearthBody`, "This month glows right here") has the same problem.
+4. ~~**Free-vs-premium for the merged Us/Hearth.**~~ **DECIDED 2026-11-21 (CEO,
+   founder may veto):** keep exactly what `premiumGates.ts` already documents.
+   Free forever — the daily loop, the reveal, reactions, answering a question
+   your partner sent, skipping, the first follow-up, three explore sends a
+   month, **and the current month's history including the couch queue and the
+   "we talked" mark**. Premium — unlimited follow-ups, unlimited sends, full
+   history and trends, and the Us alignment map.
+
+   The free path is real again as of `ad8b053`: the tending section was gated
+   behind the premium check by the Hearth merge, which hid from free couples
+   the one thing premiumGates calls "always free, forever". The listing now
+   claims the free current month, because it is now true.
 
 ## Claims deliberately left out
 

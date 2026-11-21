@@ -77,7 +77,7 @@ describe('Paywall', () => {
 
       expect(getByTestId('paywall-plans-loading')).toBeTruthy();
       expect(getByTestId('paywall-cta-loading')).toBeTruthy();
-      expect(queryByText('Start your 21-day free trial')).toBeNull();
+      expect(queryByText('Start your 14-day free trial')).toBeNull();
       expect(queryByText(/\$49\.99/)).toBeNull();
       expect(queryByText(/\$9\.99/)).toBeNull();
     });
@@ -115,7 +115,7 @@ describe('Paywall', () => {
         <Paywall visible onClose={jest.fn()} />
       );
 
-      expect(getByText('Start your 21-day free trial')).toBeTruthy();
+      expect(getByText('Start your 14-day free trial')).toBeTruthy();
       expect(getByText('then $49.99/year, cancel anytime')).toBeTruthy();
       expect(getByText('$49.99/year')).toBeTruthy();
       expect(getByText('$9.99/month')).toBeTruthy();
@@ -137,12 +137,30 @@ describe('Paywall', () => {
       expect(getByText('$9.99/month')).toBeTruthy();
     });
 
-    it('updates the subline when the monthly plan is selected', () => {
+    /**
+     * The trial is ANNUAL-ONLY (CEO decision 2026-11-21, matching the last
+     * recorded App Store Connect configuration). Showing "free trial" on a
+     * plan that has none is a guideline 3.1.2 accuracy problem, so the CTA
+     * and the subline both change with the selected plan.
+     */
+    it('drops the trial language when the monthly plan is selected', () => {
+      mockUseSubscription.mockReturnValue(loadedState());
+      const { getByText, queryByText } = render(<Paywall visible onClose={jest.fn()} />);
+
+      fireEvent.press(getByText('$9.99/month'));
+
+      expect(getByText('Start Premium')).toBeTruthy();
+      expect(queryByText('Start your 14-day free trial')).toBeNull();
+      expect(getByText('$9.99/month, cancel anytime')).toBeTruthy();
+      expect(queryByText('then $9.99/month, cancel anytime')).toBeNull();
+    });
+
+    it('keeps the trial language on the annual plan', () => {
       mockUseSubscription.mockReturnValue(loadedState());
       const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
 
-      fireEvent.press(getByText('$9.99/month'));
-      expect(getByText('then $9.99/month, cancel anytime')).toBeTruthy();
+      expect(getByText('Start your 14-day free trial')).toBeTruthy();
+      expect(getByText('then $49.99/year, cancel anytime')).toBeTruthy();
     });
 
     it('purchases the selected package on CTA press', () => {
@@ -150,7 +168,7 @@ describe('Paywall', () => {
       mockUseSubscription.mockReturnValue(state);
       const { getByText } = render(<Paywall visible onClose={jest.fn()} />);
 
-      fireEvent.press(getByText('Start your 21-day free trial'));
+      fireEvent.press(getByText('Start your 14-day free trial'));
       expect(state.purchase).toHaveBeenCalledWith(annualPackage);
     });
 
@@ -234,7 +252,7 @@ describe('Paywall', () => {
       expect(getByTestId('paywall-error')).toBeTruthy();
       expect(getByText("Plans aren't loading right now.")).toBeTruthy();
       expect(getByText('Restore purchases')).toBeTruthy();
-      expect(queryByText('Start your 21-day free trial')).toBeNull();
+      expect(queryByText('Start your 14-day free trial')).toBeNull();
       expect(queryByTestId('paywall-cta-loading')).toBeNull();
 
       fireEvent.press(getByText('Try again'));

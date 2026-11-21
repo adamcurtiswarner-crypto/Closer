@@ -224,11 +224,17 @@ export function Paywall({ visible, onClose, source = 'unspecified' }: PaywallPro
                     {isLoading ? (
                       <ActivityIndicator color={colors.text.inverse} />
                     ) : (
-                      <Text style={styles.ctaText} maxFontSizeMultiplier={1.4}>{t('paywall.ctaTrial')}</Text>
+                      <Text style={styles.ctaText} maxFontSizeMultiplier={1.4}>
+                        {selectedPlan === 'annual'
+                          ? t('paywall.ctaTrial')
+                          : t('paywall.ctaNoTrial')}
+                      </Text>
                     )}
                   </TouchableOpacity>
                   <Text style={styles.ctaSubline}>
-                    {t('paywall.ctaSubline', { price: activePrice })}
+                    {selectedPlan === 'annual'
+                      ? t('paywall.ctaSubline', { price: activePrice })
+                      : t('paywall.ctaSublineNoTrial', { price: activePrice })}
                   </Text>
                 </>
               )}
