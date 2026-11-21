@@ -29,7 +29,18 @@
 
 **Carried, unresolved:** Masha holds **two push tokens again** (the 8/23 cleanup did not stick, so she is getting doubled pushes). Deploy drift — most functions were last deployed 8/2-8/3 and predate the 8/23 refactor. 61% of BigQuery rows have NULL timestamps. `getstoke.io` now 301s to an unrelated domain.
 
-**Pending founder approval, blocked on permission:** the two-index deploy (`firebase deploy --only firestore:indexes`). **The recap runs again Sun 11/22 18:00 PT — deploying before then is the difference between a fifth silent failure and a working retention loop.**
+**Indexes DEPLOYED 2026-11-21 on Adam's go.** Both `prompt_responses(prompt_id, emotional_response)` and `prompt_completions(couple_id, completed_at ASC)` are READY. Verified by running **every** query both functions make against production — all six pass, including the two that were failing. (Last week only the first query was checked, which is how the second failure went unseen for six days. The unit of verification is the run, not the query.) **Tomorrow's 18:00 PT recap should fire for the first time in at least a month.**
+
+**Functions NOT deployed, deliberately.** The `runScheduled` wrapper on the nine schedulers is committed but not live, so a failure in any of them is still silent until it ships. Holding it because of real deploy drift:
+
+| Function | Deployed | Its file last changed |
+|---|---|---|
+| `sendWeeklyRecaps` | 2026-08-03 | 2026-08-23 (`51c9112`) |
+| `expireStalePrompts` | 2026-08-02 | 2026-08-23 (`51c9112`) |
+| `graduatePrompts` | 2026-08-02 | 2026-08-23 (`51c9112`) |
+| `exportEventsToBigQuery` | 2026-08-02 | 2026-11-14 (`1b85dff`) |
+
+Deploying now would ship up to three months of untested-in-prod catch-up **and** the wrapper, to a recap that is about to run successfully for the first time in a month — two changes at once, right before the moment we want to observe. Deploy AFTER tomorrow's recap, so a failure can be attributed. This also corrects the 11/14 claim that "every function changed since August is deployed": it was true of the functions changed by the files I touched that day, not of the codebase.
 
 ---
 
