@@ -10,6 +10,7 @@ import {
   getWeekId,
   notifyCoupleMembers,
   reportError,
+  runScheduled,
 } from './shared';
 
 // ============================================
@@ -620,33 +621,35 @@ export const generateAIPrompts = functions.https.onCall(async (data, context) =>
 export const autoGeneratePrompts = functions.pubsub
   .schedule('every monday 02:00')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    try {
-      // Check if active prompt pool is below threshold
-      const activePromptsSnap = await db
-        .collection('prompts')
-        .where('status', 'in', ['active', 'testing'])
-        .get();
+  .onRun(async () =>
+    runScheduled('autoGeneratePrompts', async () => {
+      try {
+        // Check if active prompt pool is below threshold
+        const activePromptsSnap = await db
+          .collection('prompts')
+          .where('status', 'in', ['active', 'testing'])
+          .get();
 
-      const activeCount = activePromptsSnap.size;
-      const TARGET_POOL_SIZE = 150;
+        const activeCount = activePromptsSnap.size;
+        const TARGET_POOL_SIZE = 150;
 
-      if (activeCount >= TARGET_POOL_SIZE) {
-        console.log(`Prompt pool at ${activeCount}, no generation needed`);
-        return null;
+        if (activeCount >= TARGET_POOL_SIZE) {
+          console.log(`Prompt pool at ${activeCount}, no generation needed`);
+          return null;
+        }
+
+        const deficit = Math.min(TARGET_POOL_SIZE - activeCount, AI_MAX_PER_CALL);
+        console.log(`Prompt pool at ${activeCount}, generating ${deficit} prompts`);
+
+        const result = await generatePromptsBatch(deficit);
+        console.log(`Auto-generated ${result.generated} prompts: ${result.promptIds.join(', ')}`);
+      } catch (error) {
+        await reportError('autoGeneratePrompts', error);
       }
 
-      const deficit = Math.min(TARGET_POOL_SIZE - activeCount, AI_MAX_PER_CALL);
-      console.log(`Prompt pool at ${activeCount}, generating ${deficit} prompts`);
-
-      const result = await generatePromptsBatch(deficit);
-      console.log(`Auto-generated ${result.generated} prompts: ${result.promptIds.join(', ')}`);
-    } catch (error) {
-      await reportError('autoGeneratePrompts', error);
-    }
-
-    return null;
-  });
+      return null;
+    })
+  );
 
 // ============================================
 // CALLABLE: Generate Coaching Insight On Demand
@@ -860,29 +863,31 @@ export const generateCoachingInsight = functions.https.onCall(async (data, conte
 export const cleanupCoachingInsights = functions.pubsub
   .schedule('30 3 * * *')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 90);
+  .onRun(async () =>
+    runScheduled('cleanupCoachingInsights', async () => {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 90);
 
-    const couplesSnapshot = await db.collection('couples').get();
-    let totalDeleted = 0;
+      const couplesSnapshot = await db.collection('couples').get();
+      let totalDeleted = 0;
 
-    for (const coupleDoc of couplesSnapshot.docs) {
-      const insightsQuery = await db
-        .collection('couples')
-        .doc(coupleDoc.id)
-        .collection('coaching_insights')
-        .where('created_at', '<', cutoff)
-        .get();
+      for (const coupleDoc of couplesSnapshot.docs) {
+        const insightsQuery = await db
+          .collection('couples')
+          .doc(coupleDoc.id)
+          .collection('coaching_insights')
+          .where('created_at', '<', cutoff)
+          .get();
 
-      if (insightsQuery.empty) continue;
+        if (insightsQuery.empty) continue;
 
-      const batch = db.batch();
-      insightsQuery.docs.forEach((doc) => batch.delete(doc.ref));
-      await batch.commit();
-      totalDeleted += insightsQuery.size;
-    }
+        const batch = db.batch();
+        insightsQuery.docs.forEach((doc) => batch.delete(doc.ref));
+        await batch.commit();
+        totalDeleted += insightsQuery.size;
+      }
 
-    console.log(`cleanupCoachingInsights: deleted ${totalDeleted} expired insight documents`);
-    return null;
-  });
+      console.log(`cleanupCoachingInsights: deleted ${totalDeleted} expired insight documents`);
+      return null;
+    })
+  );

@@ -14,6 +14,7 @@ import {
   isActiveCouple,
   notifyCoupleMembers,
   reportError,
+  runScheduled,
 } from './shared';
 import { activateDueFollowUp } from './followUps';
 
@@ -522,62 +523,64 @@ const DELIVERY_HOUR_LOCAL = 8;
 
 export const deliverDailyPrompts = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every 15 minutes')
-  .onRun(async () => {
-    const now = new Date();
+  .onRun(async () =>
+    runScheduled('deliverDailyPrompts', async () => {
+      const now = new Date();
 
-    // Find onboarded, active users with a couple
-    const usersSnapshot = await db
-      .collection('users')
-      .where('is_onboarded', '==', true)
-      .where('is_deleted', '==', false)
-      .get();
+      // Find onboarded, active users with a couple
+      const usersSnapshot = await db
+        .collection('users')
+        .where('is_onboarded', '==', true)
+        .where('is_deleted', '==', false)
+        .get();
 
-    // Track delivered couples to avoid duplicate delivery
-    const deliveredCouples = new Set<string>();
+      // Track delivered couples to avoid duplicate delivery
+      const deliveredCouples = new Set<string>();
 
-    for (const userDoc of usersSnapshot.docs) {
-      const userData = userDoc.data();
-      if (!userData.couple_id) continue;
-      if (deliveredCouples.has(userData.couple_id)) continue;
+      for (const userDoc of usersSnapshot.docs) {
+        const userData = userDoc.data();
+        if (!userData.couple_id) continue;
+        if (deliveredCouples.has(userData.couple_id)) continue;
 
-      // Convert current time to user's timezone
-      const userTimezone = userData.timezone || 'America/Los_Angeles';
-      const userLocalTime = formatInTimeZone(now, userTimezone, 'HH:mm');
-      const [localHour, localMinute] = userLocalTime.split(':').map(Number);
+        // Convert current time to user's timezone
+        const userTimezone = userData.timezone || 'America/Los_Angeles';
+        const userLocalTime = formatInTimeZone(now, userTimezone, 'HH:mm');
+        const [localHour, localMinute] = userLocalTime.split(':').map(Number);
 
-      // Check if within the 08:00-08:15 local window (the scheduler runs
-      // every 15 minutes, so each timezone matches exactly one run per day)
-      if (localHour === DELIVERY_HOUR_LOCAL && localMinute < 15) {
-        // Check prompt_frequency before delivering
-        const coupleDoc = await db.collection('couples').doc(userData.couple_id).get();
-        if (!coupleDoc.exists) continue;
-        const coupleData = coupleDoc.data()!;
-        const frequency = coupleData.prompt_frequency || 'daily';
+        // Check if within the 08:00-08:15 local window (the scheduler runs
+        // every 15 minutes, so each timezone matches exactly one run per day)
+        if (localHour === DELIVERY_HOUR_LOCAL && localMinute < 15) {
+          // Check prompt_frequency before delivering
+          const coupleDoc = await db.collection('couples').doc(userData.couple_id).get();
+          if (!coupleDoc.exists) continue;
+          const coupleData = coupleDoc.data()!;
+          const frequency = coupleData.prompt_frequency || 'daily';
 
-        const zonedNow = toZonedTime(now, userTimezone);
-        const currentDayOfWeek = getDay(zonedNow);
+          const zonedNow = toZonedTime(now, userTimezone);
+          const currentDayOfWeek = getDay(zonedNow);
 
-        if (frequency === 'weekdays' && (currentDayOfWeek === 0 || currentDayOfWeek === 6)) {
-          continue; // Skip weekends
-        }
-        if (frequency === 'weekends' && currentDayOfWeek >= 1 && currentDayOfWeek <= 5) {
-          continue; // Skip weekdays
-        }
+          if (frequency === 'weekdays' && (currentDayOfWeek === 0 || currentDayOfWeek === 6)) {
+            continue; // Skip weekends
+          }
+          if (frequency === 'weekends' && currentDayOfWeek >= 1 && currentDayOfWeek <= 5) {
+            continue; // Skip weekdays
+          }
 
-        try {
-          // Deliver dated in this user's timezone — their 8 AM local
-          // window is what fired, so their local calendar day is "today".
-          await deliverPromptToCouple(userData.couple_id, userTimezone);
-          deliveredCouples.add(userData.couple_id);
-        } catch (err) {
-          await reportError('deliverDailyPrompts', err, { coupleId: userData.couple_id });
+          try {
+            // Deliver dated in this user's timezone — their 8 AM local
+            // window is what fired, so their local calendar day is "today".
+            await deliverPromptToCouple(userData.couple_id, userTimezone);
+            deliveredCouples.add(userData.couple_id);
+          } catch (err) {
+            await reportError('deliverDailyPrompts', err, { coupleId: userData.couple_id });
+          }
         }
       }
-    }
 
-    console.log(`Delivered prompts to ${deliveredCouples.size} couples`);
-    return null;
-  });
+      console.log(`Delivered prompts to ${deliveredCouples.size} couples`);
+      return null;
+    })
+  );
 
 // ============================================
 // CALLABLE: Trigger Prompt Delivery On-Demand
@@ -616,57 +619,59 @@ export const triggerPromptDelivery = functions.https.onCall(async (data, context
 export const expireStalePrompts = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every day 04:00')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    // Open days (founder decision 2026-08-02): a missed question stays
-    // answerable for a rolling week — the Today "Still open" section
-    // surfaces each person's own unanswered days (useOpenDays client-side,
-    // same 7-day window). After that the day retires quietly.
-    const cutoff = format(subDays(new Date(), 7), 'yyyy-MM-dd');
+  .onRun(async () =>
+    runScheduled('expireStalePrompts', async () => {
+      // Open days (founder decision 2026-08-02): a missed question stays
+      // answerable for a rolling week — the Today "Still open" section
+      // surfaces each person's own unanswered days (useOpenDays client-side,
+      // same 7-day window). After that the day retires quietly.
+      const cutoff = format(subDays(new Date(), 7), 'yyyy-MM-dd');
 
-    // Find assignments still 'delivered' or 'partial' from before the window
-    const staleDelivered = await db
-      .collection('prompt_assignments')
-      .where('status', '==', 'delivered')
-      .where('assigned_date', '<', cutoff)
-      .get();
+      // Find assignments still 'delivered' or 'partial' from before the window
+      const staleDelivered = await db
+        .collection('prompt_assignments')
+        .where('status', '==', 'delivered')
+        .where('assigned_date', '<', cutoff)
+        .get();
 
-    const stalePartial = await db
-      .collection('prompt_assignments')
-      .where('status', '==', 'partial')
-      .where('assigned_date', '<', cutoff)
-      .get();
+      const stalePartial = await db
+        .collection('prompt_assignments')
+        .where('status', '==', 'partial')
+        .where('assigned_date', '<', cutoff)
+        .get();
 
-    // A partial explore assignment is a question one partner sent and the
-    // other hasn't answered yet — it stays open indefinitely (the Today
-    // "from your partner" card keeps it discoverable). Only unanswered
-    // ('delivered') explore assignments — abandoned respond flows — expire
-    // on the normal schedule.
-    const staleDocs = [
-      ...staleDelivered.docs,
-      ...stalePartial.docs.filter((d) => d.data().source !== 'explore'),
-    ];
+      // A partial explore assignment is a question one partner sent and the
+      // other hasn't answered yet — it stays open indefinitely (the Today
+      // "from your partner" card keeps it discoverable). Only unanswered
+      // ('delivered') explore assignments — abandoned respond flows — expire
+      // on the normal schedule.
+      const staleDocs = [
+        ...staleDelivered.docs,
+        ...stalePartial.docs.filter((d) => d.data().source !== 'explore'),
+      ];
 
-    if (staleDocs.length === 0) {
-      console.log('No stale assignments to expire');
-      return null;
-    }
-
-    // Batch update in chunks of 500 (Firestore batch limit)
-    for (let i = 0; i < staleDocs.length; i += 500) {
-      const batch = db.batch();
-      const chunk = staleDocs.slice(i, i + 500);
-      for (const doc of chunk) {
-        batch.update(doc.ref, {
-          status: 'expired',
-          updated_at: admin.firestore.FieldValue.serverTimestamp(),
-        });
+      if (staleDocs.length === 0) {
+        console.log('No stale assignments to expire');
+        return null;
       }
-      await batch.commit();
-    }
 
-    console.log(`Expired ${staleDocs.length} stale assignments`);
-    return null;
-  });
+      // Batch update in chunks of 500 (Firestore batch limit)
+      for (let i = 0; i < staleDocs.length; i += 500) {
+        const batch = db.batch();
+        const chunk = staleDocs.slice(i, i + 500);
+        for (const doc of chunk) {
+          batch.update(doc.ref, {
+            status: 'expired',
+            updated_at: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+        await batch.commit();
+      }
+
+      console.log(`Expired ${staleDocs.length} stale assignments`);
+      return null;
+    })
+  );
 
 // ============================================
 // SCHEDULED: Check Streak Breaks
@@ -723,48 +728,50 @@ export const checkStreakBreaks = functions.runWith({ timeoutSeconds: 540, memory
 export const graduatePrompts = functions.runWith({ timeoutSeconds: 540, memory: '512MB' }).pubsub
   .schedule('every day 03:30')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    const testingPromptsSnap = await db
-      .collection('prompts')
-      .where('status', '==', 'testing')
-      .get();
+  .onRun(async () =>
+    runScheduled('graduatePrompts', async () => {
+      const testingPromptsSnap = await db
+        .collection('prompts')
+        .where('status', '==', 'testing')
+        .get();
 
-    let graduated = 0;
-    let retired = 0;
+      let graduated = 0;
+      let retired = 0;
 
-    for (const promptDoc of testingPromptsSnap.docs) {
-      const data = promptDoc.data();
-      const totalAssigned = data.times_assigned || 0;
+      for (const promptDoc of testingPromptsSnap.docs) {
+        const data = promptDoc.data();
+        const totalAssigned = data.times_assigned || 0;
 
-      // Need at least 10 assignments before making decisions
-      if (totalAssigned < 10) continue;
+        // Need at least 10 assignments before making decisions
+        if (totalAssigned < 10) continue;
 
-      const completionRate = data.completion_rate || 0;
-      const positiveRate = data.positive_response_rate || 0;
+        const completionRate = data.completion_rate || 0;
+        const positiveRate = data.positive_response_rate || 0;
 
-      // Auto-promote: completion >= 75% AND positive >= 60%
-      if (completionRate >= 0.75 && positiveRate >= 0.6) {
-        await promptDoc.ref.update({
-          status: 'active',
-          status_changed_at: admin.firestore.FieldValue.serverTimestamp(),
-          updated_at: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        graduated++;
-        continue;
+        // Auto-promote: completion >= 75% AND positive >= 60%
+        if (completionRate >= 0.75 && positiveRate >= 0.6) {
+          await promptDoc.ref.update({
+            status: 'active',
+            status_changed_at: admin.firestore.FieldValue.serverTimestamp(),
+            updated_at: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          graduated++;
+          continue;
+        }
+
+        // Auto-retire: completion < 30%
+        if (completionRate < 0.3) {
+          await promptDoc.ref.update({
+            status: 'retired',
+            status_changed_at: admin.firestore.FieldValue.serverTimestamp(),
+            updated_at: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          retired++;
+          continue;
+        }
       }
 
-      // Auto-retire: completion < 30%
-      if (completionRate < 0.3) {
-        await promptDoc.ref.update({
-          status: 'retired',
-          status_changed_at: admin.firestore.FieldValue.serverTimestamp(),
-          updated_at: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        retired++;
-        continue;
-      }
-    }
-
-    console.log(`Prompt graduation: ${graduated} graduated, ${retired} retired`);
-    return null;
-  });
+      console.log(`Prompt graduation: ${graduated} graduated, ${retired} retired`);
+      return null;
+    })
+  );

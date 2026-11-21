@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { format } from 'date-fns';
-import { db, DEFAULT_SCALE_CONFIG, reportError } from './shared';
+import { db, DEFAULT_SCALE_CONFIG, reportError, runScheduled } from './shared';
 
 // ============================================
 // SYNTHETIC-COUPLE CANARY
@@ -256,7 +256,9 @@ export async function runCanaryOnce(options: CanaryRunOptions = {}): Promise<Can
 export const canaryPipelineCheck = functions
   .runWith({ timeoutSeconds: 300 })
   .pubsub.schedule('every 60 minutes')
-  .onRun(async () => {
-    await runCanaryOnce();
-    return null;
-  });
+  .onRun(async () =>
+    runScheduled('canaryPipelineCheck', async () => {
+      await runCanaryOnce();
+      return null;
+    })
+  );

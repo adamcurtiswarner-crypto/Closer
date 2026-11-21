@@ -210,24 +210,26 @@ export const cleanupErrorLogs = functions
   .runWith({ timeoutSeconds: 540, memory: '512MB' })
   .pubsub.schedule('every day 03:30')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const cutoff = admin.firestore.Timestamp.fromDate(thirtyDaysAgo);
+  .onRun(async () =>
+    runScheduled('cleanupErrorLogs', async () => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const cutoff = admin.firestore.Timestamp.fromDate(thirtyDaysAgo);
 
-    const oldLogsSnap = await db
-      .collection('error_logs')
-      .where('created_at', '<', cutoff)
-      .limit(500)
-      .get();
+      const oldLogsSnap = await db
+        .collection('error_logs')
+        .where('created_at', '<', cutoff)
+        .limit(500)
+        .get();
 
-    if (oldLogsSnap.empty) return null;
+      if (oldLogsSnap.empty) return null;
 
-    const batch = db.batch();
-    for (const doc of oldLogsSnap.docs) {
-      batch.delete(doc.ref);
-    }
-    await batch.commit();
+      const batch = db.batch();
+      for (const doc of oldLogsSnap.docs) {
+        batch.delete(doc.ref);
+      }
+      await batch.commit();
 
-    console.log(`Cleaned up ${oldLogsSnap.size} old error logs`);
-    return null;
-  });
+      console.log(`Cleaned up ${oldLogsSnap.size} old error logs`);
+      return null;
+    })
+  );

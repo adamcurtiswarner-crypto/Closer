@@ -467,18 +467,20 @@ export const exportEventsToBigQuery = functions
   .runWith({ timeoutSeconds: 540, memory: '512MB' })
   .pubsub.schedule('every day 04:00')
   .timeZone('America/Los_Angeles')
-  .onRun(async () => {
-    const cutoffDate = subDays(new Date(), 90);
+  .onRun(async () =>
+    runScheduled('exportEventsToBigQuery', async () => {
+      const cutoffDate = subDays(new Date(), 90);
 
-    try {
-      const result = await exportEventsBatch(cutoffDate);
-      console.log(`BigQuery export: ${result.exported} exported, ${result.deleted} deleted`);
-    } catch (error) {
-      await reportError('exportEventsToBigQuery', error);
-    }
+      try {
+        const result = await exportEventsBatch(cutoffDate);
+        console.log(`BigQuery export: ${result.exported} exported, ${result.deleted} deleted`);
+      } catch (error) {
+        await reportError('exportEventsToBigQuery', error);
+      }
 
-    return null;
-  });
+      return null;
+    })
+  );
 
 // ============================================
 // CALLABLE: Trigger BigQuery Export (Admin)
