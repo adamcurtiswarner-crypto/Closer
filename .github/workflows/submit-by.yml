@@ -11,7 +11,11 @@ on:
 
 jobs:
   submit-by:
-    name: SUBMIT-BY date has not passed
+    # Named for what it checks, not for one of its steps. It was
+    # "SUBMIT-BY date has not passed", so when the runway probes failed the
+    # notification read "SUBMIT-BY date has not passed — Failed", which is a
+    # contradiction a reader has to decode before they can act on it.
+    name: Submission runway checks
     runs-on: ubuntu-latest
 
     steps:
