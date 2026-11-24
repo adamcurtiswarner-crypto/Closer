@@ -9,6 +9,26 @@
 
 *Superseded:* **SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21.** Moved in writing by the CEO on 2026-11-14, per the 8/3 governance rule. The 9/1 commitment was missed by 74 days and never moved — the second time that failure mode has run unchecked. Thanksgiving is Thu 11/26, so 11/24 keeps a two-day buffer ahead of the holiday.
 
+## 2026-11-24 — the database had no backups at all; now it does
+
+A founder-supplied launch checklist turned up the one genuine gap in it. Production Firestore was running with **no point-in-time recovery, no backup schedule, and no delete protection** — holding 476 responses, 788 assignments and ~150 completions, which is the founders' actual relationship history and the one dataset in this product that cannot be regenerated. A bad migration, a stray script or a mis-click in the console was unrecoverable.
+
+Enabled and verified 2026-11-24:
+
+| Setting | State |
+|---|---|
+| Point-in-time recovery | **ENABLED** (window building from 19:20Z, out to 7 days) |
+| Delete protection | **ENABLED** |
+| Backup schedule | **daily, 7-day retention** |
+
+Worth noting where it came from: this was never on any studio list — not in the SEV-0 reviews, not in the launch checklist, not in any CEO cycle. It surfaced because Adam pasted a generic web checklist and asked what applied. The rest of that list was mostly done or inapplicable (HTTPS, HSTS, meta tags, OG image, favicon, alt text, 404, error monitoring, rate limiting all present; no cookie banner needed because the site loads no trackers; no forms to validate). **The item everyone skips was the one that mattered.**
+
+**Also found, not fixed:** the password-reset flow (`app/(auth)/forgot-password.tsx`) has no test coverage and is not on the device pass. A reviewer may well try it. Add it to the pass.
+
+**Also recorded:** Sunday 2026-11-22 18:01 PT, `sendWeeklyRecaps` ran clean — "evaluated 1 couples, notified 2 users". **First successful recap in at least a month**, confirming the `prompt_completions(couple_id, completed_at)` index was the whole cause.
+
+---
+
 ## OPEN — the explore flow test is intermittently failing, cause unknown
 
 `explore.flow` → "B answers; the server creates the both-answered completion" fails **intermittently**, on CI and locally. Observed on 2026-11-21: CI failed, passed, failed across four runs on commits including a docs-only one; locally it failed once and passed twice on an unchanged tree.
