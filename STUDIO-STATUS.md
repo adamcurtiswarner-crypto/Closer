@@ -9,6 +9,44 @@
 
 *Superseded:* **SUBMIT-BY: 2026-11-24 (committed) · target Fri 2026-11-21.** Moved in writing by the CEO on 2026-11-14, per the 8/3 governance rule. The 9/1 commitment was missed by 74 days and never moved — the second time that failure mode has run unchecked. Thanksgiving is Thu 11/26, so 11/24 keeps a two-day buffer ahead of the holiday.
 
+## 2026-11-26 — the CocoaPods notice is a non-event for Dec 4, and a 21-pod ceiling after it
+
+RevenueCat emailed on 11/25 about the CocoaPods trunk deprecation. Checked against the repo and against the CocoaPods announcement itself, not against the email's summary of it. **No action before submission. Build 76 cuts and submits normally on or after Dec 2 with no code change.**
+
+What Dec 2 actually is: trunk stops accepting new podspecs. Verbatim from the plan — "I will switch trunk to not accept new Podspecs permanently" and "Making the switch will not break builds for people using CocoaPods in 2026 onwards, but at that point, you're not getting any more updates to dependencies which come though CocoaPods trunk." Reads keep working. There is **no sunset date for the CDN or for `pod install`**, and no consumer-facing deadline anywhere in the announcement. Nothing already published stops being installable.
+
+Why we are safe — and it is not the reason you would guess:
+
+| Layer | State |
+|---|---|
+| `package.json` | `"react-native-purchases": "^10.1.0"` — a caret, which on a fresh install would float to 11.x |
+| `package-lock.json` (tracked) | pins **10.1.0** exactly; EAS runs `npm ci` against it |
+| `RNPurchases.podspec` (ships inside the npm tarball) | `spec.dependency "PurchasesHybridCommon", '18.4.0'` — exact, and **remote** |
+| PHC 18.4.0 / RevenueCat 5.70.0 | already on trunk, confirmed by fetching the podspec JSON from the CDN |
+
+**The lockfile is the load-bearing part, not the podspec pin.** The caret is the one place this could have bitten, and `react-native-purchases@11.1.0` published 2026-11-26. **The only pre-gate action is a "don't": no `npm update`, no `npm install <pkg>@latest` before submission.** A careless install is a major version bump plus a native pod change six days out from the gate.
+
+**The real finding is bigger than RevenueCat, and the email under-scopes it.** `ios/Podfile.lock` SPEC REPOS lists **21 pods sourced from trunk**: AppAuth, AppCheckCore, GoogleSignIn, GoogleUtilities, GTMAppAuth, GTMSessionFetcher, libavif, libdav1d, libwebp, PromisesObjC, PromisesSwift, PurchasesHybridCommon, ReachabilitySwift, RecaptchaInterop, RevenueCat, SDWebImage (+AVIF/SVG/WebP coders), Sentry, SocketRocket. The other 129 resolve from local `node_modules` paths. Sentry and the Google auth chain carry the same ceiling as RevenueCat; RevenueCat is just the one with the tightest pin and the loudest email. Because `ios/` is in both `.gitignore` and `.easignore`, EAS re-resolves all 21 on every build.
+
+The ceiling, stated precisely: every RevenueCat release exact-pins a fresh PHC (10.1.0→18.4.0, 10.2.0→18.8.0, 11.0.5→20.14.0, 11.1.0→20.15.0), each published to trunk in lockstep. So the upgrade ceiling is whatever PHC version is last on trunk before Dec 2 — which bites **well before** the v12/SPM boundary the email is about. **But the fix lives in a file RevenueCat ships via npm, not in our repo:** if they repoint that dependency at a `:podspec` or `:http` source, or vendor the framework, we get it for free on the next `npm ci`. As of today, six days out, they have not — 11.1.0 still carries a bare trunk dependency. Their "Expo apps keep using CocoaPods with v11 for now" is consistent with either freezing v11 or re-plumbing it in a later patch. That is their decision, not ours, and it determines whether we ever do any work here.
+
+Failure mode if it ever lands: `pod install` fails during EAS prebuild with "None of your spec sources contain a spec satisfying the dependency", about five minutes in. Deterministic and loud — it can never be a runtime failure or a shipped-broken app, because the regenerated-`ios/` setup makes it fail fast rather than drift. **CI cannot see it:** neither `ci.yml` nor `submit-by.yml` runs prebuild or `pod install`, so it is invisible until someone burns an EAS build. Cheap local substitute: `npx expo prebuild --platform ios --clean && cd ios && pod install --repo-update`.
+
+**Backlog — P3 watch. Nothing starts before Dec 4.** Triggers, whichever fires first:
+
+- **T1 — we actually need the upgrade.** An RC bug, StoreKit/iOS 27 compat, or a security advisory forces a bump, and the target version pins a PHC not on trunk. Checkable without a build: `curl -sL https://unpkg.com/react-native-purchases@<v>/RNPurchases.podspec | grep PurchasesHybridCommon`.
+- **T2 — an EAS build fails at `pod install`** on a missing spec. Covers all 21 trunk pods, not just RevenueCat.
+- **T3 — the all-clear. Cheapest to watch; check monthly.** RevenueCat ships a v11 patch whose podspec drops the bare trunk dependency. Then the action is "upgrade normally" and no mirror ever gets built.
+- **T4 — the real migration.** Expo's SPM support leaves preview and RevenueCat ships v12. Q1-2027 at the earliest; separate planned work, not this item.
+
+**Rejected: committing a `Podfile.lock`.** A lock pins versions and checksums; it does not vendor the podspec, so `pod install` still fetches from the CDN — which the announcement explicitly keeps running. It defends against nothing the read-only switch does. And `ios/` is ignored by both git and EAS, so a committed `ios/Podfile.lock` would never reach a build at all. Making it count means un-ignoring `ios/` and abandoning the managed prebuild workflow. Cost L, value zero.
+
+**If a mitigation is ever needed**, it is a config-plugin Podfile override pointing at a vendored podspec under `vendor/pods/` (outside `ios/`, so `prebuild --clean` cannot delete it). `plugins/withModularHeaders.js` already proves `withPodfile` injection survives EAS prebuild on this project. **Two podspecs must be mirrored, not one** — PHC exact-pins `RevenueCat (= 5.70.0)`, itself a trunk pod. Effort S–M. It changes native pod resolution, so it needs a `runtimeVersion` bump off `"2.0.0"` and a new binary; not OTA-able, which is its own reason it stays away from Dec 4.
+
+**Declined deliberately: the free upgrade window.** Everything published before Dec 2 stays installable forever, 11.1.0 included, and we are a major behind on a payments SDK. Taking that window means a native pod change, a runtimeVersion bump, a new binary and a fresh review cycle — six days before a thrice-moved, founder-confirmed gate, with the 75-minute two-device pass still unrun. The window is real and we are letting it close.
+
+---
+
 ## 2026-11-24 — the database had no backups at all; now it does
 
 A founder-supplied launch checklist turned up the one genuine gap in it. Production Firestore was running with **no point-in-time recovery, no backup schedule, and no delete protection** — holding 476 responses, 788 assignments and ~150 completions, which is the founders' actual relationship history and the one dataset in this product that cannot be regenerated. A bad migration, a stray script or a mis-click in the console was unrecoverable.
